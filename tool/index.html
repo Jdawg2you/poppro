@@ -630,6 +630,7 @@
           <div class="doccallout" id="o_pop_doc"></div>
           <div id="prodlist"></div>
           <button class="addbtn hidein-client" id="addProd">+ Add product</button>
+          <button class="addbtn hidein-client" id="reloadBase" style="background:#e7f0e6" title="Bring back the full suggested build for this tier (keeps your add-ons)">↻ Reload suggested</button>
           <button class="addbtn hidein-client" id="resetTab" style="background:#efe9db">↻ Reset to default</button>
           <div class="row lbblock"><div class="lab">Living Benefits<small id="lb_desc">Pays the client cash on critical / chronic / terminal illness</small></div><input class="num money-in" id="p_lb" type="number" step="0.01"><span class="money-disp" data-for="p_lb"></span></div>
           <div class="lbrows hidein-client" id="lbRows"></div>
@@ -1235,9 +1236,11 @@ function autoPriceTiers(){
   // SDR escalation is intentionally NOT auto-applied — it is offered as a priced suggestion.
   ['good','better','best'].forEach(function(t){
     var pk=S.packages[t]; if(!pk) return;
-    var prev=pk.products||[], byKey={};
+    var prev=pk.products||[], byKey={}, dropped=pk.dropped||[];
     prev.forEach(function(p){ if(p.k) byKey[p.k]=p; });
-    pk.products=buildTierProducts(effCfg(t),byKey,manualExtras(prev));
+    var built=buildTierProducts(effCfg(t),byKey,manualExtras(prev));
+    // Respect the agent's deletions: a slot the user removed stays removed until they add it back.
+    pk.products=built.filter(function(p){ return !p.k || dropped.indexOf(p.k)<0; });
   });
 }
 function pkgCost(prods,lb){ return prods.reduce(function(s,p){return s+(+p.monthly||0);},0)+(+lb||0); }
@@ -1555,9 +1558,9 @@ function blankState(){
     library:defLibrary(),
     defaults:{good:defProducts('good'),better:defProducts('better'),best:defProducts('best')},
     packages:{
-      good:{products:defProducts('good'),lb:0,lbCarrier:'',lbCov:'',med:0,rxBenefit:0},
-      better:{products:defProducts('better'),lb:0,lbCarrier:'',lbCov:'',med:0,rxBenefit:0},
-      best:{products:defProducts('best'),lb:45,lbCarrier:'',lbCov:'',med:0,rxBenefit:0}
+      good:{products:defProducts('good'),dropped:[],lb:0,lbCarrier:'',lbCov:'',med:0,rxBenefit:0},
+      better:{products:defProducts('better'),dropped:[],lb:0,lbCarrier:'',lbCov:'',med:0,rxBenefit:0},
+      best:{products:defProducts('best'),dropped:[],lb:45,lbCarrier:'',lbCov:'',med:0,rxBenefit:0}
     },
     pension:{monthly:0,note:'e.g., IUL / tax-free retirement savings for your future',cv10:0,cv20:0,cv30:0,leg1:0,leg25:0},
     big:{desc:'Hospital stay – 7 days',charge:41660.41,disc:18747.18,days:7,daily:4000,adm:2000,his:10000,other:0},
@@ -1694,8 +1697,19 @@ function applyCatalogPick(idx,rowIndex){
     pk.products[rowIndex]={name:p.n,monthly:priced?priced.monthly:0,manual:true};
     renderProducts(); compute(); return;
   }
+  // Adding a slot back: clear the empty placeholder row it was picked from, un-drop the
+  // slot so the rebuild keeps it, then re-price. Other deleted slots stay deleted.
+  if(pk.products[rowIndex] && !pk.products[rowIndex].k && !(pk.products[rowIndex].name||'').trim()){ pk.products.splice(rowIndex,1); }
+  if(pk.dropped){ var di=pk.dropped.indexOf(p.k); if(di>-1) pk.dropped.splice(di,1); }
   p.set(effCfg(t));
   autoPriceTiers(); fill(); compute();
+}
+/* Restore the full suggested build for a tier: bring back every base product at its
+   suggested price, keeping any manual add-ons (cancer, life, etc.). */
+function reloadBaseTier(t){
+  var pk=S.packages[t]; if(!pk) return;
+  pk.dropped=[];
+  pk.products=buildTierProducts(effCfg(t),null,manualExtras(pk.products||[]));
 }
 function renderProducts(){
   var pk=S.packages[S.activeTab];
@@ -1708,10 +1722,10 @@ function renderProducts(){
     name.oninput=function(){pk.products[i].name=name.value;};
     lab.appendChild(sel); lab.appendChild(name);
     var val=document.createElement('input'); val.className='num money-in'; val.type='number'; val.step='0.01'; val.value=p.monthly; val.id='prod_'+i;
-    val.oninput=function(){pk.products[i].monthly=parseFloat(val.value)||0;pk.products[i].manual=true;renderProducts();compute();};
+    val.oninput=function(){pk.products[i].monthly=parseFloat(val.value)||0;pk.products[i].manual=true;compute();};
     var disp=document.createElement('span'); disp.className='money-disp'; disp.setAttribute('data-for','prod_'+i);
     var del=document.createElement('button'); del.className='del'; del.title='remove'; del.textContent='×';
-    del.onclick=function(){pk.products.splice(i,1);renderProducts();compute();};
+    del.onclick=function(){ var dp=pk.products[i]; if(dp&&dp.k){ pk.dropped=pk.dropped||[]; if(pk.dropped.indexOf(dp.k)<0) pk.dropped.push(dp.k); } pk.products.splice(i,1); renderProducts(); compute(); };
     sel.onchange=function(){
       var v=sel.value;
       if(v==='custom'){ pk.products[i].manual=true; name.focus(); }
@@ -2640,7 +2654,8 @@ function bindInputs(){
   $('loadBtn').onclick=function(){ $('fileInput').click(); };
   $('fileInput').onchange=function(e){ if(e.target.files[0]) loadFile(e.target.files[0]); e.target.value=''; };
   $('newBtn').onclick=function(){ if(confirm('Start a new blank quote? Unsaved changes will be lost.')){ var lib=S.library, defs=S.defaults, ag=S.agency, agn=S.client.agent, aph=S.agentPhone, aem=S.agentEmail; S=blankState(); S.library=lib; S.defaults=defs; S.agency=ag; S.client.agent=agn; S.agentPhone=aph; S.agentEmail=aem; S.packages={good:{products:copyArr(defs.good),lb:0,lbCarrier:'',lbCov:'',med:0,rxBenefit:0},better:{products:copyArr(defs.better),lb:0,lbCarrier:'',lbCov:'',med:0,rxBenefit:0},best:{products:copyArr(defs.best),lb:45,lbCarrier:'Mutual of Omaha TLE',lbCov:'$50,000',med:0,rxBenefit:0}}; fill(); compute(); goStep('intake'); } };
-  $('resetTab').onclick=function(){ read(); S.packages[S.activeTab].products=copyArr(S.defaults[S.activeTab]); renderProducts(); compute(); };
+  $('reloadBase').onclick=function(){ read(); reloadBaseTier(S.activeTab); renderProducts(); compute(); };
+  $('resetTab').onclick=function(){ read(); S.packages[S.activeTab].products=copyArr(S.defaults[S.activeTab]); if(S.packages[S.activeTab]) S.packages[S.activeTab].dropped=[]; renderProducts(); compute(); };
   $('managePlansBtn').onclick=function(){ renderLib(); renderDefaults(); updateMasterStatus(); $('planModal').classList.add('open'); };
   $('closePlans').onclick=function(){ $('planModal').classList.remove('open'); renderProducts(); compute(); autosave(); };
   $('planModal').addEventListener('click',function(e){ if(e.target===$('planModal')){ $('planModal').classList.remove('open'); renderProducts(); compute(); } });
