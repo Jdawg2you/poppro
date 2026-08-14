@@ -1973,6 +1973,7 @@ function compute(){
   $('o_r_cap').textContent='= '+fmt(aYr)+' premium savings  +  '+fmt(r.aca)+" you don't pay  +  "+fmt(rNet)+' cash to you';
 
   refreshClientDisp();
+  applyClientZeroHide();
   if($('estBody')) renderEstimate();
   if($('recFlags')) renderFlags();
   if($('acaEstNote')) renderAcaNote();
@@ -1988,6 +1989,25 @@ function refreshClientDisp(){
     var inp=document.getElementById(sp.getAttribute('data-for'));
     if(inp) sp.textContent=fmt2(moneyNum(inp.value));
   });
+}
+
+/* Client view & printed quote show only what the client is paying for.
+   Any package line that nets to $0 (a product, Living Benefits, or Medications)
+   is hidden in the CLIENT view. The agent/builder view always keeps every row
+   so a price can still be typed in. (The printout in buildPrintout() already
+   filters zeros the same way.) */
+function applyClientZeroHide(){
+  var isClient=document.body.classList.contains('client');
+  var pk=(S.packages&&S.packages[S.activeTab])||{products:[],lb:0,med:0};
+  document.querySelectorAll('#prodlist .prodrow').forEach(function(row,i){
+    var p=(pk.products||[])[i];
+    row.style.display=(isClient && p && !(+p.monthly)) ? 'none' : '';
+  });
+  var lbRow=document.querySelector('.lbblock');
+  if(lbRow) lbRow.style.display=(isClient && !(+pk.lb)) ? 'none' : '';
+  var medEl=document.getElementById('o_p_mednet');
+  var medRow=medEl?medEl.closest('.row'):null;
+  if(medRow) medRow.style.display=(isClient && !(+pk.med)) ? 'none' : '';
 }
 
 function setView(v){
