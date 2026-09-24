@@ -2083,6 +2083,27 @@ function applySuiteClient(c){
   if(c.email)   I.email=String(c.email);
   if(c.address) C.address=String(c.address);
 
+  /* What they have today. Every one of these is an existing box on this form - the script
+     simply never asked the questions until now. */
+  if(h.curCarrier) I.carrier=String(h.curCarrier);
+  if(h.curPlan)    I.plan=String(h.curPlan);
+  /* Premium, deductible, visits and copay deliberately do NOT go into the ACA block.
+     What they have now is often cover through work, and dropping a work plan's numbers into
+     the ACA comparison quietly makes it the baseline everything is measured against. They go
+     in the notes, where the agent reads them and enters the real figures once verified. */
+
+  /* Family history and the general needs, per person. */
+  var yn=function(v){ return String(v||"")==="Yes"; };
+  if(h.fhCancer!=null)   I.famcancerP=yn(h.fhCancer);
+  if(h.spFhCancer!=null) I.famcancerS=yn(h.spFhCancer);
+  if(h.fhHeart!=null)    I.famheartP=yn(h.fhHeart);
+  if(h.spFhHeart!=null)  I.famheartS=yn(h.spFhHeart);
+  if(h.mhNeeds!=null)    I.mentalP=yn(h.mhNeeds);
+  if(h.spMhNeeds!=null)  I.mentalS=yn(h.spMhNeeds);
+  if(h.matNeeds!=null)   I.maternityP=yn(h.matNeeds);
+  if(h.spMatNeeds!=null) I.maternityS=yn(h.spMatNeeds);
+  if(h.spSurgery!=null)  I.surg2yrS=yn(h.spSurgery);
+
   I.who={app:true, spouse:!!(sname||sp.dob), kids:kids.length>0};
   var ph=suiteInches(c.heightIn,c.height);  if(ph) I.pheight=ph;
   if(c.weight) I.pweight=String(c.weight);
@@ -2093,9 +2114,14 @@ function applySuiteClient(c){
   if(c.tobacco!=null) I.tobaccoP=!!c.tobacco;
   if(sp.tobacco!=null)I.tobaccoS=!!sp.tobacco;
 
-  if(kids.length) I.kidsNote=kids.map(function(k){
-    return [k.name, k.age?k.age+"y":"", k.sex||""].filter(Boolean).join(" ");
-  }).join("; ");
+  /* The kids box on this form is one free-text field, so it carries the whole picture:
+     who they are, how old, date of birth, and whatever was said about their health. */
+  var kidbits=[];
+  if(kids.length) kidbits.push(kids.map(function(k){
+    return [k.name, k.age?k.age+"y":"", k.dob||"", k.sex||""].filter(Boolean).join(" ");
+  }).join("; "));
+  if(h.kidsHealth) kidbits.push("Health: "+h.kidsHealth);
+  if(kidbits.length) I.kidsNote=kidbits.join(" \u2014 ");
 
   /* Money. The discovery call asks these in the agent's words; they land here as the
      numbers the subsidy cliff is checked against. */
@@ -2132,9 +2158,21 @@ function applySuiteClient(c){
       c.meds.filter(function(n){ return n && !had[String(n).toLowerCase()]; })
             .map(function(n){ return {name:n, cost:0, aca:0, disc:0, forP:true, forS:false}; }));
   }
+  /* The spouse's medications land on the same list, ticked to the spouse rather than the
+     applicant. That is the distinction this form has always had a column for and the
+     script could not previously supply. */
+  if(Array.isArray(c.spMeds)){
+    var had2={}; (I.medList||[]).forEach(function(m){ if(m.forS) had2[String(m.name||"").toLowerCase()]=1; });
+    I.medList=(I.medList||[]).concat(
+      c.spMeds.filter(function(n){ return n && !had2[String(n).toLowerCase()]; })
+              .map(function(n){ return {name:n, cost:0, aca:0, disc:0, forP:false, forS:true}; }));
+  }
   if(Array.isArray(c.medSkip)) I.medSkip=(I.medSkip||[]).concat(
       c.medSkip.filter(function(k){ return (I.medSkip||[]).indexOf(k)<0; }));
   if(Array.isArray(c.conds)) c.conds.forEach(function(x){
+    if(x && x.name) popAddCond(x.name, x.yr||'', x.mo||'');
+  });
+  if(Array.isArray(c.spConds)) c.spConds.forEach(function(x){
     if(x && x.name) popAddCond(x.name, x.yr||'', x.mo||'');
   });
 
@@ -2171,6 +2209,26 @@ function applySuiteClient(c){
      notes", lives on the ENROLL step - a booked presentation would sit two pages away from
      the person who needs it, so it leads here instead. */
   var extra=[];
+  var want=[];
+  if(h.wantDental==="Yes")  want.push("dental");
+  if(h.wantVision==="Yes")  want.push("vision");
+  if(h.wantHearing==="Yes") want.push("hearing");
+  if(want.length) extra.push("Also wants: "+want.join(", "));
+  if(h.fhStroke==="Yes")   extra.push("Family history of stroke (applicant)");
+  if(h.spFhStroke==="Yes") extra.push("Family history of stroke (spouse)");
+  var cur=[];
+  if(h.curPrem)   cur.push("they pay "+h.curPrem);
+  if(h.curEmpPrem)cur.push("employer pays "+h.curEmpPrem);
+  if(h.curTotal)  cur.push("real cost "+h.curTotal);
+  if(h.curDed)    cur.push("deductible "+h.curDed);
+  if(h.curVisits) cur.push(h.curVisits+" visits a year");
+  if(h.curCopay)  cur.push("copay "+h.curCopay);
+  if(cur.length) extra.push("Current plan \u2014 "+cur.join(", ")+
+      " (not entered as ACA figures; confirm before comparing)");
+  if(h.covGap)     extra.push("On their old cover: "+h.covGap);
+  if(h.spHealthNotes) extra.push("Spouse health: "+h.spHealthNotes);
+  if(h.spSurgeryWhat) extra.push("Spouse surgery (2 yrs): "+h.spSurgeryWhat);
+  if(h.spHospStay==="Yes") extra.push("Spouse had a hospital stay in the last 2 yrs");
   if(h.apptWhen)    extra.push("PRESENTATION BOOKED: "+h.apptWhen+
                       (h.apptWho?" ("+h.apptWho+")":""));
   if(h.apptNotes)   extra.push(h.apptNotes);
@@ -2192,6 +2250,19 @@ function applySuiteClient(c){
   var kept=String(I.notes||"").split("\n").filter(function(l){ return l.indexOf(TAG)!==0; });
   if(extra.length) kept.push(TAG+extra.join(" · "));
   I.notes=kept.join("\n").replace(/^\n+|\n+$/g,"");
+
+  /* This page lists conditions nowhere, so a ticked condition is invisible to the agent.
+     Routing notes is the field that is read before a case is placed, so that is where they
+     go - primary first with everything that was asked about each, then the spouse. */
+  var cl=h.condLines||c.condLines;
+  if(cl && (((cl.primary||[]).length)||((cl.spouse||[]).length))){
+    var RTAG="From the discovery call";
+    var rkept=String(I.routeNote||"").split("\n").filter(function(l){ return l.indexOf(RTAG)!==0; });
+    var block=[RTAG+" \u2014 conditions"];
+    block.push("PRIMARY: "+((cl.primary||[]).length? cl.primary.join("; ") : "none recorded"));
+    if(cl.spouse) block.push("SPOUSE: "+(cl.spouse.length? cl.spouse.join("; ") : "none recorded"));
+    I.routeNote=rkept.concat(block).join("\n").replace(/^\n+|\n+$/g,"");
+  }
 
   normClient();
   goStep('intake');     /* fillIntake() runs from here, so the boxes show it straight away */
