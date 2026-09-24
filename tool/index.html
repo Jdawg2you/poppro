@@ -1790,12 +1790,444 @@ function renderDefaults(){
   });
 }
 
+
+/* ============================================================================
+   MEDICATION DICTIONARY - PORTED VERBATIM FROM THE SCRIPT NAVIGATOR
+   ~/script-navigator/index.html is the source of truth for MEDS, MED_FOR and the
+   fuzzy matching. The Product Wizard already carries the same port and its
+   tools/check.sh fails the commit when the tables drift. POP Pro now carries a
+   third copy, so tools/check.sh HERE does the same comparison - three copies with
+   two guards, rather than three copies and hope.
+
+   Do not edit these tables in this file. Edit the navigator and re-run the port.
+   medLabel comes from the wizard (the navigator resolves aliases inline).
+   medFlags is NOT ported - it reads the navigator's own chip state; POP Pro's
+   equivalent is popMedFlags() below, which reads S.intake.medList / S.intake.conds.
+   ============================================================================ */
+var MEDS=[
+["Eliquis","apixaban"],["Xarelto","rivaroxaban"],["Warfarin","Coumadin"],["Plavix","clopidogrel"],
+["Brilinta","ticagrelor"],["Pradaxa","dabigatran"],["Aspirin"],
+["Metoprolol","Lopressor","Toprol"],["Carvedilol","Coreg"],["Atenolol","Tenormin"],["Bisoprolol"],
+["Lisinopril","Zestril","Prinivil"],["Losartan","Cozaar"],["Valsartan","Diovan"],["Amlodipine","Norvasc"],
+["Hydrochlorothiazide","HCTZ"],["Furosemide","Lasix"],["Spironolactone","Aldactone"],["Clonidine"],
+["Diltiazem","Cardizem"],["Digoxin","Lanoxin"],["Isosorbide","Imdur"],["Nitroglycerin","Nitrostat"],
+["Amiodarone","Cordarone"],["Sotalol"],["Flecainide"],["Entresto","sacubitril"],["Ranexa","ranolazine"],
+["Atorvastatin","Lipitor"],["Simvastatin","Zocor"],["Rosuvastatin","Crestor"],["Pravastatin","Pravachol"],
+["Ezetimibe","Zetia"],["Fenofibrate","Tricor"],["Repatha","evolocumab"],
+["Metformin","Glucophage"],["Glipizide","Glucotrol"],["Glyburide"],["Januvia","sitagliptin"],
+["Jardiance","empagliflozin"],["Farxiga","dapagliflozin"],["Trulicity","dulaglutide"],
+["Ozempic","semaglutide"],["Mounjaro","tirzepatide"],["Victoza","liraglutide"],["Actos","pioglitazone"],
+["Lantus","insulin glargine"],["Humalog","insulin lispro"],["Levemir"],["NovoLog"],["Tresiba"],["Basaglar"],
+["Insulin"],["Gabapentin","Neurontin"],["Pregabalin","Lyrica"],["Duloxetine","Cymbalta"],
+["Levothyroxine","Synthroid"],["Methimazole","Tapazole"],["Prednisone"],["Methotrexate"],
+["Humira","adalimumab"],["Enbrel","etanercept"],["Plaquenil","hydroxychloroquine"],["Imuran","azathioprine"],
+["Albuterol","ProAir","Ventolin"],["Symbicort"],["Advair"],["Trelegy"],["Breo"],["Spiriva","tiotropium"],
+["Singulair","montelukast"],["Prednisolone"],["Oxygen"],
+["Sertraline","Zoloft"],["Escitalopram","Lexapro"],["Fluoxetine","Prozac"],["Citalopram","Celexa"],
+["Bupropion","Wellbutrin"],["Venlafaxine","Effexor"],["Trazodone"],["Mirtazapine","Remeron"],
+["Alprazolam","Xanax"],["Lorazepam","Ativan"],["Clonazepam","Klonopin"],["Diazepam","Valium"],
+["Buspirone","Buspar"],["Lithium"],["Lamotrigine","Lamictal"],["Quetiapine","Seroquel"],
+["Aripiprazole","Abilify"],["Risperidone","Risperdal"],["Olanzapine","Zyprexa"],["Haloperidol","Haldol"],
+["Donepezil","Aricept"],["Memantine","Namenda"],["Levodopa","Sinemet","carbidopa"],["Ropinirole"],
+["Phenytoin","Dilantin"],["Levetiracetam","Keppra"],["Topiramate","Topamax"],["Valproate","Depakote"],
+["Oxycodone","Percocet","OxyContin"],["Hydrocodone","Norco","Vicodin"],["Tramadol","Ultram"],
+["Morphine","MS Contin"],["Fentanyl"],["Methadone"],["Suboxone","buprenorphine"],["Naltrexone"],
+["Meloxicam","Mobic"],["Ibuprofen","Motrin","Advil"],["Naproxen","Aleve"],["Celecoxib","Celebrex"],
+["Omeprazole","Prilosec"],["Pantoprazole","Protonix"],["Famotidine","Pepcid"],
+["Allopurinol","Zyloprim"],["Colchicine"],["Tamsulosin","Flomax"],["Finasteride","Proscar"],
+["Sildenafil","Viagra"],["Tadalafil","Cialis"],["Alendronate","Fosamax"],["Vitamin D"],
+["Furosemide"],["Potassium","K-Dur"],["Amoxicillin"],["Azithromycin","Z-Pak"],["Doxycycline"],
+["Tamoxifen"],["Anastrozole","Arimidex"],["Letrozole","Femara"],["Keytruda","pembrolizumab"],
+["Revlimid","lenalidomide"],["Imbruvica","ibrutinib"],["Gleevec","imatinib"],
+["Entecavir"],["Epclusa"],["Harvoni"],["Truvada"],["Biktarvy"],["Descovy"],
+["Dialysis"],["Sevelamer","Renvela"],["Epogen","epoetin"],["Tacrolimus","Prograf"],["Cyclosporine"],
+["Mycophenolate","CellCept"],["Hydroxyurea"],["Eliquis"]
+];
+var MED_FOR={
+ "Eliquis":["Arrhythmia / AFib","Blood clots / DVT"],"Xarelto":["Arrhythmia / AFib","Blood clots / DVT"],
+ "Warfarin":["Arrhythmia / AFib","Blood clots / DVT"],"Plavix":["Heart attack","Stent"],
+ "Brilinta":["Heart attack","Stent"],"Pradaxa":["Arrhythmia / AFib"],
+ "Metformin":["Diabetes"],"Glipizide":["Diabetes"],"Glyburide":["Diabetes"],"Januvia":["Diabetes"],
+ "Jardiance":["Diabetes"],"Farxiga":["Diabetes"],"Trulicity":["Diabetes"],"Ozempic":["Diabetes"],
+ "Mounjaro":["Diabetes"],"Victoza":["Diabetes"],"Actos":["Diabetes"],"Lantus":["Diabetes"],
+ "Humalog":["Diabetes"],"Insulin":["Diabetes"],"Levemir":["Diabetes"],"Tresiba":["Diabetes"],
+ "Atorvastatin":["High cholesterol"],"Simvastatin":["High cholesterol"],"Rosuvastatin":["High cholesterol"],
+ "Lisinopril":["High blood pressure"],"Losartan":["High blood pressure"],"Amlodipine":["High blood pressure"],
+ "Metoprolol":["High blood pressure","Arrhythmia / AFib"],"Carvedilol":["High blood pressure"],
+ "Hydrochlorothiazide":["High blood pressure"],"Valsartan":["High blood pressure"],"Atenolol":["High blood pressure"],"Bisoprolol":["High blood pressure"],
+ "Clonidine":["High blood pressure"],"Diltiazem":["High blood pressure","Arrhythmia / AFib"],"Spironolactone":["High blood pressure","Heart disease / disorder"],"Furosemide":["Heart disease / disorder","High blood pressure"],
+ "Amiodarone":["Arrhythmia / AFib"],"Sotalol":["Arrhythmia / AFib"],"Flecainide":["Arrhythmia / AFib"],
+ "Entresto":["Heart disease / disorder"],"Digoxin":["Arrhythmia / AFib"],"Ranexa":["Angina (chest pain)"],
+ "Nitroglycerin":["Angina (chest pain)"],"Isosorbide":["Angina (chest pain)"],
+ "Albuterol":["Asthma (chronic)","COPD"],"Symbicort":["COPD","Asthma (chronic)"],"Advair":["COPD","Asthma (chronic)"],
+ "Trelegy":["COPD"],"Spiriva":["COPD"],"Breo":["COPD"],"Singulair":["Asthma (chronic)"],
+ "Levothyroxine":["Autoimmune disorder"],"Methotrexate":["Rheumatoid arthritis","Autoimmune disorder"],
+ "Humira":["Autoimmune disorder"],"Enbrel":["Rheumatoid arthritis"],"Plaquenil":["Lupus","Rheumatoid arthritis"],
+ "Sertraline":["Depression"],"Escitalopram":["Anxiety","Depression"],"Fluoxetine":["Depression"],
+ "Bupropion":["Depression"],"Venlafaxine":["Depression"],"Mirtazapine":["Depression"],
+ "Alprazolam":["Anxiety"],"Lorazepam":["Anxiety"],"Clonazepam":["Anxiety"],"Buspirone":["Anxiety"],
+ "Lithium":["Bipolar"],"Lamotrigine":["Bipolar"],"Quetiapine":["Bipolar"],"Aripiprazole":["Bipolar"],
+ "Olanzapine":["Schizophrenia / psychosis"],"Risperidone":["Schizophrenia / psychosis"],
+ "Donepezil":["Alzheimer's / dementia"],"Memantine":["Alzheimer's / dementia"],
+ "Levodopa":["Parkinson's disease"],"Ropinirole":["Parkinson's disease"],
+ "Phenytoin":["Epilepsy / seizures"],"Levetiracetam":["Epilepsy / seizures"],"Topiramate":["Epilepsy / seizures"],
+ "Gabapentin":["Neuropathy"],"Pregabalin":["Neuropathy"],"Duloxetine":["Neuropathy","Depression"],
+ "Allopurinol":["Autoimmune disorder"],"Sevelamer":["Kidney disease / failure"],"Epogen":["Kidney disease / failure"],
+ "Tacrolimus":["Transplant"],"Cyclosporine":["Transplant"],"Mycophenolate":["Transplant"],
+ "Tamoxifen":["Cancer"],"Anastrozole":["Cancer"],"Letrozole":["Cancer"],"Keytruda":["Cancer"],
+ "Revlimid":["Cancer"],"Imbruvica":["Cancer"],"Gleevec":["Cancer"],"Hydroxyurea":["Cancer"],
+ "Entecavir":["Hepatitis B"],"Epclusa":["Hepatitis C"],"Harvoni":["Hepatitis C"],
+ "Truvada":["AIDS / HIV / ARC"],"Biktarvy":["AIDS / HIV / ARC"],"Descovy":["AIDS / HIV / ARC"],
+ "Oxygen":["Oxygen / ventilator"],"Dialysis":["Dialysis"]
+};
+var MED_INDEX=(function(){
+  var ix=[];
+  MEDS.forEach(function(row){ row.forEach(function(n){
+    ix.push({n:n,label:row[0],k:medKey(n),k2:medKey2(n)}); }); });
+  return ix;
+})();
+function medKey(w){
+  var t=String(w||"").toUpperCase().replace(/[^A-Z]/g,"");
+  if(!t) return "";
+  var code={B:1,F:1,P:1,V:1,C:2,G:2,J:2,K:2,Q:2,S:2,X:2,Z:2,D:3,T:3,L:4,M:5,N:5,R:6};
+  var out=t[0], last=code[t[0]]||0;
+  for(var i=1;i<t.length;i++){
+    var c=t[i], d=code[c];
+    if(d && d!==last) out+=d;
+    if(c!=="H" && c!=="W") last=d||0;
+  }
+  return out;
+}
+function medKey2(w){
+  var t=String(w||"").toUpperCase().replace(/[^A-Z]/g,"");
+  if(!t) return "";
+  var code={B:1,F:1,P:1,V:1,C:2,G:2,J:2,K:2,Q:2,S:2,X:2,Z:2,D:3,T:3,L:4,M:5,N:5,R:6};
+  var out="", last=null;
+  for(var i=0;i<t.length;i++){
+    var c=t[i], d=code[c];
+    if(d && d!==last) out+=d;
+    if(c!=="H" && c!=="W") last=d||null;
+  }
+  return out;
+}
+function medSuggest(q,limit){
+  var t=String(q||"").trim(); if(t.length<2) return [];
+  var lt=t.toLowerCase(), kt=medKey(t), k2=medKey2(t);
+  var best={};
+  function offer(label,score){ if(best[label]===undefined || score<best[label]) best[label]=score; }
+  MED_INDEX.forEach(function(m){
+    var ln=m.n.toLowerCase();
+    if(ln===lt)            return offer(m.label,0);                 /* typed it exactly */
+    if(ln.indexOf(lt)===0) return offer(m.label,1+ (m.n.length-t.length)/100);
+    if(ln.indexOf(lt)>0)   return offer(m.label,3);                 /* somewhere inside */
+    if(kt.length>=2 && m.k.indexOf(kt)===0)
+      return offer(m.label,4+Math.abs(m.k.length-kt.length)/10);    /* sounds like it */
+    if(k2.length>=3 && m.k2.indexOf(k2)===0)
+      return offer(m.label,6+Math.abs(m.k2.length-k2.length));      /* wrong first letter, so weigh length */
+  });
+  return Object.keys(best).sort(function(a,b){return best[a]-best[b];}).slice(0,limit||8);
+}
+function medLabel(n){ const hit=MED_INDEX.filter(m=>m.n.toLowerCase()===String(n).toLowerCase())[0]; return hit?hit.label:n; }
+
+/* POP Pro's own version of the navigator's medFlags: which conditions do the entered
+   medications imply that have not been confirmed or dismissed yet. Returns {m,c} pairs
+   so the UI can ask "you listed Metformin - is that for Diabetes?" once per pair. */
+/* Resolve whatever the agent typed to a canonical medication label.
+
+   medLabel alone is an EXACT alias lookup, so "Lipitor" resolves to Atorvastatin but
+   "metphormin" resolves to itself and MED_FOR misses it entirely - which is the whole
+   point of having fuzzy matching. The dropdown stores the resolved label, but a typed
+   or legacy value has to be resolved here too. */
+function popMedResolve(n){
+  n=String(n||'').trim(); if(!n) return '';
+  var exact=medLabel(n);
+  if(MED_FOR[exact]) return exact;
+  var g=medSuggest(n,1);
+  return (g && g.length && MED_FOR[g[0]]) ? g[0] : exact;
+}
+
+function popMedFlags(){
+  var I=(S.intake||{}), list=I.medList||[], conds=I.conds||[], skip=I.medSkip||[], out=[];
+  var have={}; conds.forEach(function(c){ have[c.name]=1; });
+  list.forEach(function(m){
+    var label=popMedResolve(m.name); if(!label) return;
+    (MED_FOR[label]||[]).forEach(function(c){
+      if(have[c]) return;
+      if(skip.indexOf(label+'|'+c)>-1) return;
+      for(var i=0;i<out.length;i++) if(out[i].m===label&&out[i].c===c) return;
+      out.push({m:label,c:c});
+    });
+  });
+  return out;
+}
+
+/* Accept a suggested condition onto the case. yr/mo match the suite's conds shape
+   ({name, yr, mo}) so a POP Pro case and a navigator handoff describe a condition the
+   same way - see FIELDS.md. */
+function popAddCond(name,yr,mo){
+  S.intake=S.intake||{}; S.intake.conds=S.intake.conds||[];
+  for(var i=0;i<S.intake.conds.length;i++) if(S.intake.conds[i].name===name){
+    if(yr) S.intake.conds[i].yr=yr; if(mo) S.intake.conds[i].mo=mo; return;
+  }
+  S.intake.conds.push({name:name, yr:yr||'', mo:mo||''});
+}
+function popSkipCond(med,cond){
+  S.intake=S.intake||{}; S.intake.medSkip=S.intake.medSkip||[];
+  var k=med+'|'+cond;
+  if(S.intake.medSkip.indexOf(k)<0) S.intake.medSkip.push(k);
+}
+
+/* ============================================================================
+   HANDOFF IN FROM THE SCRIPT NAVIGATOR
+
+   The health discovery script ends with a full profile and a booked presentation.
+   This is how that profile arrives here, so the agent does not retype what the
+   client already told them - the same postMessage contract the Product Wizard
+   receives, because these are separate origins and share no storage.
+
+   The navigator opens this page and re-sends every 300ms until we acknowledge.
+   Acknowledging is not optional: without it the sender keeps firing and would
+   overwrite whatever the agent typed in the meantime.
+   ============================================================================ */
+var SUITE_ALLOWED=["https://script.ffloptimum.com"];
+/* Loosened only when this page is itself being served locally for testing. */
+var SUITE_DEV=location.protocol==="file:"||/^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+
+function suiteNum(v){
+  var n=parseFloat(String(v==null?"":v).replace(/[^0-9.\-]/g,""));
+  return isFinite(n)?n:0;
+}
+function suiteName(a,b){ return ((a||"")+" "+(b||"")).replace(/\s+/g," ").trim(); }
+/* These boxes are dropdowns, not free text: height is total inches and sex is M or F.
+   Handing them "5'11\"" or "Male" selects nothing at all and the field just looks unasked. */
+function suiteInches(v,words){
+  var n=parseInt(v,10); if(n>=48&&n<=84) return String(n);
+  var m=String(words||"").match(/(\d+)\s*'\s*(\d+)?/);
+  if(m){ var t=(+m[1])*12+(+(m[2]||0)); if(t>=48&&t<=84) return String(t); }
+  return "";
+}
+function suiteSex(v){
+  var t=String(v||"").trim().toUpperCase();
+  if(t==="M"||t.indexOf("MALE")===0) return "M";
+  if(t==="F"||t.indexOf("FEMALE")===0) return "F";
+  return "";
+}
+/* Zero-pad a date before it reaches fmtDate, which reads 7/3/1971 as 73/19/71. */
+function suiteDate(v){
+  var m=String(v||"").trim().match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})$/);
+  if(!m) return String(v||"").trim();
+  var p=function(x){ return (x.length<2?"0":"")+x; };
+  return p(m[1])+"/"+p(m[2])+"/"+m[3];
+}
+
+/* An incoming profile replaces the client, not the quote. Products, tier prices and
+   anything else the agent has built stay where they are - this fills the intake. */
+/* Who is running the call, as opposed to who the call is about. Set once in the Script
+   Navigator's Set up, and carried across on every push. Nothing is shared automatically -
+   the two tools sit on different subdomains, so they are different origins and neither can
+   read the other's storage. But this page saves its whole state to its own storage, so one
+   push is all it takes: the details are already here the next time it opens.
+
+   Only non-empty values are written. A blank agency must never travel, or it would wipe the
+   one this page already has and take the name off the printout. */
+function applySuiteAgent(ag){
+  if(!ag || typeof ag!=="object") return;
+  if(ag.agency){ S.agency=String(ag.agency);
+    /* The masthead is painted by fill(), which only runs on the quote step - so an agency
+       arriving here would not show until the agent walked forward. Paint it now. */
+    var bn=$('brandName'); if(bn) bn.textContent=S.agency; }
+  if(ag.phone)  S.agentPhone=String(ag.phone);
+  if(ag.email)  S.agentEmail=String(ag.email);
+  if(ag.name){ S.client=S.client||{}; S.client.agent=String(ag.name); }
+  /* There is no NPN field on this page. It rides in the intake notes rather than being
+     dropped on the floor, because it is the number a client looks up to check you are real. */
+  if(ag.npn){
+    S.intake=S.intake||{};
+    var TAG="Agent NPN ";
+    var kept=String(S.intake.notes||"").split("\n").filter(function(l){ return l.indexOf(TAG)!==0; });
+    kept.push(TAG+ag.npn);
+    S.intake.notes=kept.join("\n").replace(/^\n+|\n+$/g,"");
+  }
+}
+
+function applySuiteClient(c){
+  if(!c || typeof c!=="object") return false;
+
+  var incoming=suiteName(c.first,c.last);
+  var current=(S.client&&S.client.pname||"").trim();
+  /* Walking on top of a different client's case loses real work, so ask. Same name,
+     or an empty case, goes straight through - that is the normal path. */
+  if(current && incoming && current.toLowerCase()!==incoming.toLowerCase()){
+    if(!confirm('This case is open for '+current+'.\n\nReplace the client details with '+
+                incoming+' from the Script Navigator?\n\nYour products and pricing are kept.')) return false;
+  }
+
+  S.client=S.client||{}; S.intake=S.intake||{};
+  var C=S.client, I=S.intake, sp=c.spouse||{}, kids=(c.kids||[]), h=(c.health||{});
+
+  if(incoming) C.pname=incoming;
+  var sname=suiteName(sp.first,sp.last); if(sname) C.sname=sname;
+  /* date and page are this file's own names for the date of birth and the age. Both
+     spellings are written, because normClient() keeps them in step and 33 saved
+     client files still use the old ones. */
+  if(c.dob)    { C.date=suiteDate(c.dob); C.dob=C.date; }
+  if(c.age!=null&&c.age!=="") { C.page=String(c.age); C.age=String(c.age); }
+  if(sp.dob)   C.sdob=suiteDate(sp.dob);
+  if(sp.age!=null&&sp.age!=="") C.sage=String(sp.age);
+  if(c.state)  C.state=c.state;
+  if(c.zip)    C.zip=c.zip;
+
+  /* These three boxes have been on this form all along - they were empty only because
+     nothing was sending them. No new fields, no change to the form. */
+  if(c.phone)   I.phone=String(c.phone);
+  if(c.email)   I.email=String(c.email);
+  if(c.address) C.address=String(c.address);
+
+  I.who={app:true, spouse:!!(sname||sp.dob), kids:kids.length>0};
+  var ph=suiteInches(c.heightIn,c.height);  if(ph) I.pheight=ph;
+  if(c.weight) I.pweight=String(c.weight);
+  var px=suiteSex(c.sex);                   if(px) I.psex=px;
+  var sh=suiteInches(sp.heightIn,sp.height);if(sh) I.sheight=sh;
+  if(sp.weight)I.sweight=String(sp.weight);
+  var sx=suiteSex(sp.sex);                  if(sx) I.ssex=sx;
+  if(c.tobacco!=null) I.tobaccoP=!!c.tobacco;
+  if(sp.tobacco!=null)I.tobaccoS=!!sp.tobacco;
+
+  if(kids.length) I.kidsNote=kids.map(function(k){
+    return [k.name, k.age?k.age+"y":"", k.sex||""].filter(Boolean).join(" ");
+  }).join("; ");
+
+  /* Money. The discovery call asks these in the agent's words; they land here as the
+     numbers the subsidy cliff is checked against. */
+  if(h.incomeThis!=null)      I.pincome=suiteNum(h.incomeThis);
+  if(h.incomeSpouse!=null)    I.sincome=suiteNum(h.incomeSpouse);
+  if(h.incomeHousehold!=null) I.income=suiteNum(h.incomeHousehold);
+  if(!I.income && (I.pincome||I.sincome)) I.income=(I.pincome||0)+(I.sincome||0);
+  if(h.retireAge)   I.retage=String(h.retireAge);
+  if(h.liquid!=null)I.savings=suiteNum(h.liquid);
+  if(h.invest!=null)I.invest=suiteNum(h.invest);
+  /* "Protected" is NOT the same question. This page's own note says most investment
+     accounts are not protected - it is a statement about the account. The script's
+     "Protectable?" is the actionable one, and on this form that is Eligible for SRA. */
+  if(h.protectable==="Yes") I.invsra=true;
+  else if(h.protectable==="No") I.invsra=false;
+  /* Where the money is and who holds it have no boxes of their own, so they recap here
+     beside the amount rather than being scattered through the general notes. */
+  var inv=[];
+  if(h.assetWhere)    inv.push(h.assetWhere);
+  if(h.assetEmployer) inv.push("held at: "+h.assetEmployer);
+  if(h.invnote)       inv.push(h.invnote);
+  if(inv.length) I.invnote=inv.join(" \u2014 ");
+  /* The MAX, not the comfortable figure - this box is labelled "Max comfortable monthly",
+     so the two names mean the same thing and the comfortable number goes in the notes. */
+  if(h.budgetMax!=null && h.budgetMax!=="") I.budget=suiteNum(h.budgetMax);
+  else if(h.budgetComfort!=null) I.budget=suiteNum(h.budgetComfort);
+
+  /* Medications and conditions travel in the suite's shape. This file already holds the
+     navigator's medication dictionary, so popMedFlags() reads these the same way the
+     navigator and the wizard do. */
+  if(Array.isArray(c.meds)){
+    var had={}; (I.medList||[]).forEach(function(m){ had[String(m.name||"").toLowerCase()]=1; });
+    I.medList=(I.medList||[]).concat(
+      c.meds.filter(function(n){ return n && !had[String(n).toLowerCase()]; })
+            .map(function(n){ return {name:n, cost:0, aca:0, disc:0, forP:true, forS:false}; }));
+  }
+  if(Array.isArray(c.medSkip)) I.medSkip=(I.medSkip||[]).concat(
+      c.medSkip.filter(function(k){ return (I.medSkip||[]).indexOf(k)<0; }));
+  if(Array.isArray(c.conds)) c.conds.forEach(function(x){
+    if(x && x.name) popAddCond(x.name, x.yr||'', x.mo||'');
+  });
+
+  /* Conditions this page asks about by name rather than as a chip */
+  var names=(c.conds||[]).map(function(x){ return String(x.name||"").toLowerCase(); }).join(", ");
+  if(/diabet/.test(names)) I.diabetic=true;
+  if(/anxiety|depress|ptsd|bipolar|schizo/.test(names)) I.mentalP=true;
+  if(/cancer/.test(names)) I.majorcond=true;
+  if(h.surgery!=null) I.surg2yrP=!!h.surgery;
+
+  /* Not I.health - that box is a rating the agent picks (Excellent / Good / Average /
+     Complicated) and writing a sentence into it selects nothing. What the client actually
+     said about their health goes in the notes, below, where it can be read back. */
+  if(h.effDate)  I.effDate=suiteDate(h.effDate);
+  if(h.whyShop)  I.whyShop=h.whyShop;
+
+  /* Doctors they said they want to keep. Whether keeping one is a hard requirement is
+     what decides if a network plan is even on the table, so it rides in the note. */
+  var docs=(h.doctors||[]).filter(function(d){ return d && (d.name||d.practice); });
+  if(docs.length){
+    if(docs[0]) I.docs1=docs[0].name||I.docs1||'';
+    if(docs[1]) I.docs2=docs[1].name||I.docs2||'';
+    if(docs[2]) I.docs3=docs[2].name||I.docs3||'';
+    I.docnote=docs.map(function(d){
+      return [d.name, d.practice, d.keep?("must keep: "+d.keep):"", d.aca?("on ACA plan: "+d.aca):""]
+        .filter(Boolean).join(" — ");
+    }).join("; ");
+  }
+
+  /* The top of the budget range and anything the agent typed off script. Appended, never
+     replaced - the agent may already have notes of their own on this case. */
+  /* Everything without a box of its own goes in the intake notes, because the intake page is
+     where the agent actually works. The other free-text field on this form, "Other follow-up
+     notes", lives on the ENROLL step - a booked presentation would sit two pages away from
+     the person who needs it, so it leads here instead. */
+  var extra=[];
+  if(h.apptWhen)    extra.push("PRESENTATION BOOKED: "+h.apptWhen+
+                      (h.apptWho?" ("+h.apptWho+")":""));
+  if(h.apptNotes)   extra.push(h.apptNotes);
+  if(h.lastDay)     extra.push("Current cover ends: "+h.lastDay);
+  if(h.occupation)  extra.push("Work: "+h.occupation);
+  if(h.healthOther) extra.push("Also mentioned: "+h.healthOther);
+  if(h.incomeNext)  extra.push("Income next year: "+h.incomeNext+
+      (h.hhIncomeNext?" (household "+h.hhIncomeNext+")":""));
+  if(h.healthNotes) extra.push("Health: "+h.healthNotes);
+  if(h.budgetComfort) extra.push("Comfortable at: "+h.budgetComfort+
+      (h.budgetMax?" (max "+h.budgetMax+")":""));
+  if(h.hospStay)  extra.push("Hospital stay (2 yrs): "+h.hospStay);
+  if(h.surgeryWhat) extra.push("Surgery (2 yrs): "+h.surgeryWhat);
+  if(h.notes)     extra.push(h.notes);
+  /* Pushed twice, this line is replaced rather than stacked - the agent may well press the
+     button again after correcting something on the call, and two nearly-identical
+     paragraphs is how a real note gets skimmed past. Anything they typed stays. */
+  var TAG="From the discovery call — ";
+  var kept=String(I.notes||"").split("\n").filter(function(l){ return l.indexOf(TAG)!==0; });
+  if(extra.length) kept.push(TAG+extra.join(" · "));
+  I.notes=kept.join("\n").replace(/^\n+|\n+$/g,"");
+
+  normClient();
+  goStep('intake');     /* fillIntake() runs from here, so the boxes show it straight away */
+  autosave();
+  return true;
+}
+
+window.addEventListener("message", function(e){
+  if(!SUITE_DEV && SUITE_ALLOWED.indexOf(e.origin)<0) return;
+  var d=e.data;
+  if(!d || d.source!=="optimum-suite" || d.type!=="client") return;
+  /* The agent's own details are applied either way. They are not this client's data, so a
+     declined client overwrite is no reason to keep sending someone the wrong phone number. */
+  applySuiteAgent(d.agent);
+  var ok=applySuiteClient(d.client);
+  if(!ok){ fillIntake(); autosave(); }
+  /* Acknowledge either way. A declined overwrite is an answer, not a dropped message -
+     if we stayed silent the navigator would keep asking every 300ms. */
+  try{ if(e.source) e.source.postMessage({source:"optimum-poppro", type:"applied", v:1, ok:!!ok}, "*"); }catch(x){}
+});
+
 function normClient(){
   var c=S.client||{};
   if(c.pname===undefined && c.name!==undefined) c.pname=c.name;
   if(c.page===undefined && c.ages){ var a=String(c.ages).split('/'); c.page=(a[0]||'').trim(); if(c.sage===undefined)c.sage=(a[1]||'').trim(); }
   if(c.state===undefined && c.zip!==undefined && String(c.zip).indexOf('/')>=0){ var z=String(c.zip).split('/'); c.state=(z[0]||'').trim(); c.zip=(z[1]||'').trim(); }
-  S.client=Object.assign({pname:'',sname:'',date:'',agent:'',state:'',zip:'',page:'',sage:''},c);
+  // Canonical names for the suite (see the CRM repo's FIELDS.md): dob and age. The old
+  // keys `date` and `page` say nothing about what they hold, but 33 saved client files
+  // use them, so both are kept in sync rather than renamed. Read either, write both.
+  if(c.dob===undefined && c.date!==undefined) c.dob=c.date;
+  if(c.date===undefined && c.dob!==undefined) c.date=c.dob;
+  if(c.age===undefined && c.page!==undefined) c.age=c.page;
+  if(c.page===undefined && c.age!==undefined) c.page=c.age;
+  if(c['spouse.dob']===undefined && c.sdob!==undefined) c['spouse.dob']=c.sdob;
+  S.client=Object.assign({pname:'',sname:'',date:'',dob:'',agent:'',state:'',zip:'',page:'',age:'',sage:''},c);
+  S.intake=S.intake||{}; if(!S.intake.conds)S.intake.conds=[]; if(!S.intake.medSkip)S.intake.medSkip=[];
 }
 function fill(){
   normClient();
@@ -2256,6 +2688,7 @@ function captureIntake(){
   readIntake();
   S.client.pname=$('in_pname').value; S.client.sname=$('in_sname').value; S.client.agent=$('in_agent').value;
   S.client.state=$('in_state').value; S.client.zip=$('in_zip').value; S.client.page=$('in_page').value; S.client.sage=$('in_sage').value; S.client.date=$('in_date').value; S.client.sdob=$('in_sdob').value; S.client.address=$('in_address').value;
+  S.client.age=S.client.page; S.client.dob=S.client.date;   // canonical aliases, see FIELDS.md
   S.aca.prem=moneyVal($('in_prem').value); S.aca.subsidy=moneyVal($('in_subsidy').value); S.aca.ded=effDed(); S.aca.oop=S.oopEdited?moneyVal($('in_oop').value):S.aca.ded; S.aca.visits=+$('in_visits').value||0; S.aca.copay=+$('in_copay').value||0;
   updateMedTotal();
   S.docs.docs=[$('in_docs1').value,$('in_docs2').value,$('in_docs3').value].filter(function(x){return x&&x.trim();}).join('; ');
