@@ -2256,8 +2256,12 @@ function applySuiteClient(c){
      go - primary first with everything that was asked about each, then the spouse. */
   var cl=h.condLines||c.condLines;
   if(cl && (((cl.primary||[]).length)||((cl.spouse||[]).length))){
+    /* The whole block has to come out on a re-push, not just its heading. Filtering only the
+       tag line left the PRIMARY/SPOUSE lines behind, so a second push stacked a second copy
+       and a third push a third - three sets of conditions in the field that decides placement. */
     var RTAG="From the discovery call";
-    var rkept=String(I.routeNote||"").split("\n").filter(function(l){ return l.indexOf(RTAG)!==0; });
+    var rkept=String(I.routeNote||"").split("\n").filter(function(l){
+      return l.indexOf(RTAG)!==0 && l.indexOf("PRIMARY:")!==0 && l.indexOf("SPOUSE:")!==0; });
     var block=[RTAG+" \u2014 conditions"];
     block.push("PRIMARY: "+((cl.primary||[]).length? cl.primary.join("; ") : "none recorded"));
     if(cl.spouse) block.push("SPOUSE: "+(cl.spouse.length? cl.spouse.join("; ") : "none recorded"));
