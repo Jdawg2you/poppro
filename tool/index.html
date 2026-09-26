@@ -1826,24 +1826,37 @@ var MEDS=[
 ["Sertraline","Zoloft"],["Escitalopram","Lexapro"],["Fluoxetine","Prozac"],["Citalopram","Celexa"],
 ["Bupropion","Wellbutrin"],["Venlafaxine","Effexor"],["Trazodone"],["Mirtazapine","Remeron"],
 ["Alprazolam","Xanax"],["Lorazepam","Ativan"],["Clonazepam","Klonopin"],["Diazepam","Valium"],
-["Buspirone","Buspar"],["Lithium"],["Lamotrigine","Lamictal"],["Quetiapine","Seroquel"],
+["Buspirone","Buspar"],["Lithium"],["Lamotrigine","Lamictal"],["Quetiapine","Seroquel","Latuda","lurasidone"],
 ["Aripiprazole","Abilify"],["Risperidone","Risperdal"],["Olanzapine","Zyprexa"],["Haloperidol","Haldol"],
-["Donepezil","Aricept"],["Memantine","Namenda"],["Levodopa","Sinemet","carbidopa"],["Ropinirole"],
-["Phenytoin","Dilantin"],["Levetiracetam","Keppra"],["Topiramate","Topamax"],["Valproate","Depakote"],
+["Donepezil","Aricept"],["Memantine","Namenda","Exelon","rivastigmine"],["Levodopa","Sinemet","carbidopa"],["Ropinirole"],
+["Phenytoin","Dilantin"],["Levetiracetam","Keppra"],["Topiramate","Topamax"],["Valproate","Depakote","Carbamazepine","Tegretol"],
 ["Oxycodone","Percocet","OxyContin"],["Hydrocodone","Norco","Vicodin"],["Tramadol","Ultram"],
-["Morphine","MS Contin"],["Fentanyl"],["Methadone"],["Suboxone","buprenorphine"],["Naltrexone"],
+["Morphine","MS Contin"],["Fentanyl"],["Methadone"],["Suboxone","buprenorphine"],["Naltrexone","Vivitrol"],
 ["Meloxicam","Mobic"],["Ibuprofen","Motrin","Advil"],["Naproxen","Aleve"],["Celecoxib","Celebrex"],
 ["Omeprazole","Prilosec"],["Pantoprazole","Protonix"],["Famotidine","Pepcid"],
 ["Allopurinol","Zyloprim"],["Colchicine"],["Tamsulosin","Flomax"],["Finasteride","Proscar"],
-["Sildenafil","Viagra"],["Tadalafil","Cialis"],["Alendronate","Fosamax"],["Vitamin D"],
-["Furosemide"],["Potassium","K-Dur"],["Amoxicillin"],["Azithromycin","Z-Pak"],["Doxycycline"],
+["Sildenafil","Viagra"],["Tadalafil","Cialis"],["Alendronate","Fosamax"],["Vitamin D"],["Potassium","K-Dur"],["Amoxicillin"],["Azithromycin","Z-Pak"],["Doxycycline"],
 ["Tamoxifen"],["Anastrozole","Arimidex"],["Letrozole","Femara"],["Keytruda","pembrolizumab"],
 ["Revlimid","lenalidomide"],["Imbruvica","ibrutinib"],["Gleevec","imatinib"],
-["Entecavir"],["Epclusa"],["Harvoni"],["Truvada"],["Biktarvy"],["Descovy"],
-["Dialysis"],["Sevelamer","Renvela"],["Epogen","epoetin"],["Tacrolimus","Prograf"],["Cyclosporine"],
-["Mycophenolate","CellCept"],["Hydroxyurea"],["Eliquis"]
+["Entecavir"],["Epclusa"],["Harvoni"],["Truvada","Descovy"],["Biktarvy","Tivicay","Genvoya","Atripla"],["Descovy"],
+["Dialysis"],["Sevelamer","Renvela"],["Epogen","epoetin"],["Tacrolimus","Prograf"],["Cyclosporine","Sirolimus","Rapamune"],
+["Mycophenolate","CellCept"],["Hydroxyurea"]
 ];
 var MED_FOR={
+ /* Added 2026-09-26 after an audit found these drugs recognised but inert - the name was in
+    the list, nothing was pointed at a condition, so typing them raised no flag at all.
+    Every target below is an existing grid row; no new cells were needed.
+    Levothyroxine was REMOVED from Autoimmune disorder in the same pass: hypothyroidism is
+    not the disease that decline is written for (Sjogren's, lupus, myasthenia gravis), and
+    deriving nothing is the correct behaviour for it, the same as aspirin. */
+ "Suboxone":["Alcohol / drug abuse or treatment"],
+ "Methadone":["Alcohol / drug abuse or treatment","Chronic pain (narcotic prescriptions)"],
+ "Naltrexone":["Alcohol / drug abuse or treatment"],
+ "Memantine":["Alzheimer's / dementia"],
+ "Haloperidol":["Schizophrenia / psychosis"],
+ "Valproate":["Epilepsy / seizures","Bipolar"],
+ "Imuran":["Autoimmune disorder"],
+
  "Eliquis":["Arrhythmia / AFib","Blood clots / DVT"],"Xarelto":["Arrhythmia / AFib","Blood clots / DVT"],
  "Warfarin":["Arrhythmia / AFib","Blood clots / DVT"],"Plavix":["Heart attack","Stent"],
  "Brilinta":["Heart attack","Stent"],"Pradaxa":["Arrhythmia / AFib"],
@@ -1861,7 +1874,7 @@ var MED_FOR={
  "Nitroglycerin":["Angina (chest pain)"],"Isosorbide":["Angina (chest pain)"],
  "Albuterol":["Asthma (chronic)","COPD"],"Symbicort":["COPD","Asthma (chronic)"],"Advair":["COPD","Asthma (chronic)"],
  "Trelegy":["COPD"],"Spiriva":["COPD"],"Breo":["COPD"],"Singulair":["Asthma (chronic)"],
- "Levothyroxine":["Autoimmune disorder"],"Methotrexate":["Rheumatoid arthritis","Autoimmune disorder"],
+ "Methotrexate":["Rheumatoid arthritis","Autoimmune disorder"],
  "Humira":["Autoimmune disorder"],"Enbrel":["Rheumatoid arthritis"],"Plaquenil":["Lupus","Rheumatoid arthritis"],
  "Sertraline":["Depression"],"Escitalopram":["Anxiety","Depression"],"Fluoxetine":["Depression"],
  "Bupropion":["Depression"],"Venlafaxine":["Depression"],"Mirtazapine":["Depression"],
