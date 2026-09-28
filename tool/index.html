@@ -605,6 +605,7 @@
         <!-- ACA -->
         <div class="panel aca">
           <div class="ptitle">Your ACA / Marketplace Plan<small>The plan they have — or would buy on the exchange</small></div>
+          <div class="acaest hidein-client">Look up their real Bronze plan and subsidy on <a href="https://www.healthsherpa.com/sessions/new" target="_blank" rel="noopener">HealthSherpa ↗</a> and enter it on the Intake.</div>
           <div class="acaest hidein-client" id="acaEstNote"></div>
           <div class="doccallout" id="o_aca_doc"></div>
           <div class="row"><div class="lab">Monthly premium<small>From HealthSherpa / HealthCare.gov</small></div><input class="num money-in" id="a_prem" type="number" step="0.01"><span class="money-disp" data-for="a_prem"></span></div>
@@ -916,8 +917,10 @@ function pHHC(R,st,age,col){
 /* ===== LIVING BENEFITS RATES (20-Year Term, monthly) =====
    Values: [nonTobacco_25K, nonTobacco_50K, tobacco_25K, tobacco_50K]
    Americo Term 125 : UNISEX, issue ages 20-64. Verified, all states identical (ex-NY).
-   Mutual of Omaha TLE : gender-rated, issue ages 18-50. ONLY 18-27 loaded/verified;
-   28-50 intentionally absent -> engine returns null + "rate not loaded" so nothing is guessed. */
+   Mutual of Omaha TLE : gender-rated, issue ages 18-50, all loaded. Checked 2026-09-27 against
+   "Living Benefits Rates — Mutual of Omaha TLE.csv" (Health Insurance folder): all 66 rows match.
+   The third slot of each quad-plus-null row ($100K) is not loaded for either carrier, and no
+   30-year rates are loaded -> the engine returns null + "rate not loaded" so nothing is guessed. */
 var LB_RATES={
  americo:{label:'Americo Term 125',unisex:true,min:20,max:64,max30:null,r:{20:{"20":[12.09,15.63,null,14.89,21.23,null]},21:{"20":[12.09,15.63,null,14.89,21.23,null]},22:{"20":[12.09,15.63,null,14.89,21.23,null]},23:{"20":[12.09,15.63,null,14.89,21.23,null]},24:{"20":[12.09,15.63,null,14.89,21.23,null]},25:{"20":[12.09,15.63,null,14.89,21.23,null]},26:{"20":[12.3,16.06,null,15.2,21.85,null]},27:{"20":[12.52,16.48,null,15.51,22.47,null]},28:{"20":[12.68,16.82,null,15.84,23.13,null]},29:{"20":[12.92,17.29,null,16.15,23.75,null]},30:{"20":[13.16,17.77,null,16.51,24.46,null]},31:{"20":[13.42,18.29,null,17.1,25.65,null]},32:{"20":[13.68,18.81,null,17.69,26.84,null]},33:{"20":[13.94,19.33,null,18.29,28.03,null]},34:{"20":[14.2,19.86,null,18.88,29.21,null]},35:{"20":[14.46,20.38,null,19.48,30.4,null]},36:{"20":[15.03,21.52,null,20.66,32.78,null]},37:{"20":[15.56,22.56,null,21.87,35.2,null]},38:{"20":[16.15,23.75,null,23.06,37.57,null]},39:{"20":[16.72,24.89,null,24.3,40.04,null]},40:{"20":[17.27,25.98,null,25.46,42.37,null]},41:{"20":[18.05,27.55,null,27.41,46.27,null]},42:{"20":[18.81,29.07,null,29.33,50.11,null]},43:{"20":[19.55,30.54,null,31.28,54.01,null]},44:{"20":[20.31,32.06,null,33.2,57.86,null]},45:{"20":[21.19,33.82,null,35.13,61.7,null]},46:{"20":[22.54,36.53,null,37.34,66.12,null]},47:{"20":[23.87,39.19,null,39.54,70.54,null]},48:{"20":[25.22,41.9,null,41.75,74.96,null]},49:{"20":[26.58,44.6,null,43.99,79.42,null]},50:{"20":[27.91,47.26,null,46.24,83.93,null]},51:{"20":[30.0,51.44,null,49.66,90.77,null]},52:{"20":[32.06,55.58,null,53.08,97.61,null]},53:{"20":[34.15,59.76,null,56.53,104.5,null]},54:{"20":[36.24,63.94,null,59.95,111.34,null]},55:{"20":[38.36,68.16,null,63.41,118.28,null]},56:{"20":[42.23,75.91,null,70.28,132.0,null]},57:{"20":[46.6,84.65,null,77.97,147.39,null]},58:{"20":[51.51,94.48,null,86.69,164.83,null]},59:{"20":[57.12,105.69,null,96.45,184.35,null]},60:{"20":[63.44,118.32,null,107.45,206.34,null]},61:{"20":[66.45,124.36,null,113.98,219.4,null]},62:{"20":[69.64,130.72,null,120.94,233.32,null]},63:{"20":[72.98,137.42,null,128.35,248.14,null]},64:{"20":[76.52,144.5,null,136.25,263.96,null]}}},
  moo:{label:'Mutual of Omaha TLE',unisex:false,min:18,max:50,max30:50,r:{18:{M:{"20":[8.70,12.06,null,12.75,20.16,null]},F:{"20":[8.50,11.66,null,11.66,17.98,null]}},19:{M:{"20":[8.70,12.06,null,12.75,20.16,null]},F:{"20":[8.50,11.66,null,11.66,17.98,null]}},20:{M:{"20":[8.70,12.06,null,12.75,20.16,null]},F:{"20":[8.50,11.66,null,11.66,17.98,null]}},21:{M:{"20":[8.70,12.06,null,12.75,20.16,null]},F:{"20":[8.50,11.66,null,11.66,17.98,null]}},22:{M:{"20":[8.70,12.06,null,12.75,20.16,null]},F:{"20":[8.50,11.66,null,11.66,17.98,null]}},23:{M:{"20":[8.70,12.06,null,12.77,20.20,null]},F:{"20":[8.50,11.66,null,11.66,17.98,null]}},24:{M:{"20":[8.70,12.06,null,12.77,20.20,null]},F:{"20":[8.50,11.66,null,11.66,17.98,null]}},25:{M:{"20":[8.70,12.06,null,12.77,20.20,null]},F:{"20":[8.50,11.66,null,11.66,17.98,null]}},26:{M:{"20":[8.86,12.37,null,12.88,20.43,null]},F:{"20":[8.63,11.93,null,11.88,18.42,null]}},27:{M:{"20":[9.01,12.68,null,12.95,20.56,null]},F:{"20":[8.81,12.28,null,12.06,18.78,null]}},28:{M:{"20":[9.21,13.08,null,13.04,20.74,null]},F:{"20":[8.97,12.59,null,12.28,19.22,null]}},29:{M:{"20":[9.37,13.39,null,13.13,20.92,null]},F:{"20":[9.17,12.99,null,12.50,19.67,null]}},30:{M:{"20":[9.57,13.80,null,13.22,21.09,null]},F:{"20":[9.32,13.31,null,12.75,20.16,null]}},31:{M:{"20":[9.77,14.20,null,13.71,22.07,null]},F:{"20":[9.50,13.66,null,13.22,21.09,null]}},32:{M:{"20":[9.99,14.64,null,14.22,23.10,null]},F:{"20":[9.68,14.02,null,13.71,22.07,null]}},33:{M:{"20":[10.21,15.09,null,14.77,24.21,null]},F:{"20":[9.86,14.37,null,14.22,23.10,null]}},34:{M:{"20":[10.44,15.53,null,15.37,25.41,null]},F:{"20":[10.06,14.77,null,14.75,24.16,null]}},35:{M:{"20":[10.68,16.02,null,15.98,26.61,null]},F:{"20":[10.26,15.17,null,15.35,25.37,null]}},36:{M:{"20":[11.15,16.95,null,16.91,28.48,null]},F:{"20":[10.72,16.11,null,16.22,27.10,null]}},37:{M:{"20":[11.66,17.98,null,17.96,30.57,null]},F:{"20":[11.21,17.09,null,17.15,28.97,null]}},38:{M:{"20":[12.22,19.09,null,19.07,32.80,null]},F:{"20":[11.75,18.16,null,18.20,31.06,null]}},39:{M:{"20":[12.86,20.38,null,20.27,35.20,null]},F:{"20":[12.35,19.36,null,19.34,33.33,null]}},40:{M:{"20":[13.51,21.67,null,21.56,37.78,null]},F:{"20":[13.02,20.69,null,20.56,35.78,null]}},41:{M:{"20":[14.20,23.05,null,23.07,40.81,null]},F:{"20":[13.66,21.98,null,21.87,38.40,null]}},42:{M:{"20":[14.93,24.52,null,24.70,44.06,null]},F:{"20":[14.37,23.41,null,23.43,41.52,null]}},43:{M:{"20":[15.73,26.12,null,26.48,47.62,null]},F:{"20":[15.11,24.88,null,25.10,44.86,null]}},44:{M:{"20":[16.62,27.90,null,28.44,51.53,null]},F:{"20":[15.93,26.52,null,26.92,48.51,null]}},45:{M:{"20":[17.58,29.82,null,30.57,55.80,null]},F:{"20":[16.82,28.30,null,28.93,52.51,null]}},46:{M:{"20":[18.62,31.91,null,32.35,59.36,null]},F:{"20":[17.82,30.30,null,30.62,55.89,null]}},47:{M:{"20":[19.78,34.22,null,34.29,63.23,null]},F:{"20":[18.89,32.44,null,32.44,59.54,null]}},48:{M:{"20":[21.00,36.67,null,36.33,67.33,null]},F:{"20":[20.07,34.80,null,34.35,63.37,null]}},49:{M:{"20":[22.34,39.34,null,38.54,71.73,null]},F:{"20":[21.34,37.34,null,36.51,67.68,null]}},50:{M:{"20":[23.83,42.32,null,40.90,76.45,null]},F:{"20":[22.74,40.14,null,38.74,72.13,null]}}}}
@@ -3165,6 +3168,29 @@ function openScript(setKey,idx){
    +"<div class=loc>"+loc+"</div>"+nav+"<div class=body>"+body+"</div></body></html>";
   w.document.open(); w.document.write(html); w.document.close(); w.focus();
 }
+/* ZIP -> state. Same table as the Script Navigator: the first three digits of a ZIP decide the
+   state. The ZIP fills State unless the agent has picked a state by hand, which always wins. */
+var ZIP3=[[5,5,"NY"],[6,9,"PR"],[10,27,"MA"],[28,29,"RI"],[30,38,"NH"],[39,49,"ME"],[50,59,"VT"],
+[60,69,"CT"],[70,89,"NJ"],[100,149,"NY"],[150,196,"PA"],[197,199,"DE"],[200,200,"DC"],[201,201,"VA"],
+[202,205,"DC"],[206,219,"MD"],[220,246,"VA"],[247,268,"WV"],[270,289,"NC"],[290,299,"SC"],[300,319,"GA"],
+[320,349,"FL"],[350,369,"AL"],[370,385,"TN"],[386,397,"MS"],[398,399,"GA"],[400,427,"KY"],[430,459,"OH"],
+[460,479,"IN"],[480,499,"MI"],[500,528,"IA"],[530,549,"WI"],[550,567,"MN"],[570,577,"SD"],[580,588,"ND"],
+[590,599,"MT"],[600,629,"IL"],[630,658,"MO"],[660,679,"KS"],[680,693,"NE"],[700,714,"LA"],[716,729,"AR"],
+[730,732,"OK"],[733,733,"TX"],[734,749,"OK"],[750,799,"TX"],[800,816,"CO"],[820,831,"WY"],[832,838,"ID"],
+[840,847,"UT"],[850,865,"AZ"],[870,884,"NM"],[889,898,"NV"],[900,961,"CA"],[967,968,"HI"],[970,979,"OR"],
+[980,994,"WA"],[995,999,"AK"]];
+function stateFromZip(z){
+  var t=String(z||"").replace(/[^0-9]/g,""); if(t.length<3) return null;
+  var p=parseInt(t.slice(0,3),10);
+  for(var i=0;i<ZIP3.length;i++) if(p>=ZIP3[i][0] && p<=ZIP3[i][1]) return ZIP3[i][2];
+  return null;
+}
+function zipFillsState(){
+  var sel=$('in_state'), st=stateFromZip($('in_zip').value);
+  if(!sel||!st||sel.dataset.touched) return;
+  if(!sel.querySelector('option[value="'+st+'"]')) return;
+  if(sel.value!==st){ sel.value=st; captureIntake(); }
+}
 function bindInputs(){
   ['c_pname','c_sname','c_agent','c_state','c_zip','c_page','c_sage','a_prem','a_ded','a_oop','a_med','a_visits','a_copay','p_lb','p_lb_carrier','p_lb_cov','p_rxben','p_pension','p_pnote','pp_cv10','pp_cv20','pp_cv30','pp_leg1','pp_leg25',
    'b_desc','b_charge','b_disc','b_days','b_daily','b_adm','b_his','b_other','r_desc','r_charge','r_pay','r_aca']
@@ -3189,6 +3215,8 @@ function bindInputs(){
   document.querySelectorAll('#step-intake .chip input').forEach(function(cb){ cb.addEventListener('change',function(){ syncChips(); readIntake(); autosave(); }); });
   ['in_pname','in_sname','in_agent','in_address','in_state','in_zip','in_page','in_sage','in_majorcond_note','in_diabetic_note','in_docs1','in_docs2','in_docs3','in_carrier','in_plan','in_prem','in_oop','in_visits','in_copay','in_income','in_retage','in_savings','in_invest','in_invnote','in_docnote','in_budget','in_notes','in_kids','in_routenote','in_docsnote','in_whyshop','in_effdate']
     .forEach(function(id){ var el=$(id); if(el) el.addEventListener('input',function(){ captureIntake(); }); });
+  $('in_zip').addEventListener('input',zipFillsState);
+  $('in_state').addEventListener('change',function(){ this.dataset.touched='1'; });
   $('in_phone').addEventListener('input',function(){ this.value=fmtPhone(this.value); markValid(this,phoneOK(this.value)); captureIntake(); });
   $('in_date').addEventListener('input',function(){ this.value=fmtDate(this.value); markValid(this,dateOK(this.value)); var a=ageFromDOB(this.value); if(a) $('in_page').value=a; captureIntake(); });
   $('in_sdob').addEventListener('input',function(){ this.value=fmtDate(this.value); markValid(this,dateOK(this.value)); var a=ageFromDOB(this.value); if(a) $('in_sage').value=a; captureIntake(); });
