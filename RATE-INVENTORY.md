@@ -1,5 +1,27 @@
 # Rate inventory — what POP Pro can price today
 
+## Update 2026-09-28 (afternoon): the ManhattanLife portal pull
+
+Source of truth is now the agent portal itself (`data/ml-portal/`, see memory *manhattanlife-portal-api*).
+POP Pro reads `tool/rates/portal-rates.json` first and falls back to the older `HF_RATES` tables.
+
+| | Before | Now |
+|---|---|---|
+| Where each product is sold | guessed from rate-sheet coverage | `ML_OFFERED`, from the portal map of all 51 states |
+| Gap / SDR in a state without rates | priced from another state's table, "verify" note | **no price**, and the note says *not sold* vs *sold but not loaded* |
+| Texas Gap | Oklahoma rates, ~14% low | portal rates, 1,128/1,128 match |
+| Texas SDR | borrowed | not sold in Texas — never priced |
+| DVH Select $0 deductible (TX group) | ~11% high | portal rates, all match |
+| Home Health Care (TX group) | $1.67 low (missing a required component) | portal rates, all match |
+| CHAS | flat $74 | rate-driven, Cancer and Heart & Stroke separate, $5K–$75K, TX group |
+| Affordable Choice, 24-Hr Accident (TX) | already matched | still match |
+
+Still open: HI Select from the portal (Texas rerunning), the other 48 states (105 rate groups
+pulling), term life $100K / 30-year, LifeX, and the Cigna/Triad tables.
+
+---
+
+
 Taken 2026-09-27 from the rate tables inside `tool/index.html` (not from the July spreadsheet
 export). **Y** means rates are loaded for that state.
 
