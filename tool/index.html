@@ -878,7 +878,8 @@ function pAFC(R,st,age,hh,lvl){
    another state's table: the price stays blank and the note says whether the product is sold there. */
 var ML_OFFERED={
  sdr:'AL AR AZ DE FL GA HI IA IL KY LA ME MI MN MO MS MT NC NE NV OH OK RI SC SD TN WI WV WY',
- gap:'AK AL AR AZ CA FL GA HI IA IL IN KY LA MD ME MI MN MO MS MT NC ND NE NM NV OH OK PA SC SD TN TX WA WI WV WY'
+ gap:'AK AL AR AZ CA FL GA HI IA IL IN KY LA MD ME MI MN MO MS MT NC ND NE NM NV OH OK PA SC SD TN TX WA WI WV WY',
+ chas:'AK AL AR AZ CA CO CT DC FL GA HI IA ID IL IN KS KY LA MD ME MI MN MO MS MT NC ND NE NH NV OH OK OR PA RI SC SD TN TX UT VT WA WI WV'
 };
 /* ===== PORTAL RATES — rates/portal-rates.json =====
    Every age / household / option, pulled from the ManhattanLife agent portal and grouped by
@@ -954,6 +955,17 @@ function pGAP(R,st,age,hh,cfg){
   function add(sec,lvl){ if(!lvl) return; var s=t[sec]; if(s&&s[lvl]&&s[lvl][b]!=null){ tot+=s[lvl][b]; any=true; } }
   add('daily',cfg.daily); add('adm',cfg.adm); add('outp',cfg.outp); if(cfg.ea) add('ea','250');
   return {price:any?Math.round(tot*100)/100:null,note:note};
+}
+/* CHAS — ManhattanLife Cancer / Heart Attack & Stroke lump sum, product 400. Cancer and Heart & Stroke
+   are separate policies (Gaylan: if the budget shrinks, Heart & Stroke is the one to cancel).
+   Priced per $5,000 unit from the portal; checked linear in every household up to $75,000. */
+function pCHAS(st,age,hh,cfg){
+  var pg=prGroup(400,st); if(!pg) return {price:null,note:notLoaded('chas','Cancer / Heart Attack & Stroke',st)};
+  var sum=0, parts=[['Lump Sum Cancer | $5000',cfg.cancer],['Lump Sum Heart Attack & Stroke | $5000',cfg.hs]];
+  for(var i=0;i<parts.length;i++){ if(!parts[i][1]) continue;
+    var v=prVal(pg.plans,parts[i][0],hh,age); if(v==null) return {price:null,note:'CHAS not available at age '+age+' (issue ages 20-84)'};
+    sum+=v*(parts[i][1]/5000); }
+  return {price:Math.round(sum*100)/100,note:''};
 }
 function pHHC(R,st,age,col){
   if(!col) return {price:null,note:''};
@@ -1274,6 +1286,7 @@ function buildTierProducts(c,byKey,extras){
   add('gap','Out-of-Pocket / Gap — $'+c.gap.daily+'/day · $'+c.gap.adm+' admission', pGAP(R,st,age,hh,c.gap));
   add('dvh','Dental • Vision • Hearing — DVH Select $'+(+c.dvh.max/1000)+'K', pDVH(R,age,hh,c.dvh,st));
   if(c.hhc) add('hhc','Home Health Care — HHC '+c.hhc, pHHC(R,st,age,c.hhc));
+  if(c.chas&&(c.chas.cancer||c.chas.hs)) add('chas','Cancer / Heart Attack & Stroke — CHAS'+(c.chas.cancer?' Cancer $'+(c.chas.cancer/1000)+'K':'')+(c.chas.hs?(c.chas.cancer?' ·':'')+' Heart & Stroke $'+(c.chas.hs/1000)+'K':''), pCHAS(st,age,hh,c.chas));
   return out.concat(extras||[]);
 }
 /* A hand-typed price belongs to one rating basis. If age / state / household changes,
@@ -1688,6 +1701,13 @@ var PLAN_CATALOG=[
  {g:'Home Health Care', n:'HHC Deluxe',  k:'hhc', set:function(c){c.hhc='Deluxe';}},
  {g:'Home Health Care', n:'HHC Premier', k:'hhc', set:function(c){c.hhc='Premier';}},
  {g:'Home Health Care', n:'HHC Classic', k:'hhc', set:function(c){c.hhc='Classic';}},
+
+ {g:'Cancer / Heart Attack & Stroke (CHAS)', n:'CHAS Cancer $10K',                   k:'chas', set:function(c){c.chas={cancer:10000,hs:0};}},
+ {g:'Cancer / Heart Attack & Stroke (CHAS)', n:'CHAS Cancer $20K',                   k:'chas', set:function(c){c.chas={cancer:20000,hs:0};}},
+ {g:'Cancer / Heart Attack & Stroke (CHAS)', n:'CHAS Cancer $30K',                   k:'chas', set:function(c){c.chas={cancer:30000,hs:0};}},
+ {g:'Cancer / Heart Attack & Stroke (CHAS)', n:'CHAS Cancer $20K + Heart & Stroke $10K', k:'chas', set:function(c){c.chas={cancer:20000,hs:10000};}},
+ {g:'Cancer / Heart Attack & Stroke (CHAS)', n:'CHAS Cancer $30K + Heart & Stroke $20K', k:'chas', set:function(c){c.chas={cancer:30000,hs:20000};}},
+ {g:'Cancer / Heart Attack & Stroke (CHAS)', n:'CHAS Heart & Stroke $10K',           k:'chas', set:function(c){c.chas={cancer:0,hs:10000};}},
 
  /* No rate data — these carry a flat price the agent can edit */
  {g:'Manual (no rate sheet)', n:'Cancer Lump Sum — $30K',        manual:62.50},
