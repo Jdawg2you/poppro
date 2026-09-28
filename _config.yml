@@ -1,0 +1,7 @@
+# GitHub Pages publishes every file in the repo. These are for the people working on it, not for
+# the site, so they stay in the repo but are not served on mypoppro.com.
+exclude:
+  - CLAUDE.md
+  - RATE-INVENTORY.md
+  - tools-check.sh
+  - tools-parity.py
