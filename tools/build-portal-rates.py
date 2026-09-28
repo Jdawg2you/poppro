@@ -44,8 +44,13 @@ def group(R, states):
             "riders": series(R["riders"], lambda r: f'{r["rider"]} | {str(r["unit"]).strip()}')}
 
 products = {}
-def add(pid, name, g):
-    products.setdefault(str(pid), {"name": name, "groups": []})["groups"].append(g)
+BATCH_UNSAFE = {"703"}   # HI Select: batched requests collapse coverage amounts and households.
+                         # Its rates come only from a one-quote-per-request pull (files *-his-single-*).
+def add(pid, name, g, single=False):
+    if str(pid) in BATCH_UNSAFE and not single: return
+    p = products.setdefault(str(pid), {"name": name, "groups": []})
+    if any(x["states"] == g["states"] for x in p["groups"]): return   # same group pulled twice
+    p["groups"].append(g)
 
 gfile = sorted(glob.glob(os.path.join(DATA, "rate-groups-*.json")))[-1]
 tx_states = {str(g["pid"]): g["states"] for g in json.load(open(gfile)) if g["rep"] == "TX"}
@@ -53,8 +58,9 @@ for f in sorted(glob.glob(os.path.join(DATA, "ml-portal-full-TX-*.json"))):
     for pid, R in json.load(open(f)).items():
         add(pid, R["name"], group(R, tx_states.get(pid, ["TX"])))
 for f in sorted(glob.glob(os.path.join(DATA, "ml-portal-full-*-groups-*.json"))):
+    single = "his-single" in os.path.basename(f)
     for R in json.load(open(f)):
-        add(R["pid"], R["name"], group(R, R["states"]))
+        add(R["pid"], R["name"], group(R, R["states"]), single)
 
 os.makedirs(os.path.dirname(OUT), exist_ok=True)
 json.dump({"v": "ManhattanLife agent portal, pulled 2026-09-28", "products": products}, open(OUT, "w"), separators=(",", ":"))
