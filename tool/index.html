@@ -958,6 +958,17 @@ function pSDR(R,st,age,hh,cfg,esc){
   return {price:row[hh],note:fb,ded:ded};
 }
 function pHIS(R,st,age,hh,cfg){
+  var pg=prGroup(703,st);
+  if(pg){
+    // Portal (one quote per request): 1-Day plan priced at $5,000 and $10,000 — linear in between, per $50.
+    // Ambulance is part of the base premium in these states. Outpatient rider priced per $250 unit. +$12/yr fee.
+    var p10=age<65?prVal(pg.plans,'1-Day | UNITS cov 10000',hh,age):null, p5=age<65?prVal(pg.plans,'1-Day | UNITS cov 5000',hh,age):null;   // brochure: 1-Day is issue ages 18–64½
+    if(p10==null||p5==null) return {price:null,note:age>=64?'HI Select 1-day is for ages 18–64½; older clients take the 3, 6 or 10-day plan (not in the builder yet)':'HI Select not available at age '+age+' in '+st};
+    var ben=Math.max(50,Math.min(10000,+cfg.ben||10000)), tot=p5+(p10-p5)*(ben-5000)/5000;
+    if(+cfg.outp){ var o=prVal(pg.riders,'Outpatient Surgical Rider | $250',hh,age); if(o==null) return {price:null,note:'HI Select outpatient rider not available at age '+age}; tot+=o*(+cfg.outp/250); }
+    tot+=1;   // $12 annual policy fee
+    return {price:Math.round(tot*100)/100,note:''};
+  }
   var g=rGrp(R.his.g,st); if(!g) return {price:null,note:'HI Select rate not loaded for '+st};
   var k=keyHIS(g,age); if(!k) return {price:null,note:'HI Select age n/a'};
   var b=g.base[k],rd=g.rid[k]||{},tf=R.his.tf[hh];
@@ -3432,7 +3443,7 @@ function pbControls(k,c){
   if(k==='afc') return '<div class="f">Plan<select data-f="afc">'+pbOpts([['ElitePlus','Elite Plus'],['Elite','Elite'],['ClassicPlus','Classic Plus'],['Classic','Classic']],c.afc)+'</select></div>';
   if(k==='sdr') return '<div class="two"><div class="f">Annual max<select data-f="sdr.max">'+pbOpts(pbAmt([250000,500000]),c.sdr.max)+'</select></div><div class="f">Deductible<select data-f="sdr.ded">'+pbOpts(pbAmt([25000,50000,75000,100000]),c.sdr.ded)+'</select></div></div>';
   if(k==='his') return '<div class="two"><div class="f">Per hospital stay<select data-f="his.ben">'+pbOpts(pbAmt([1000,2000,3000,4000,5000,6000,7000,8000,9000,10000]),c.his.ben)+'</select></div><div class="f">Outpatient surgery<select data-f="his.outp">'+pbOpts(pbAmt([0,250,500,750,1000,1250,1500]),c.his.outp)+'</select></div></div>'
-    +'<label class="ck"><input type="checkbox" data-f="his.amb"'+(c.his.amb?' checked':'')+'> Ambulance ($200 a ride)</label>';
+    +'<div style="font-size:11.5px;color:var(--muted)">Ambulance ($200 a ride) is included.</div>';
   if(k==='acc') return '<div class="f">Coverage<select data-f="acc">'+pbOpts([[1,'1 unit'],[2,'2 units']],c.acc)+'</select></div>';
   if(k==='gap') return '<div class="two"><div class="f">Hospital stay<select data-f="gap.daily">'+pbOpts([['100','$100 / day'],['200','$200 / day']],c.gap.daily)+'</select></div><div class="f">Admission<select data-f="gap.adm">'+pbOpts(pbAmt([2500,5000,6350]),c.gap.adm)+'</select></div></div>'
     +'<div class="two"><div class="f">Outpatient surgery<select data-f="gap.outp">'+pbOpts(pbAmt([0,1000,2000,3000]),c.gap.outp)+'</select></div><div class="f">ER accident<select data-f="gap.ea">'+pbOpts([[1,'$250'],[0,'None']],c.gap.ea?1:0)+'</select></div></div>';
