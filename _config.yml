@@ -5,3 +5,4 @@ exclude:
   - RATE-INVENTORY.md
   - tools-check.sh
   - tools-parity.py
+  - DESIGN-NOTES.md
