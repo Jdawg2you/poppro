@@ -15,8 +15,8 @@ POP Pro reads `tool/rates/portal-rates.json` first and falls back to the older `
 | Home Health Care (TX group) | $1.67 low (missing a required component) | portal rates, all match |
 | CHAS | flat $74 | rate-driven, Cancer and Heart & Stroke separate, $5K–$75K, TX group |
 | Affordable Choice, 24-Hr Accident (TX) | already matched | still match |
-| Affordable Choice, all 40 states | 15 states missing part of the table; HI off ≤\$0.38 | portal rates, 30,080/30,080 match |
-| Gap, one parent + children (the old 20-state table) | **used the couple's rates** — overpriced up to ~\$47/mo with all options | portal rates; confirmed by a single direct quote (OK, 45: \$18.97 base, \$33.61 for \$6,350 admission) |
+| Affordable Choice, all 40 states | 15 states missing part of the table; HI off ≤$0.38 | portal rates, 30,080/30,080 match |
+| Gap, one parent + children (the old 20-state table) | **used the couple's rates** — overpriced up to ~$47/mo with all options | portal rates; confirmed by a single direct quote (OK, 45: $18.97 base, $33.61 for $6,350 admission) |
 | Gap, the other 16 states that sell it | no rates | portal rates for all 36 states |
 
 Still open: HI Select from the portal (Texas rerunning), the other 48 states (105 rate groups
