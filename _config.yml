@@ -6,3 +6,4 @@ exclude:
   - tools-check.sh
   - tools-parity.py
   - DESIGN-NOTES.md
+  - data
