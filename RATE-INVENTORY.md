@@ -18,6 +18,7 @@ POP Pro reads `tool/rates/portal-rates.json` first and falls back to the older `
 | Affordable Choice, all 40 states | 15 states missing part of the table; HI off ≤$0.38 | portal rates, 30,080/30,080 match |
 | Gap, one parent + children (the old 20-state table) | **used the couple's rates** — overpriced up to ~$47/mo with all options | portal rates; confirmed by a single direct quote (OK, 45: $18.97 base, $33.61 for $6,350 admission) |
 | Gap, the other 16 states that sell it | no rates | portal rates for all 36 states |
+| Home Health Care, 34 states | $1.67/mo low in most states (missing a required component); up to $73/mo low with ages missing in AK DE MT NV OR RI; ND up to $49 low; UT no rates | portal rates everywhere it's sold |
 
 Still open: HI Select from the portal (Texas rerunning), the other 48 states (105 rate groups
 pulling), term life $100K / 30-year, LifeX, and the Cigna/Triad tables.
