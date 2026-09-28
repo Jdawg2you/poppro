@@ -1,8 +1,12 @@
 # Rate inventory — what POP Pro can price today
 
 Taken 2026-09-27 from the rate tables inside `tool/index.html` (not from the July spreadsheet
-export). **Y** means rates are loaded for that state. A blank means POP Pro shows "not filed" or
-"not loaded" rather than a price.
+export). **Y** means rates are loaded for that state.
+
+⚠️ **A blank does not always mean POP Pro refuses to price.** For Gap and SDR, a state with no
+rates is priced from another state's table, with only a small "not loaded — verify" note
+(checked for a TX couple aged 45: Gap $42.34–$92.16, SDR $39.21–$99.83, all borrowed).
+Those prices must not reach a client until the state's own rates are loaded.
 
 ## ManhattanLife, by state
 
