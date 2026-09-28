@@ -873,9 +873,21 @@ function pAFC(R,st,age,hh,lvl){
   var row=g.b[bandAFC(age)]; if(!row||!row[hh]) return {price:null,note:'no AFC rate'};
   return {price:row[hh][li],note:''};
 }
+/* Where ManhattanLife sells each product, from the agent portal pull of 2026-09-28
+   (data/ml-portal/ml-portal-map-2026-09-28.json). A state with no loaded rates never borrows
+   another state's table: the price stays blank and the note says whether the product is sold there. */
+var ML_OFFERED={
+ sdr:'AL AR AZ DE FL GA HI IA IL KY LA ME MI MN MO MS MT NC NE NV OH OK RI SC SD TN WI WV WY',
+ gap:'AK AL AR AZ CA FL GA HI IA IL IN KY LA MD ME MI MN MO MS MT NC ND NE NM NV OH OK PA SC SD TN TX WA WI WV WY'
+};
+function notLoaded(key,label,st){
+  return (ML_OFFERED[key]||'').split(' ').indexOf(st)<0
+    ? label+' is not sold in '+st
+    : label+' is sold in '+st+' but its '+st+' rates are not loaded yet — quote it in the ManhattanLife portal';
+}
 function pSDR(R,st,age,hh,cfg,esc){
   var g=rGrp(R.sdr.g,st), fb='';
-  if(!g){ g=R.sdr.g[0]; fb='SDR rate not loaded for '+st+' — using base table, verify'; }
+  if(!g) return {price:null,note:notLoaded('sdr','Specified Disease Rider',st)};
   var ded=cfg.ded; if(esc) ded=DEDSTEP[ded]||ded;
   var m=g.m[cfg.max]; if(!m||!m[ded]) return {price:null,note:'SDR level unavailable'};
   var row=m[ded][bandAFC(age)]; if(!row) return {price:null,note:'SDR rate n/a'};
@@ -899,8 +911,9 @@ function pDVH(R,age,hh,cfg){
   return {price:row[hh],note:''};
 }
 function pGAP(R,st,age,hh,cfg){
-  var note=R.gap.st.indexOf(st)<0?'Gap rate not loaded for '+st+' — verify':'';
-  var t=R.gap.t[hh]; if(!t) return {price:null,note:note||'Gap tier n/a'};
+  if(R.gap.st.indexOf(st)<0) return {price:null,note:notLoaded('gap','Out-of-Pocket / Gap',st)};
+  var note='';
+  var t=R.gap.t[hh]; if(!t) return {price:null,note:'Gap tier n/a'};
   var b=bandGAP(age),tot=0,any=false;
   function add(sec,lvl){ if(!lvl) return; var s=t[sec]; if(s&&s[lvl]&&s[lvl][b]!=null){ tot+=s[lvl][b]; any=true; } }
   add('daily',cfg.daily); add('adm',cfg.adm); add('outp',cfg.outp); if(cfg.ea) add('ea','250');
@@ -1531,7 +1544,7 @@ function defLibrary(){
     {name:'Hospital Indemnity — MLAC HI Select $10K',price:62.31},
     {name:'Hospital Indemnity — MLAC HI Select $5K',price:0},
     {name:'Home Health Care — MLAC HHC Deluxe',price:32.80},
-    {name:'Out-of-Pocket / Gap — MLAC Omni Flex',price:96.00},
+    {name:'Out-of-Pocket / Gap — MLAC Out-of-Pocket Protection',price:96.00},
     {name:'Dental • Vision • Hearing — MLAC DVH $3K',price:59.58},
     {name:'Dental • Vision • Hearing — MLAC DVH $1.5K',price:0},
     {name:'Final Expense Life — MLAC $10K',price:27.90},
@@ -1548,7 +1561,7 @@ function defProducts(tier){
     accident:{name:'Accident Cash — MLAC 24-Hr Accident (2 Unit)',monthly:35.31},
     hi:{name:'Hospital Indemnity — MLAC HI Select $10K',monthly:62.31},
     hhc:{name:'Home Health Care — MLAC HHC Deluxe',monthly:32.80},
-    gap:{name:'Out-of-Pocket / Gap — MLAC Omni Flex',monthly:96.00},
+    gap:{name:'Out-of-Pocket / Gap — MLAC Out-of-Pocket Protection',monthly:96.00},
     dvh:{name:'Dental • Vision • Hearing — MLAC DVH $3K',monthly:59.58},
     fe:{name:'Final Expense Life — MLAC $10K',monthly:27.90}
   };
@@ -2875,8 +2888,8 @@ function recommendBundles(){
     acc2 :{name:'24-Hr Accident — MLAC (2 Unit)',monthly:35.31},
     acc1 :{name:'24-Hr Accident — MLAC (1 Unit)',monthly:20.48},
     hi   :{name:'Hospital Indemnity — MLAC HI Select $10K',monthly:62.31},
-    gap2 :{name:'Out-of-Pocket / Gap — MLAC Omni Flex ($200/day)',monthly:96.00},
-    gap1 :{name:'Out-of-Pocket / Gap — MLAC Omni Flex ($100/day)',monthly:76.00},
+    gap2 :{name:'Out-of-Pocket / Gap — MLAC Out-of-Pocket Protection ($200/day)',monthly:96.00},
+    gap1 :{name:'Out-of-Pocket / Gap — MLAC Out-of-Pocket Protection ($100/day)',monthly:76.00},
     dvh3 :{name:'Dental • Vision • Hearing — DVH Select $3K',monthly:59.58},
     dvh15:{name:'Dental • Vision • Hearing — DVH Select $1.5K',monthly:44.00},
     chas :{name:'Cancer / Heart Attack & Stroke — Lump Sum',monthly:74.00}

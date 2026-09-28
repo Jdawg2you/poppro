@@ -68,6 +68,9 @@ any of them silently selects nothing. Spouse and children tick themselves from t
 
 ## Before you push
 
+**Jesse plays with every change locally before it goes live** (Desktop → *POP Pro Preview.command*, which serves this clone on 127.0.0.1:8765). Commit freely; push only when he says to ship.
+
+
 1. `bash tools-check.sh`, which must print `syntax OK` and both parity lines.
 2. Load `tool/index.html` from a local server and exercise the part you changed. Check the
    console for errors.

@@ -7,3 +7,4 @@ exclude:
   - tools-parity.py
   - DESIGN-NOTES.md
   - data
+  - tools

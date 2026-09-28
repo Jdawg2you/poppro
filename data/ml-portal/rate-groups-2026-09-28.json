@@ -1,0 +1,1270 @@
+[
+{
+"pid": 167,
+"rep": "TX",
+"states": [
+"AL",
+"AR",
+"AZ",
+"DE",
+"GA",
+"IL",
+"IN",
+"LA",
+"ME",
+"MI",
+"MO",
+"MS",
+"NC",
+"NE",
+"NV",
+"OK",
+"PA",
+"SC",
+"TN",
+"TX",
+"UT",
+"WI",
+"WV",
+"WY"
+],
+"skip": true
+},
+{
+"pid": 167,
+"rep": "AK",
+"states": [
+"AK",
+"HI"
+],
+"skip": false
+},
+{
+"pid": 167,
+"rep": "MN",
+"states": [
+"MN",
+"SD"
+],
+"skip": false
+},
+{
+"pid": 167,
+"rep": "NM",
+"states": [
+"NM",
+"OR"
+],
+"skip": false
+},
+{
+"pid": 167,
+"rep": "CA",
+"states": [
+"CA"
+],
+"skip": false
+},
+{
+"pid": 167,
+"rep": "FL",
+"states": [
+"FL"
+],
+"skip": false
+},
+{
+"pid": 167,
+"rep": "IA",
+"states": [
+"IA"
+],
+"skip": false
+},
+{
+"pid": 167,
+"rep": "KY",
+"states": [
+"KY"
+],
+"skip": false
+},
+{
+"pid": 167,
+"rep": "MD",
+"states": [
+"MD"
+],
+"skip": false
+},
+{
+"pid": 167,
+"rep": "MT",
+"states": [
+"MT"
+],
+"skip": false
+},
+{
+"pid": 167,
+"rep": "ND",
+"states": [
+"ND"
+],
+"skip": false
+},
+{
+"pid": 167,
+"rep": "OH",
+"states": [
+"OH"
+],
+"skip": false
+},
+{
+"pid": 167,
+"rep": "RI",
+"states": [
+"RI"
+],
+"skip": false
+},
+{
+"pid": 167,
+"rep": "VA",
+"states": [
+"VA"
+],
+"skip": false
+},
+{
+"pid": 703,
+"rep": "TX",
+"states": [
+"AK",
+"AL",
+"AR",
+"AZ",
+"CA",
+"CT",
+"DC",
+"FL",
+"GA",
+"HI",
+"IN",
+"KY",
+"LA",
+"MD",
+"ME",
+"MI",
+"MN",
+"MO",
+"MS",
+"NC",
+"ND",
+"NE",
+"NV",
+"OH",
+"OK",
+"OR",
+"PA",
+"SC",
+"SD",
+"TN",
+"TX",
+"VA",
+"WI",
+"WV",
+"WY"
+],
+"skip": true
+},
+{
+"pid": 703,
+"rep": "IA",
+"states": [
+"IA",
+"UT"
+],
+"skip": false
+},
+{
+"pid": 703,
+"rep": "IL",
+"states": [
+"IL"
+],
+"skip": false
+},
+{
+"pid": 158,
+"rep": "AK",
+"states": [
+"AK",
+"AL",
+"AR",
+"AZ",
+"GA",
+"HI",
+"IA",
+"IL",
+"IN",
+"LA",
+"MT",
+"NE",
+"NV",
+"OH",
+"OK",
+"SC",
+"TN",
+"WI",
+"WV",
+"WY"
+],
+"skip": false
+},
+{
+"pid": 158,
+"rep": "CA",
+"states": [
+"CA",
+"MI",
+"MO",
+"NC",
+"NM"
+],
+"skip": false
+},
+{
+"pid": 158,
+"rep": "TX",
+"states": [
+"ME",
+"PA",
+"TX"
+],
+"skip": true
+},
+{
+"pid": 158,
+"rep": "MN",
+"states": [
+"MN",
+"SD"
+],
+"skip": false
+},
+{
+"pid": 158,
+"rep": "FL",
+"states": [
+"FL"
+],
+"skip": false
+},
+{
+"pid": 158,
+"rep": "KY",
+"states": [
+"KY"
+],
+"skip": false
+},
+{
+"pid": 158,
+"rep": "MD",
+"states": [
+"MD"
+],
+"skip": false
+},
+{
+"pid": 158,
+"rep": "MS",
+"states": [
+"MS"
+],
+"skip": false
+},
+{
+"pid": 158,
+"rep": "ND",
+"states": [
+"ND"
+],
+"skip": false
+},
+{
+"pid": 158,
+"rep": "WA",
+"states": [
+"WA"
+],
+"skip": false
+},
+{
+"pid": 137,
+"rep": "TX",
+"states": [
+"AL",
+"AR",
+"GA",
+"IA",
+"IL",
+"KS",
+"MO",
+"MS",
+"MT",
+"NC",
+"ND",
+"NE",
+"NM",
+"NV",
+"OK",
+"TN",
+"TX",
+"WV",
+"WY"
+],
+"skip": true
+},
+{
+"pid": 137,
+"rep": "KY",
+"states": [
+"KY",
+"OH",
+"PA",
+"SC",
+"UT",
+"WI"
+],
+"skip": false
+},
+{
+"pid": 137,
+"rep": "AZ",
+"states": [
+"AZ"
+],
+"skip": false
+},
+{
+"pid": 137,
+"rep": "CT",
+"states": [
+"CT"
+],
+"skip": false
+},
+{
+"pid": 137,
+"rep": "FL",
+"states": [
+"FL"
+],
+"skip": false
+},
+{
+"pid": 137,
+"rep": "IN",
+"states": [
+"IN"
+],
+"skip": false
+},
+{
+"pid": 137,
+"rep": "LA",
+"states": [
+"LA"
+],
+"skip": false
+},
+{
+"pid": 137,
+"rep": "MN",
+"states": [
+"MN"
+],
+"skip": false
+},
+{
+"pid": 137,
+"rep": "SD",
+"states": [
+"SD"
+],
+"skip": false
+},
+{
+"pid": 137,
+"rep": "VA",
+"states": [
+"VA"
+],
+"skip": false
+},
+{
+"pid": 301,
+"rep": "AL",
+"states": [
+"AL",
+"AR",
+"AZ",
+"CO",
+"CT",
+"DC",
+"IA",
+"ID",
+"IL",
+"LA",
+"ME",
+"MO",
+"NE",
+"OK",
+"OR",
+"TN",
+"WI",
+"WY"
+],
+"skip": false
+},
+{
+"pid": 301,
+"rep": "NM",
+"states": [
+"NM",
+"OH",
+"SD",
+"UT",
+"WV"
+],
+"skip": false
+},
+{
+"pid": 301,
+"rep": "TX",
+"states": [
+"CA",
+"KS",
+"TX"
+],
+"skip": true
+},
+{
+"pid": 301,
+"rep": "ND",
+"states": [
+"ND",
+"SC"
+],
+"skip": false
+},
+{
+"pid": 301,
+"rep": "DE",
+"states": [
+"DE"
+],
+"skip": false
+},
+{
+"pid": 301,
+"rep": "FL",
+"states": [
+"FL"
+],
+"skip": false
+},
+{
+"pid": 301,
+"rep": "GA",
+"states": [
+"GA"
+],
+"skip": false
+},
+{
+"pid": 301,
+"rep": "IN",
+"states": [
+"IN"
+],
+"skip": false
+},
+{
+"pid": 301,
+"rep": "KY",
+"states": [
+"KY"
+],
+"skip": false
+},
+{
+"pid": 301,
+"rep": "MI",
+"states": [
+"MI"
+],
+"skip": false
+},
+{
+"pid": 301,
+"rep": "MN",
+"states": [
+"MN"
+],
+"skip": false
+},
+{
+"pid": 301,
+"rep": "MS",
+"states": [
+"MS"
+],
+"skip": false
+},
+{
+"pid": 301,
+"rep": "NV",
+"states": [
+"NV"
+],
+"skip": false
+},
+{
+"pid": 301,
+"rep": "NJ",
+"states": [
+"NJ"
+],
+"skip": false
+},
+{
+"pid": 301,
+"rep": "NC",
+"states": [
+"NC"
+],
+"skip": false
+},
+{
+"pid": 301,
+"rep": "PA",
+"states": [
+"PA"
+],
+"skip": false
+},
+{
+"pid": 306,
+"rep": "TX",
+"states": [
+"AK",
+"AL",
+"AR",
+"AZ",
+"DC",
+"DE",
+"GA",
+"HI",
+"IA",
+"IL",
+"LA",
+"MO",
+"MT",
+"NC",
+"NE",
+"NH",
+"NV",
+"OK",
+"OR",
+"RI",
+"TX",
+"WI",
+"WV",
+"WY"
+],
+"skip": true
+},
+{
+"pid": 306,
+"rep": "CO",
+"states": [
+"CO",
+"ME",
+"MI",
+"MS",
+"OH",
+"SC",
+"TN",
+"UT"
+],
+"skip": false
+},
+{
+"pid": 306,
+"rep": "ND",
+"states": [
+"ND"
+],
+"skip": false
+},
+{
+"pid": 306,
+"rep": "SD",
+"states": [
+"SD"
+],
+"skip": false
+},
+{
+"pid": 400,
+"rep": "TX",
+"states": [
+"AK",
+"AL",
+"AR",
+"AZ",
+"DC",
+"GA",
+"HI",
+"IA",
+"IL",
+"KS",
+"KY",
+"LA",
+"ME",
+"MI",
+"MO",
+"MS",
+"MT",
+"NC",
+"ND",
+"NV",
+"OH",
+"OK",
+"OR",
+"PA",
+"RI",
+"SC",
+"SD",
+"TN",
+"TX",
+"UT",
+"VT",
+"WI",
+"WV"
+],
+"skip": true
+},
+{
+"pid": 400,
+"rep": "CO",
+"states": [
+"CO",
+"FL",
+"IN"
+],
+"skip": false
+},
+{
+"pid": 400,
+"rep": "ID",
+"states": [
+"ID"
+],
+"skip": false
+},
+{
+"pid": 400,
+"rep": "MN",
+"states": [
+"MN"
+],
+"skip": false
+},
+{
+"pid": 9,
+"rep": "TX",
+"states": [
+"AR",
+"AZ",
+"CO",
+"IA",
+"IL",
+"IN",
+"KY",
+"LA",
+"MO",
+"NC",
+"ND",
+"NE",
+"NM",
+"OH",
+"SC",
+"SD",
+"TN",
+"TX",
+"WA"
+],
+"skip": true
+},
+{
+"pid": 9,
+"rep": "MD",
+"states": [
+"MD",
+"OR",
+"WI",
+"WV"
+],
+"skip": false
+},
+{
+"pid": 9,
+"rep": "KS",
+"states": [
+"KS",
+"MS",
+"NV"
+],
+"skip": false
+},
+{
+"pid": 9,
+"rep": "AL",
+"states": [
+"AL"
+],
+"skip": false
+},
+{
+"pid": 9,
+"rep": "CA",
+"states": [
+"CA"
+],
+"skip": false
+},
+{
+"pid": 9,
+"rep": "FL",
+"states": [
+"FL"
+],
+"skip": false
+},
+{
+"pid": 9,
+"rep": "GA",
+"states": [
+"GA"
+],
+"skip": false
+},
+{
+"pid": 9,
+"rep": "HI",
+"states": [
+"HI"
+],
+"skip": false
+},
+{
+"pid": 9,
+"rep": "ID",
+"states": [
+"ID"
+],
+"skip": false
+},
+{
+"pid": 9,
+"rep": "MN",
+"states": [
+"MN"
+],
+"skip": false
+},
+{
+"pid": 9,
+"rep": "MT",
+"states": [
+"MT"
+],
+"skip": false
+},
+{
+"pid": 9,
+"rep": "NH",
+"states": [
+"NH"
+],
+"skip": false
+},
+{
+"pid": 9,
+"rep": "OK",
+"states": [
+"OK"
+],
+"skip": false
+},
+{
+"pid": 9,
+"rep": "PA",
+"states": [
+"PA"
+],
+"skip": false
+},
+{
+"pid": 9,
+"rep": "UT",
+"states": [
+"UT"
+],
+"skip": false
+},
+{
+"pid": 9,
+"rep": "VA",
+"states": [
+"VA"
+],
+"skip": false
+},
+{
+"pid": 9,
+"rep": "WY",
+"states": [
+"WY"
+],
+"skip": false
+},
+{
+"pid": 10,
+"rep": "TX",
+"states": [
+"AL",
+"AR",
+"AZ",
+"IA",
+"ID",
+"IL",
+"IN",
+"KS",
+"KY",
+"LA",
+"MD",
+"MO",
+"MS",
+"NC",
+"ND",
+"NE",
+"NH",
+"NM",
+"NV",
+"OH",
+"OK",
+"OR",
+"PA",
+"SC",
+"SD",
+"TN",
+"TX",
+"WV"
+],
+"skip": true
+},
+{
+"pid": 10,
+"rep": "CA",
+"states": [
+"CA",
+"MT",
+"VA"
+],
+"skip": false
+},
+{
+"pid": 10,
+"rep": "WI",
+"states": [
+"WI",
+"WY"
+],
+"skip": false
+},
+{
+"pid": 10,
+"rep": "CO",
+"states": [
+"CO"
+],
+"skip": false
+},
+{
+"pid": 10,
+"rep": "UT",
+"states": [
+"UT"
+],
+"skip": false
+},
+{
+"pid": 10,
+"rep": "WA",
+"states": [
+"WA"
+],
+"skip": false
+},
+{
+"pid": 138,
+"rep": "TX",
+"states": [
+"AK",
+"AL",
+"AR",
+"AZ",
+"CA",
+"CO",
+"CT",
+"DE",
+"FL",
+"GA",
+"HI",
+"IA",
+"ID",
+"IL",
+"KS",
+"LA",
+"MD",
+"MO",
+"MS",
+"NC",
+"ND",
+"NE",
+"NM",
+"NV",
+"OH",
+"OK",
+"SC",
+"TN",
+"TX",
+"WI",
+"WV",
+"WY"
+],
+"skip": true
+},
+{
+"pid": 138,
+"rep": "IN",
+"states": [
+"IN",
+"MI",
+"VA"
+],
+"skip": false
+},
+{
+"pid": 138,
+"rep": "KY",
+"states": [
+"KY",
+"SD"
+],
+"skip": false
+},
+{
+"pid": 138,
+"rep": "PA",
+"states": [
+"PA",
+"WA"
+],
+"skip": false
+},
+{
+"pid": 138,
+"rep": "UT",
+"states": [
+"UT"
+],
+"skip": false
+},
+{
+"pid": 150,
+"rep": "TX",
+"states": [
+"AL",
+"GA",
+"LA",
+"NE",
+"OK",
+"TN",
+"TX"
+],
+"skip": true
+},
+{
+"pid": 150,
+"rep": "IA",
+"states": [
+"IA",
+"ID",
+"MI",
+"WI"
+],
+"skip": false
+},
+{
+"pid": 150,
+"rep": "MO",
+"states": [
+"MO",
+"NC",
+"SD",
+"WY"
+],
+"skip": false
+},
+{
+"pid": 150,
+"rep": "IL",
+"states": [
+"IL",
+"KS",
+"MT"
+],
+"skip": false
+},
+{
+"pid": 150,
+"rep": "AR",
+"states": [
+"AR",
+"AZ"
+],
+"skip": false
+},
+{
+"pid": 150,
+"rep": "CA",
+"states": [
+"CA"
+],
+"skip": false
+},
+{
+"pid": 150,
+"rep": "CO",
+"states": [
+"CO"
+],
+"skip": false
+},
+{
+"pid": 150,
+"rep": "DE",
+"states": [
+"DE"
+],
+"skip": false
+},
+{
+"pid": 150,
+"rep": "FL",
+"states": [
+"FL"
+],
+"skip": false
+},
+{
+"pid": 150,
+"rep": "IN",
+"states": [
+"IN"
+],
+"skip": false
+},
+{
+"pid": 150,
+"rep": "KY",
+"states": [
+"KY"
+],
+"skip": false
+},
+{
+"pid": 150,
+"rep": "MD",
+"states": [
+"MD"
+],
+"skip": false
+},
+{
+"pid": 150,
+"rep": "MS",
+"states": [
+"MS"
+],
+"skip": false
+},
+{
+"pid": 150,
+"rep": "NJ",
+"states": [
+"NJ"
+],
+"skip": false
+},
+{
+"pid": 150,
+"rep": "NM",
+"states": [
+"NM"
+],
+"skip": false
+},
+{
+"pid": 150,
+"rep": "ND",
+"states": [
+"ND"
+],
+"skip": false
+},
+{
+"pid": 150,
+"rep": "OH",
+"states": [
+"OH"
+],
+"skip": false
+},
+{
+"pid": 150,
+"rep": "OR",
+"states": [
+"OR"
+],
+"skip": false
+},
+{
+"pid": 150,
+"rep": "PA",
+"states": [
+"PA"
+],
+"skip": false
+},
+{
+"pid": 150,
+"rep": "SC",
+"states": [
+"SC"
+],
+"skip": false
+},
+{
+"pid": 150,
+"rep": "UT",
+"states": [
+"UT"
+],
+"skip": false
+},
+{
+"pid": 150,
+"rep": "VA",
+"states": [
+"VA"
+],
+"skip": false
+},
+{
+"pid": 150,
+"rep": "WV",
+"states": [
+"WV"
+],
+"skip": false
+},
+{
+"pid": 700,
+"rep": "TX",
+"states": [
+"AK",
+"AL",
+"AR",
+"AZ",
+"CO",
+"DC",
+"GA",
+"HI",
+"IA",
+"ID",
+"IL",
+"IN",
+"KY",
+"LA",
+"MD",
+"ME",
+"MI",
+"MO",
+"MS",
+"MT",
+"NC",
+"ND",
+"NE",
+"NH",
+"NV",
+"OH",
+"OK",
+"OR",
+"PA",
+"RI",
+"SC",
+"SD",
+"TN",
+"TX",
+"VA",
+"WI",
+"WV",
+"WY"
+],
+"skip": true
+},
+{
+"pid": 304,
+"rep": "IN",
+"states": [
+"IN",
+"MD"
+],
+"skip": false
+},
+{
+"pid": 304,
+"rep": "PA",
+"states": [
+"PA"
+],
+"skip": false
+},
+{
+"pid": 305,
+"rep": "ID",
+"states": [
+"ID",
+"VA"
+],
+"skip": false
+}
+]
