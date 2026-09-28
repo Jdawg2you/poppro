@@ -880,6 +880,28 @@ var ML_OFFERED={
  sdr:'AL AR AZ DE FL GA HI IA IL KY LA ME MI MN MO MS MT NC NE NV OH OK RI SC SD TN WI WV WY',
  gap:'AK AL AR AZ CA FL GA HI IA IL IN KY LA MD ME MI MN MO MS MT NC ND NE NM NV OH OK PA SC SD TN TX WA WI WV WY'
 };
+/* ===== PORTAL RATES — rates/portal-rates.json =====
+   Every age / household / option, pulled from the ManhattanLife agent portal and grouped by
+   states that share one rate table. Built by tools/build-portal-rates.py. Where a state has a
+   portal group it wins; elsewhere the older HF_RATES tables still price. Loaded after start-up,
+   so the first render may use HF_RATES for a moment and re-prices when this arrives. */
+var PR=null;
+function prGroup(pid,st){
+  var p=PR&&PR.products[pid]; if(!p) return null;
+  for(var i=0;i<p.groups.length;i++){ if(p.groups[i].states.indexOf(st)>=0) return p.groups[i]; }
+  return null;
+}
+function prVal(tbl,key,hh,age){
+  var t=tbl&&tbl[key]; if(!t) return null; var s=t[(hh||'i').toUpperCase()]; if(!s) return null;
+  var v=s[1][age-s[0]]; return v==null?null:v;
+}
+function prMoney(n){ return '$'+Number(n).toLocaleString('en-US'); }
+function loadPortalRates(){
+  fetch('rates/portal-rates.json',{cache:'no-cache'}).then(function(r){ return r.ok?r.json():null; }).then(function(j){
+    if(!j) return; PR=j;
+    try{ autoPriceTiers(); fill(); compute(); }catch(e){}
+  }).catch(function(){});
+}
 function notLoaded(key,label,st){
   return (ML_OFFERED[key]||'').split(' ').indexOf(st)<0
     ? label+' is not sold in '+st
@@ -905,12 +927,26 @@ function pHIS(R,st,age,hh,cfg){
   return {price:Math.round(tot*100)/100,note:''};
 }
 function pACC(R,hh,units){ var t=R.acc.t[hh]; return t?{price:t[units-1],note:''}:{price:null,note:'accident rate n/a'}; }
-function pDVH(R,age,hh,cfg){
+function pDVH(R,age,hh,cfg,st){
+  var pg=st&&prGroup(301,st);
+  if(pg){ var v=prVal(pg.plans,'$'+cfg.max+' Benefit - $'+cfg.ded+' Deductible | $'+cfg.ded+' Deductible',hh,age);
+    return v==null?{price:null,note:'DVH Select level not available at age '+age+' in '+st}:{price:v,note:''}; }
   var m=R.dvh.m[cfg.max]; if(!m||!m[cfg.ded]) return {price:null,note:'DVH level n/a'};
   var row=m[cfg.ded][bandDVH(age)]; if(!row||row[hh]==null) return {price:null,note:'DVH rate n/a'};
   return {price:row[hh],note:''};
 }
 function pGAP(R,st,age,hh,cfg){
+  var pg=prGroup(158,st);
+  if(pg){
+    var parts=[['plan','Inpatient Hospital | $'+cfg.daily+' / Day'],
+      cfg.adm?['rider','First Hospital Admission | First Hospital Admissions '+prMoney(cfg.adm)]:null,
+      cfg.outp?['rider','Outpatient Surgery | Outpatient Surgery Benefit '+prMoney(cfg.outp)]:null,
+      cfg.ea?['rider','Emergency Accident | Emergency Accident $250']:null].filter(Boolean);
+    var sum=0;
+    for(var i=0;i<parts.length;i++){ var v=prVal(parts[i][0]==='plan'?pg.plans:pg.riders,parts[i][1],hh,age);
+      if(v==null) return {price:null,note:'Gap option not available at age '+age+' in '+st}; sum+=v; }
+    return {price:Math.round(sum*100)/100,note:''};
+  }
   if(R.gap.st.indexOf(st)<0) return {price:null,note:notLoaded('gap','Out-of-Pocket / Gap',st)};
   var note='';
   var t=R.gap.t[hh]; if(!t) return {price:null,note:'Gap tier n/a'};
@@ -921,6 +957,9 @@ function pGAP(R,st,age,hh,cfg){
 }
 function pHHC(R,st,age,col){
   if(!col) return {price:null,note:''};
+  var pg=prGroup(306,st);
+  if(pg){ var v=prVal(pg.plans,col+' | UNITS','i',age);
+    return v==null?{price:null,note:'HHC '+col+' not available at age '+age+' in '+st}:{price:v,note:'',prod:'Enhanced'}; }
   var g=rGrp(R.hhc.g,st); if(!g) return {price:null,note:'HHC not available in '+st};
   var row=g.base[bandHHC(age)]; if(!row||row[col]==null) return {price:null,note:'HHC rate n/a'};
   return {price:row[col],note:'',prod:g.prod};
@@ -1233,7 +1272,7 @@ function buildTierProducts(c,byKey,extras){
   add('his','Hospital Indemnity — HI Select $10K'+(c.his.outp?' + Outpatient $'+c.his.outp:''), pHIS(R,st,age,hh,c.his));
   add('acc','Accident Cash — 24-Hr Accident ('+c.acc+' Unit)', pACC(R,hh,c.acc));
   add('gap','Out-of-Pocket / Gap — $'+c.gap.daily+'/day · $'+c.gap.adm+' admission', pGAP(R,st,age,hh,c.gap));
-  add('dvh','Dental • Vision • Hearing — DVH Select $'+(+c.dvh.max/1000)+'K', pDVH(R,age,hh,c.dvh));
+  add('dvh','Dental • Vision • Hearing — DVH Select $'+(+c.dvh.max/1000)+'K', pDVH(R,age,hh,c.dvh,st));
   if(c.hhc) add('hhc','Home Health Care — HHC '+c.hhc, pHHC(R,st,age,c.hhc));
   return out.concat(extras||[]);
 }
@@ -3313,6 +3352,7 @@ bindInputs();
 compute();
 goStep(S.step||'intake');
 loadMaster();
+loadPortalRates();
 </script>
 </body>
 </html>
