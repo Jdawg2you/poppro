@@ -413,6 +413,15 @@
 .pborder{margin-top:10px;font-size:12.5px;font-weight:600}
 .pbaddon{margin-top:12px;border:1px dashed var(--gold);border-radius:12px;padding:10px 14px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;background:#fff}
 .pbaddon select{font:inherit;font-size:13px;padding:6px 8px;border:1px solid #d6cdb4;border-radius:7px}
+
+/* ===== Version B layout: the package builder IS the quote page ===== */
+#sec_est{display:none!important}
+#classicWrap{margin:14px 0}
+#classicWrap>summary{cursor:pointer;list-style:none;background:#fff;border:1px dashed var(--line);border-radius:12px;padding:12px 16px;font-weight:700;color:var(--muted);font-size:14px}
+#classicWrap>summary::-webkit-details-marker{display:none}
+#classicWrap[open]>summary{margin-bottom:10px;color:var(--ink)}
+body.client #classicWrap>summary{display:none}
+#sec_builder .bh h3{font-size:24px}
 </style>
 </head>
 <body>
@@ -975,6 +984,13 @@ function notLoaded(key,label,st){
     : label+' is sold in '+st+' but its '+st+' rates are not loaded yet — quote it in the ManhattanLife portal';
 }
 function pSDR(R,st,age,hh,cfg,esc){
+  var pg=prGroup(167,st);
+  if(pg&&!Object.keys(pg.riders||{}).some(function(k){ return k.indexOf('Specified Disease Rider')===0; })) pg=null;   // group pulled without rider rates (the TX group) — use HF_RATES
+  if(pg){ var d=cfg.ded; if(esc) d=DEDSTEP[d]||d;
+    var v=prVal(pg.riders,'Specified Disease Rider | '+prMoney(cfg.max)+' | ded '+d,hh,age);
+    if(v!=null) return {price:v,note:'',ded:d};
+    if(!Object.keys(pg.riders||{}).some(function(k){ return k.indexOf('Specified Disease Rider')===0; })) return {price:null,note:notLoaded('sdr','Specified Disease Rider',st)};
+    return {price:null,note:'Specified Disease Rider not available at age '+age+' in '+st}; }
   var g=rGrp(R.sdr.g,st), fb='';
   if(!g) return {price:null,note:notLoaded('sdr','Specified Disease Rider',st)};
   var ded=cfg.ded; if(esc) ded=DEDSTEP[ded]||ded;
@@ -2691,6 +2707,7 @@ function applyClientZeroHide(){
 
 function setView(v){
   view=v; document.body.classList.toggle('client',v==='client');
+  var cw=document.getElementById('classicWrap'); if(cw&&v==='client') cw.open=true;   // client view still renders from the classic card
   document.querySelectorAll('#viewseg button').forEach(function(b){b.classList.toggle('on',b.dataset.view===v);});
   if(v==='client' && S.step!=='quote') goStep('quote');
   updateTabVisibility();
@@ -3518,7 +3535,7 @@ function renderBuilder(){
       if(k==='base'&&isMH) return; if((k==='afc'||k==='sdr')&&!isMH) return;
       if(k==='base') sl={k:'base',name:c.base==='lifex'?'LifeX health plan':'Cigna (Triad) PPO'};
       if(k==='dvh'){ if(dropped.indexOf('dvh')<0&&byK.dvh) sum+=+byK.dvh.monthly||0; return; }   // Dental: add-on bar below
-      var why=pbWhyNot(k,c,st,age); if(/not sold in/.test(why)) return;   // never offer what the state doesn't sell
+      var why=pbWhyNot(k,c,st,age); if(/not sold in|not available in [A-Z]{2}$/.test(why)) return;   // never offer what the state doesn't sell
       if(!inCfg||dropped.indexOf(k)>=0){ addable.push(sl); return; }
       var live=byKpk[k]||byK[k], price=live?live.monthly:null;
       if(price==null){
@@ -3589,6 +3606,11 @@ function pbWhyNot(k,c,st,age){
 }
 (function(){ var _c=compute; compute=function(){ var out=_c.apply(this,arguments); try{ renderBuilder(); }catch(e){ console.error('builder',e); } return out; }; })();
 
+/* Version B: fold the old package card into a closed "Classic view" panel under the builder. */
+(function(){ var pkg=document.getElementById('sec_pkg'); if(!pkg) return;
+  var d=document.createElement('details'); d.id='classicWrap';
+  d.innerHTML='<summary>▸ Classic view — the old package screen (ACA comparison, product list, totals). Kept here while we compare.</summary>';
+  pkg.parentNode.insertBefore(d,pkg); d.appendChild(pkg); })();
 restore();
 fill();
 bindInputs();
