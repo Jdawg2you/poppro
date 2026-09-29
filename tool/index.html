@@ -3665,12 +3665,17 @@ function benCol(k,c){ switch(k){
 function benLoad(f){ if(BEN_DATA[f]) return Promise.resolve(BEN_DATA[f]);
   return fetch('benefits/'+f+'.json',{cache:'no-cache'}).then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); })
     .then(function(d){ BEN_DATA[f]=d; return d; }); }
+/* One place builds a drawer view, so opening and following option changes can't disagree. */
+function benView(d,f,t,k){ var c=effCfg(t), st=(S.client.state||'').toUpperCase(), col=benCol(k,c);
+  var m=benModel(d,st,col,c), no=d.notOffered&&(d.notOffered.states||[]).indexOf(st)>=0?d.notOffered.reason:'', miss=(d.missing&&d.missing[col])||'';
+  if(miss) m=null;
+  var sum=pbSummary(k,c,null)||col;
+  if(k==='lbp'||k==='lbs'){ var lc=c.lb[k.slice(2)]||{}; sum='$'+Number(lc.face||0).toLocaleString('en-US')+' term life · 20-year · '+(lc.carrier==='americo'?'Americo':'Mutual of Omaha'); }
+  return {f:f,t:t,k:k,col:col,no:no,miss:miss,title:d.name,sub:({good:'Essential',better:'Complete',best:'Comprehensive'}[t]||t)+' · '+sum,st:st,m:m,cfg:JSON.stringify(c)}; }
 function benOpen(t,k){ var c=effCfg(t), f=benFileFor(k,c); if(!f) return;
-  var tierName={good:'Essential',better:'Complete',best:'Comprehensive'}[t]||t, st=(S.client.state||'').toUpperCase();
+  var st=(S.client.state||'').toUpperCase();
   benLoad(f).then(function(d){
-    var col=benCol(k,c), m=benModel(d,st,col,c), no=d.notOffered&&(d.notOffered.states||[]).indexOf(st)>=0?d.notOffered.reason:'';
-    var v={f:f,t:t,k:k,col:col,no:no,title:d.name,sub:tierName+' · '+(pbSummary(k,c,null)||col),st:st,m:m,cfg:JSON.stringify(c)};
-    var last=BEN_VIEW[BEN_VIEW.length-1];
+    var v=benView(d,f,t,k), last=BEN_VIEW[BEN_VIEW.length-1];
     if(last&&last.f===f&&!(last.t===t&&last.k===k)) BEN_VIEW=[last,v]; else BEN_VIEW=[v];
     benRender(); })
   .catch(function(){ BEN_VIEW=[{f:f,t:t,k:k,title:(PB_SLOTS.filter(function(x){return x.k===k;})[0]||{}).name||k,sub:'',st:st,m:null,missing:true}]; benRender(); }); }
@@ -3680,7 +3685,7 @@ function benRender(){ var dr=$('benDrawer'); if(!dr) return;
   var one=BEN_VIEW.length===1, A=BEN_VIEW[0], B=BEN_VIEW[1], h='';
   h+='<div class="bdhead"><div><b>'+benEsc(A.title)+'</b><small>'+(one?benEsc(A.sub):'Comparing '+benEsc(A.sub)+' with '+benEsc(B.sub))+(A.st?' · '+A.st:'')+'</small></div><button type="button" class="bdx" data-bd="close" aria-label="Close benefits">×</button></div>';
   if(one){
-    if(!A.m){ h+='<div class="bdempty">'+(A.missing?'Benefit details for this plan are not loaded yet.':(A.no?'Not offered in '+A.st+'. '+benEsc(A.no):'No '+benEsc(A.title)+' brochure on file for '+(A.st||'this state')+' — check the carrier portal.'))+'</div>'; }
+    if(!A.m){ h+='<div class="bdempty">'+(A.miss?'Benefits not on file. '+benEsc(A.miss):A.missing?(A.f==='lifex'?'LifeX’s $500 PPO benefit summary (SBC) isn’t on file yet — it’s on the LifeX enrollment site. Confirm benefits there.':'Benefit details for this plan are not loaded yet.'):(A.no?'Not offered in '+A.st+'. '+benEsc(A.no):'No '+benEsc(A.title)+' brochure on file for '+(A.st||'this state')+' — check the carrier portal.'))+'</div>'; }
     else{
       h+='<div class="bdsec"><div class="bdt">Key benefits</div>'+A.m.key.map(function(r){ return '<div class="bdrow"><span>'+benEsc(r.label)+(r.note?'<i>'+benEsc(r.note)+'</i>':'')+'</span><b>'+benEsc(r.value)+'</b></div>'; }).join('')+'</div>';
       A.m.sections.forEach(function(s){ h+='<details class="bdmore"><summary>'+benEsc(s.title)+' <span>'+s.rows.length+'</span></summary>'+s.rows.map(function(r){ return '<div class="bdrow"><span>'+benEsc(r.label)+(r.note?'<i>'+benEsc(r.note)+'</i>':'')+'</span><b>'+benEsc(r.value)+'</b></div>'; }).join('')+'</details>'; });
@@ -3708,10 +3713,10 @@ function benRender(){ var dr=$('benDrawer'); if(!dr) return;
   dr.querySelectorAll('[data-bd="only"]').forEach(function(x){ x.onchange=function(){ benOnlyDiff=x.checked; benRender(); }; }); }
 var benOnlyDiff=false;
 /* Options changed on a row that is open in the drawer - follow them. */
-function benRefresh(){ if(!BEN_VIEW.length) return; var views=BEN_VIEW.slice(); var changed=views.some(function(v){ return JSON.stringify(effCfg(v.t))!==v.cfg; });
-  if(!changed) return; BEN_VIEW=[]; views.forEach(function(v){ BEN_VIEW.push(v); }); 
-  Promise.all(views.map(function(v){ return benLoad(v.f).then(function(d){ var c=effCfg(v.t); v.col=benCol(v.k,c); v.m=benModel(d,(S.client.state||'').toUpperCase(),v.col,c); v.sub=({good:'Essential',better:'Complete',best:'Comprehensive'}[v.t])+' · '+(pbSummary(v.k,c,null)||v.col); v.cfg=JSON.stringify(c); }); }))
-    .then(benRender,function(){}); }
+function benRefresh(){ if(!BEN_VIEW.length) return; var views=BEN_VIEW.slice();
+  if(!views.some(function(v){ return !v.missing&&JSON.stringify(effCfg(v.t))!==v.cfg; })) return;
+  Promise.all(views.map(function(v){ return v.missing?Promise.resolve(v):benLoad(v.f).then(function(d){ return benView(d,v.f,v.t,v.k); }); }))
+    .then(function(vs){ BEN_VIEW=vs; benRender(); },function(){}); }
 document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&BEN_VIEW.length){ BEN_VIEW=[]; benRender(); } });
 function renderBuilder(){
   var host=$('sec_builder'); if(!host) return;

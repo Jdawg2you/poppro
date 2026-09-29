@@ -1,0 +1,118 @@
+{
+ "product": "lb",
+ "name": "Term life with living benefits",
+ "carrier": "Mutual of Omaha (United of Omaha) / Americo",
+ "columns": {
+  "by": "carrier",
+  "values": [
+   "moo"
+  ]
+ },
+ "brochures": [
+  {
+   "code": "283976_0426",
+   "file": "moo term life express.pdf (~/Downloads)",
+   "states": [
+    "*"
+   ],
+   "page": "2-4",
+   "sections": [
+    {
+     "title": "Coverage",
+     "rows": [
+      {
+       "label": "Term length",
+       "values": {
+        "moo": "Level death benefit for 10, 15, 20 or 30 years"
+       },
+       "key": true
+      },
+      {
+       "label": "Face amount",
+       "values": {
+        "moo": "$25,000–$550,000; maximum varies by age: ages 18-50 $550,000, ages 51-60 $450,000, ages 61-75 $350,000"
+       },
+       "key": true
+      },
+      {
+       "label": "Underwriting",
+       "values": {
+        "moo": "Simplified underwriting that doesn't require a lengthy health inquiry"
+       }
+      }
+     ]
+    },
+    {
+     "title": "Living benefits (accelerated death benefit riders)",
+     "rows": [
+      {
+       "label": "How much can be accelerated",
+       "values": {
+        "moo": "Requested benefit amount may not exceed 80 percent of the policy's face amount as of the policy issue date (each rider)"
+       },
+       "key": true
+      },
+      {
+       "label": "Terminal illness",
+       "values": {
+        "moo": "Included at no additional cost — life expectancy of 12 months or less"
+       },
+       "key": true
+      },
+      {
+       "label": "Chronic illness",
+       "values": {
+        "moo": "Included at no additional cost — certified by a physician within the last 12 months as unable to perform two of six Activities of Daily Living for 90 consecutive days, or requiring substantial supervision due to severe cognitive impairment"
+       },
+       "key": true
+      },
+      {
+       "label": "Critical illness",
+       "values": {
+        "moo": "Included at no additional cost — certified by a physician within the last 12 months with: ALS, kidney failure, life-threatening cancer, major organ failure, heart attack, stroke, dementia (including Alzheimer's), major burns, AIDS or aortic aneurysm surgery"
+       },
+       "key": true,
+       "note": "Definitions of chronic or critical illness may vary by state."
+      }
+     ]
+    },
+    {
+     "title": "Other included features",
+     "rows": [
+      {
+       "label": "Residential Damage Waiver of Premium",
+       "values": {
+        "moo": "If the primary residence sustains $25,000 or more of damage, premiums are waived for one six-month period"
+       }
+      },
+      {
+       "label": "Waiver of Premium for Unemployment",
+       "values": {
+        "moo": "Premiums waived for one six-month period on qualifying unemployment"
+       }
+      },
+      {
+       "label": "Common Carrier Death Benefit",
+       "values": {
+        "moo": "Additional death benefit equal to 100 percent of the original face amount or $250,000, whichever is less"
+       }
+      },
+      {
+       "label": "Optional riders (extra cost)",
+       "values": {
+        "moo": "Disability Income, Disability Waiver of Premium, Accidental Death Benefit, Dependent Children's Coverage"
+       }
+      }
+     ]
+    }
+   ],
+   "notes": [
+    "Accelerated death benefits are not expected to receive the same favorable tax treatment as other types of accelerated death benefits; see a tax advisor.",
+    "Suicide exclusion: two years from issue (one year in CO, MO and ND); premiums paid are returned instead."
+   ]
+  }
+ ],
+ "missing": {
+  "americo": "Americo Term 125 client brochure not on file — only agent-use material exists, which stays out of the tool."
+ }
+}
