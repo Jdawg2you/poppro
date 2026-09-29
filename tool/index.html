@@ -303,6 +303,28 @@
   .medhead .hw{flex:0 0 32px;text-align:center}
   .medhead .hx{flex:0 0 24px}
   .medhead .hk{flex:0 0 30px;text-align:center}
+  .pbinfo{display:inline-flex;align-items:center;justify-content:center;width:17px;height:17px;margin-left:6px;border-radius:50%;border:1px solid #b9a77a;background:#fff;color:#8a6a1f;font:italic 700 11px Georgia,serif;cursor:pointer;vertical-align:1px;padding:0}
+  .pbinfo:hover{background:#8a6a1f;color:#fff;border-color:#8a6a1f}
+  .bendrawer{position:fixed;top:0;right:0;height:100vh;width:400px;max-width:100vw;background:#fff;box-shadow:-8px 0 30px rgba(18,33,59,.18);border-left:1px solid var(--line);transform:translateX(105%);transition:transform .22s ease;z-index:100000;overflow-y:auto;padding:0 0 24px;box-sizing:border-box}
+  .bendrawer.open{transform:none}.bendrawer.wide{width:620px}
+  .bdhead{position:sticky;top:0;background:var(--navy);color:#fff;padding:14px 16px;display:flex;justify-content:space-between;align-items:flex-start;gap:10px;z-index:1}
+  .bdhead b{font-family:var(--serif);font-size:17px;display:block}.bdhead small{font-size:12px;opacity:.85}
+  .bdx{background:transparent;border:0;color:#fff;font-size:24px;line-height:1;cursor:pointer}
+  .bdsec{padding:10px 16px 4px}.bdt{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:#8a6a1f;font-weight:700;margin-bottom:4px}
+  .bdrow{display:grid;grid-template-columns:1fr auto;gap:10px;padding:6px 0;border-bottom:1px solid #f1ede2;font-size:13px;align-items:start}
+  .bdrow span i{display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;font-size:11px;color:var(--muted);font-style:normal;cursor:pointer}
+  .bdrow span i.full{-webkit-line-clamp:unset;display:block}.bdrow b{text-align:right;color:var(--navy);font-weight:600;max-width:190px}
+  .bdrow.cmp{grid-template-columns:1.2fr 1fr 1fr}.bdrow.cmp b{max-width:none;text-align:left}
+  .bdrow.diff{background:#fdf6e3;margin:0 -8px;padding:6px 8px;border-radius:6px}.bdrow.diff b{color:#8a4b00}
+  .bdcmphead{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:10px;padding:10px 16px 4px;font-size:13px;color:var(--navy);border-bottom:2px solid var(--navy)}
+  .bdcmphead small{display:block;font-weight:400;color:var(--muted);font-size:11px}
+  .bdonly{display:block;padding:6px 16px;font-size:12px;color:var(--muted)}
+  .bdmore{margin:0 16px;border-bottom:1px solid var(--line)}.bdmore summary{cursor:pointer;padding:8px 0;font-weight:600;font-size:13px;color:var(--navy)}
+  .bdmore summary span{font-weight:400;color:var(--muted);font-size:11.5px;margin-left:4px}
+  .bdnotes{margin:0 0 8px;padding-left:18px;font-size:12px;color:#444}.bdnotes li{margin:3px 0}
+  .bdsrc{padding:10px 16px 0;font-size:11px;color:var(--muted)}.bdsrc a{color:#8a6a1f}.bdtip{padding:4px 16px 0;font-size:11px;color:#8a6a1f}
+  .bdempty{padding:18px 16px;font-size:13px;color:var(--muted)}
+  @media(max-width:640px){.bendrawer.wide{width:100vw}.bdrow.cmp,.bdcmphead{grid-template-columns:1fr 1fr 1fr}}
   .pbanchor{font-size:12.5px;color:var(--navy);background:#fbf9f2;border:1px solid var(--line);border-radius:8px;padding:7px 12px;margin:0 0 10px}
   .pbanchor a.jump{color:#9a5b00;text-decoration:none;border-bottom:1px dotted #d9b36a;margin-left:6px}
   .pbsave{border-top:1px dashed var(--line);margin-top:6px;padding:6px 10px 8px;font-size:12px}
@@ -961,6 +983,7 @@ body.client #classicWrap>summary{display:none}
 <div id="printout"></div>
 
 <!-- PLAN LIBRARY MODAL -->
+<aside class="bendrawer hidein-client" id="benDrawer" aria-label="Plan benefits"></aside>
 <div class="modal-backdrop" id="howModal">
   <div class="modal">
     <div class="modal-head"><b>How to use POP Pro</b><span>Intake → Quote → Enroll</span><button class="btn-ghost" id="closeHow">Done</button></div>
@@ -1408,6 +1431,34 @@ function acaCostShare(a){ var vis=(+a.visits||0)*(+a.copay||0), medYr=(+a.med||0
 function anchorSavings(base,pkMo){ if(!base) return null;
   var actual=base.prem-pkMo, tru=base.mo-pkMo;
   return {actual:actual, tru:tru, tfra:actual>0?actual:(tru>0?tru:0), tfraBasis:actual>0?'premium':(tru>0?'true':'')}; }
+/* ---- Benefits slide-out: pure pieces (tested by tools/aca-check.mjs benefits) ----
+   d = one tool/benefits/<key>.json; cfg = the row's effective config. */
+function benBrochure(d,st){ st=String(st||'').toUpperCase(); var bs=(d&&d.brochures)||[];
+  var b=bs.filter(function(x){ return (x.states||[]).indexOf(st)>=0; })[0]||bs.filter(function(x){ return (x.states||[]).indexOf('*')>=0; })[0];
+  if(!b) return null;
+  if(b.sameAs){ var m=bs.filter(function(x){ return x.code===b.sameAs; })[0]; if(m) return {code:b.code,file:b.file,page:m.page,sections:m.sections,notes:(m.notes||[]).concat(b.notes||[]),states:b.states}; }
+  return b; }
+function benPath(cfg,p){ return String(p).split('.').reduce(function(o,k){ return o==null?o:o[k]; },cfg); }
+function benWhen(expr,cfg){ if(!expr) return true; var m=String(expr).match(/^\s*([\w.]+)\s*(>=|<=|==|!=|>|<)\s*(-?[\d.]+)\s*$/); if(!m) return true;
+  var v=+benPath(cfg,m[1])||0, n=+m[3];
+  return m[2]==='>'?v>n:m[2]==='>='?v>=n:m[2]==='<'?v<n:m[2]==='<='?v<=n:m[2]==='=='?v===n:v!==n; }
+function benFill(s,cfg){ return String(s).replace(/\{([\w.]+)\}/g,function(_,p){ var v=benPath(cfg,p); var n=+v;
+  return (v==null||v==='')?'—':(isFinite(n)&&String(v).trim()!==''?'$'+n.toLocaleString('en-US'):String(v)); }); }
+function benValue(r,col,cfg){ var v=r.values||{}; var raw=(col in v)?v[col]:('*' in v?v['*']:null); return raw==null?null:benFill(raw,cfg); }
+/* model: {code,file,page,key:[{label,value,note}], sections:[{title,rows}], notes} */
+function benModel(d,st,col,cfg){ var b=benBrochure(d,st); if(!b) return null;
+  var key=[], sections=[];
+  (b.sections||[]).forEach(function(s){ var rows=[];
+    (s.rows||[]).forEach(function(r){ if(!benWhen(r.when,cfg)) return; var val=benValue(r,String(col),cfg); if(val==null) return;
+      var row={label:r.label,value:val,note:r.note||'',sec:s.title}; (r.key?key:rows).push(row); });
+    if(rows.length) sections.push({title:s.title,rows:rows}); });
+  return {code:b.code,file:b.file,page:b.page,key:key,sections:sections,notes:b.notes||[]}; }
+/* Two plans side by side: every label from either, in A's order then B's extras; diff where the values differ. */
+function benCompare(a,b){ var rows=[], idx={};
+  var all=function(m){ return m.key.map(function(r){ return {r:r,key:true}; }).concat([].concat.apply([],m.sections.map(function(s){ return s.rows.map(function(r){ return {r:r,key:false}; }); }))); };
+  all(a).forEach(function(x){ idx[x.r.label]=rows.length; rows.push({label:x.r.label,key:x.key,sec:x.r.sec,a:x.r.value,b:null}); });
+  all(b).forEach(function(x){ var i=idx[x.r.label]; if(i==null){ idx[x.r.label]=rows.length; rows.push({label:x.r.label,key:x.key,sec:x.r.sec,a:null,b:x.r.value}); } else { rows[i].b=x.r.value; if(x.key) rows[i].key=true; } });
+  rows.forEach(function(r){ r.diff=(r.a||'')!==(r.b||''); }); return rows; }
 /* ACA-ENGINE:END */
 
 function householdIncome(){
@@ -3599,6 +3650,69 @@ function pbSet(c,path,val){
   else { c[p[0]]=c[p[0]]||{}; c[p[0]][p[1]]=c[p[0]][p[1]]||{}; c[p[0]][p[1]][p[2]]=v; }
 }
 function pbReprice(){ autoPriceTiers(); fill(); compute(); autosave(); }
+/* ===== Benefits slide-out (ⓘ on each builder row) =====
+   Loads tool/benefits/<key>.json on first use. One drawer; opening a second level of the SAME
+   product keeps the first beside it (differences highlighted) - that is the "Classic Plus or
+   Elite?" comparison. A different product replaces it. */
+var BEN_DATA={}, BEN_VIEW=[];
+var BEN_FILE={afc:'afc',sdr:'sdr',his:'his',acc:'acc',gap:'gap',chas:'chas',hhc:'hhc',dvh:'dvh',lbp:'lb',lbs:'lb'};
+function benFileFor(k,c){ if(k==='base') return c.base==='lifex'?'lifex':(c.base==='triad'?'triad':null); return BEN_FILE[k]||null; }
+function benCol(k,c){ switch(k){
+  case 'afc': return c.afc; case 'acc': return String(c.acc||1); case 'hhc': return c.hhc; case 'dvh': return String((c.dvh&&c.dvh.max)||'');
+  case 'lbp': return (c.lb&&c.lb.p&&c.lb.p.carrier)||'moo'; case 'lbs': return (c.lb&&c.lb.s&&c.lb.s.carrier)||'moo';
+  case 'base': return c.base==='lifex'?(c.lifexPlan||'$500 PPO'):('Triad Cigna '+(c.triadPlan||'3500'));
+  default: return '*'; } }
+function benLoad(f){ if(BEN_DATA[f]) return Promise.resolve(BEN_DATA[f]);
+  return fetch('benefits/'+f+'.json',{cache:'no-cache'}).then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); })
+    .then(function(d){ BEN_DATA[f]=d; return d; }); }
+function benOpen(t,k){ var c=effCfg(t), f=benFileFor(k,c); if(!f) return;
+  var tierName={good:'Essential',better:'Complete',best:'Comprehensive'}[t]||t, st=(S.client.state||'').toUpperCase();
+  benLoad(f).then(function(d){
+    var col=benCol(k,c), m=benModel(d,st,col,c), no=d.notOffered&&(d.notOffered.states||[]).indexOf(st)>=0?d.notOffered.reason:'';
+    var v={f:f,t:t,k:k,col:col,no:no,title:d.name,sub:tierName+' · '+(pbSummary(k,c,null)||col),st:st,m:m,cfg:JSON.stringify(c)};
+    var last=BEN_VIEW[BEN_VIEW.length-1];
+    if(last&&last.f===f&&!(last.t===t&&last.k===k)) BEN_VIEW=[last,v]; else BEN_VIEW=[v];
+    benRender(); })
+  .catch(function(){ BEN_VIEW=[{f:f,t:t,k:k,title:(PB_SLOTS.filter(function(x){return x.k===k;})[0]||{}).name||k,sub:'',st:st,m:null,missing:true}]; benRender(); }); }
+function benEsc(x){ return String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+function benRender(){ var dr=$('benDrawer'); if(!dr) return;
+  if(!BEN_VIEW.length){ dr.classList.remove('open'); return; }
+  var one=BEN_VIEW.length===1, A=BEN_VIEW[0], B=BEN_VIEW[1], h='';
+  h+='<div class="bdhead"><div><b>'+benEsc(A.title)+'</b><small>'+(one?benEsc(A.sub):'Comparing '+benEsc(A.sub)+' with '+benEsc(B.sub))+(A.st?' · '+A.st:'')+'</small></div><button type="button" class="bdx" data-bd="close" aria-label="Close benefits">×</button></div>';
+  if(one){
+    if(!A.m){ h+='<div class="bdempty">'+(A.missing?'Benefit details for this plan are not loaded yet.':(A.no?'Not offered in '+A.st+'. '+benEsc(A.no):'No '+benEsc(A.title)+' brochure on file for '+(A.st||'this state')+' — check the carrier portal.'))+'</div>'; }
+    else{
+      h+='<div class="bdsec"><div class="bdt">Key benefits</div>'+A.m.key.map(function(r){ return '<div class="bdrow"><span>'+benEsc(r.label)+(r.note?'<i>'+benEsc(r.note)+'</i>':'')+'</span><b>'+benEsc(r.value)+'</b></div>'; }).join('')+'</div>';
+      A.m.sections.forEach(function(s){ h+='<details class="bdmore"><summary>'+benEsc(s.title)+' <span>'+s.rows.length+'</span></summary>'+s.rows.map(function(r){ return '<div class="bdrow"><span>'+benEsc(r.label)+(r.note?'<i>'+benEsc(r.note)+'</i>':'')+'</span><b>'+benEsc(r.value)+'</b></div>'; }).join('')+'</details>'; });
+      if(A.m.notes.length) h+='<details class="bdmore"><summary>Limitations &amp; waiting periods <span>'+A.m.notes.length+'</span></summary><ul class="bdnotes">'+A.m.notes.map(function(n){ return '<li>'+benEsc(n)+'</li>'; }).join('')+'</ul></details>';
+      h+='<div class="bdsrc">From '+benEsc(A.m.code)+(A.m.page?' · p. '+benEsc(A.m.page):'')+'. Confirm exact benefits in the policy.</div>';
+      h+='<div class="bdtip">Tip: open ⓘ on another level of this product to see the two side by side.</div>'; }
+  } else {
+    if(!A.m||!B.m){ h+='<div class="bdempty">One of these plans has no brochure on file for '+(A.st||'this state')+'.</div>'; }
+    else{ var rows=benCompare(A.m,B.m), nd=rows.filter(function(r){ return r.diff; }).length;
+      var lab=function(v){ return benEsc(v.sub.split(' · ')[0])+'<small>'+benEsc(v.sub.split(' · ').slice(1).join(' · '))+'</small>'; };
+      h+='<div class="bdcmphead"><span></span><b>'+lab(A)+'</b><b>'+lab(B)+'</b></div>';
+      h+='<label class="bdonly"><input type="checkbox" data-bd="only"'+(benOnlyDiff?' checked':'')+'> Only what’s different ('+nd+')</label>';
+      var keyRows=rows.filter(function(r){ return r.key; }), rest=rows.filter(function(r){ return !r.key; });
+      var cmpRow=function(r){ if(benOnlyDiff&&!r.diff) return ''; return '<div class="bdrow cmp'+(r.diff?' diff':'')+'"><span>'+benEsc(r.label)+'</span><b>'+benEsc(r.a==null?'—':r.a)+'</b><b>'+benEsc(r.b==null?'—':r.b)+'</b></div>'; };
+      h+='<div class="bdsec"><div class="bdt">Key benefits</div>'+keyRows.map(cmpRow).join('')+'</div>';
+      var secs={}; rest.forEach(function(r){ (secs[r.sec]=secs[r.sec]||[]).push(r); });
+      Object.keys(secs).forEach(function(tl){ var body=secs[tl].map(cmpRow).join(''); if(!body) return; var d=secs[tl].filter(function(r){ return r.diff; }).length;
+        h+='<details class="bdmore"'+(benOnlyDiff&&d?' open':'')+'><summary>'+benEsc(tl)+' <span>'+(d?d+' different':'same')+'</span></summary>'+body+'</details>'; });
+      h+='<div class="bdsrc">From '+benEsc(A.m.code)+(B.m.code!==A.m.code?' / '+benEsc(B.m.code):'')+'. <a href="#" data-bd="single">Show just '+benEsc(B.sub.split(' · ')[0])+'</a></div>'; }
+  }
+  dr.innerHTML=h; dr.classList.add('open'); dr.classList.toggle('wide',!one);
+  dr.querySelectorAll('.bdrow span i').forEach(function(n){ n.title='Click to read all'; n.onclick=function(){ n.classList.toggle('full'); }; });
+  dr.querySelectorAll('[data-bd="close"]').forEach(function(b){ b.onclick=function(){ BEN_VIEW=[]; benRender(); }; });
+  dr.querySelectorAll('[data-bd="single"]').forEach(function(a){ a.onclick=function(e){ e.preventDefault(); BEN_VIEW=[BEN_VIEW[1]]; benRender(); }; });
+  dr.querySelectorAll('[data-bd="only"]').forEach(function(x){ x.onchange=function(){ benOnlyDiff=x.checked; benRender(); }; }); }
+var benOnlyDiff=false;
+/* Options changed on a row that is open in the drawer - follow them. */
+function benRefresh(){ if(!BEN_VIEW.length) return; var views=BEN_VIEW.slice(); var changed=views.some(function(v){ return JSON.stringify(effCfg(v.t))!==v.cfg; });
+  if(!changed) return; BEN_VIEW=[]; views.forEach(function(v){ BEN_VIEW.push(v); }); 
+  Promise.all(views.map(function(v){ return benLoad(v.f).then(function(d){ var c=effCfg(v.t); v.col=benCol(v.k,c); v.m=benModel(d,(S.client.state||'').toUpperCase(),v.col,c); v.sub=({good:'Essential',better:'Complete',best:'Comprehensive'}[v.t])+' · '+(pbSummary(v.k,c,null)||v.col); v.cfg=JSON.stringify(c); }); }))
+    .then(benRender,function(){}); }
+document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&BEN_VIEW.length){ BEN_VIEW=[]; benRender(); } });
 function renderBuilder(){
   var host=$('sec_builder'); if(!host) return;
   var st=(S.client.state||'').toUpperCase(), age=ratingAge();
@@ -3645,7 +3759,8 @@ function renderBuilder(){
       sum+=+price||0; var open=PB_OPEN[t+'|'+k], edited=!!(live&&live.manual);
       var prHtml=open?'<span class="pr"><span style="font-weight:600;color:var(--muted)">$</span><input class="pbprice" type="number" step="0.01" min="0" data-k="'+k+'" value="'+(+price).toFixed(2)+'" aria-label="Monthly price for '+sl.name+'"></span>'
                     :'<span class="pr">'+pbMoney(price)+'</span>';
-      html+='<div class="pbrow'+(edited?' edited':'')+'"><div class="pbhead"><span class="nm">'+sl.name+(edited?' <span class="edtag">edited</span>':'')+'<span class="cov">'+pbSummary(k,c,live)+'</span></span>'+prHtml
+      var info=benFileFor(k,c)?'<button type="button" class="pbinfo" data-ben="'+k+'" title="Benefits — '+sl.name+'" aria-label="Benefits for '+sl.name+'">i</button>':'';
+      html+='<div class="pbrow'+(edited?' edited':'')+'"><div class="pbhead"><span class="nm">'+sl.name+info+(edited?' <span class="edtag">edited</span>':'')+'<span class="cov">'+pbSummary(k,c,live)+'</span></span>'+prHtml
         +'<button class="pbib" data-act="tog" data-k="'+k+'" aria-label="Change '+sl.name+'">'+(open?'▴':'▾')+'</button>'
         +'<button class="pbib" data-act="rm" data-k="'+k+'" title="Remove" aria-label="Remove '+sl.name+'">✕</button></div>'
         +(open?'<div class="pbbody" data-k="'+k+'">'+pbControls(k,c)
@@ -3676,13 +3791,15 @@ function renderBuilder(){
   html+='<div class="pborder" style="color:'+(ok?'var(--green)':'var(--maroon)')+'">'+(ok?(ladder?'✓ Prices step up Good → Better → Best.':'Pivot view — LifeX below, Manhattan leads, Cigna above. Not a price ladder.'):'⚠ The packages no longer step up in price (Good $'+totals.good.toFixed(2)+' · Better $'+totals.better.toFixed(2)+' · Best $'+totals.best.toFixed(2)+'). Clients read the middle as the value choice — fix the order before presenting.')+'</div>';
   // Dental add-on
   var cB=effCfg('best'), dv=pDVH(HF_RATES,age,householdKey(),cB.dvh,st), inAll=['good','better','best'].every(function(t){ return (S.packages[t].dropped||[]).indexOf('dvh')<0; });
-  html+='<div class="pbaddon"><div style="min-width:220px"><div style="font-size:11px;font-weight:700;letter-spacing:.06em;color:#8a6a1f;text-transform:uppercase">Add-on</div><div style="font-weight:700">Dental · Vision · Hearing Select</div></div>'
+  html+='<div class="pbaddon"><div style="min-width:220px"><div style="font-size:11px;font-weight:700;letter-spacing:.06em;color:#8a6a1f;text-transform:uppercase">Add-on</div><div style="font-weight:700">Dental · Vision · Hearing Select<button type="button" class="pbinfo" data-ben="dvh" data-bt="best" title="Benefits — Dental, Vision & Hearing" aria-label="Benefits for Dental, Vision and Hearing">i</button></div></div>'
     +'<select data-act="dvh" data-f="dvh.max">'+pbOpts(pbAmt(['1000','1500','3000','5000']),cB.dvh.max)+'</select>'
     +'<select data-act="dvh" data-f="dvh.ded">'+pbOpts([['0','$0 deductible'],['100','$100 deductible']],cB.dvh.ded)+'</select>'
     +'<span style="flex:1"></span><b>'+(dv.price!=null?pbMoney(dv.price)+'/mo':'<span style="color:var(--muted);font-weight:500">'+(dv.note||'not available')+'</span>')+'</b>'
     +'<label style="display:flex;gap:6px;align-items:center;font-size:13px"><input type="checkbox" data-act="dvhinc"'+(inAll?' checked':'')+'> Add to all three packages</label></div>';
   host.innerHTML=html;
   host.querySelectorAll('[data-jumpto]').forEach(function(a){ a.onclick=function(e){ e.preventDefault(); goStep('intake'); setTimeout(function(){ intakeJump(a.dataset.jumpto); },80); }; });
+  host.querySelectorAll('.pbinfo').forEach(function(b){ b.onclick=function(e){ e.stopPropagation(); var col=b.closest('.pbcol'); benOpen(col?col.dataset.t:(b.dataset.bt||'best'),b.dataset.ben); }; });
+  benRefresh();
   host.querySelectorAll('.pbcol').forEach(function(col){
     var t=col.dataset.t;
     col.querySelectorAll('[data-act="tog"]').forEach(function(b){ b.onclick=function(){ var key=t+'|'+b.dataset.k; PB_OPEN[key]=!PB_OPEN[key]; renderBuilder(); }; });

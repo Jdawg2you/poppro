@@ -1,0 +1,2694 @@
+{
+  "product": "afc",
+  "name": "Affordable Choice",
+  "carrier": "ManhattanLife",
+  "columns": {
+    "by": "level",
+    "values": [
+      "Classic",
+      "ClassicPlus",
+      "Elite",
+      "ElitePlus"
+    ]
+  },
+  "tokens": {},
+  "brochures": [
+    {
+      "code": "AFC7010-BR_1025",
+      "file": "AFC7010-BR_1025 (AL Affordable Choice - Affordable Choice Enhanced with Specified Disease Brochure).pdf",
+      "states": [
+        "AL",
+        "AR",
+        "AZ",
+        "DE",
+        "GA",
+        "HI",
+        "LA",
+        "ME",
+        "MI",
+        "MO",
+        "MS",
+        "NC",
+        "NE",
+        "NV",
+        "OK",
+        "SC",
+        "TN",
+        "WI",
+        "WV",
+        "WY"
+      ],
+      "page": "4",
+      "sections": [
+        {
+          "title": "Doctor office visits",
+          "rows": [
+            {
+              "label": "Doctor's Office Visit with Rollover (per day / days per calendar year)",
+              "values": {
+                "ElitePlus": "$200/10 days",
+                "Elite": "$175/10 days",
+                "ClassicPlus": "$125/8 days",
+                "Classic": "$75/6 days"
+              },
+              "key": true
+            },
+            {
+              "label": "Rollover",
+              "values": {
+                "*": "Rollover provision allows five-visit carryover per policy year"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Preventive care",
+          "rows": [
+            {
+              "label": "Preventative Services, per service: Colonoscopy / Pap / PSA",
+              "values": {
+                "ElitePlus": "$600 / $300 / $300",
+                "Elite": "$600 / $300 / $300",
+                "ClassicPlus": "$500 / $250 / $250",
+                "Classic": "$500 / $250 / $250"
+              },
+              "note": "Counts toward the calendar year limit for all Outpatient Benefits"
+            }
+          ]
+        },
+        {
+          "title": "Hospital",
+          "rows": [
+            {
+              "label": "Inpatient Hospital Confinement (per Inpatient Day)",
+              "values": {
+                "ElitePlus": "$6,000",
+                "Elite": "$4,000",
+                "ClassicPlus": "$3,000",
+                "Classic": "$2,000"
+              },
+              "key": true,
+              "note": "$1,000,000 calendar year limit (Inpatient Hospital Confinement / Building Benefit Injury Reimbursement combined)"
+            },
+            {
+              "label": "Hospital Admission Benefit (for the first Inpatient Day per calendar year)",
+              "values": {
+                "ElitePlus": "$3,000",
+                "Elite": "$2,000",
+                "ClassicPlus": "$1,000",
+                "Classic": "$1,000"
+              },
+              "key": true
+            },
+            {
+              "label": "Hospital Observation: first 24-47 hours in an Observation Unit",
+              "values": {
+                "ElitePlus": "$3,000 per day",
+                "Elite": "$2,000 per day",
+                "ClassicPlus": "$1,500 per day",
+                "Classic": "$1,000 per day"
+              },
+              "note": "Maximum Benefit ($1,000,000 per CY)"
+            },
+            {
+              "label": "Hospital Observation: 48 hours or more in an Observation Unit",
+              "values": {
+                "ElitePlus": "$4,500 per day",
+                "Elite": "$3,000 per day",
+                "ClassicPlus": "$2,250 per day",
+                "Classic": "$1,500 per day"
+              }
+            },
+            {
+              "label": "Building Benefit Injury Reimbursement: Year 2 (per day)",
+              "values": {
+                "ElitePlus": "$7,500",
+                "Elite": "$5,000",
+                "ClassicPlus": "$3,750",
+                "Classic": "$2,500"
+              },
+              "note": "Inpatient Hospitalization Benefits increase 25% each year, years 2-5, for injury-related hospital stays"
+            },
+            {
+              "label": "Building Benefit Injury Reimbursement: Year 3 (per day)",
+              "values": {
+                "ElitePlus": "$9,000",
+                "Elite": "$6,000",
+                "ClassicPlus": "$4,500",
+                "Classic": "$3,000"
+              }
+            },
+            {
+              "label": "Building Benefit Injury Reimbursement: Year 4 (per day)",
+              "values": {
+                "ElitePlus": "$10,500",
+                "Elite": "$7,000",
+                "ClassicPlus": "$5,250",
+                "Classic": "$3,500"
+              }
+            },
+            {
+              "label": "Building Benefit Injury Reimbursement: Year 5 (per day)",
+              "values": {
+                "ElitePlus": "$12,000",
+                "Elite": "$8,000",
+                "ClassicPlus": "$6,000",
+                "Classic": "$4,000"
+              }
+            },
+            {
+              "label": "Inpatient Hospital Confinement / Building Benefit Injury Reimbursement calendar year limit",
+              "values": {
+                "*": "$1,000,000 calendar year limit"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Surgery",
+          "rows": [
+            {
+              "label": "Surgery Benefit (inpatient and outpatient, daily)",
+              "values": {
+                "ElitePlus": "3 X the scheduled amount",
+                "Elite": "2.5 X the scheduled amount",
+                "ClassicPlus": "2 X the scheduled amount",
+                "Classic": "1 X the scheduled amount"
+              },
+              "key": true,
+              "note": "The reimbursement schedule for 1 unit is similar to what is payable under the Medicare Physician Fee Schedule for surgeries. Maximum Benefit $50,000 per calendar year."
+            },
+            {
+              "label": "Ambulatory Surgical Benefit (per day, outpatient surgery in an Ambulatory Surgical Center or Outpatient Hospital facility)",
+              "values": {
+                "ElitePlus": "$3,000",
+                "Elite": "$2,500",
+                "ClassicPlus": "$2,000",
+                "Classic": "$1,000"
+              },
+              "note": "Payable in addition to the surgical and anesthesia benefits"
+            },
+            {
+              "label": "Daily Assistant Surgeon Benefit",
+              "values": {
+                "*": "Pays 20% of the eligible surgical benefit"
+              }
+            },
+            {
+              "label": "Daily Anesthesiologist Benefit",
+              "values": {
+                "*": "Pays 25% of the eligible surgical benefit"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Emergency and ambulance",
+          "rows": [
+            {
+              "label": "Emergency Room (per day / calendar year maximum)",
+              "values": {
+                "ElitePlus": "$300/2 CY",
+                "Elite": "$300/2 CY",
+                "ClassicPlus": "$250/1 CY",
+                "Classic": "$250/1 CY"
+              },
+              "key": true
+            },
+            {
+              "label": "Urgent Care (per day / calendar year maximum)",
+              "values": {
+                "ElitePlus": "$300/4 CY",
+                "Elite": "$300/4 CY",
+                "ClassicPlus": "$250/2 CY",
+                "Classic": "$250/2 CY"
+              },
+              "key": true
+            },
+            {
+              "label": "Ground and Air Ambulance (per day)",
+              "values": {
+                "*": "$150 Ground Ambulance / $1,500 Air Ambulance"
+              },
+              "note": "Limit of 2 daily benefits per calendar year for all ambulance transportation"
+            }
+          ]
+        },
+        {
+          "title": "Lab and imaging",
+          "rows": [
+            {
+              "label": "Laboratory Services, per day: Surgical Pathology / Other Laboratory Services",
+              "values": {
+                "ElitePlus": "$300 / $50",
+                "Elite": "$300 / $50",
+                "ClassicPlus": "$200 / $50",
+                "Classic": "$200 / $50"
+              }
+            },
+            {
+              "label": "Radiology Services, per day: MRI / PET scan / CT scan / mammogram / other radiology tests",
+              "values": {
+                "ElitePlus": "$700/$700/$700/$300/$250",
+                "Elite": "$600/$600/$600/$300/$250",
+                "ClassicPlus": "$500/$500/$500/$250/$200",
+                "Classic": "$300/$300/$300/$250/$200"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Prescriptions",
+          "rows": [
+            {
+              "label": "Prescription Benefit (per day)",
+              "values": {
+                "ElitePlus": "$75",
+                "Elite": "$50",
+                "ClassicPlus": "$50",
+                "Classic": "$25"
+              },
+              "key": true,
+              "note": "$750 calendar year maximum"
+            }
+          ]
+        },
+        {
+          "title": "Other benefits",
+          "rows": [
+            {
+              "label": "Therapy Services (per day for physical, occupational, speech)",
+              "values": {
+                "ElitePlus": "$75",
+                "Elite": "$75",
+                "ClassicPlus": "$50",
+                "Classic": "$50"
+              }
+            },
+            {
+              "label": "Calendar year limit for all Outpatient Benefits",
+              "values": {
+                "ElitePlus": "$8,000",
+                "Elite": "$6,000",
+                "ClassicPlus": "$4,000",
+                "Classic": "$4,000"
+              }
+            },
+            {
+              "label": "Cancer Benefit: Radiation, Chemotherapy & Immunotherapy (per day / 40 days per calendar year)",
+              "values": {
+                "ElitePlus": "$2,000",
+                "Elite": "$2,000",
+                "ClassicPlus": "$1,000",
+                "Classic": "$1,000"
+              },
+              "key": true
+            },
+            {
+              "label": "Allergy Shots and Immunization, child only (per day allergy shots / immunizations)",
+              "values": {
+                "*": "$10/$25"
+              },
+              "note": "$100 calendar year maximum"
+            },
+            {
+              "label": "Lifetime Maximum",
+              "values": {
+                "*": "$5,000,000"
+              }
+            }
+          ]
+        }
+      ],
+      "notes": [
+        "A Hospital Confinement and other Fixed Indemnity Insurance Policy. Benefits are per Covered Person and are paid in daily amounts without regard to the costs of services rendered. Not major medical coverage.",
+        "A $7.00 monthly administration fee for the value-added services (First Health Network, RxEDO) is included in the premium (not included in Child Only Policy).",
+        "Cover page lists: \"No Waiting Periods\".",
+        "Issue ages 18-64.",
+        "In MI, only one per day ambulance benefit is paid per day regardless of how many trips; in MI, Immunization does not apply."
+      ]
+    },
+    {
+      "code": "AFC7010-FLBR_1125",
+      "file": "AFC7010-FLBR_1125 (FL Affordable Choice - Affordable Choice Enhanced with Specified Disease Brochure).pdf",
+      "states": [
+        "FL"
+      ],
+      "page": "4",
+      "sameAs": "AFC7010-BR_1025",
+      "notes": [
+        "A Hospital Confinement and other Fixed Indemnity Insurance Policy. Benefits are per Covered Person and are paid in daily amounts without regard to the costs of services rendered. Not major medical coverage.",
+        "A $7.00 monthly administration fee for the value-added services (First Health Network, RxEDO) is included in the premium (not included in Child Only Policy).",
+        "Cover page lists: \"No Waiting Periods\".",
+        "Benefit table identical to AFC7010-BR_1025."
+      ]
+    },
+    {
+      "code": "AFC7010-IABR_0326",
+      "file": "AFC7010-IABR_0326 (IA Affordable Choice - Affordable Choice Enhanced with Specified Disease Brochure).pdf",
+      "states": [
+        "IA"
+      ],
+      "page": "4",
+      "sameAs": "AFC7010-BR_1025",
+      "notes": [
+        "A Hospital Confinement and other Fixed Indemnity Insurance Policy. Benefits are per Covered Person and are paid in daily amounts without regard to the costs of services rendered. Not major medical coverage.",
+        "A $7.00 monthly administration fee for the value-added services (First Health Network, RxEDO) is included in the premium (not included in Child Only Policy).",
+        "Cover page lists: \"No Waiting Periods\".",
+        "Issue ages 18-64.",
+        "Benefit table identical to AFC7010-BR_1025."
+      ]
+    },
+    {
+      "code": "AFC7010-ILBR_0626",
+      "file": "AFC7010-ILBR_0626 (IL Affordable Choice - Affordable Choice with Specified Disease Brochure).pdf",
+      "states": [
+        "IL"
+      ],
+      "page": "4",
+      "sameAs": "AFC7010-BR_1025",
+      "notes": [
+        "A Hospital Confinement and other Fixed Indemnity Insurance Policy. Benefits are per Covered Person and are paid in daily amounts without regard to the costs of services rendered. Not major medical coverage.",
+        "A $7.00 monthly administration fee for the value-added services (First Health Network, RxEDO) is included in the premium (not included in Child Only Policy).",
+        "Cover page lists: \"No Waiting Periods\".",
+        "Issue ages 18-64.",
+        "Benefit table identical to AFC7010-BR_1025."
+      ]
+    },
+    {
+      "code": "AFC7010-MN-BR_0226",
+      "file": "AFC7010-MN-BR_0226 (MN Affordable Choice - Affordable Choice Enhanced W-Specified Disease Brochure).pdf",
+      "states": [
+        "MN"
+      ],
+      "page": "4",
+      "sameAs": "AFC7010-BR_1025",
+      "notes": [
+        "A Hospital Confinement and other Fixed Indemnity Insurance Policy. Benefits are per Covered Person and are paid in daily amounts without regard to the costs of services rendered. Not major medical coverage.",
+        "A $7.00 monthly administration fee for the value-added services (First Health Network, RxEDO) is included in the premium (not included in Child Only Policy).",
+        "Cover page lists: \"No Waiting Periods\".",
+        "Issue ages 18-64.",
+        "In MI, only one per day ambulance benefit is paid per day regardless of how many trips; in MI, Immunization does not apply.",
+        "Benefit table identical to AFC7010-BR_1025."
+      ]
+    },
+    {
+      "code": "AFC7010-MT-BR_0826",
+      "file": "AFC7010-MT-BR_0826 (MT Affordable Choice - Affordable Choice with Specified Disease).pdf",
+      "states": [
+        "MT"
+      ],
+      "page": "4",
+      "sameAs": "AFC7010-BR_1025",
+      "notes": [
+        "A Hospital Confinement and other Fixed Indemnity Insurance Policy. Benefits are per Covered Person and are paid in daily amounts without regard to the costs of services rendered. Not major medical coverage.",
+        "A $7.00 monthly administration fee for the value-added services (First Health Network, RxEDO) is included in the premium (not included in Child Only Policy).",
+        "Cover page lists: \"No Waiting Periods\".",
+        "Issue ages 18-64.",
+        "Benefit table identical to AFC7010-BR_1025."
+      ]
+    },
+    {
+      "code": "AFC7010-RIBR_0426",
+      "file": "AFC7010-RIBR_0426 (RI Affordable Choice - Affordable Choice Enhanced with Specified Disease Brochure).pdf",
+      "states": [
+        "RI"
+      ],
+      "page": "4",
+      "sameAs": "AFC7010-BR_1025",
+      "notes": [
+        "A Hospital Confinement and other Fixed Indemnity Insurance Policy. Benefits are per Covered Person and are paid in daily amounts without regard to the costs of services rendered. Not major medical coverage.",
+        "A $7.00 monthly administration fee for the value-added services (First Health Network, RxEDO) is included in the premium (not included in Child Only Policy).",
+        "Cover page lists: \"No Waiting Periods\".",
+        "Issue ages 18-64.",
+        "Benefit table identical to AFC7010-BR_1025."
+      ]
+    },
+    {
+      "code": "AFC7010-AKBR_0826",
+      "file": "AFC7010-AKBR_0826 (AK Affordable Choice - Affordable Choice Enhanced Brochure).pdf",
+      "states": [
+        "AK"
+      ],
+      "page": "4",
+      "sections": [
+        {
+          "title": "Doctor office visits",
+          "rows": [
+            {
+              "label": "Doctor's Office Visit with Rollover (per day / days per calendar year)",
+              "values": {
+                "ElitePlus": "$200/10 days",
+                "Elite": "$175/10 days",
+                "ClassicPlus": "$125/8 days",
+                "Classic": "$75/6 days"
+              },
+              "key": true
+            },
+            {
+              "label": "Rollover",
+              "values": {
+                "*": "Rollover provision allows five-visit carryover per policy year"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Preventive care",
+          "rows": [
+            {
+              "label": "Preventative Services, per service: Colonoscopy / Pap / PSA",
+              "values": {
+                "ElitePlus": "$600 / $300 / $300",
+                "Elite": "$600 / $300 / $300",
+                "ClassicPlus": "$500 / $250 / $250",
+                "Classic": "$500 / $250 / $250"
+              },
+              "note": "Counts toward the calendar year limit for all Outpatient Benefits"
+            }
+          ]
+        },
+        {
+          "title": "Hospital",
+          "rows": [
+            {
+              "label": "Inpatient Hospital Confinement (per Inpatient Day)",
+              "values": {
+                "ElitePlus": "$6,000",
+                "Elite": "$4,000",
+                "ClassicPlus": "$3,000",
+                "Classic": "$2,000"
+              },
+              "key": true,
+              "note": "$1,000,000 calendar year limit (Inpatient Hospital Confinement / Building Benefit Injury Reimbursement combined)"
+            },
+            {
+              "label": "Hospital Admission Benefit (for the first Inpatient Day per calendar year)",
+              "values": {
+                "ElitePlus": "$3,000",
+                "Elite": "$2,000",
+                "ClassicPlus": "$1,000",
+                "Classic": "$1,000"
+              },
+              "key": true
+            },
+            {
+              "label": "Hospital Observation: first 24-47 hours in an Observation Unit",
+              "values": {
+                "ElitePlus": "$3,000 per day",
+                "Elite": "$2,000 per day",
+                "ClassicPlus": "$1,500 per day",
+                "Classic": "$1,000 per day"
+              },
+              "note": "Maximum Benefit ($1,000,000 per CY)"
+            },
+            {
+              "label": "Hospital Observation: 48 hours or more in an Observation Unit",
+              "values": {
+                "ElitePlus": "$4,500 per day",
+                "Elite": "$3,000 per day",
+                "ClassicPlus": "$2,250 per day",
+                "Classic": "$1,500 per day"
+              }
+            },
+            {
+              "label": "Building Benefit Injury Reimbursement: Year 2 (per day)",
+              "values": {
+                "ElitePlus": "$7,500",
+                "Elite": "$5,000",
+                "ClassicPlus": "$3,750",
+                "Classic": "$2,500"
+              },
+              "note": "Inpatient Hospitalization Benefits increase 25% each year, years 2-5, for injury-related hospital stays"
+            },
+            {
+              "label": "Building Benefit Injury Reimbursement: Year 3 (per day)",
+              "values": {
+                "ElitePlus": "$9,000",
+                "Elite": "$6,000",
+                "ClassicPlus": "$4,500",
+                "Classic": "$3,000"
+              }
+            },
+            {
+              "label": "Building Benefit Injury Reimbursement: Year 4 (per day)",
+              "values": {
+                "ElitePlus": "$10,500",
+                "Elite": "$7,000",
+                "ClassicPlus": "$5,250",
+                "Classic": "$3,500"
+              }
+            },
+            {
+              "label": "Building Benefit Injury Reimbursement: Year 5 (per day)",
+              "values": {
+                "ElitePlus": "$12,000",
+                "Elite": "$8,000",
+                "ClassicPlus": "$6,000",
+                "Classic": "$4,000"
+              }
+            },
+            {
+              "label": "Inpatient Hospital Confinement / Building Benefit Injury Reimbursement calendar year limit",
+              "values": {
+                "*": "$1,000,000 calendar year limit"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Surgery",
+          "rows": [
+            {
+              "label": "Surgery Benefit (inpatient and outpatient, daily)",
+              "values": {
+                "ElitePlus": "3 X the policy fee schedule",
+                "Elite": "2.5 X the policy fee schedule",
+                "ClassicPlus": "2 X the policy fee schedule",
+                "Classic": "1 X the policy fee schedule"
+              },
+              "key": true,
+              "note": "The reimbursement schedule for 1 unit is similar to what is payable under the Medicare Physician Fee Schedule for surgeries. Maximum Benefit $50,000 per calendar year."
+            },
+            {
+              "label": "Ambulatory Surgical Benefit (per day, outpatient surgery in an Ambulatory Surgical Center or Outpatient Hospital facility)",
+              "values": {
+                "ElitePlus": "$3,000",
+                "Elite": "$2,500",
+                "ClassicPlus": "$2,000",
+                "Classic": "$1,000"
+              },
+              "note": "Payable in addition to the surgical and anesthesia benefits"
+            },
+            {
+              "label": "Daily Assistant Surgeon Benefit",
+              "values": {
+                "*": "Pays 20% of the eligible surgical benefit"
+              }
+            },
+            {
+              "label": "Daily Anesthesiologist Benefit",
+              "values": {
+                "*": "Pays 25% of the eligible surgical benefit"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Emergency and ambulance",
+          "rows": [
+            {
+              "label": "Emergency Room (per day / calendar year maximum)",
+              "values": {
+                "ElitePlus": "$300/2 CY",
+                "Elite": "$300/2 CY",
+                "ClassicPlus": "$250/1 CY",
+                "Classic": "$250/1 CY"
+              },
+              "key": true
+            },
+            {
+              "label": "Urgent Care (per day / calendar year maximum)",
+              "values": {
+                "ElitePlus": "$300/4 CY",
+                "Elite": "$300/4 CY",
+                "ClassicPlus": "$250/2 CY",
+                "Classic": "$250/2 CY"
+              },
+              "key": true
+            },
+            {
+              "label": "Ground and Air Ambulance (per day)",
+              "values": {
+                "*": "$150 Ground Ambulance / $1,500 Air Ambulance"
+              },
+              "note": "Limit of 2 daily benefits per calendar year for all ambulance transportation"
+            }
+          ]
+        },
+        {
+          "title": "Lab and imaging",
+          "rows": [
+            {
+              "label": "Laboratory Services, per day: Surgical Pathology / Other Laboratory Services",
+              "values": {
+                "ElitePlus": "$300 / $50",
+                "Elite": "$300 / $50",
+                "ClassicPlus": "$200 / $50",
+                "Classic": "$200 / $50"
+              }
+            },
+            {
+              "label": "Radiology Services, per day: MRI / PET scan / CT scan / mammogram / other radiology tests",
+              "values": {
+                "ElitePlus": "$700/$700/$700/$300/$250",
+                "Elite": "$600/$600/$600/$300/$250",
+                "ClassicPlus": "$500/$500/$500/$250/$200",
+                "Classic": "$300/$300/$300/$250/$200"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Prescriptions",
+          "rows": [
+            {
+              "label": "Prescription Benefit (per day)",
+              "values": {
+                "ElitePlus": "$75",
+                "Elite": "$50",
+                "ClassicPlus": "$50",
+                "Classic": "$25"
+              },
+              "key": true,
+              "note": "$750 calendar year maximum"
+            }
+          ]
+        },
+        {
+          "title": "Other benefits",
+          "rows": [
+            {
+              "label": "Therapy Services (per day for physical, occupational, speech)",
+              "values": {
+                "ElitePlus": "$75",
+                "Elite": "$75",
+                "ClassicPlus": "$50",
+                "Classic": "$50"
+              }
+            },
+            {
+              "label": "Calendar year limit for all Outpatient Benefits",
+              "values": {
+                "ElitePlus": "$8,000",
+                "Elite": "$6,000",
+                "ClassicPlus": "$4,000",
+                "Classic": "$4,000"
+              }
+            },
+            {
+              "label": "Cancer Benefit: Radiation, Chemotherapy & Immunotherapy (per day / 40 days per calendar year)",
+              "values": {
+                "ElitePlus": "$2,000",
+                "Elite": "$2,000",
+                "ClassicPlus": "$1,000",
+                "Classic": "$1,000"
+              },
+              "key": true
+            },
+            {
+              "label": "Allergy Shots and Immunization, child only (per day allergy shots / immunizations)",
+              "values": {
+                "*": "$10/$25"
+              },
+              "note": "$100 calendar year maximum"
+            },
+            {
+              "label": "Lifetime Maximum",
+              "values": {
+                "*": "$5,000,000"
+              }
+            }
+          ]
+        }
+      ],
+      "notes": [
+        "A Hospital Confinement and other Fixed Indemnity Insurance Policy. Benefits are per Covered Person and are paid in daily amounts without regard to the costs of services rendered. Not major medical coverage.",
+        "A $7.00 monthly administration fee for the value-added services (First Health Network, RxEDO) is included in the premium (not included in Child Only Policy).",
+        "Issue ages 18-64.",
+        "Same amounts as AFC7010-BR_1025; surgery is worded as a multiple of \"the policy fee schedule\". No Specified Disease Rider in this brochure."
+      ]
+    },
+    {
+      "code": "AFC7010-BR_0424",
+      "file": "AFC7010-BR_0424 (IN Affordable Choice - Affordable Choice 7010 Brochure).pdf",
+      "states": [
+        "IN",
+        "PA",
+        "TX",
+        "UT"
+      ],
+      "page": "4",
+      "sections": [
+        {
+          "title": "Doctor office visits",
+          "rows": [
+            {
+              "label": "Doctor's Office Visit with Rollover (per day / days per calendar year)",
+              "values": {
+                "ElitePlus": "$200/10 days",
+                "Elite": "$175/10 days",
+                "ClassicPlus": "$125/8 days",
+                "Classic": "$75/6 days"
+              },
+              "key": true
+            },
+            {
+              "label": "Rollover",
+              "values": {
+                "*": "Rollover provision allows five-visit carryover per policy year"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Preventive care",
+          "rows": [
+            {
+              "label": "Preventative Services, per service: Colonoscopy / Pap / PSA",
+              "values": {
+                "ElitePlus": "$600 / $300 / $300",
+                "Elite": "$600 / $300 / $300",
+                "ClassicPlus": "$500 / $250 / $250",
+                "Classic": "$500 / $250 / $250"
+              },
+              "note": "Counts toward the calendar year limit for all Outpatient Benefits"
+            }
+          ]
+        },
+        {
+          "title": "Hospital",
+          "rows": [
+            {
+              "label": "Inpatient Hospital Confinement (per Inpatient Day)",
+              "values": {
+                "ElitePlus": "$6,000",
+                "Elite": "$4,000",
+                "ClassicPlus": "$3,000",
+                "Classic": "$2,000"
+              },
+              "key": true,
+              "note": "$1,000,000 calendar year limit (Inpatient Hospital Confinement / Building Benefit Injury Reimbursement combined)"
+            },
+            {
+              "label": "Hospital Admission Benefit (for the first Inpatient Day per calendar year)",
+              "values": {
+                "ElitePlus": "$3,000",
+                "Elite": "$2,000",
+                "ClassicPlus": "$1,000",
+                "Classic": "$1,000"
+              },
+              "key": true
+            },
+            {
+              "label": "Building Benefit Injury Reimbursement: Year 2 (per day)",
+              "values": {
+                "ElitePlus": "$7,500",
+                "Elite": "$5,000",
+                "ClassicPlus": "$3,750",
+                "Classic": "$2,500"
+              },
+              "note": "Inpatient Hospitalization Benefits increase 25% each year, years 2-5, for injury-related hospital stays"
+            },
+            {
+              "label": "Building Benefit Injury Reimbursement: Year 3 (per day)",
+              "values": {
+                "ElitePlus": "$9,000",
+                "Elite": "$6,000",
+                "ClassicPlus": "$4,500",
+                "Classic": "$3,000"
+              }
+            },
+            {
+              "label": "Building Benefit Injury Reimbursement: Year 4 (per day)",
+              "values": {
+                "ElitePlus": "$10,500",
+                "Elite": "$7,000",
+                "ClassicPlus": "$5,250",
+                "Classic": "$3,500"
+              }
+            },
+            {
+              "label": "Building Benefit Injury Reimbursement: Year 5 (per day)",
+              "values": {
+                "ElitePlus": "$12,000",
+                "Elite": "$8,000",
+                "ClassicPlus": "$6,000",
+                "Classic": "$4,000"
+              }
+            },
+            {
+              "label": "Inpatient Hospital Confinement / Building Benefit Injury Reimbursement calendar year limit",
+              "values": {
+                "*": "$1,000,000 calendar year limit"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Surgery",
+          "rows": [
+            {
+              "label": "Surgery Benefit (inpatient and outpatient, daily)",
+              "values": {
+                "ElitePlus": "3 X the policy fee schedule",
+                "Elite": "2.5 X the policy fee schedule",
+                "ClassicPlus": "2 X the policy fee schedule",
+                "Classic": "1 X the policy fee schedule"
+              },
+              "key": true,
+              "note": "The reimbursement schedule for 1 unit is similar to what is payable under the Medicare Physician Fee Schedule for surgeries. Maximum Benefit $50,000 per calendar year."
+            },
+            {
+              "label": "Ambulatory Surgical Benefit (per day, outpatient surgery in an Ambulatory Surgical Center or Outpatient Hospital facility)",
+              "values": {
+                "ElitePlus": "$3,000",
+                "Elite": "$2,500",
+                "ClassicPlus": "$2,000",
+                "Classic": "$1,000"
+              },
+              "note": "Payable in addition to the surgical and anesthesia benefits"
+            },
+            {
+              "label": "Daily Assistant Surgeon Benefit",
+              "values": {
+                "*": "Pays 20% of the eligible surgical benefit"
+              }
+            },
+            {
+              "label": "Daily Anesthesiologist Benefit",
+              "values": {
+                "*": "Pays 25% of the eligible surgical benefit"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Emergency and ambulance",
+          "rows": [
+            {
+              "label": "Emergency Room (per day / calendar year maximum)",
+              "values": {
+                "ElitePlus": "$300/2 CY",
+                "Elite": "$300/2 CY",
+                "ClassicPlus": "$250/1 CY",
+                "Classic": "$250/1 CY"
+              },
+              "key": true
+            },
+            {
+              "label": "Urgent Care (per day / calendar year maximum)",
+              "values": {
+                "ElitePlus": "$300/4 CY",
+                "Elite": "$300/4 CY",
+                "ClassicPlus": "$250/2 CY",
+                "Classic": "$250/2 CY"
+              },
+              "key": true
+            },
+            {
+              "label": "Ground and Air Ambulance (per day)",
+              "values": {
+                "*": "$150 Ground Ambulance / $1,500 Air Ambulance"
+              },
+              "note": "Limit of 2 daily benefits per calendar year for all ambulance transportation"
+            }
+          ]
+        },
+        {
+          "title": "Lab and imaging",
+          "rows": [
+            {
+              "label": "Laboratory Services, per day: Surgical Pathology / Other Laboratory Services",
+              "values": {
+                "ElitePlus": "$300 / $50",
+                "Elite": "$300 / $50",
+                "ClassicPlus": "$200 / $50",
+                "Classic": "$200 / $50"
+              }
+            },
+            {
+              "label": "Radiology Services, per day: MRI / PET scan / CT scan / mammogram / other radiology tests",
+              "values": {
+                "ElitePlus": "$700/$700/$700/$300/$250",
+                "Elite": "$600/$600/$600/$300/$250",
+                "ClassicPlus": "$500/$500/$500/$250/$200",
+                "Classic": "$300/$300/$300/$250/$200"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Prescriptions",
+          "rows": [
+            {
+              "label": "Prescription Benefit (per day)",
+              "values": {
+                "ElitePlus": "$75",
+                "Elite": "$50",
+                "ClassicPlus": "$50",
+                "Classic": "$25"
+              },
+              "key": true,
+              "note": "$750 calendar year maximum"
+            }
+          ]
+        },
+        {
+          "title": "Other benefits",
+          "rows": [
+            {
+              "label": "Therapy Services (per day for physical, occupational, speech)",
+              "values": {
+                "ElitePlus": "$75",
+                "Elite": "$75",
+                "ClassicPlus": "$50",
+                "Classic": "$50"
+              }
+            },
+            {
+              "label": "Calendar year limit for all Outpatient Benefits",
+              "values": {
+                "ElitePlus": "$8,000",
+                "Elite": "$6,000",
+                "ClassicPlus": "$4,000",
+                "Classic": "$4,000"
+              }
+            },
+            {
+              "label": "Cancer Benefit: Radiation, Chemotherapy & Immunotherapy (per day / 40 days per calendar year)",
+              "values": {
+                "ElitePlus": "$2,000",
+                "Elite": "$2,000",
+                "ClassicPlus": "$1,000",
+                "Classic": "$1,000"
+              },
+              "key": true
+            },
+            {
+              "label": "Allergy Shots and Immunization, child only (per day allergy shots / immunizations)",
+              "values": {
+                "*": "$10/$25"
+              },
+              "note": "$100 calendar year maximum"
+            },
+            {
+              "label": "Lifetime Maximum",
+              "values": {
+                "*": "$5,000,000"
+              }
+            }
+          ]
+        }
+      ],
+      "notes": [
+        "A Hospital Confinement and other Fixed Indemnity Insurance Policy. Benefits are per Covered Person and are paid in daily amounts without regard to the costs of services rendered. Not major medical coverage.",
+        "A $7.00 monthly administration fee for the value-added services (First Health Network, RxEDO) is included in the premium (not included in Child Only Policy).",
+        "Issue ages 18-64.",
+        "In MI, only one per day ambulance benefit is paid per day regardless of how many trips; in MI, Immunization does not apply.",
+        "No Hospital Observation benefit in this brochure. No Specified Disease Rider in this brochure."
+      ]
+    },
+    {
+      "code": "AFC7010-KYBR_1225",
+      "file": "AFC7010-KYBR_1225 (KY Affordable Choice - Affordable Choice Enhanced with Specified Disease Brochure).pdf",
+      "states": [
+        "KY"
+      ],
+      "page": "4",
+      "sameAs": "AFC7010-BR_0424",
+      "notes": [
+        "A Hospital Confinement and other Fixed Indemnity Insurance Policy. Benefits are per Covered Person and are paid in daily amounts without regard to the costs of services rendered. Not major medical coverage.",
+        "A $7.00 monthly administration fee for the value-added services (First Health Network, RxEDO) is included in the premium (not included in Child Only Policy).",
+        "Cover page lists: \"No Waiting Periods\".",
+        "Issue ages 18-64.",
+        "Benefit table identical to AFC7010-BR_0424 (no Hospital Observation benefit); this brochure does include the Specified Disease Rider."
+      ]
+    },
+    {
+      "code": "AFC7010-SDBR_1025",
+      "file": "AFC7010-SDBR_1025 (SD Affordable Choice - Affordable Choice Enhanced with Specified Disease Brochure).pdf",
+      "states": [
+        "SD"
+      ],
+      "page": "4",
+      "sameAs": "AFC7010-BR_0424",
+      "notes": [
+        "A Hospital Confinement and other Fixed Indemnity Insurance Policy. Benefits are per Covered Person and are paid in daily amounts without regard to the costs of services rendered. Not major medical coverage.",
+        "A $7.00 monthly administration fee for the value-added services (First Health Network, RxEDO) is included in the premium (not included in Child Only Policy).",
+        "Cover page lists: \"No Waiting Periods\".",
+        "Issue ages 18-64.",
+        "Benefit table identical to AFC7010-BR_0424 (no Hospital Observation benefit); this brochure does include the Specified Disease Rider."
+      ]
+    },
+    {
+      "code": "AFC7010-VA-BR_0424",
+      "file": "AFC7010-VA-BR_0424 (VA Affordable Choice - Affordable Choice 7010 Brochure).pdf",
+      "states": [
+        "VA"
+      ],
+      "page": "4",
+      "sections": [
+        {
+          "title": "Doctor office visits",
+          "rows": [
+            {
+              "label": "Doctor's Office Visit with Rollover (per day / days per calendar year)",
+              "values": {
+                "ElitePlus": "$200/10 days",
+                "Elite": "$175/10 days",
+                "ClassicPlus": "$125/8 days",
+                "Classic": "$75/6 days"
+              },
+              "key": true
+            },
+            {
+              "label": "Rollover",
+              "values": {
+                "*": "Rollover provision allows five-visit carryover per policy year"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Preventive care",
+          "rows": [
+            {
+              "label": "Preventative Services, per service: Colonoscopy / Pap / PSA",
+              "values": {
+                "ElitePlus": "$600 / $300 / $300",
+                "Elite": "$600 / $300 / $300",
+                "ClassicPlus": "$500 / $250 / $250",
+                "Classic": "$500 / $250 / $250"
+              },
+              "note": "Counts toward the calendar year limit for all Outpatient Benefits"
+            }
+          ]
+        },
+        {
+          "title": "Hospital",
+          "rows": [
+            {
+              "label": "Inpatient Hospital Confinement (per Inpatient Day)",
+              "values": {
+                "ElitePlus": "$6,000",
+                "Elite": "$4,000",
+                "ClassicPlus": "$3,000",
+                "Classic": "$2,000"
+              },
+              "key": true,
+              "note": "$1,000,000 calendar year limit (Inpatient Hospital Confinement / Building Benefit Injury Reimbursement combined)"
+            },
+            {
+              "label": "Hospital Admission Benefit (for the first Inpatient Day per calendar year)",
+              "values": {
+                "ElitePlus": "$3,000",
+                "Elite": "$2,000",
+                "ClassicPlus": "$1,000",
+                "Classic": "$1,000"
+              },
+              "key": true
+            },
+            {
+              "label": "Building Benefit Injury Reimbursement: Year 2 (per day)",
+              "values": {
+                "ElitePlus": "$7,500",
+                "Elite": "$5,000",
+                "ClassicPlus": "$3,750",
+                "Classic": "$2,500"
+              },
+              "note": "Inpatient Hospitalization Benefits increase 25% each year, years 2-5, for injury-related hospital stays"
+            },
+            {
+              "label": "Building Benefit Injury Reimbursement: Year 3 (per day)",
+              "values": {
+                "ElitePlus": "$9,000",
+                "Elite": "$6,000",
+                "ClassicPlus": "$4,500",
+                "Classic": "$3,000"
+              }
+            },
+            {
+              "label": "Building Benefit Injury Reimbursement: Year 4 (per day)",
+              "values": {
+                "ElitePlus": "$10,500",
+                "Elite": "$7,000",
+                "ClassicPlus": "$5,250",
+                "Classic": "$3,500"
+              }
+            },
+            {
+              "label": "Building Benefit Injury Reimbursement: Year 5 (per day)",
+              "values": {
+                "ElitePlus": "$12,000",
+                "Elite": "$8,000",
+                "ClassicPlus": "$6,000",
+                "Classic": "$4,000"
+              }
+            },
+            {
+              "label": "Inpatient Hospital Confinement / Building Benefit Injury Reimbursement calendar year limit",
+              "values": {
+                "*": "$1,000,000 calendar year limit"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Surgery",
+          "rows": [
+            {
+              "label": "Surgery Benefit (inpatient and outpatient, daily)",
+              "values": {
+                "ElitePlus": "3 X the policy fee schedule",
+                "Elite": "2.5 X the policy fee schedule",
+                "ClassicPlus": "2 X the policy fee schedule",
+                "Classic": "1 X the policy fee schedule"
+              },
+              "key": true,
+              "note": "The reimbursement schedule for 1 unit is similar to what is payable under the Medicare Physician Fee Schedule for surgeries. Maximum Benefit $50,000 per calendar year."
+            },
+            {
+              "label": "Ambulatory Surgical Benefit (per day, outpatient surgery in an Ambulatory Surgical Center or Outpatient Hospital facility)",
+              "values": {
+                "ElitePlus": "$3,000",
+                "Elite": "$2,500",
+                "ClassicPlus": "$2,000",
+                "Classic": "$1,000"
+              },
+              "note": "Payable in addition to the surgical and anesthesia benefits"
+            },
+            {
+              "label": "Daily Assistant Surgeon Benefit",
+              "values": {
+                "*": "Pays 20% of the eligible surgical benefit"
+              }
+            },
+            {
+              "label": "Daily Anesthesiologist Benefit",
+              "values": {
+                "*": "Pays 25% of the eligible surgical benefit"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Emergency and ambulance",
+          "rows": [
+            {
+              "label": "Emergency Room (per day / calendar year maximum)",
+              "values": {
+                "ElitePlus": "$300/2 CY",
+                "Elite": "$300/2 CY",
+                "ClassicPlus": "$250/1 CY",
+                "Classic": "$250/1 CY"
+              },
+              "key": true
+            },
+            {
+              "label": "Urgent Care (per day / calendar year maximum)",
+              "values": {
+                "ElitePlus": "$300/4 CY",
+                "Elite": "$300/4 CY",
+                "ClassicPlus": "$250/2 CY",
+                "Classic": "$250/2 CY"
+              },
+              "key": true
+            },
+            {
+              "label": "Ground and Air Ambulance (per day)",
+              "values": {
+                "*": "$150 Ground Ambulance / $1,500 Air Ambulance"
+              },
+              "note": "Limit of 2 daily benefits per calendar year for all ambulance transportation"
+            }
+          ]
+        },
+        {
+          "title": "Lab and imaging",
+          "rows": [
+            {
+              "label": "Laboratory Services, per day: Surgical Pathology / Other Laboratory Services",
+              "values": {
+                "ElitePlus": "$300 / $50",
+                "Elite": "$300 / $50",
+                "ClassicPlus": "$200 / $50",
+                "Classic": "$200 / $50"
+              }
+            },
+            {
+              "label": "Radiology Services, per day: MRI / PET scan / CT scan / mammogram / other radiology tests",
+              "values": {
+                "ElitePlus": "$700/$700/$700/$300/$250",
+                "Elite": "$600/$600/$600/$300/$250",
+                "ClassicPlus": "$500/$500/$500/$250/$200",
+                "Classic": "$300/$300/$300/$250/$200"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Prescriptions",
+          "rows": [
+            {
+              "label": "Prescription Benefit (per day)",
+              "values": {
+                "ElitePlus": "$75",
+                "Elite": "$50",
+                "ClassicPlus": "$50",
+                "Classic": "$25"
+              },
+              "key": true,
+              "note": "$750 calendar year maximum"
+            }
+          ]
+        },
+        {
+          "title": "Other benefits",
+          "rows": [
+            {
+              "label": "Therapy Services (per day for physical, occupational, speech)",
+              "values": {
+                "ElitePlus": "$75",
+                "Elite": "$75",
+                "ClassicPlus": "$50",
+                "Classic": "$50"
+              }
+            },
+            {
+              "label": "Calendar year limit for all Outpatient Benefits",
+              "values": {
+                "ElitePlus": "$8,000",
+                "Elite": "$6,000",
+                "ClassicPlus": "$4,000",
+                "Classic": "$4,000"
+              }
+            },
+            {
+              "label": "Allergy Shots and Immunization, child only (per day allergy shots / immunizations)",
+              "values": {
+                "*": "$10/$25"
+              },
+              "note": "$100 calendar year maximum"
+            },
+            {
+              "label": "Lifetime Maximum",
+              "values": {
+                "*": "$5,000,000"
+              }
+            }
+          ]
+        }
+      ],
+      "notes": [
+        "A Hospital Confinement and other Fixed Indemnity Insurance Policy. Benefits are per Covered Person and are paid in daily amounts without regard to the costs of services rendered. Not major medical coverage.",
+        "A $7.00 monthly administration fee for the value-added services (First Health Network, RxEDO) is included in the premium (not included in Child Only Policy).",
+        "No Hospital Observation benefit and no Cancer Benefit row in the plan comparison table, although the cover lists \"Cancer Benefit Included\" - confirm with the carrier before quoting a cancer benefit in VA.",
+        "No Specified Disease Rider in this brochure."
+      ]
+    },
+    {
+      "code": "AFC7010-CA-BR_0424",
+      "file": "AFC7010-CA-BR_0424 (CA Affordable Choice - Affordable Choice 7010 Brochure).pdf",
+      "states": [
+        "CA"
+      ],
+      "page": "4",
+      "sections": [
+        {
+          "title": "Doctor office visits",
+          "rows": [
+            {
+              "label": "Doctor's Office Visit with Rollover (per day / days per calendar year)",
+              "values": {
+                "ElitePlus": "$100/10 days",
+                "Elite": "$75/10 days",
+                "ClassicPlus": "$75/8 days",
+                "Classic": "$50/6 days"
+              },
+              "key": true
+            },
+            {
+              "label": "Rollover",
+              "values": {
+                "*": "Rollover provision allows five-visit carryover per policy year"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Preventive care",
+          "rows": [
+            {
+              "label": "Preventative Services, per service: Colonoscopy / Pap / PSA",
+              "values": {
+                "ElitePlus": "$600 / $300 / $300",
+                "Elite": "$600 / $300 / $300",
+                "ClassicPlus": "$500 / $250 / $250",
+                "Classic": "$500 / $250 / $250"
+              },
+              "note": "Counts toward the calendar year limit for all Outpatient Benefits"
+            }
+          ]
+        },
+        {
+          "title": "Hospital",
+          "rows": [
+            {
+              "label": "Inpatient Hospital Confinement (per Inpatient Day)",
+              "values": {
+                "ElitePlus": "$5,000",
+                "Elite": "$3,000",
+                "ClassicPlus": "$2,000",
+                "Classic": "$1,500"
+              },
+              "key": true,
+              "note": "$1,000,000 calendar year limit (Inpatient Hospital Confinement / Building Benefit Injury Reimbursement combined)"
+            },
+            {
+              "label": "Hospital Admission Benefit (for the first Inpatient Day per calendar year)",
+              "values": {
+                "ElitePlus": "$3,000",
+                "Elite": "$2,000",
+                "ClassicPlus": "$1,000",
+                "Classic": "$1,000"
+              },
+              "key": true
+            },
+            {
+              "label": "Building Benefit Injury Reimbursement: Year 2 (per day)",
+              "values": {
+                "ElitePlus": "$6,250",
+                "Elite": "$3,750",
+                "ClassicPlus": "$2,500",
+                "Classic": "$1,875"
+              },
+              "note": "Inpatient Hospitalization Benefits increase 25% each year, years 2-5, for injury-related hospital stays"
+            },
+            {
+              "label": "Building Benefit Injury Reimbursement: Year 3 (per day)",
+              "values": {
+                "ElitePlus": "$7,500",
+                "Elite": "$4,500",
+                "ClassicPlus": "$3,000",
+                "Classic": "$2,250"
+              }
+            },
+            {
+              "label": "Building Benefit Injury Reimbursement: Year 4 (per day)",
+              "values": {
+                "ElitePlus": "$8,750",
+                "Elite": "$5,250",
+                "ClassicPlus": "$3,500",
+                "Classic": "$2,625"
+              }
+            },
+            {
+              "label": "Building Benefit Injury Reimbursement: Year 5 (per day)",
+              "values": {
+                "ElitePlus": "$10,000",
+                "Elite": "$6,000",
+                "ClassicPlus": "$4,000",
+                "Classic": "$3,000"
+              }
+            },
+            {
+              "label": "Inpatient Hospital Confinement / Building Benefit Injury Reimbursement calendar year limit",
+              "values": {
+                "*": "$1,000,000 calendar year limit"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Surgery",
+          "rows": [
+            {
+              "label": "Surgery Benefit (inpatient and outpatient, daily)",
+              "values": {
+                "ElitePlus": "$5,000",
+                "Elite": "$4,000",
+                "ClassicPlus": "$3,000",
+                "Classic": "$2,000"
+              },
+              "key": true,
+              "note": "The reimbursement schedule for 1 unit is similar to what is payable under the Medicare Physician Fee Schedule for surgeries. Maximum Benefit $50,000 per calendar year."
+            },
+            {
+              "label": "Ambulatory Surgical Benefit (per day, outpatient surgery in an Ambulatory Surgical Center or Outpatient Hospital facility)",
+              "values": {
+                "ElitePlus": "$2,500",
+                "Elite": "$2,500",
+                "ClassicPlus": "$2,000",
+                "Classic": "$1,000"
+              },
+              "note": "Payable in addition to the surgical and anesthesia benefits"
+            },
+            {
+              "label": "Daily Assistant Surgeon Benefit",
+              "values": {
+                "ElitePlus": "$1,000",
+                "Elite": "$800",
+                "ClassicPlus": "$600",
+                "Classic": "$400"
+              }
+            },
+            {
+              "label": "Daily Anesthesiologist Benefit",
+              "values": {
+                "ElitePlus": "$1,250",
+                "Elite": "$1,000",
+                "ClassicPlus": "$750",
+                "Classic": "$500"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Emergency and ambulance",
+          "rows": [
+            {
+              "label": "Emergency Room (per day / calendar year maximum)",
+              "values": {
+                "ElitePlus": "$250/2 CY",
+                "Elite": "$250/2 CY",
+                "ClassicPlus": "$250/1 CY",
+                "Classic": "$250/1 CY"
+              },
+              "key": true
+            },
+            {
+              "label": "Urgent Care (per day / calendar year maximum)",
+              "values": {
+                "ElitePlus": "$250/4 CY",
+                "Elite": "$250/4 CY",
+                "ClassicPlus": "$250/2 CY",
+                "Classic": "$250/2 CY"
+              },
+              "key": true
+            },
+            {
+              "label": "Ground and Air Ambulance (per day)",
+              "values": {
+                "ElitePlus": "$150 Ground / $1,000 Air",
+                "Elite": "$100 Ground / $1,000 Air",
+                "ClassicPlus": "$100 Ground / $1,000 Air",
+                "Classic": "$100 Ground / $500 Air"
+              },
+              "note": "Limit of 2 daily benefits per calendar year for all ambulance transportation"
+            }
+          ]
+        },
+        {
+          "title": "Lab and imaging",
+          "rows": [
+            {
+              "label": "Laboratory Services, per day: Surgical Pathology / Other Laboratory Services",
+              "values": {
+                "ElitePlus": "$300 / $50",
+                "Elite": "$300 / $50",
+                "ClassicPlus": "$200 / $50",
+                "Classic": "$200 / $50"
+              }
+            },
+            {
+              "label": "Radiology Services, per day: MRI / PET scan / CT scan / mammogram / other radiology tests",
+              "values": {
+                "ElitePlus": "$700/$700/$700/$300/$250",
+                "Elite": "$600/$600/$600/$300/$250",
+                "ClassicPlus": "$500/$500/$500/$250/$200",
+                "Classic": "$300/$300/$300/$250/$200"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Prescriptions",
+          "rows": [
+            {
+              "label": "Prescription Benefit (per day)",
+              "values": {
+                "ElitePlus": "$75",
+                "Elite": "$50",
+                "ClassicPlus": "$50",
+                "Classic": "$25"
+              },
+              "key": true,
+              "note": "$750 calendar year maximum"
+            }
+          ]
+        },
+        {
+          "title": "Other benefits",
+          "rows": [
+            {
+              "label": "Therapy Services (per day for physical, occupational, speech)",
+              "values": {
+                "ElitePlus": "$75",
+                "Elite": "$75",
+                "ClassicPlus": "$50",
+                "Classic": "$50"
+              }
+            },
+            {
+              "label": "Calendar year limit for all Outpatient Benefits",
+              "values": {
+                "ElitePlus": "$8,000",
+                "Elite": "$6,000",
+                "ClassicPlus": "$4,000",
+                "Classic": "$4,000"
+              }
+            },
+            {
+              "label": "Cancer Benefit: Radiation, Chemotherapy & Immunotherapy (per day / 40 days per calendar year)",
+              "values": {
+                "ElitePlus": "$2,000",
+                "Elite": "$2,000",
+                "ClassicPlus": "$1,000",
+                "Classic": "$1,000"
+              },
+              "key": true
+            },
+            {
+              "label": "Allergy Shots and Immunization, child only (per day allergy shots / immunizations)",
+              "values": {
+                "*": "$10/$25"
+              },
+              "note": "$100 calendar year maximum"
+            },
+            {
+              "label": "Lifetime Maximum",
+              "values": {
+                "*": "$5,000,000"
+              }
+            }
+          ]
+        }
+      ],
+      "notes": [
+        "A Hospital Confinement and other Fixed Indemnity Insurance Policy. Benefits are per Covered Person and are paid in daily amounts without regard to the costs of services rendered. Not major medical coverage.",
+        "A $7.00 monthly administration fee for the value-added services (First Health Network, RxEDO) is included in the premium (not included in Child Only Policy).",
+        "Lower daily hospital amounts than most states, flat-dollar surgery amounts, no Hospital Observation benefit.",
+        "No Specified Disease Rider in this brochure."
+      ]
+    },
+    {
+      "code": "AFC7010-MD-BR_0424",
+      "file": "AFC7010-MD-BR_0424 (MD Affordable Choice - Affordable Choice 7010 Brochure).pdf",
+      "states": [
+        "MD"
+      ],
+      "page": "4",
+      "sections": [
+        {
+          "title": "Doctor office visits",
+          "rows": [
+            {
+              "label": "Doctor's Office Visit with Rollover (per day / days per calendar year)",
+              "values": {
+                "ElitePlus": "$100/10 days",
+                "Elite": "$75/10 days",
+                "ClassicPlus": "$75/8 days",
+                "Classic": "$50/6 days"
+              },
+              "key": true
+            },
+            {
+              "label": "Rollover",
+              "values": {
+                "*": "Rollover provision allows five-visit carryover per policy year"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Preventive care",
+          "rows": [
+            {
+              "label": "Preventative Services, per service: Colonoscopy / Pap / PSA",
+              "values": {
+                "ElitePlus": "$600 / $300 / $300",
+                "Elite": "$600 / $300 / $300",
+                "ClassicPlus": "$500 / $250 / $250",
+                "Classic": "$500 / $250 / $250"
+              },
+              "note": "Counts toward the calendar year limit for all Outpatient Benefits"
+            }
+          ]
+        },
+        {
+          "title": "Hospital",
+          "rows": [
+            {
+              "label": "Inpatient Hospital Confinement (per Inpatient Day)",
+              "values": {
+                "ElitePlus": "$5,000",
+                "Elite": "$3,000",
+                "ClassicPlus": "$2,000",
+                "Classic": "$1,500"
+              },
+              "key": true,
+              "note": "$1,000,000 calendar year limit (Inpatient Hospital Confinement / Building Benefit Injury Reimbursement combined)"
+            },
+            {
+              "label": "Hospital Admission Benefit (for the first Inpatient Day per calendar year)",
+              "values": {
+                "ElitePlus": "$3,000",
+                "Elite": "$2,000",
+                "ClassicPlus": "$1,000",
+                "Classic": "$1,000"
+              },
+              "key": true
+            },
+            {
+              "label": "Building Benefit Injury Reimbursement: Year 2 (per day)",
+              "values": {
+                "ElitePlus": "$6,250",
+                "Elite": "$3,750",
+                "ClassicPlus": "$2,500",
+                "Classic": "$1,875"
+              },
+              "note": "Inpatient Hospitalization Benefits increase 25% each year, years 2-5, for injury-related hospital stays"
+            },
+            {
+              "label": "Building Benefit Injury Reimbursement: Year 3 (per day)",
+              "values": {
+                "ElitePlus": "$7,500",
+                "Elite": "$4,500",
+                "ClassicPlus": "$3,000",
+                "Classic": "$2,250"
+              }
+            },
+            {
+              "label": "Building Benefit Injury Reimbursement: Year 4 (per day)",
+              "values": {
+                "ElitePlus": "$8,750",
+                "Elite": "$5,250",
+                "ClassicPlus": "$3,500",
+                "Classic": "$2,625"
+              }
+            },
+            {
+              "label": "Building Benefit Injury Reimbursement: Year 5 (per day)",
+              "values": {
+                "ElitePlus": "$10,000",
+                "Elite": "$6,000",
+                "ClassicPlus": "$4,000",
+                "Classic": "$3,000"
+              }
+            },
+            {
+              "label": "Inpatient Hospital Confinement / Building Benefit Injury Reimbursement calendar year limit",
+              "values": {
+                "*": "$1,000,000 calendar year limit"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Surgery",
+          "rows": [
+            {
+              "label": "Surgery Benefit (inpatient and outpatient, daily)",
+              "values": {
+                "ElitePlus": "3 X the policy fee schedule",
+                "Elite": "2.5 X the policy fee schedule",
+                "ClassicPlus": "2 X the policy fee schedule",
+                "Classic": "1 X the policy fee schedule"
+              },
+              "key": true,
+              "note": "The reimbursement schedule for 1 unit is similar to what is payable under the Medicare Physician Fee Schedule for surgeries. Maximum Benefit $50,000 per calendar year."
+            },
+            {
+              "label": "Ambulatory Surgical Benefit (per day, outpatient surgery in an Ambulatory Surgical Center or Outpatient Hospital facility)",
+              "values": {
+                "ElitePlus": "$3,000",
+                "Elite": "$2,500",
+                "ClassicPlus": "$2,000",
+                "Classic": "$1,000"
+              },
+              "note": "Payable in addition to the surgical and anesthesia benefits"
+            },
+            {
+              "label": "Daily Assistant Surgeon Benefit",
+              "values": {
+                "*": "Pays 20% of the eligible surgical benefit"
+              }
+            },
+            {
+              "label": "Daily Anesthesiologist Benefit",
+              "values": {
+                "*": "Pays 25% of the eligible surgical benefit"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Emergency and ambulance",
+          "rows": [
+            {
+              "label": "Emergency Room (per day / calendar year maximum)",
+              "values": {
+                "ElitePlus": "$250/2 CY",
+                "Elite": "$250/2 CY",
+                "ClassicPlus": "$250/1 CY",
+                "Classic": "$250/1 CY"
+              },
+              "key": true
+            },
+            {
+              "label": "Urgent Care (per day / calendar year maximum)",
+              "values": {
+                "ElitePlus": "$250/4 CY",
+                "Elite": "$250/4 CY",
+                "ClassicPlus": "$250/2 CY",
+                "Classic": "$250/2 CY"
+              },
+              "key": true
+            },
+            {
+              "label": "Ground and Air Ambulance (per day)",
+              "values": {
+                "ElitePlus": "$150 Ground / $1,000 Air",
+                "Elite": "$100 Ground / $1,000 Air",
+                "ClassicPlus": "$100 Ground / $1,000 Air",
+                "Classic": "$100 Ground / $500 Air"
+              },
+              "note": "Limit of 2 daily benefits per calendar year for all ambulance transportation"
+            }
+          ]
+        },
+        {
+          "title": "Lab and imaging",
+          "rows": [
+            {
+              "label": "Laboratory Services, per day: Surgical Pathology / Other Laboratory Services",
+              "values": {
+                "ElitePlus": "$300 / $50",
+                "Elite": "$300 / $50",
+                "ClassicPlus": "$200 / $50",
+                "Classic": "$200 / $50"
+              }
+            },
+            {
+              "label": "Radiology Services, per day: MRI / PET scan / CT scan / mammogram / other radiology tests",
+              "values": {
+                "ElitePlus": "$700/$700/$700/$300/$250",
+                "Elite": "$600/$600/$600/$300/$250",
+                "ClassicPlus": "$500/$500/$500/$250/$200",
+                "Classic": "$300/$300/$300/$250/$200"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Prescriptions",
+          "rows": [
+            {
+              "label": "Prescription Benefit (per day)",
+              "values": {
+                "ElitePlus": "$75",
+                "Elite": "$50",
+                "ClassicPlus": "$50",
+                "Classic": "$25"
+              },
+              "key": true,
+              "note": "$750 calendar year maximum"
+            }
+          ]
+        },
+        {
+          "title": "Other benefits",
+          "rows": [
+            {
+              "label": "Therapy Services (per day for physical, occupational, speech)",
+              "values": {
+                "ElitePlus": "$75",
+                "Elite": "$75",
+                "ClassicPlus": "$50",
+                "Classic": "$50"
+              }
+            },
+            {
+              "label": "Calendar year limit for all Outpatient Benefits",
+              "values": {
+                "ElitePlus": "$8,000",
+                "Elite": "$6,000",
+                "ClassicPlus": "$4,000",
+                "Classic": "$4,000"
+              }
+            },
+            {
+              "label": "Cancer Benefit: Radiation, Chemotherapy & Immunotherapy (per day / 40 days per calendar year)",
+              "values": {
+                "ElitePlus": "$2,000",
+                "Elite": "$2,000",
+                "ClassicPlus": "$1,000",
+                "Classic": "$1,000"
+              },
+              "key": true
+            },
+            {
+              "label": "Allergy Shots and Immunization, child only (per day allergy shots / immunizations)",
+              "values": {
+                "*": "$10/$25"
+              },
+              "note": "$100 calendar year maximum"
+            },
+            {
+              "label": "Lifetime Maximum",
+              "values": {
+                "*": "$5,000,000"
+              }
+            }
+          ]
+        }
+      ],
+      "notes": [
+        "A Hospital Confinement and other Fixed Indemnity Insurance Policy. Benefits are per Covered Person and are paid in daily amounts without regard to the costs of services rendered. Not major medical coverage.",
+        "A $7.00 monthly administration fee for the value-added services (First Health Network, RxEDO) is included in the premium (not included in Child Only Policy).",
+        "In MI, only one per day ambulance benefit is paid per day regardless of how many trips; in MI, Immunization does not apply.",
+        "Lower daily hospital amounts than most states, no Hospital Observation benefit.",
+        "No Specified Disease Rider in this brochure."
+      ]
+    },
+    {
+      "code": "AFC7010-OHBR_0626",
+      "file": "AFC7010-OHBR_0626 (OH Affordable Choice - Affordable Choice w-Specified Disease Brochure).pdf",
+      "states": [
+        "OH"
+      ],
+      "page": "4",
+      "sections": [
+        {
+          "title": "Doctor office visits",
+          "rows": [
+            {
+              "label": "Doctor's Office Visit with Rollover (per day / days per calendar year)",
+              "values": {
+                "ElitePlus": "$100/10 days",
+                "Elite": "$75/10 days",
+                "ClassicPlus": "$75/8 days",
+                "Classic": "$50/6 days"
+              },
+              "key": true
+            },
+            {
+              "label": "Rollover",
+              "values": {
+                "*": "Rollover provision allows five-visit carryover per policy year"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Preventive care",
+          "rows": [
+            {
+              "label": "Preventative Services, per service: Colonoscopy / Pap / PSA",
+              "values": {
+                "ElitePlus": "$600 / $300 / $300",
+                "Elite": "$600 / $300 / $300",
+                "ClassicPlus": "$500 / $250 / $250",
+                "Classic": "$500 / $250 / $250"
+              },
+              "note": "Counts toward the calendar year limit for all Outpatient Benefits"
+            }
+          ]
+        },
+        {
+          "title": "Hospital",
+          "rows": [
+            {
+              "label": "Inpatient Hospital Confinement (per Inpatient Day)",
+              "values": {
+                "ElitePlus": "$5,000",
+                "Elite": "$3,000",
+                "ClassicPlus": "$2,000",
+                "Classic": "$1,500"
+              },
+              "key": true,
+              "note": "$1,000,000 calendar year limit (Inpatient Hospital Confinement / Building Benefit Injury Reimbursement combined)"
+            },
+            {
+              "label": "Hospital Admission Benefit (for the first Inpatient Day per calendar year)",
+              "values": {
+                "ElitePlus": "$3,000",
+                "Elite": "$2,000",
+                "ClassicPlus": "$1,000",
+                "Classic": "$1,000"
+              },
+              "key": true
+            },
+            {
+              "label": "Building Benefit Injury Reimbursement: Year 2 (per day)",
+              "values": {
+                "ElitePlus": "$6,250",
+                "Elite": "$3,750",
+                "ClassicPlus": "$2,500",
+                "Classic": "$1,875"
+              },
+              "note": "Inpatient Hospitalization Benefits increase 25% each year, years 2-5, for injury-related hospital stays"
+            },
+            {
+              "label": "Building Benefit Injury Reimbursement: Year 3 (per day)",
+              "values": {
+                "ElitePlus": "$7,500",
+                "Elite": "$4,500",
+                "ClassicPlus": "$3,000",
+                "Classic": "$2,250"
+              }
+            },
+            {
+              "label": "Building Benefit Injury Reimbursement: Year 4 (per day)",
+              "values": {
+                "ElitePlus": "$8,750",
+                "Elite": "$5,250",
+                "ClassicPlus": "$3,500",
+                "Classic": "$2,625"
+              }
+            },
+            {
+              "label": "Building Benefit Injury Reimbursement: Year 5 (per day)",
+              "values": {
+                "ElitePlus": "$10,000",
+                "Elite": "$6,000",
+                "ClassicPlus": "$4,000",
+                "Classic": "$3,000"
+              }
+            },
+            {
+              "label": "Inpatient Hospital Confinement / Building Benefit Injury Reimbursement calendar year limit",
+              "values": {
+                "*": "$1,000,000 calendar year limit"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Surgery",
+          "rows": [
+            {
+              "label": "Surgery Benefit (inpatient and outpatient, daily)",
+              "values": {
+                "ElitePlus": "$1,000",
+                "Elite": "$1,000",
+                "ClassicPlus": "$1,000",
+                "Classic": "$1,000"
+              },
+              "key": true,
+              "note": "The reimbursement schedule for 1 unit is similar to what is payable under the Medicare Physician Fee Schedule for surgeries. Maximum Benefit $50,000 per CY."
+            },
+            {
+              "label": "Ambulatory Surgical Benefit (per day, outpatient surgery in an Ambulatory Surgical Center or Outpatient Hospital facility)",
+              "values": {
+                "ElitePlus": "$1,000",
+                "Elite": "$1,000",
+                "ClassicPlus": "$1,000",
+                "Classic": "$1,000"
+              },
+              "note": "Payable in addition to the surgical and anesthesia benefits"
+            },
+            {
+              "label": "Daily Assistant Surgeon Benefit",
+              "values": {
+                "*": "Pays 20% of the eligible surgical benefit"
+              }
+            },
+            {
+              "label": "Daily Anesthesiologist Benefit",
+              "values": {
+                "*": "Pays 25% of the eligible surgical benefit"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Emergency and ambulance",
+          "rows": [
+            {
+              "label": "Emergency Room (per day / calendar year maximum)",
+              "values": {
+                "ElitePlus": "$250/2 CY",
+                "Elite": "$250/2 CY",
+                "ClassicPlus": "$250/1 CY",
+                "Classic": "$250/1 CY"
+              },
+              "key": true
+            },
+            {
+              "label": "Urgent Care (per day / calendar year maximum)",
+              "values": {
+                "ElitePlus": "$250/4 CY",
+                "Elite": "$250/4 CY",
+                "ClassicPlus": "$250/2 CY",
+                "Classic": "$250/2 CY"
+              },
+              "key": true
+            },
+            {
+              "label": "Ground and Air Ambulance (per day)",
+              "values": {
+                "ElitePlus": "$150 Ground / $1,000 Air",
+                "Elite": "$100 Ground / $1,000 Air",
+                "ClassicPlus": "$100 Ground / $1,000 Air",
+                "Classic": "$100 Ground / $500 Air"
+              },
+              "note": "Limit of 2 daily benefits per calendar year for all ambulance transportation"
+            }
+          ]
+        },
+        {
+          "title": "Lab and imaging",
+          "rows": [
+            {
+              "label": "Laboratory Services, per day: Surgical Pathology / Other Laboratory Services",
+              "values": {
+                "ElitePlus": "$300 / $50",
+                "Elite": "$300 / $50",
+                "ClassicPlus": "$200 / $50",
+                "Classic": "$200 / $50"
+              }
+            },
+            {
+              "label": "Radiology Services, per day: MRI / PET scan / CT scan / mammogram / other radiology tests",
+              "values": {
+                "ElitePlus": "$700/$700/$700/$300/$250",
+                "Elite": "$600/$600/$600/$300/$250",
+                "ClassicPlus": "$500/$500/$500/$250/$200",
+                "Classic": "$300/$300/$300/$250/$200"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Prescriptions",
+          "rows": [
+            {
+              "label": "Prescription Benefit (per day)",
+              "values": {
+                "ElitePlus": "$75",
+                "Elite": "$50",
+                "ClassicPlus": "$50",
+                "Classic": "$25"
+              },
+              "key": true,
+              "note": "$750 calendar year maximum"
+            }
+          ]
+        },
+        {
+          "title": "Other benefits",
+          "rows": [
+            {
+              "label": "Therapy Services (per day for physical, occupational, speech)",
+              "values": {
+                "ElitePlus": "$75",
+                "Elite": "$75",
+                "ClassicPlus": "$50",
+                "Classic": "$50"
+              }
+            },
+            {
+              "label": "Calendar year limit for all Outpatient Benefits",
+              "values": {
+                "ElitePlus": "$8,000",
+                "Elite": "$6,000",
+                "ClassicPlus": "$4,000",
+                "Classic": "$4,000"
+              }
+            },
+            {
+              "label": "Allergy Shots and Immunization, child only (per day allergy shots / immunizations)",
+              "values": {
+                "*": "$10/$25"
+              },
+              "note": "$100 calendar year maximum"
+            },
+            {
+              "label": "Lifetime Maximum",
+              "values": {
+                "*": "$5,000,000"
+              }
+            }
+          ]
+        }
+      ],
+      "notes": [
+        "A Hospital Confinement and other Fixed Indemnity Insurance Policy. Benefits are per Covered Person and are paid in daily amounts without regard to the costs of services rendered. Not major medical coverage.",
+        "A $7.00 monthly administration fee for the value-added services (First Health Network, RxEDO) is included in the premium (not included in Child Only Policy).",
+        "Cover page lists: \"No Waiting Periods\".",
+        "Issue ages 18-64.",
+        "Lower daily hospital amounts, flat $1,000 surgery at every level, no Hospital Observation benefit.",
+        "No Cancer Benefit row in the plan comparison table, although the cover lists \"Cancer Benefit Included\" and the page-3 example shows a chemotherapy benefit - confirm with the carrier before quoting a cancer benefit in OH."
+      ]
+    },
+    {
+      "code": "AFC7010-ND-BR_0424",
+      "file": "AFC7010-ND-BR_0424 (ND Affordable Choice - Affordable Choice 7010 Brochure).pdf",
+      "states": [
+        "ND"
+      ],
+      "page": "4",
+      "sections": [
+        {
+          "title": "Doctor office visits",
+          "rows": [
+            {
+              "label": "Doctor's Office Visit with Rollover (per day / days per calendar year)",
+              "values": {
+                "ElitePlus": "$200/10 days",
+                "Elite": "$175/10 days",
+                "ClassicPlus": "$125/8 days",
+                "Classic": "$75/6 days"
+              },
+              "key": true
+            },
+            {
+              "label": "Rollover",
+              "values": {
+                "*": "Rollover provision allows five-visit carryover per policy year"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Preventive care",
+          "rows": [
+            {
+              "label": "Preventative Services, per service: Colonoscopy / Pap / PSA",
+              "values": {
+                "ElitePlus": "$600 / $300 / $300",
+                "Elite": "$600 / $300 / $300",
+                "ClassicPlus": "$500 / $250 / $250",
+                "Classic": "$500 / $250 / $250"
+              },
+              "note": "Counts toward the calendar year limit for all Outpatient Benefits"
+            }
+          ]
+        },
+        {
+          "title": "Hospital",
+          "rows": [
+            {
+              "label": "Inpatient Hospital Confinement (per Inpatient Day)",
+              "values": {
+                "ElitePlus": "$6,000",
+                "Elite": "$4,000",
+                "ClassicPlus": "$3,000",
+                "Classic": "$2,000"
+              },
+              "key": true,
+              "note": "$1,000,000 calendar year limit (Inpatient Hospital Confinement / Building Benefit Injury Reimbursement combined)"
+            },
+            {
+              "label": "Hospital Admission Benefit (for the first Inpatient Day per calendar year)",
+              "values": {
+                "ElitePlus": "$3,000",
+                "Elite": "$2,000",
+                "ClassicPlus": "$1,000",
+                "Classic": "$1,000"
+              },
+              "key": true
+            },
+            {
+              "label": "Building Benefit Injury Reimbursement: Year 2 (per day)",
+              "values": {
+                "ElitePlus": "$7,500",
+                "Elite": "$5,000",
+                "ClassicPlus": "$3,750",
+                "Classic": "$2,500"
+              },
+              "note": "Inpatient Hospitalization Benefits increase 25% each year, years 2-5, for injury-related hospital stays"
+            },
+            {
+              "label": "Building Benefit Injury Reimbursement: Year 3 (per day)",
+              "values": {
+                "ElitePlus": "$9,000",
+                "Elite": "$6,000",
+                "ClassicPlus": "$4,500",
+                "Classic": "$3,000"
+              }
+            },
+            {
+              "label": "Building Benefit Injury Reimbursement: Year 4 (per day)",
+              "values": {
+                "ElitePlus": "$10,500",
+                "Elite": "$7,000",
+                "ClassicPlus": "$5,250",
+                "Classic": "$3,500"
+              }
+            },
+            {
+              "label": "Building Benefit Injury Reimbursement: Year 5 (per day)",
+              "values": {
+                "ElitePlus": "$12,000",
+                "Elite": "$8,000",
+                "ClassicPlus": "$6,000",
+                "Classic": "$4,000"
+              }
+            },
+            {
+              "label": "Inpatient Hospital Confinement / Building Benefit Injury Reimbursement calendar year limit",
+              "values": {
+                "*": "$1,000,000 calendar year limit"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Surgery",
+          "rows": [
+            {
+              "label": "Surgery Benefit (inpatient and outpatient, daily)",
+              "values": {
+                "ElitePlus": "$2,000",
+                "Elite": "$2,000",
+                "ClassicPlus": "$1,000",
+                "Classic": "$1,000"
+              },
+              "key": true,
+              "note": "The reimbursement schedule for 1 unit is similar to what is payable under the Medicare Physician Fee Schedule for surgeries. Maximum Benefit $50,000 per calendar year."
+            },
+            {
+              "label": "Ambulatory Surgical Benefit (per day, outpatient surgery in an Ambulatory Surgical Center or Outpatient Hospital facility)",
+              "values": {
+                "ElitePlus": "$1,000",
+                "Elite": "$1,000",
+                "ClassicPlus": "$500",
+                "Classic": "$500"
+              },
+              "note": "Payable in addition to the surgical and anesthesia benefits"
+            },
+            {
+              "label": "Daily Assistant Surgeon Benefit",
+              "values": {
+                "ElitePlus": "$400",
+                "Elite": "$400",
+                "ClassicPlus": "$200",
+                "Classic": "$200"
+              }
+            },
+            {
+              "label": "Daily Anesthesiologist Benefit",
+              "values": {
+                "ElitePlus": "$500",
+                "Elite": "$500",
+                "ClassicPlus": "$250",
+                "Classic": "$250"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Emergency and ambulance",
+          "rows": [
+            {
+              "label": "Emergency Room (per day / calendar year maximum)",
+              "values": {
+                "ElitePlus": "$300/2 CY",
+                "Elite": "$300/2 CY",
+                "ClassicPlus": "$250/1 CY",
+                "Classic": "$250/1 CY"
+              },
+              "key": true
+            },
+            {
+              "label": "Urgent Care (per day / calendar year maximum)",
+              "values": {
+                "ElitePlus": "$300/4 CY",
+                "Elite": "$300/4 CY",
+                "ClassicPlus": "$250/2 CY",
+                "Classic": "$250/2 CY"
+              },
+              "key": true
+            },
+            {
+              "label": "Ground and Air Ambulance (per day)",
+              "values": {
+                "*": "$150 Ground Ambulance / $1,500 Air Ambulance"
+              },
+              "note": "Limit of 2 daily benefits per calendar year for all ambulance transportation"
+            }
+          ]
+        },
+        {
+          "title": "Lab and imaging",
+          "rows": [
+            {
+              "label": "Laboratory Services, per day: Surgical Pathology / Other Laboratory Services",
+              "values": {
+                "ElitePlus": "$300 / $50",
+                "Elite": "$300 / $50",
+                "ClassicPlus": "$200 / $50",
+                "Classic": "$200 / $50"
+              }
+            },
+            {
+              "label": "Radiology Services, per day: MRI / PET scan / CT scan / mammogram / other radiology tests",
+              "values": {
+                "ElitePlus": "$700/$700/$700/$300/$250",
+                "Elite": "$600/$600/$600/$300/$250",
+                "ClassicPlus": "$500/$500/$500/$250/$200",
+                "Classic": "$300/$300/$300/$250/$200"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Prescriptions",
+          "rows": [
+            {
+              "label": "Prescription Benefit (per day)",
+              "values": {
+                "ElitePlus": "$75",
+                "Elite": "$50",
+                "ClassicPlus": "$50",
+                "Classic": "$25"
+              },
+              "key": true,
+              "note": "$750 calendar year maximum"
+            }
+          ]
+        },
+        {
+          "title": "Other benefits",
+          "rows": [
+            {
+              "label": "Therapy Services (per day for physical, occupational, speech)",
+              "values": {
+                "ElitePlus": "$75",
+                "Elite": "$75",
+                "ClassicPlus": "$50",
+                "Classic": "$50"
+              }
+            },
+            {
+              "label": "Calendar year limit for all Outpatient Benefits",
+              "values": {
+                "ElitePlus": "$8,000",
+                "Elite": "$6,000",
+                "ClassicPlus": "$4,000",
+                "Classic": "$4,000"
+              }
+            },
+            {
+              "label": "Cancer Benefit: Radiation, Chemotherapy & Immunotherapy (per day / 40 days per calendar year)",
+              "values": {
+                "ElitePlus": "$2,000",
+                "Elite": "$2,000",
+                "ClassicPlus": "$1,000",
+                "Classic": "$1,000"
+              },
+              "key": true
+            },
+            {
+              "label": "Allergy Shots and Immunization, child only (per day allergy shots / immunizations)",
+              "values": {
+                "*": "$10/$25"
+              },
+              "note": "$100 calendar year maximum"
+            },
+            {
+              "label": "Lifetime Maximum",
+              "values": {
+                "*": "$5,000,000"
+              }
+            }
+          ]
+        }
+      ],
+      "notes": [
+        "A Hospital Confinement and other Fixed Indemnity Insurance Policy. Benefits are per Covered Person and are paid in daily amounts without regard to the costs of services rendered. Not major medical coverage.",
+        "A $7.00 monthly administration fee for the value-added services (First Health Network, RxEDO) is included in the premium (not included in Child Only Policy).",
+        "Flat-dollar surgery amounts (not a multiple of the fee schedule), no Hospital Observation benefit.",
+        "No Specified Disease Rider in this brochure."
+      ]
+    },
+    {
+      "code": "AFC18-BR_0424",
+      "file": "AFC18-BR_0424 (OR Affordable Choice - Affordable Choice 18 Brochure).pdf",
+      "states": [
+        "OR"
+      ],
+      "page": "4",
+      "sections": [
+        {
+          "title": "Doctor office visits",
+          "rows": [
+            {
+              "label": "Doctor's Office Visit (per day / days per calendar year)",
+              "values": {
+                "ElitePlus": "$100/4 days",
+                "Elite": "$75/4 days",
+                "ClassicPlus": "$75/3 days",
+                "Classic": "$50/3 days"
+              },
+              "key": true,
+              "note": "No rollover provision in this brochure"
+            }
+          ]
+        },
+        {
+          "title": "Preventive care",
+          "rows": [
+            {
+              "label": "Preventative Services: per Colonoscopy / Pap / PSA",
+              "values": {
+                "*": "$300/$100/$100"
+              },
+              "note": "Counts toward the calendar year limit for all Outpatient Benefits"
+            }
+          ]
+        },
+        {
+          "title": "Hospital",
+          "rows": [
+            {
+              "label": "Inpatient Hospital Confinement (per Inpatient Day)",
+              "values": {
+                "ElitePlus": "$5,000",
+                "Elite": "$3,000",
+                "ClassicPlus": "$2,000",
+                "Classic": "$1,500"
+              },
+              "key": true,
+              "note": "$1,000,000 calendar year limit (Inpatient Hospital Confinement / Building Benefit Injury Reimbursement combined)"
+            },
+            {
+              "label": "Hospital Admission Benefit (for the first Inpatient Day per calendar year)",
+              "values": {
+                "ElitePlus": "$3,000",
+                "Elite": "$2,000",
+                "ClassicPlus": "$1,000",
+                "Classic": "$1,000"
+              },
+              "key": true
+            },
+            {
+              "label": "Building Benefit Injury Reimbursement: Year 2 (per day)",
+              "values": {
+                "ElitePlus": "$6,250",
+                "Elite": "$3,750",
+                "ClassicPlus": "$2,500",
+                "Classic": "$1,875"
+              },
+              "note": "Inpatient Hospitalization Benefits increase 25% each year, years 2-5, for injury-related hospital stays"
+            },
+            {
+              "label": "Building Benefit Injury Reimbursement: Year 3 (per day)",
+              "values": {
+                "ElitePlus": "$7,500",
+                "Elite": "$4,500",
+                "ClassicPlus": "$3,000",
+                "Classic": "$2,250"
+              }
+            },
+            {
+              "label": "Building Benefit Injury Reimbursement: Year 4 (per day)",
+              "values": {
+                "ElitePlus": "$8,750",
+                "Elite": "$5,250",
+                "ClassicPlus": "$3,500",
+                "Classic": "$2,625"
+              }
+            },
+            {
+              "label": "Building Benefit Injury Reimbursement: Year 5 (per day)",
+              "values": {
+                "ElitePlus": "$10,000",
+                "Elite": "$6,000",
+                "ClassicPlus": "$4,000",
+                "Classic": "$3,000"
+              }
+            },
+            {
+              "label": "Inpatient Hospital Confinement / Building Benefit Injury Reimbursement calendar year limit",
+              "values": {
+                "*": "$1,000,000 calendar year limit"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Surgery",
+          "rows": [
+            {
+              "label": "Surgery Benefit (inpatient and outpatient, daily)",
+              "values": {
+                "ElitePlus": "3 X the policy fee schedule",
+                "Elite": "2.5 X the policy fee schedule",
+                "ClassicPlus": "2 X the policy fee schedule",
+                "Classic": "1 X the policy fee schedule"
+              },
+              "key": true,
+              "note": "The reimbursement schedule for 1 unit is similar to what is payable under the Medicare Physician Fee Schedule for surgeries. Maximum Benefit $50,000 per calendar year."
+            },
+            {
+              "label": "Ambulatory Surgical Benefit (per day, outpatient surgery in an Ambulatory Surgical Center or Outpatient Hospital facility)",
+              "values": {
+                "ElitePlus": "$3,000",
+                "Elite": "$2,500",
+                "ClassicPlus": "$2,000",
+                "Classic": "$1,000"
+              },
+              "note": "Payable in addition to the surgical and anesthesia benefits"
+            },
+            {
+              "label": "Daily Assistant Surgeon Benefit",
+              "values": {
+                "*": "Pays 20% of the eligible surgical benefit"
+              }
+            },
+            {
+              "label": "Daily Anesthesiologist Benefit",
+              "values": {
+                "*": "Pays 25% of the eligible surgical benefit"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Emergency and ambulance",
+          "rows": [
+            {
+              "label": "Emergency Room or Urgent Care (per day / limit of 1 daily benefit per calendar year)",
+              "values": {
+                "ElitePlus": "$375",
+                "Elite": "$250",
+                "ClassicPlus": "$250",
+                "Classic": "$125"
+              },
+              "key": true,
+              "note": "One combined benefit for ER or urgent care"
+            },
+            {
+              "label": "Ground and Air Ambulance (per day for ground / per day for air)",
+              "values": {
+                "ElitePlus": "$150/$1,000",
+                "Elite": "$100/$1,000",
+                "ClassicPlus": "$100/$1,000",
+                "Classic": "$100/$500"
+              },
+              "note": "Limit of 2 daily benefits per calendar year for all ambulance transportation"
+            }
+          ]
+        },
+        {
+          "title": "Lab and imaging",
+          "rows": [
+            {
+              "label": "Laboratory Services, per day: surgical pathology / other laboratory services",
+              "values": {
+                "ElitePlus": "$100/$50",
+                "Elite": "$100/$25",
+                "ClassicPlus": "$100/$25",
+                "Classic": "$100/$25"
+              }
+            },
+            {
+              "label": "Radiology Services, per day: MRI / PET scan / CT scan / mammogram / other radiology tests",
+              "values": {
+                "ElitePlus": "$500/$250/$200/$150/$75",
+                "Elite": "$500/$250/$200/$150/$75",
+                "ClassicPlus": "$250/$250/$200/$100/$50",
+                "Classic": "$250/$250/$200/$100/$50"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Prescriptions",
+          "rows": [
+            {
+              "label": "Prescription Benefit (per day)",
+              "values": {
+                "ElitePlus": "$75",
+                "Elite": "$50",
+                "ClassicPlus": "$50",
+                "Classic": "$25"
+              },
+              "key": true,
+              "note": "$750 calendar year maximum"
+            }
+          ]
+        },
+        {
+          "title": "Other benefits",
+          "rows": [
+            {
+              "label": "Therapy Services (per day for physical, occupational, speech)",
+              "values": {
+                "*": "$25"
+              }
+            },
+            {
+              "label": "Calendar year limit for all Outpatient Benefits",
+              "values": {
+                "ElitePlus": "$3,000",
+                "Elite": "$2,000",
+                "ClassicPlus": "$2,000",
+                "Classic": "$1,000"
+              }
+            },
+            {
+              "label": "Cancer Benefit: Radiation, Chemotherapy & Immunotherapy (per day / 40 days per calendar year)",
+              "values": {
+                "ElitePlus": "$2,000",
+                "Elite": "$2,000",
+                "ClassicPlus": "$1,000",
+                "Classic": "$1,000"
+              },
+              "key": true
+            },
+            {
+              "label": "Allergy Shots and Immunization, child only (per day allergy shots / immunizations)",
+              "values": {
+                "*": "$10/$25"
+              },
+              "note": "$100 calendar year maximum"
+            },
+            {
+              "label": "Lifetime Maximum",
+              "values": {
+                "*": "$5,000,000"
+              }
+            }
+          ]
+        }
+      ],
+      "notes": [
+        "A Hospital Confinement and other Fixed Indemnity Insurance Policy. Benefits are per Covered Person and are paid in daily amounts without regard to the costs of services rendered. Not major medical coverage.",
+        "A $7.00 monthly administration fee for the value-added services (First Health Network, RxEDO) is included in the premium (not included in Child Only Policy).",
+        "Affordable Choice 18: an older, smaller plan design. Fewer doctor visits with no rollover, one combined ER-or-urgent-care benefit, lower outpatient/lab/imaging amounts and outpatient limits, no Hospital Observation benefit.",
+        "Cover lists \"No Deductibles\".",
+        "No Specified Disease Rider in this brochure."
+      ]
+    },
+    {
+      "code": "AFC18-NM-BR_0424",
+      "file": "AFC18-NM-BR_0424 (NM Affordable Choice - Affordable Choice 18 Brochure).pdf",
+      "states": [
+        "NM"
+      ],
+      "page": "4",
+      "sameAs": "AFC18-BR_0424",
+      "notes": [
+        "A Hospital Confinement and other Fixed Indemnity Insurance Policy. Benefits are per Covered Person and are paid in daily amounts without regard to the costs of services rendered. Not major medical coverage.",
+        "A $7.00 monthly administration fee for the value-added services (First Health Network, RxEDO) is included in the premium (not included in Child Only Policy).",
+        "Benefit table identical to AFC18-BR_0424 (Affordable Choice 18).",
+        "No Specified Disease Rider in this brochure."
+      ]
+    }
+  ]
+}

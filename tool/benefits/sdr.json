@@ -1,0 +1,315 @@
+{
+ "product": "sdr",
+ "name": "Specified Disease Rider (Affordable Choice)",
+ "carrier": "ManhattanLife",
+ "columns": {
+  "by": "sdr",
+  "values": [
+   "*"
+  ]
+ },
+ "tokens": {
+  "{sdr.max}": "the calendar year maximum chosen on the row ($250,000 or $500,000)",
+  "{sdr.ded}": "the deductible chosen on the row ($25,000, $50,000, $75,000 or $100,000)"
+ },
+ "brochures": [
+  {
+   "code": "AFC7010-BR_1025",
+   "file": "AFC7010-BR_1025 (AL Affordable Choice - Affordable Choice Enhanced with Specified Disease Brochure).pdf",
+   "states": [
+    "AL",
+    "AR",
+    "AZ",
+    "DE",
+    "GA",
+    "HI",
+    "LA",
+    "ME",
+    "MI",
+    "MO",
+    "MS",
+    "NC",
+    "NE",
+    "NV",
+    "OK",
+    "SC",
+    "TN",
+    "WI",
+    "WV",
+    "WY"
+   ],
+   "page": "6 (example on 3)",
+   "sections": [
+    {
+     "title": "How the rider pays",
+     "rows": [
+      {
+       "label": "Calendar Year Maximum",
+       "values": {
+        "*": "{sdr.max} per calendar year"
+       },
+       "key": true,
+       "note": "Options: $250,000 or $500,000"
+      },
+      {
+       "label": "Deductible",
+       "values": {
+        "*": "{sdr.ded}"
+       },
+       "key": true,
+       "note": "Options: $25,000, $50,000, $75,000 or $100,000"
+      },
+      {
+       "label": "How benefits are paid",
+       "values": {
+        "*": "Total actual charges, less the Affordable Choice base plan payment, less the deductible (paid by the insured to the provider); the rider pays the remaining charges up to {sdr.max} per calendar year"
+       },
+       "key": true,
+       "note": "From the brochure's page-3 worked example ($127,000 charges, $25,000 deductible, $250,000 CY max)"
+      },
+      {
+       "label": "Lifetime maximum",
+       "values": {
+        "*": "$2,000,000"
+       },
+       "key": true
+      },
+      {
+       "label": "What it covers",
+       "values": {
+        "*": "Benefits that are a direct result of a Specified Disease"
+       }
+      }
+     ]
+    },
+    {
+     "title": "Covered conditions",
+     "rows": [
+      {
+       "label": "Covered conditions (14)",
+       "values": {
+        "*": "Amputation; Amyotrophic Lateral Sclerosis (ALS); Angioplasty; Cancer (Internal Cancer); Coronary Artery Bypass Surgery; End Stage Renal Failure; Heart Attack; Heart Valve Surgery; Implantable Cardiac Defibrillator; Joint Replacement; Major Organ Failure/Major Organ Transplant; Pacemaker Implant; Ruptured Aneurysm; Stroke (Ischemic or Hemorrhagic)"
+       },
+       "key": true
+      }
+     ]
+    },
+    {
+     "title": "Eligibility",
+     "rows": [
+      {
+       "label": "Children-only coverage",
+       "values": {
+        "*": "Rider not available for children-only coverage"
+       },
+       "key": true
+      }
+     ]
+    }
+   ],
+   "notes": [
+    "Optional rider on Affordable Choice. Four deductible options ($25,000, $50,000, $75,000, $100,000) and two calendar year maximum options ($250,000, $500,000)."
+   ]
+  },
+  {
+   "code": "AFC7010-IABR_0326",
+   "file": "AFC7010-IABR_0326 (IA Affordable Choice - Affordable Choice Enhanced with Specified Disease Brochure).pdf",
+   "states": [
+    "IA"
+   ],
+   "page": "6 (example on 3)",
+   "sameAs": "AFC7010-BR_1025",
+   "notes": [
+    "Optional rider on Affordable Choice. Four deductible options ($25,000, $50,000, $75,000, $100,000) and two calendar year maximum options ($250,000, $500,000).",
+    "Rider page identical to AFC7010-BR_1025."
+   ]
+  },
+  {
+   "code": "AFC7010-ILBR_0626",
+   "file": "AFC7010-ILBR_0626 (IL Affordable Choice - Affordable Choice with Specified Disease Brochure).pdf",
+   "states": [
+    "IL"
+   ],
+   "page": "6 (example on 3)",
+   "sameAs": "AFC7010-BR_1025",
+   "notes": [
+    "Optional rider on Affordable Choice. Four deductible options ($25,000, $50,000, $75,000, $100,000) and two calendar year maximum options ($250,000, $500,000).",
+    "Rider page identical to AFC7010-BR_1025."
+   ]
+  },
+  {
+   "code": "AFC7010-KYBR_1225",
+   "file": "AFC7010-KYBR_1225 (KY Affordable Choice - Affordable Choice Enhanced with Specified Disease Brochure).pdf",
+   "states": [
+    "KY"
+   ],
+   "page": "6 (example on 3)",
+   "sameAs": "AFC7010-BR_1025",
+   "notes": [
+    "Optional rider on Affordable Choice. Four deductible options ($25,000, $50,000, $75,000, $100,000) and two calendar year maximum options ($250,000, $500,000).",
+    "Rider page identical to AFC7010-BR_1025."
+   ]
+  },
+  {
+   "code": "AFC7010-MN-BR_0226",
+   "file": "AFC7010-MN-BR_0226 (MN Affordable Choice - Affordable Choice Enhanced W-Specified Disease Brochure).pdf",
+   "states": [
+    "MN"
+   ],
+   "page": "6 (example on 3)",
+   "sameAs": "AFC7010-BR_1025",
+   "notes": [
+    "Optional rider on Affordable Choice. Four deductible options ($25,000, $50,000, $75,000, $100,000) and two calendar year maximum options ($250,000, $500,000).",
+    "Rider page identical to AFC7010-BR_1025."
+   ]
+  },
+  {
+   "code": "AFC7010-MT-BR_0826",
+   "file": "AFC7010-MT-BR_0826 (MT Affordable Choice - Affordable Choice with Specified Disease).pdf",
+   "states": [
+    "MT"
+   ],
+   "page": "6 (example on 3)",
+   "sameAs": "AFC7010-BR_1025",
+   "notes": [
+    "Optional rider on Affordable Choice. Four deductible options ($25,000, $50,000, $75,000, $100,000) and two calendar year maximum options ($250,000, $500,000).",
+    "Rider page identical to AFC7010-BR_1025."
+   ]
+  },
+  {
+   "code": "AFC7010-OHBR_0626",
+   "file": "AFC7010-OHBR_0626 (OH Affordable Choice - Affordable Choice w-Specified Disease Brochure).pdf",
+   "states": [
+    "OH"
+   ],
+   "page": "6 (example on 3)",
+   "sameAs": "AFC7010-BR_1025",
+   "notes": [
+    "Optional rider on Affordable Choice. Four deductible options ($25,000, $50,000, $75,000, $100,000) and two calendar year maximum options ($250,000, $500,000).",
+    "Rider page identical to AFC7010-BR_1025."
+   ]
+  },
+  {
+   "code": "AFC7010-RIBR_0426",
+   "file": "AFC7010-RIBR_0426 (RI Affordable Choice - Affordable Choice Enhanced with Specified Disease Brochure).pdf",
+   "states": [
+    "RI"
+   ],
+   "page": "6 (example on 3)",
+   "sameAs": "AFC7010-BR_1025",
+   "notes": [
+    "Optional rider on Affordable Choice. Four deductible options ($25,000, $50,000, $75,000, $100,000) and two calendar year maximum options ($250,000, $500,000).",
+    "Rider page identical to AFC7010-BR_1025."
+   ]
+  },
+  {
+   "code": "AFC7010-SDBR_1025",
+   "file": "AFC7010-SDBR_1025 (SD Affordable Choice - Affordable Choice Enhanced with Specified Disease Brochure).pdf",
+   "states": [
+    "SD"
+   ],
+   "page": "6 (example on 3)",
+   "sameAs": "AFC7010-BR_1025",
+   "notes": [
+    "Optional rider on Affordable Choice. Four deductible options ($25,000, $50,000, $75,000, $100,000) and two calendar year maximum options ($250,000, $500,000).",
+    "Rider page identical to AFC7010-BR_1025."
+   ]
+  },
+  {
+   "code": "AFC7010-FLBR_1125",
+   "file": "AFC7010-FLBR_1125 (FL Affordable Choice - Affordable Choice Enhanced with Specified Disease Brochure).pdf",
+   "states": [
+    "FL"
+   ],
+   "page": "6 (example on 3)",
+   "sections": [
+    {
+     "title": "How the rider pays",
+     "rows": [
+      {
+       "label": "Calendar Year Maximum",
+       "values": {
+        "*": "{sdr.max} per calendar year"
+       },
+       "key": true,
+       "note": "Options: $250,000 or $500,000"
+      },
+      {
+       "label": "Deductible",
+       "values": {
+        "*": "{sdr.ded}"
+       },
+       "key": true,
+       "note": "Per insured person per calendar year under this policy. Options: $25,000, $50,000, $75,000 or $100,000"
+      },
+      {
+       "label": "How benefits are paid",
+       "values": {
+        "*": "Total actual charges, less the Affordable Choice base plan payment, less the deductible (paid by the insured to the provider); the rider pays the remaining charges up to {sdr.max} per calendar year"
+       },
+       "key": true,
+       "note": "From the brochure's page-3 worked example ($127,000 charges, $25,000 deductible, $250,000 CY max)"
+      },
+      {
+       "label": "Lifetime maximum",
+       "values": {
+        "*": "$2,000,000"
+       },
+       "key": true
+      },
+      {
+       "label": "What it covers",
+       "values": {
+        "*": "Benefits that are a direct result of a Specified Disease"
+       }
+      }
+     ]
+    },
+    {
+     "title": "Covered conditions",
+     "rows": [
+      {
+       "label": "Covered conditions (13)",
+       "values": {
+        "*": "Amputation; Amyotrophic Lateral Sclerosis (ALS); Angioplasty; Cancer (Internal Cancer); Coronary Artery Bypass Surgery; End Stage Renal Failure; Heart Attack; Heart Valve Surgery; Implantable Cardiac Defibrillator; Joint Replacement; Major Organ Failure/Major Organ Transplant; Pacemaker Implant; Stroke (Ischemic or Hemorrhagic)"
+       },
+       "key": true
+      }
+     ]
+    },
+    {
+     "title": "Eligibility",
+     "rows": [
+      {
+       "label": "Children-only coverage",
+       "values": {
+        "*": "Rider not available for children-only coverage"
+       },
+       "key": true
+      }
+     ]
+    }
+   ],
+   "notes": [
+    "Optional rider on Affordable Choice. Four deductible options ($25,000, $50,000, $75,000, $100,000) and two calendar year maximum options ($250,000, $500,000).",
+    "FL lists 13 covered conditions: Ruptured Aneurysm is NOT on the FL list."
+   ]
+  }
+ ],
+ "notOffered": {
+  "states": [
+   "AK",
+   "CA",
+   "IN",
+   "MD",
+   "ND",
+   "NM",
+   "OR",
+   "PA",
+   "TX",
+   "UT",
+   "VA"
+  ],
+  "reason": "The Affordable Choice brochure for this state has no Specified Disease Rider."
+ }
+}

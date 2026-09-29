@@ -1,0 +1,261 @@
+{
+  "product": "gap",
+  "name": "Out-of-Pocket Protection (Gap)",
+  "carrier": "ManhattanLife",
+  "columns": {
+    "by": "*",
+    "values": [
+      "*"
+    ]
+  },
+  "tokens": {
+    "{gap.daily}": "the daily inpatient benefit chosen on the row ($100 or $200)",
+    "{gap.adm}": "the hospital admission benefit chosen on the row ($2,500, $5,000 or $6,350)",
+    "{gap.outp}": "the outpatient surgery benefit chosen on the row ($1,000, $2,000 or $3,000)"
+  },
+  "brochures": [
+    {
+      "code": "GAP15-BR_0320",
+      "file": "GAP15-BR_0320 (AL Out-of-Pocket Protection (Gap) - Out-of-Pocket Brochure).pdf",
+      "states": [
+        "AK",
+        "AL",
+        "AR",
+        "AZ",
+        "CA",
+        "FL",
+        "GA",
+        "HI",
+        "IA",
+        "IL",
+        "IN",
+        "KY",
+        "LA",
+        "MD",
+        "ME",
+        "MI",
+        "MN",
+        "MO",
+        "MS",
+        "MT",
+        "NC",
+        "ND",
+        "NE",
+        "NM",
+        "NV",
+        "OH",
+        "OK",
+        "SC",
+        "SD",
+        "TN",
+        "TX",
+        "WA",
+        "WI",
+        "WV",
+        "WY"
+      ],
+      "page": "3",
+      "sections": [
+        {
+          "title": "Doctor visits",
+          "rows": [
+            {
+              "label": "Doctor office visit",
+              "values": {
+                "*": "$50, 2 per year, per insured person"
+              },
+              "key": true
+            }
+          ]
+        },
+        {
+          "title": "Hospital stay",
+          "rows": [
+            {
+              "label": "What triggers payment",
+              "values": {
+                "*": "Admission as a resident inpatient — assigned to a hospital bed for an overnight stay for medically necessary reasons resulting from injury or illness on the advice of a physician"
+              },
+              "key": true,
+              "note": "The admission and daily benefits pay only on an inpatient admission. The brochure does not say observation stays or ER visits without admission qualify. A day is a 24 hour period where room and board is charged."
+            },
+            {
+              "label": "Hospital admission benefit",
+              "values": {
+                "*": "{gap.adm} when admitted to a hospital as a resident inpatient, 1 per year"
+              },
+              "key": true,
+              "note": "In UT, 1 per each period of confinement."
+            },
+            {
+              "label": "Daily inpatient hospital confinement",
+              "values": {
+                "*": "{gap.daily} a day while confined as a resident inpatient, maximum of 10 days per hospital confinement"
+              },
+              "key": true,
+              "note": "ME, TX and UT: 31 days. FL: payable for the first 20 days of confinement, then $10/$20 for the next 11 days depending on benefit level selected. Not payable for Mental/Nervous disorders and substance abuse (in UT, or substance disorder)."
+            }
+          ]
+        },
+        {
+          "title": "Surgery",
+          "rows": [
+            {
+              "label": "Outpatient surgery",
+              "values": {
+                "*": "{gap.outp} for surgical services in an Ambulatory Surgical Center or Outpatient Hospital Facility, 2 per year"
+              },
+              "key": true,
+              "when": "gap.outp>0",
+              "note": "Brochure: refer to policy for limitations on this benefit."
+            }
+          ]
+        },
+        {
+          "title": "Emergency",
+          "rows": [
+            {
+              "label": "Emergency accident benefit",
+              "values": {
+                "*": "$250 maximum benefit per injury, 4 per year — injury requiring emergency care by a physician in an emergency room or urgent care facility, treated within 72 hours of the injury"
+              },
+              "key": true,
+              "when": "gap.ea>0",
+              "note": "Injury only. FL: maximum 2 per year, and payable only if you are confined as an inpatient within 24 hours of emergency treatment."
+            }
+          ]
+        },
+        {
+          "title": "Other",
+          "rows": [
+            {
+              "label": "Pregnancy",
+              "values": {
+                "*": "Covers complications of pregnancy, but not the pregnancy itself"
+              },
+              "key": true,
+              "note": "In FL, MD, MS, NM and OH the policy covers pregnancy and complications of pregnancy."
+            },
+            {
+              "label": "Renewability",
+              "values": {
+                "*": "Conditionally renewable to age 69 or until you become insured under Medicare, whichever is earliest"
+              },
+              "note": "CA: to age 65. The company may change rates on all policies of this class in the entire state."
+            }
+          ]
+        }
+      ],
+      "notes": [
+        "Pays directly to you unless you assign benefits to your provider(s); pays in addition to all other insurance; no deductibles; no networks.",
+        "Claims: fill out the claim form and attach the itemized statement.",
+        "THIS POLICY PROVIDES LIMITED BENEFITS. Supplement to health insurance, not a substitute for major medical coverage.",
+        "The brochure lists no waiting period or pre-existing condition limitation; full limitations are only at disclosure.manhattanlife.com.",
+        "Doctor office visit ($50, 2 per year) is a mandatory benefit on every policy, though POP Pro's row summary does not show it.",
+        "Policy forms C-GAPJ15, C-GAPJ15-LA, C-GAPJ15-OK, C-GAPJ15-TX (including state variations)."
+      ]
+    },
+    {
+      "code": "GAP15-PA-BR_0320",
+      "file": "GAP15-PA-BR_0320 (PA Out-of-Pocket Protection (Gap) - Out-of-Pocket Brochure).pdf",
+      "states": [
+        "PA"
+      ],
+      "page": "3",
+      "sections": [
+        {
+          "title": "Doctor visits",
+          "rows": [
+            {
+              "label": "Doctor office visit",
+              "values": {
+                "*": "$50, 2 per year"
+              },
+              "key": true
+            }
+          ]
+        },
+        {
+          "title": "Hospital stay",
+          "rows": [
+            {
+              "label": "What triggers payment",
+              "values": {
+                "*": "Admission as a resident inpatient — assigned to a hospital bed for an overnight stay for medically necessary reasons resulting from injury or illness on the advice of a physician"
+              },
+              "key": true,
+              "note": "The admission and daily benefits pay only on an inpatient admission. The brochure does not say observation stays or ER visits without admission qualify. A day is a 24 hour period where room and board is charged."
+            },
+            {
+              "label": "Hospital admission benefit",
+              "values": {
+                "*": "{gap.adm} when admitted to a hospital as a resident inpatient, 1 per each period of confinement"
+              },
+              "key": true
+            },
+            {
+              "label": "Daily inpatient hospital confinement",
+              "values": {
+                "*": "{gap.daily} a day for the first 20 days, then $10 a day ($100 level) or $20 a day ($200 level) for the same confinement, up to 31 days per period of confinement"
+              },
+              "key": true,
+              "note": "Not payable if hospitalized for treatment of Mental/Nervous Disorders and substance abuse."
+            }
+          ]
+        },
+        {
+          "title": "Surgery",
+          "rows": [
+            {
+              "label": "Outpatient surgery",
+              "values": {
+                "*": "{gap.outp} for the day the outpatient surgery is performed in an Ambulatory Surgical Center or Outpatient Hospital Facility, 2 per year"
+              },
+              "key": true,
+              "when": "gap.outp>0",
+              "note": "Brochure: refer to policy for limitations on this benefit."
+            }
+          ]
+        },
+        {
+          "title": "Emergency",
+          "rows": [
+            {
+              "label": "Emergency room benefit",
+              "values": {
+                "*": "$250 per day for emergency room treatment of an injury or sickness, per injury/sickness (no max) — only payable when confined in a hospital as an inpatient within 24 hours of the emergency room visit"
+              },
+              "key": true,
+              "when": "gap.ea>0",
+              "note": "Unlike other states, PA covers sickness as well as injury, but only if the ER visit leads to an inpatient admission within 24 hours."
+            }
+          ]
+        },
+        {
+          "title": "Other",
+          "rows": [
+            {
+              "label": "Pregnancy",
+              "values": {
+                "*": "Covers complications of pregnancy, but not the pregnancy itself"
+              }
+            },
+            {
+              "label": "Renewability",
+              "values": {
+                "*": "Conditionally renewable to age 69"
+              },
+              "note": "The company may change rates on all policies of this class in the entire state."
+            }
+          ]
+        }
+      ],
+      "notes": [
+        "Pays directly to you unless you assign benefits to your provider(s); pays in addition to all other insurance; no deductibles; no networks.",
+        "THIS POLICY PROVIDES LIMITED BENEFITS. Supplement to health insurance, not a substitute for major medical coverage.",
+        "The brochure lists no waiting period or pre-existing condition limitation; full limitations are only at disclosure.manhattanlife.com.",
+        "Policy form C-GAPJ15-PA; underwritten by ManhattanLife Insurance and Annuity Company and Family Life Insurance Company."
+      ]
+    }
+  ]
+}

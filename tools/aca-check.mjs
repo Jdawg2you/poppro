@@ -137,7 +137,34 @@ if (mode === 'engine') {
   ok(html.includes('class="pbsave"') && html.includes('Room for a TFRA'), 'builder savings row per column');
   ok(html.includes("S.intake.anchor=$('in_anchor').value||'aca'"), 'anchor defaults to ACA when unset');
   if (!fails) console.log('intake structure checks passed');
+} else if (mode === 'benefits') {
+  const a = html.indexOf('/* ACA-ENGINE:BEGIN */'), b = html.indexOf('/* ACA-ENGINE:END */');
+  const ctx = {}; vm.createContext(ctx); vm.runInContext(html.slice(a, b), ctx);
+  const D = { product: 'x', name: 'Test', columns: { by: 'level', values: ['Lo', 'Hi'] }, brochures: [
+    { code: 'BASE', states: ['TX', 'OK'], page: '2', sections: [
+      { title: 'Doctor', rows: [ { label: 'Visits', key: true, values: { Lo: '$50 x 3', Hi: '$75 x 5' } }, { label: 'Wellness', values: { '*': '$100' } } ] },
+      { title: 'Hospital', rows: [ { label: 'Per stay', key: true, values: { '*': '{his.ben} per stay' } }, { label: 'Outpatient', when: 'his.outp>0', values: { '*': '{his.outp}' } } ] } ],
+      notes: ['12-month pre-existing'] },
+    { code: 'FLX', states: ['FL'], page: '1', sections: [ { title: 'Doctor', rows: [ { label: 'Visits', key: true, values: { Lo: '$40 x 2', Hi: '$60 x 4' } } ] } ] },
+    { code: 'ALIAS', states: ['GA'], sameAs: 'BASE' } ] };
+  const cfg = { his: { ben: 5000, outp: 0 } };
+  ok(ctx.benBrochure(D, 'tx').code === 'BASE', 'state picks its own brochure (case-insensitive)');
+  ok(ctx.benBrochure(D, 'FL').code === 'FLX', 'FL gets its own brochure');
+  ok(ctx.benBrochure(D, 'GA').sections.length === 2 && ctx.benBrochure(D, 'GA').code === 'ALIAS', 'sameAs resolves the shared tables, keeps its own code');
+  ok(ctx.benBrochure(D, 'NY') === null, 'no brochure for an unsold state');
+  let m = ctx.benModel(D, 'TX', 'Lo', cfg);
+  ok(m.key.length === 2 && m.key[0].value === '$50 x 3' && m.key[1].value === '$5,000 per stay', 'key rows first, column picked, token filled');
+  ok(m.sections.length === 1 && m.sections[0].rows.length === 1 && m.sections[0].rows[0].label === 'Wellness', 'non-key rows in sections; outpatient hidden when outp is 0');
+  m = ctx.benModel(D, 'TX', 'Lo', { his: { ben: 5000, outp: 1000 } });
+  ok(m.sections.some(s => s.rows.some(r => r.label === 'Outpatient' && r.value === '$1,000')), 'when-row appears once the option is on');
+  const lo = ctx.benModel(D, 'TX', 'Lo', cfg), hi = ctx.benModel(D, 'TX', 'Hi', cfg), cmp = ctx.benCompare(lo, hi);
+  const v = cmp.find(r => r.label === 'Visits'), w = cmp.find(r => r.label === 'Wellness');
+  ok(v.diff && v.a === '$50 x 3' && v.b === '$75 x 5' && !w.diff, 'compare marks the difference, not the sameness');
+  ok(ctx.benWhen('gap.ea>0', { gap: { ea: 1 } }) && !ctx.benWhen('gap.ea>0', { gap: { ea: 0 } }), 'when expressions');
+  // Positive control on the real page: every builder row that should have an ⓘ maps to a data file name.
+  ok(/BEN_FILE=\{afc:'afc',sdr:'sdr',his:'his',acc:'acc',gap:'gap',chas:'chas',hhc:'hhc',dvh:'dvh',lbp:'lb',lbs:'lb'\}/.test(html), 'row -> data file map covers every product row');
+  if (!fails) console.log('benefit drawer checks passed');
 } else {
-  console.log('usage: node tools/aca-check.mjs engine|structure'); process.exit(2);
+  console.log('usage: node tools/aca-check.mjs engine|structure|benefits'); process.exit(2);
 }
 process.exit(fails ? 1 : 0);
