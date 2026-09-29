@@ -1067,7 +1067,11 @@ function pGAP(R,st,age,hh,cfg){
    can't price someone (over 50, or sex not entered) it falls back to Americo Term 125 and says so. */
 function pLB1(pp,lc){
   var car=lc.carrier||'moo', r=lbRate(car,pp.age,pp.sex,pp.tob,lc.face,'20'), note='';
-  if(r.price==null&&car==='moo'){ var r2=lbRate('americo',pp.age,pp.sex,pp.tob,lc.face,'20'); if(r2.price!=null){ note='Americo used — Mutual of Omaha: '+(r.note||'n/a'); r=r2; car='americo'; } }
+  if(r.price==null&&car==='moo'){ var r2=lbRate('americo',pp.age,pp.sex,pp.tob,lc.face,'20'); if(r2.price!=null){
+      var why=/sex/.test(r.note||'')?'Mutual of Omaha needs the '+pp.tag.toLowerCase()+'’s sex at birth — add it on the Intake and this switches back to Mutual of Omaha.'
+             :/issue ages/.test(r.note||'')?'Mutual of Omaha Term Life Express only issues to age 50; the '+pp.tag.toLowerCase()+' is '+pp.age+'.'
+             :'Mutual of Omaha: '+(r.note||'no rate')+'.';
+      note='Priced with Americo — '+why; r=r2; car='americo'; } }
   if(r.price==null) return {price:null,note:pp.tag+': '+(r.note||'no term rate')};
   return {price:r.price,note:note,carrier:LB_RATES[car].label};
 }
@@ -3532,7 +3536,9 @@ function pbControls(k,c){
   if(k==='chas'){ var a=[0]; for(var v=5000;v<=75000;v+=5000) a.push(v);
     return '<div class="two"><div class="f">Cancer<select data-f="chas.cancer">'+pbOpts(pbAmt(a),c.chas.cancer)+'</select></div><div class="f">Heart attack &amp; stroke<select data-f="chas.hs">'+pbOpts(pbAmt(a),c.chas.hs)+'</select></div></div>'
     +'<div style="font-size:11.5px;color:var(--muted)">Two separate policies — if the budget shrinks, drop Heart &amp; Stroke first.</div>'; }
-  if(k==='lbp'||k==='lbs'){ var w=k.slice(2), lc=c.lb[w]; return '<div class="two"><div class="f">Coverage<select data-f="lb.'+w+'.face">'+pbOpts([['25000','$25,000'],['50000','$50,000']],lc.face)+'</select></div><div class="f">Carrier<select data-f="lb.'+w+'.carrier">'+pbOpts([['moo','Mutual of Omaha'],['americo','Americo']],lc.carrier||'moo')+'</select></div></div>'
+  if(k==='lbp'||k==='lbs'){ var w=k.slice(2), lc=c.lb[w], pp=lbPersons().filter(function(x){ return x.k===w; })[0], rr=pp?pLB1(pp,lc):null;
+    var fb=(rr&&rr.note)?'<div style="font-size:12px;color:var(--maroon);font-weight:600">'+rr.note+'</div>':'';
+    return fb+'<div class="two"><div class="f">Coverage<select data-f="lb.'+w+'.face">'+pbOpts([['25000','$25,000'],['50000','$50,000']],lc.face)+'</select></div><div class="f">Carrier<select data-f="lb.'+w+'.carrier">'+pbOpts([['moo','Mutual of Omaha'],['americo','Americo']],lc.carrier||'moo')+'</select></div></div>'
     +'<div style="font-size:11.5px;color:var(--muted)">20-year term with living benefits for this person. $100K and 30-year rates aren’t loaded yet.</div>'; }
   if(k==='hhc') return '<div class="f">Plan<select data-f="hhc">'+pbOpts([['Classic','Classic'],['Premier','Premier'],['Deluxe','Deluxe']],c.hhc)+'</select></div>';
   if(k==='dvh') return '<div class="two"><div class="f">Annual max<select data-f="dvh.max">'+pbOpts(pbAmt(['1000','1500','3000','5000']),c.dvh.max)+'</select></div><div class="f">Deductible<select data-f="dvh.ded">'+pbOpts([['0','$0'],['100','$100']],c.dvh.ded)+'</select></div></div>';
