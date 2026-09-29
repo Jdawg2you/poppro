@@ -383,6 +383,8 @@
   .portalbtn.gold{background:var(--gold-pill);color:#26324a;border-color:#b0872f}
   .portalbtn.green{background:var(--green);border-color:var(--green)}
   .portalbtn.maroon{background:var(--maroon);border-color:var(--maroon)}
+  .portalbtn.cigna{background:#0a6aa1;border-color:#0a6aa1}
+  .portalbtn.lifex{background:#2d7fa6;border-color:#2d7fa6}
   .portalbtn.mailalt{background:#fff;color:#26324a;border:1px solid #c9c0a8}
   .portalbtn.mailalt:hover{background:#f3efe3;filter:none}
   .estcard{background:#fff;border:1px dashed #cdbf9c;border-radius:12px;padding:14px 16px;margin:16px 0}
@@ -917,6 +919,8 @@ body.client #classicWrap>summary{display:none}
         <a class="portalbtn" id="lnkManhattan" href="#" target="_blank" rel="noopener">Manhattan Life Producer Portal &#8599;</a>
         <a class="portalbtn green" id="lnkMutual" href="#" target="_blank" rel="noopener">Living Benefits — Mutual of Omaha &#8599;</a>
         <a class="portalbtn maroon" id="lnkAmerico" href="#" target="_blank" rel="noopener">Living Benefits — Americo &#8599;</a>
+        <a class="portalbtn cigna" id="lnkCigna" href="#" target="_blank" rel="noopener">Cigna PPO (USA Health / Triad) — 1Enrollment &#8599;</a>
+        <a class="portalbtn lifex" id="lnkLifex" href="#" target="_blank" rel="noopener" style="display:none">LifeX — E123 enrollment site &#8599;</a>
       </div>
       <div style="margin-top:4px">
         <a class="portalbtn mailalt" id="gmailBtn" href="#" target="_blank" rel="noopener"><svg width="16" height="13" viewBox="0 0 256 193" xmlns="http://www.w3.org/2000/svg" style="flex:0 0 auto"><path fill="#4285F4" d="M58.182 192.05V93.14L27.507 65.077 0 49.504v125.09c0 9.658 7.825 17.455 17.455 17.455z"/><path fill="#34A853" d="M197.818 192.05h40.727c9.659 0 17.455-7.826 17.455-17.455V49.505l-31.156 17.837-27.026 25.798z"/><path fill="#EA4335" d="M58.182 93.14L128 145.504l69.818-52.364V17.504L128 69.868 58.182 17.504z"/><path fill="#FBBC04" d="M197.818 17.504V93.14L256 49.504V26.31c0-21.585-24.64-33.89-41.89-20.945z"/><path fill="#C5221F" d="M0 49.504l58.182 43.636V17.504L41.89 5.366C24.61-7.58 0 4.726 0 26.31z"/></svg> Email to client — Gmail</a>
@@ -1872,6 +1876,11 @@ function buildFlag(who){
 /* Carrier producer portals (enroll step) */
 var MANHATTAN_URL='https://producer.manhattanlife.com/life/account/login.aspx?AsAgent';
 var MUTUAL_URL='https://login.mutualofomaha.com/oauth2/ausf54nluEW16RGQm4h6/v1/authorize?response_type=code&redirect_uri=https%3A%2F%2Fproducer.mutualofomaha.com%2Fenterprise%2Fmyportal%2Flogin-callback&state=aHR0cHM6Ly9wcm9kdWNlci5tdXR1YWxvZm9tYWhhLmNvbS9lbnRlcnByaXNlL215cG9ydGFs&client_id=0oavclbvcTNHu4Bpz4h6&response_mode=form_post&scope=openid%20email%20profile%20user-type%20entitlements';
+/* Cigna (USA Health / Triad) enrolls on 1Enrollment; the id is the agent id USA Health issued
+   (994524). Each carrier on 1Enrollment issues its own id - Iron Health is 994527 - so never swap them. */
+var CIGNA_URL='https://www.1enrollment.com/index.cfm?id=994524';
+/* LifeX enrolls on the recruiter's own E123 enrollment website (LifeX recruiter FAQ). Blank hides the button. */
+var LIFEX_URL='';
 var AMERICO_URL='https://account.americoagent.com/Identity/Account/Login/?returnUrl=https%3a%2f%2fportal.americoagent.com%2f';
 
 /* ===== Real AFC rates from the ManhattanLife AFC Rate Guide (AFC-RATES 0626) =====
@@ -3302,6 +3311,8 @@ function renderEnroll(){
   $('lnkManhattan').href=MANHATTAN_URL;
   $('lnkMutual').href=MUTUAL_URL;
   $('lnkAmerico').href=AMERICO_URL;
+  $('lnkCigna').href=CIGNA_URL;
+  if(LIFEX_URL){ $('lnkLifex').href=LIFEX_URL; $('lnkLifex').style.display=''; }
 }
 function estTierMonthly(tier,bandIdx,state){
   var pk=S.packages[tier]; if(!pk) return null;
