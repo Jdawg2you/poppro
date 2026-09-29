@@ -123,6 +123,9 @@
   .libhead{display:flex;gap:8px;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:0 4px 4px}
   .libhead .a{flex:1}.libhead .b{width:118px;text-align:right}.libhead .c{width:22px}
   body.client .hidein-client{display:none!important}
+  .estmark{display:none;margin-left:6px;font:italic 600 10.5px -apple-system,sans-serif;color:#9a5b00;background:#fdf1d8;border-radius:4px;padding:1px 5px;vertical-align:middle}
+  .estmark.on{display:inline-block}
+  .estline{display:none;font:italic 11.5px -apple-system,sans-serif;color:#9a5b00;padding:6px 0 2px}.estline.on{display:block}
   body.client.noaca .acaonly,body.client.nobase .baseonly{display:none!important}
   body.client.noaca .cols{grid-template-columns:1fr}
   body:not(.client).noaca .panel.aca{opacity:.55}
@@ -754,19 +757,20 @@ body.client #classicWrap>summary{display:none}
           <div class="acaest hidein-client">Look up their real Bronze plan and subsidy on <a href="https://www.healthsherpa.com/sessions/new" target="_blank" rel="noopener">HealthSherpa ↗</a> and enter it on the Intake.</div>
           <div class="acaest hidein-client" id="acaEstNote"></div>
           <div class="doccallout" id="o_aca_doc"></div>
-          <div class="row"><div class="lab">Monthly premium<small>From HealthSherpa / HealthCare.gov</small></div><input class="num money-in" id="a_prem" type="number" step="0.01"><span class="money-disp" data-for="a_prem"></span></div>
-          <div class="row" id="rowSubsidy" style="display:none"><div class="lab">Less ACA subsidy (APTC)<small>from the intake</small></div><div class="val" id="o_a_subsidy">—</div></div>
+          <div class="row"><div class="lab">Monthly premium<small>From HealthSherpa / HealthCare.gov</small><span class="estmark" data-est="prem">est.</span></div><input class="num money-in" id="a_prem" type="number" step="0.01"><span class="money-disp" data-for="a_prem"></span></div>
+          <div class="row" id="rowSubsidy" style="display:none"><div class="lab">Less ACA subsidy (APTC)<small>from the intake</small><span class="estmark" data-est="subsidy">est.</span></div><div class="val" id="o_a_subsidy">—</div></div>
           <div class="row hi" id="rowNetPrem" style="display:none"><div class="lab">Net monthly premium<small>what they actually pay</small></div><div class="val" id="o_a_netprem">—</div></div>
           <div class="acaest" id="acaSubNote"></div>
-          <div class="row"><div class="lab">Annual deductible</div><input class="num money-in" id="a_ded" type="number"><span class="money-disp" data-for="a_ded"></span></div>
-          <div class="row"><div class="lab">Annual out-of-pocket max</div><input class="num money-in" id="a_oop" type="number"><span class="money-disp" data-for="a_oop"></span></div>
-          <div class="row"><div class="lab">Medications (per month)</div><input class="num money-in" id="a_med" type="number" step="0.01"><span class="money-disp" data-for="a_med"></span></div>
+          <div class="estline" id="acaEstLine">est. = estimated from 2026 state averages — your exact plan may differ.</div>
+          <div class="row"><div class="lab">Annual deductible<span class="estmark" data-est="ded">est.</span></div><input class="num money-in" id="a_ded" type="number"><span class="money-disp" data-for="a_ded"></span></div>
+          <div class="row"><div class="lab">Annual out-of-pocket max<span class="estmark" data-est="oop">est.</span></div><input class="num money-in" id="a_oop" type="number"><span class="money-disp" data-for="a_oop"></span></div>
+          <div class="row"><div class="lab">Medications (per month)<span class="estmark" data-est="med">est.</span></div><input class="num money-in" id="a_med" type="number" step="0.01"><span class="money-disp" data-for="a_med"></span></div>
           <div class="row"><div class="lab">Doctor visits / year (you + family)</div><input class="num" id="a_visits" type="number"></div>
-          <div class="row"><div class="lab">Average co-pay per visit</div><input class="num money-in" id="a_copay" type="number" step="0.01"><span class="money-disp" data-for="a_copay"></span></div>
+          <div class="row"><div class="lab">Average co-pay per visit<span class="estmark" data-est="visit">est.</span></div><input class="num money-in" id="a_copay" type="number" step="0.01"><span class="money-disp" data-for="a_copay"></span></div>
           <div class="row sum"><div class="lab">Annual premium</div><div class="val" id="o_a_annprem">—</div></div>
           <div class="row"><div class="lab">Deductible impact / month<small>deductible ÷ 12</small></div><div class="val" id="o_a_dedmo">—</div></div>
           <div class="row"><div class="lab">Office-visit co-pays / month<small>(visits × co-pay) ÷ 12</small></div><div class="val" id="o_a_copaymo">—</div></div>
-          <div class="row hi sum"><div class="lab">TRUE COST — Monthly</div><div class="val" id="o_a_truemo">—</div></div>
+          <div class="row hi sum"><div class="lab">TRUE COST — Monthly<span class="estmark" data-est="any">est.</span></div><div class="val" id="o_a_truemo">—</div></div>
           <div class="row sum"><div class="lab">TRUE COST — Annual</div><div class="val" id="o_a_trueyr">—</div></div>
           <div class="row hidein-client"><div class="lab" style="font-size:12px;color:var(--muted)"><label><input type="checkbox" id="a_fullded" checked> TRUE COST assumes the full deductible is met that year</label></div><div></div></div>
         </div>
@@ -1402,6 +1406,17 @@ function acaSync(){
   S.acaRes=r; return r;
 }
 function round2(n){ return Math.round((+n||0)*100)/100; }
+/* Which ACA figures are still the averages, not typed from HealthSherpa or taken from their
+   current ACA plan. Anything estimated is labelled "est." for the client, on screen and in print. */
+function acaEstFlags(){ var A=acaIn(), C=curIn(), ov=A.ov, onAca=(A.status==='onaca'&&C.isAca), f={};
+  var typed=function(k){ return ov[k]!=null&&ov[k]!==''&&isFinite(+ov[k]); };
+  var fromCur={ded:+C.ded>0,oop:+C.oop>0,visit:+C.copay>0};
+  f.prem=!typed('prem')&&(+S.aca.prem>0);
+  ['ded','oop','visit'].forEach(function(k){ f[k]=!typed(k)&&!(onAca&&fromCur[k])&&(+S.aca[k==='visit'?'copay':k]>0); });
+  f.subsidy=!typed('subsidy')&&(+S.aca.subsidy>0);
+  f.visit=f.visit&&(+S.aca.visits>0);
+  f.med=(+S.medEstCount>0)&&(+S.aca.med>0);
+  f.any=f.prem||f.subsidy||f.ded||f.visit||f.med; return f; }
 function acaTrueParts(){ var a=S.aca, np=Math.max(0,(+a.prem||0)-(+a.subsidy||0)), c=acaCostShare(a);
   var yr=np*12+c.cs; return {net:np,visYr:c.visYr,yr:yr,mo:yr/12,capped:c.capped}; }
 function curTrue(){ var C=curIn(), v=(+((S.intake||{}).visits)||0)*(+C.copay||0), full=acaIn().fullded!==false, rx=(+S.curMed||0)*12;
@@ -2800,6 +2815,9 @@ function compute(){
   var copayYr=(a.visits||0)*(a.copay||0);
   var copayMo=copayYr/12;
   var tp=acaTrueParts(), trueMo=tp.mo, trueYr=tp.yr;   // one formula for intake, quote and printout
+  var ef=acaEstFlags();
+  document.querySelectorAll('.estmark[data-est]').forEach(function(m){ m.classList.toggle('on',!!ef[m.dataset.est]); });
+  if($('acaEstLine')) $('acaEstLine').classList.toggle('on',ef.any);
   if($('rowSubsidy')) $('rowSubsidy').style.display=sub>0?'':'none';
   if($('rowNetPrem')) $('rowNetPrem').style.display=sub>0?'':'none';
   if($('o_a_subsidy')) $('o_a_subsidy').textContent='− '+fmt2(sub);
@@ -3019,13 +3037,14 @@ function buildPrintout(){
       +li('TRUE COST — Annual','',fmt2(ct.yr)+' /yr','tot')+'</div>';
   }
   if(showAca){
-    var sub=+a.subsidy||0;
+    var sub=+a.subsidy||0, ef=acaEstFlags(), E=function(k){ return ef[k]?' <i style="color:#9a5b00;font-size:.85em">est.</i>':''; };
     html+='<div class="po-acabox"><div class="t">'+(A.status==='onaca'?'Your marketplace plan':'The ACA marketplace — bronze')+'<small>What the exchange plan really costs once the deductible &amp; co-pays are counted</small></div>'
-      +li(sub>0?'Monthly premium':'Monthly premium',sub>0?'The full price of the plan':'What you pay the carrier each month',fmt2(a.prem)+' /mo')
-      +(sub>0?li('Less your subsidy','Applied to the premium only',' − '+fmt2(sub)+' /mo')+li('Net monthly premium','What you actually pay',fmt2(netPrem)+' /mo'):'')
-      +((+a.ded>0)?li('Annual deductible','The subsidy does not reduce this',fmt2(a.ded)):'')
-      +li('TRUE COST — Monthly','Premium + deductible &amp; co-pays spread across the year',fmt2(aca.mo)+' /mo')
-      +li('TRUE COST — Annual','',fmt2(aca.yr)+' /yr','tot')+'</div>';
+      +li('Monthly premium'+E('prem'),sub>0?'The full price of the plan':'What you pay the carrier each month',fmt2(a.prem)+' /mo')
+      +(sub>0?li('Less your subsidy'+E('subsidy'),'Applied to the premium only',' − '+fmt2(sub)+' /mo')+li('Net monthly premium'+E(ef.prem||ef.subsidy?'any':'x'),'What you actually pay',fmt2(netPrem)+' /mo'):'')
+      +((+a.ded>0)?li('Annual deductible'+E('ded'),'The subsidy does not reduce this',fmt2(a.ded)):'')
+      +li('TRUE COST — Monthly'+E('any'),'Premium + deductible &amp; co-pays spread across the year',fmt2(aca.mo)+' /mo')
+      +li('TRUE COST — Annual'+E('any'),'',fmt2(aca.yr)+' /yr','tot')
+      +(ef.any?'<div style="font-size:10.5px;font-style:italic;color:#9a5b00;padding:6px 14px 2px">est. = estimated from 2026 state averages — your exact plan may differ.</div>':'')+'</div>';
   }
   /* Savings are measured against the ACA when it is shown, otherwise against what they have now. */
   var base=showAca?{mo:aca.mo,yr:aca.yr,prem:netPrem,lab:'ACA',your:'your marketplace plan'}
@@ -3274,7 +3293,7 @@ function updateMedTotal(){
   if($('medTotalACAest')) $('medTotalACAest').textContent=nEst?('includes '+nEst+' estimate'+(nEst>1?'s':'')):'';
   if($('medTotalCur')) $('medTotalCur').textContent=fmt2(tc);
   if($('medTotalDisc')) $('medTotalDisc').textContent=fmt2(td);
-  S.aca.med=round2(ta); S.aca.medDed=round2(ded); S.curMed=round2(tc); S.medDiscount=td;
+  S.aca.med=round2(ta); S.aca.medDed=round2(ded); S.curMed=round2(tc); S.medDiscount=td; S.medEstCount=nEst;
   if(S.acaRes) renderAca();
 }
 function renderMeds(){
@@ -3697,6 +3716,7 @@ function bindInputs(){
     var w=window.open(a.href,'healthsherpa','width=1200,height=900'); if(w) w.opener=null; else window.open(a.href,'_blank','noopener'); }); });
   /* Typing on the quote page is the same as typing on the intake: it becomes the actual figure. */
   [['a_prem','prem'],['a_ded','ded'],['a_oop','oop'],['a_copay','visit']].forEach(function(m){ var el=$(m[0]); if(el) el.addEventListener('input',function(){ acaIn().ov[m[1]]=el.value===''?null:+el.value; }); });
+  if($('a_med')) $('a_med').addEventListener('input',function(){ S.medEstCount=0; });
   if($('a_visits')) $('a_visits').addEventListener('input',function(){ S.intake.visits=+this.value||0; });
   if($('a_fullded')) $('a_fullded').addEventListener('change',function(){ acaIn().fullded=this.checked; });
   if($('in_followNote')) $('in_followNote').addEventListener('input',function(){ S.follow=S.follow||{}; S.follow.note=this.value; autoGrow(this); autosave(); });
