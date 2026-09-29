@@ -441,18 +441,16 @@ body.client #classicWrap>summary{display:none}
 .askq .asktag{font-family:-apple-system,sans-serif;font-size:10px;font-weight:800;letter-spacing:.08em;background:var(--navy);color:#fff;border-radius:3px;padding:3px 7px}
 .askq input{font:14px -apple-system,sans-serif;padding:7px 9px;border:1px solid var(--navy);border-radius:6px;min-width:180px;flex:1;max-width:280px}
 .medbox{position:relative}
+.medrow .medbox{flex:1;min-width:0}
+.medrow .medbox input.mname{width:100%;box-sizing:border-box}
+.medrow .cname{flex:1;min-width:0;padding:7px 9px;border:1px solid var(--line);border-radius:7px;background:#fff;font-weight:600}
+#condList .none{font-size:13px;color:var(--muted);padding:4px 0}
 .medsug{position:absolute;left:0;right:0;top:100%;z-index:50;background:#fff;border:1px solid var(--line);border-radius:8px;box-shadow:0 6px 18px rgba(18,33,59,.12);display:none;max-height:260px;overflow:auto}
 .medsug button{display:block;width:100%;text-align:left;font:inherit;font-size:13px;padding:8px 10px;border:0;background:#fff;cursor:pointer}
 .medsug button:hover,.medsug button.hl{background:#f1ede2}
 #medFlags .mflag{margin:8px 0;background:#fff8ec;border:1px solid #e8c98a;border-radius:8px;padding:9px 12px;font-size:13.5px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 #medFlags .mflag button{font:inherit;font-size:12.5px;font-weight:700;border-radius:7px;padding:5px 10px;cursor:pointer;border:1px solid var(--line);background:#fff}
 #medFlags .mflag button.yes{background:var(--navy);color:#fff;border-color:var(--navy)}
-.condlist{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 8px}
-.condlist .cchip{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:5px 6px 5px 12px;font-size:13px;font-weight:600}
-.condlist .cchip .cw{display:inline-flex;align-items:center;gap:2px;font-size:11px;font-weight:700;color:var(--muted);margin-left:2px}
-.condlist .cchip .cw input{margin:0}
-.condlist .cchip button{border:0;background:#f1ede2;border-radius:50%;width:20px;height:20px;cursor:pointer;color:var(--muted);font-size:11px}
-.condlist .none{font-size:13px;color:var(--muted)}
 .condinput{width:100%;font:inherit;font-size:14px;padding:8px 10px;border:1px solid var(--line);border-radius:8px}
 </style>
 </head>
@@ -560,6 +558,21 @@ body.client #classicWrap>summary{display:none}
       <textarea id="in_kids" style="display:none" aria-hidden="true"></textarea>
     </div>
 
+    <div class="intake-sec" id="sec_meds">Medications <span class="sayico" data-beat="6" title="Say this — opens the script">Say this</span> <span class="secnote">— look up best price:</span> <a href="https://www.singlecare.com" target="_blank" rel="noopener" class="seclink">SingleCare ↗</a> <a href="https://www.goodrx.com/" target="_blank" rel="noopener" class="seclink">GoodRx ↗</a> <a href="https://www.costplusdrugs.com/" target="_blank" rel="noopener" class="seclink">Cost Plus ↗</a> <a href="https://www.mdsave.com/" target="_blank" rel="noopener" class="seclink">MDSave ↗</a></div>
+    <div class="note" style="padding-top:2px">For each medication enter two costs. <b>ACA copay</b> = the monthly amount the ACA plan would cost for that medication; if the drug isn't copay-covered, enter the full price (that cost will go toward their deductible). <b>Discount</b> = the discounted cash price found by using the links above. These costs will calculate on the Package of Protection sections on the Quote.</div>
+    <div class="medhead"><span class="h1">Medication</span><span class="h2">ACA copay</span><span class="h2">Discount</span><span class="hw" title="Primary">P</span><span class="hw" title="Spouse">S</span><span class="hx"></span></div>
+    <div id="medList"></div>
+    <div id="medFlags"></div>
+    <button class="addbtn" id="addMed" style="margin-left:0">+ Add medication</button>
+    <div style="margin-top:8px;display:flex;gap:24px;flex-wrap:wrap;font-family:var(--serif);font-weight:700;color:var(--navy)"><span>ACA copay total: <span id="medTotalACA">$0.00</span></span><span>Discount total: <span id="medTotalDisc">$0.00</span></span></div>
+    <label class="chip" style="margin-top:8px"><input type="checkbox" id="in_rx"> Rx prices verified (SingleCare / RXedo / AFC reimbursement)</label>
+
+    <div class="intake-sec" id="sec_conds">Conditions <span class="secnote">— the medications usually tell you these; confirm each one</span></div>
+    <div class="medhead" id="condHead"><span class="h1">Condition</span><span class="hw" title="Primary">P</span><span class="hw cS" title="Spouse">S</span><span class="hx"></span></div>
+    <div id="condList"></div>
+    <div class="medbox" style="margin-top:4px"><input id="condInput" class="condinput" placeholder="Add a condition — start typing…" autocomplete="off"><div class="medsug" id="condSug"></div></div>
+
+
     <div class="intake-sec" id="sec_health">Health &amp; Routing <span class="sayico" data-beat="6" title="Say this — opens the script">Say this</span></div>
     <div class="chips">
       <span class="ps-ctrl">Family history of cancer? <label class="tob"><input type="checkbox" id="in_famcancer_p"> P</label><label class="tob"><input type="checkbox" id="in_famcancer_s"> S</label></span>
@@ -578,24 +591,8 @@ body.client #classicWrap>summary{display:none}
         <div class="qnote"><label class="chip tone-orange"><input type="checkbox" id="in_diabetic"> Yes</label><textarea id="in_diabetic_note" class="autogrow" rows="1" placeholder="type · insulin? · # oral meds · who"></textarea></div>
         <div class="note" style="padding:4px 0 0;font-size:10.5px">Decline: insulin (last 5 yrs) or juvenile-onset · &gt;2 oral meds · diabetic complications</div>
       </div>
-      <div class="fld"><label>Primary’s health</label><select id="in_health" class="selfld"><option value="">—</option><option>Excellent</option><option>Good</option><option>Average</option><option>Complicated</option></select></div>
-      <div class="fld" id="shealthFld"><label>Spouse’s health</label><select id="in_shealth" class="selfld"><option value="">—</option><option>Excellent</option><option>Good</option><option>Average</option><option>Complicated</option></select></div>
     </div>
-    <div style="margin-top:10px"><label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px">Routing notes</label><textarea id="in_routenote" rows="2" style="width:100%;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font:inherit;background:#fff;resize:vertical" placeholder="Anything to clarify about health or routing — conditions, timing, special situations."></textarea></div>
-
-    <div class="intake-sec" id="sec_meds">Medications <span class="sayico" data-beat="6" title="Say this — opens the script">Say this</span> <span class="secnote">— look up best price:</span> <a href="https://www.singlecare.com" target="_blank" rel="noopener" class="seclink">SingleCare ↗</a> <a href="https://www.goodrx.com/" target="_blank" rel="noopener" class="seclink">GoodRx ↗</a> <a href="https://www.costplusdrugs.com/" target="_blank" rel="noopener" class="seclink">Cost Plus ↗</a> <a href="https://www.mdsave.com/" target="_blank" rel="noopener" class="seclink">MDSave ↗</a></div>
-    <div class="note" style="padding-top:2px">For each medication enter two costs. <b>ACA copay</b> = the monthly amount the ACA plan would cost for that medication; if the drug isn't copay-covered, enter the full price (that cost will go toward their deductible). <b>Discount</b> = the discounted cash price found by using the links above. These costs will calculate on the Package of Protection sections on the Quote.</div>
-    <div class="medhead"><span class="h1">Medication</span><span class="h2">ACA copay</span><span class="h2">Discount</span><span class="hw" title="Primary">P</span><span class="hw" title="Spouse">S</span><span class="hx"></span></div>
-    <div id="medList"></div>
-    <div id="medFlags"></div>
-    <button class="addbtn" id="addMed" style="margin-left:0">+ Add medication</button>
-    <div style="margin-top:8px;display:flex;gap:24px;flex-wrap:wrap;font-family:var(--serif);font-weight:700;color:var(--navy)"><span>ACA copay total: <span id="medTotalACA">$0.00</span></span><span>Discount total: <span id="medTotalDisc">$0.00</span></span></div>
-
-    <div class="intake-sec" id="sec_conds">Conditions <span class="secnote">— the medications usually tell you these; confirm each one</span></div>
-    <div id="condList" class="condlist"></div>
-    <div class="medbox" style="max-width:420px"><input id="condInput" class="condinput" placeholder="Add a condition — start typing…" autocomplete="off"><div class="medsug" id="condSug"></div></div>
-
-    <label class="chip" style="margin-top:8px"><input type="checkbox" id="in_rx"> Rx prices verified (SingleCare / RXedo / AFC reimbursement)</label>
+    <div style="margin-top:10px"><label style="font-family:var(--serif);font-size:15px;font-weight:700;color:var(--navy);display:block;margin-bottom:4px">Anything else I should know about?</label><textarea id="in_routenote" rows="6" style="width:100%;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font:inherit;background:#fff;resize:vertical" placeholder="Anything about their health, conditions, timing or situation that should shape the placement. Conditions from the script navigator land here."></textarea></div>
 
     <div class="intake-sec" id="sec_docs">Preferred Doctors <span class="sayico" data-beat="7" title="Say this — opens the script">Say this</span> <a href="https://providerlocator.firsthealth.com/LocateProvider/LocateProviderSearch/" target="_blank" rel="noopener" class="seclink">↗ Look up First Health network</a></div>
     <div class="intakegrid">
@@ -3015,7 +3012,6 @@ function readIntake(){
   S.intake.budget=+$('in_budget').value||0;
   S.intake.priority=$('in_priority').value; S.intake.notes=$('in_notes').value;
   S.intake.carrier=$('in_carrier').value; S.intake.plan=$('in_plan').value;
-  S.intake.health=$('in_health').value; if($('in_shealth')) S.intake.shealth=$('in_shealth').value;
   S.intake.pincome=moneyVal($('in_pincome').value); S.intake.sincome=moneyVal($('in_sincome').value);
   S.intake.income=moneyVal($('in_income').value); S.intake.retage=$('in_retage').value;
   S.intake.savings=moneyVal($('in_savings').value); S.intake.invest=moneyVal($('in_invest').value); S.intake.invprot=$('in_invprot').checked; S.intake.invsra=$('in_invsra').checked; S.intake.invnote=$('in_invnote').value;
@@ -3050,7 +3046,6 @@ function fillIntake(){
   fillPS('famcancer', I.famcancer||S.docs.famcancer); fillPS('famheart', I.famheart); fillPS('maternity', I.maternity); fillPS('mental', I.mental); fillPS('surg2yr', I.surg2yr);
   $('in_majorcond').checked=!!I.majorcond; $('in_majorcond_note').value=I.majorcondNote||''; autoGrow($('in_majorcond_note'));
   $('in_diabetic').checked=!!I.diabetic; $('in_diabetic_note').value=I.diabeticNote||''; autoGrow($('in_diabetic_note'));
-  $('in_health').value=I.health||''; if($('in_shealth')) $('in_shealth').value=I.shealth||'';
   $('in_docs1').value=I.docs1||''; $('in_docs2').value=I.docs2||''; $('in_docs3').value=I.docs3||'';
   $('in_keepaca').value=I.keepaca||''; $('in_keepafc').value=I.keepafc||''; $('in_docnote').value=I.docnote||'';
   $('in_pheight').value=I.pheight||''; $('in_pweight').value=I.pweight||''; $('in_sheight').value=I.sheight||''; $('in_sweight').value=I.sweight||''; $('in_psex').value=I.psex||''; $('in_ssex').value=I.ssex||''; $('in_kids').value=I.kidsNote||''; $('in_routenote').value=I.routeNote||''; $('in_docsnote').value=I.docsNote||''; $('in_whyshop').value=I.whyShop||''; $('in_effdate').value=I.effDate||''; updateBMI('p'); updateBMI('s'); buildFlag('p'); buildFlag('s');
@@ -3118,7 +3113,6 @@ function syncChips(){
 }
 function syncSpouse(){ var on=$('in_who_spouse')&&$('in_who_spouse').checked, g=$('spouseGrid'), h=$('spouseHint'); if(g) g.style.display=on?'':'none'; if(h) h.innerHTML=on?'(if applicable)':'(to expand, select <b>Spouse</b> under “Who needs coverage” above)';
   var kon=$('in_who_kids')&&$('in_who_kids').checked, kg=$('kidsGrid'), kh=$('kidsHint'); if(kg) kg.style.display=kon?'':'none'; if(kh) kh.innerHTML=kon?'— any number of children is the same price':'(to expand, select <b>Children</b> under “Who needs coverage” above)';   if(typeof kidsShowCount==='function') kidsShowCount();
-  var shf=$('shealthFld'); if(shf) shf.style.display=on?'':'none';
 }
 
 function pkMonthly(pk){ return (pk.products||[]).reduce(function(s,p){return s+(+p.monthly||0);},0)+(+pk.lb||0)+(+pk.med||0); }
@@ -3483,7 +3477,6 @@ function bindInputs(){
   $('in_aemail').addEventListener('input',function(){ markValid(this,emailOK(this.value)); captureIntake(); });
   $('c_date').addEventListener('input',function(){ this.value=fmtDate(this.value); markValid(this,dateOK(this.value)); compute(); });
   $('in_priority').addEventListener('change',function(){ readIntake(); autosave(); });
-  $('in_health').addEventListener('change',function(){ readIntake(); autosave(); });
   $('in_ded_sel').addEventListener('change',onDedChange);
   $('in_ded').addEventListener('input',function(){ var d=effDed(); if(d>0) $('in_oop').value=d; captureIntake(); });
   $('addMed').onclick=function(){ S.intake.medList=S.intake.medList||[]; S.intake.medList.push({name:'',cost:0,forP:true,forS:false}); renderMeds(); };
@@ -3810,11 +3803,12 @@ function renderMedFlags(){ var host=$('medFlags'); if(!host) return; var fl=popM
 var PF_CONDS=["Cancer","Active cancer","AIDS / HIV / ARC","Wheelchair / electric scooter","Oxygen / ventilator","Dialysis","Heart attack","Stent","Angioplasty / bypass","Defibrillator / pacemaker","Heart surgery","Angina (chest pain)","Arrhythmia / AFib","Stroke / TIA","Aneurysm","Epilepsy / seizures","Diabetes","High blood pressure","High cholesterol","Asthma (chronic)","COPD","Emphysema","Kidney disease / failure","Liver disease","Cirrhosis","Anxiety","Depression","PTSD","Bipolar","Schizophrenia / psychosis","Alzheimer's / dementia","Lupus","Rheumatoid arthritis","Autoimmune disorder","Neuropathy","Blood clots / DVT","Hepatitis B","Hepatitis C","Terminal illness","Hospice","Chronic pain (narcotic prescriptions)","Alcohol / drug abuse or treatment","Heart disease / disorder","Parkinson's disease","Transplant","DUI","Felony"];
 function renderConds(){ var host=$('condList'); if(!host) return; var cs=(S.intake&&S.intake.conds)||[];
   var sp=$('in_who_spouse')&&$('in_who_spouse').checked;
+  var hs=document.querySelector('#condHead .cS'); if(hs) hs.style.visibility=sp?'':'hidden';
   host.innerHTML=cs.length?cs.map(function(c,i){ if(c.forP==null&&c.forS==null) c.forP=true;
-    return '<span class="cchip">'+c.name
-      +'<label class="cw" title="Primary"><input type="checkbox" data-cw="p" data-i="'+i+'"'+(c.forP?' checked':'')+'>P</label>'
-      +(sp||c.forS?'<label class="cw" title="Spouse"><input type="checkbox" data-cw="s" data-i="'+i+'"'+(c.forS?' checked':'')+'>S</label>':'')
-      +'<button type="button" data-ci="'+i+'" aria-label="Remove '+c.name+'">✕</button></span>'; }).join(''):'<span class="none">None added yet.</span>';
+    return '<div class="medrow"><span class="cname">'+c.name+'</span>'
+      +'<label class="mwho" title="Primary"><input type="checkbox" data-cw="p" data-i="'+i+'"'+(c.forP?' checked':'')+'></label>'
+      +'<label class="mwho" title="Spouse"'+(sp||c.forS?'':' style="visibility:hidden"')+'><input type="checkbox" data-cw="s" data-i="'+i+'"'+(c.forS?' checked':'')+'></label>'
+      +'<button type="button" class="del" data-ci="'+i+'" aria-label="Remove '+c.name+'">×</button></div>'; }).join(''):'<div class="none">None added yet.</div>';
   host.querySelectorAll('[data-cw]').forEach(function(cb){ cb.onchange=function(){ var c=S.intake.conds[+cb.dataset.i]; c[cb.dataset.cw==='p'?'forP':'forS']=cb.checked; autosave(); }; });
   host.querySelectorAll('[data-ci]').forEach(function(b){ b.onclick=function(){ S.intake.conds.splice(+b.dataset.ci,1); autosave(); renderConds(); renderMedFlags(); }; }); }
 function bindCondInput(){ var inp=$('condInput'), box=$('condSug'); if(!inp||inp.dataset.bound) return; inp.dataset.bound='1';
