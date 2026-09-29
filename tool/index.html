@@ -416,6 +416,9 @@
 </style>
 </head>
 <body>
+<!-- Local compare label: shows only when served on 127.0.0.1:8766 (version B). Never appears on mypoppro.com. -->
+<div id="verBanner" style="display:none;position:sticky;top:0;z-index:9999;background:#9c3b2f;color:#fff;font:600 13px -apple-system,sans-serif;text-align:center;padding:6px 10px">VERSION B — in progress · compare with A at 127.0.0.1:8765</div>
+<script>if(location.port==='8766'){ document.getElementById('verBanner').style.display='block'; document.title='B · '+document.title; }</script>
 <div class="wrap">
 
   <div class="brandbar">
