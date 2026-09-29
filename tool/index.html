@@ -303,6 +303,11 @@
   .medhead .hw{flex:0 0 32px;text-align:center}
   .medhead .hx{flex:0 0 24px}
   .medhead .hk{flex:0 0 30px;text-align:center}
+  .pbanchor{font-size:12.5px;color:var(--navy);background:#fbf9f2;border:1px solid var(--line);border-radius:8px;padding:7px 12px;margin:0 0 10px}
+  .pbanchor a.jump{color:#9a5b00;text-decoration:none;border-bottom:1px dotted #d9b36a;margin-left:6px}
+  .pbsave{border-top:1px dashed var(--line);margin-top:6px;padding:6px 10px 8px;font-size:12px}
+  .pbsave .sv{display:flex;justify-content:space-between;gap:8px;padding:2px 0}.pbsave .sv span{color:var(--muted)}
+  .pbsave b.up{color:var(--green)}.pbsave b.dn{color:var(--maroon)}.pbsave .tf{border-top:1px solid #f1ede2;margin-top:3px;padding-top:4px}.pbsave .tf b{color:var(--navy)}
   .medrow .mkind{flex:0 0 30px;height:28px;border:1px solid var(--line);border-radius:7px;background:#fff;font:700 11px -apple-system,sans-serif;color:var(--muted);cursor:pointer;padding:0}
   .medrow .mkind.g{color:#2e6b2e;border-color:#b7d3b0;background:#eef6ec}.medrow .mkind.b{color:#9a5b00;border-color:#e7c98f;background:#fdf4e2}
   .medrow input.mcost.est::placeholder{color:#9a5b00;font-style:italic;opacity:1}
@@ -670,7 +675,7 @@ body.client #classicWrap>summary{display:none}
         <option value="open">Can enroll — open enrollment or a special enrollment event</option>
         <option value="onaca">Already on an ACA plan</option>
         <option value="outside">Outside open enrollment — calculate only</option></select></div>
-      <div style="display:flex;align-items:flex-end;padding-bottom:2px"><label class="chip tone-yellow"><input type="checkbox" id="in_aca_show" checked> Show the ACA as the anchor on the presentation</label></div>
+      <div style="display:flex;align-items:flex-end;padding-bottom:2px"><label class="chip tone-yellow"><input type="checkbox" id="in_aca_show" checked> Show the ACA on the presentation</label></div>
     </div>
     <div class="acabox">
       <div class="acanote" id="acaBasis"></div>
@@ -701,9 +706,14 @@ body.client #classicWrap>summary{display:none}
     <div class="note" style="padding-top:2px">Protected = already out of the market. Eligible for SRA = available to move into a Secure Retirement Account (e.g., an old policy, not a current-employer plan). Reserves under ~6 months of income → stronger case for living benefits / accident.</div>
 
     <div class="intake-sec" id="sec_budget">Budget &amp; Notes</div>
-    <div class="intakegrid" style="grid-template-columns:1fr 1fr 1fr">
+    <div class="intakegrid" style="grid-template-columns:1fr 1fr 1fr 1.3fr">
       <div class="fld"><label>Comfortable monthly budget</label><input id="in_budget_comfort" type="number" step="0.01" placeholder="e.g., 700"></div>
       <div class="fld"><label>Max monthly <small>the top of what they’d spend</small></label><input id="in_budget" type="number" step="0.01" placeholder="e.g., 1000"></div>
+      <div class="fld"><label>Anchor against</label><select id="in_anchor" class="selfld">
+        <option value="aca">ACA bronze</option>
+        <option value="cur">Current plan</option>
+        <option value="none">No anchor</option></select>
+        <div class="note" id="anchorNote" style="padding:4px 0 0;font-size:10.5px">What the savings on the quote are measured against.</div></div>
       <div class="fld"><label>Priority</label><select id="in_priority" style="width:100%;padding:8px 9px;border:1px solid var(--line);border-radius:8px;background:#fbfaf6;font:inherit"><option value="coverage">Coverage / peace of mind</option><option value="price">Lowest price</option></select></div>
     </div>
     <div class="fld" style="margin-top:12px"><label>Notes</label><textarea id="in_notes" rows="4" placeholder="Anything else worth capturing — a few sentences is fine." style="width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:#fbfaf6;font:inherit;resize:vertical;line-height:1.5"></textarea></div>
@@ -1392,6 +1402,12 @@ function acaPick(typed,est){ return (typed!=null&&typed!==''&&isFinite(+typed))?
 function acaCostShare(a){ var vis=(+a.visits||0)*(+a.copay||0), medYr=(+a.med||0)*12, dedMed=Math.min(medYr,(+a.medDed||0)*12);
   var cs=(a.fullded?Math.max(+a.ded||0,dedMed):dedMed)+(medYr-dedMed)+vis, capped=(+a.oop>0&&cs>+a.oop);
   if(capped) cs=+a.oop; return {cs:cs,visYr:vis,capped:capped}; }
+/* Savings of one package against the anchor. prem = the anchor's monthly premium plus its drug
+   costs; mo = its true cost a month. TFRA room follows the presentation's rule: the premium saving
+   if there is one, otherwise the true-cost saving, otherwise nothing. */
+function anchorSavings(base,pkMo){ if(!base) return null;
+  var actual=base.prem-pkMo, tru=base.mo-pkMo;
+  return {actual:actual, tru:tru, tfra:actual>0?actual:(tru>0?tru:0), tfraBasis:actual>0?'premium':(tru>0?'true':'')}; }
 /* ACA-ENGINE:END */
 
 function householdIncome(){
@@ -1440,6 +1456,17 @@ function acaEstFlags(){ var A=acaIn(), C=curIn(), ov=A.ov, onAca=(A.status==='on
   f.visit=f.visit&&(+S.aca.visits>0);
   f.med=(+S.medEstCount>0)&&(+S.aca.med>0);
   f.any=f.prem||f.subsidy||f.ded||f.visit||f.med; return f; }
+/* The one baseline every savings figure uses - builder, client view, printout. */
+function anchorBase(){ var k=(S.intake&&S.intake.anchor)||'aca';
+  if(k==='aca'){ if(!(+S.aca.prem>0)) return null;   // nothing priced yet (a full subsidy still has a gross premium)
+    var t=acaTrueParts(); return {k:'aca',lab:'ACA bronze',short:'ACA',your:'your marketplace plan',prem:t.net+(+S.aca.med||0),premOnly:t.net,mo:t.mo,yr:t.yr,ded:+S.aca.ded||0}; }
+  if(k==='cur'){ var C=curIn(); if(!(+C.prem>0)) return null; var c=curTrue();
+    return {k:'cur',lab:'Current plan',short:'current plan',your:'your current plan',prem:(+C.prem)+(+S.curMed||0),premOnly:+C.prem,mo:c.mo,yr:c.yr,ded:+C.ded||0}; }
+  return null; }
+function anchorNote(){ var el=$('anchorNote'); if(!el) return; var k=$('in_anchor').value;
+  el.innerHTML=k==='none'?'No savings figures — the quote just compares the Good, Better and Best packages with each other.'
+    :(k==='cur'&&!(+curIn().prem>0)?'<span style="color:var(--maroon)">Add their current premium under Current Insurance, or nothing is compared.</span>'
+    :'What the savings on the quote are measured against.'); }
 function acaTrueParts(){ var a=S.aca, np=Math.max(0,(+a.prem||0)-(+a.subsidy||0)), c=acaCostShare(a);
   var yr=np*12+c.cs; return {net:np,visYr:c.visYr,yr:yr,mo:yr/12,capped:c.capped}; }
 function curTrue(){ var C=curIn(), v=(+((S.intake||{}).visits)||0)*(+C.copay||0), full=acaIn().fullded!==false, rx=(+S.curMed||0)*12;
@@ -2744,19 +2771,20 @@ function compute(){
      the intake. Savings are measured against the ACA if shown, else against what they have now. */
   var A=acaIn(), Cu=curIn(), showAca=A.show!==false, showCur=!!Cu.show&&((+Cu.prem>0)||(+Cu.ded>0)), ct=curTrue();
   document.body.classList.toggle('noaca',!showAca);
-  document.body.classList.toggle('nobase',!showAca&&!showCur);
+  var B=anchorBase();   // savings baseline = the anchor chosen in Budget & Notes
+  document.body.classList.toggle('nobase',!B);
   var cs=$('curStrip'); if(cs){ cs.style.display=showCur?'':'none';
     if(showCur){ var cv=function(k,v){ return '<div><div class="k">'+k+'</div><div class="v">'+v+'</div></div>'; };
       cs.innerHTML='<div class="t">What you have now<small>'+esc([S.intake.carrier,S.intake.plan].filter(Boolean).join(' · '))+'</small></div>'
         +cv('Premium',fmt2(+Cu.prem||0)+'/mo')+((+Cu.emp>0)?cv('Employer adds',fmt2(+Cu.emp)+'/mo'):'')
         +((+Cu.ded>0)?cv('Deductible',fmt2(+Cu.ded)):'')+((+Cu.copay>0)?cv('Copay / visit',fmt2(+Cu.copay)):'')
         +cv('True cost',fmt2(ct.mo)+'/mo')+cv('True cost / yr',fmt2(ct.yr)); } }
-  var bPrem=showAca?netPrem:(showCur?(+Cu.prem||0):netPrem), bMo=showAca?trueMo:(showCur?ct.mo:trueMo), bYr=showAca?trueYr:(showCur?ct.yr:trueYr);
-  var bLab=showAca||!showCur?'ACA':'CURRENT PLAN';
-  if($('o_sav_head')) $('o_sav_head').textContent='YOUR SAVINGS vs '+bLab;
-  if($('o_tot_net_lab')) $('o_tot_net_lab').textContent='Still ahead vs '+(bLab==='ACA'?'ACA':'current plan');
-  var aMo=(bPrem+a.med)-pMo, aYr=(bPrem*12+a.med*12)-pYr;
-  var tMo=bMo-pMo, tYr=bYr-pYr;
+  var bPrem=B?B.premOnly:0, bMo=B?B.mo:0, bYr=B?B.yr:0;
+  if($('o_sav_head')) $('o_sav_head').textContent='YOUR SAVINGS vs '+(B?B.short.toUpperCase():'—');
+  if($('o_tot_net_lab')) $('o_tot_net_lab').textContent='Still ahead vs '+(B?B.short:'—');
+  var sv=anchorSavings(B,pMo)||{actual:0,tru:0};
+  var aMo=sv.actual, aYr=aMo*12;
+  var tMo=sv.tru, tYr=tMo*12;
   $('o_sav_amo').textContent=saves(aMo,'/mo');$('o_sav_ayr').textContent=saves(aYr,'/yr');
   $('o_sav_tmo').textContent=saves(tMo,'/mo');$('o_sav_tyr').textContent=saves(tYr,'/yr');
   $('ribbon').textContent=fmt(tYr)+' SAVED / YR (TRUE COST)';
@@ -2773,7 +2801,7 @@ function compute(){
   var adAmt=0, adBasis='';
   if(aMo>0){ adAmt=aMo; adBasis='actual'; }
   else if(tMo>0){ adAmt=tMo; adBasis='true'; }
-  var showAd=(pen<=0 && adAmt>0 && (showAca||showCur));   // nothing to measure savings against otherwise
+  var showAd=(pen<=0 && adAmt>0 && !!B);   // nothing to measure savings against otherwise
   /* The agent ALWAYS keeps the input fields — otherwise showing the ad would hide
      the very boxes you need to type in to turn it off. The client sees either the
      funded numbers or the ad, never the empty inputs. */
@@ -2788,13 +2816,13 @@ function compute(){
       $('ad_mo').textContent=fmt(adAmt); $('ad_yr').textContent=fmt(adAmt*12); $('ad_20').textContent=fmt(adAmt*240);
       if(adBasis==='actual'){
         $('ad_l1').textContent='You save now';
-        $('ad_body').innerHTML='You’re already saving <b>'+fmt(adAmt)+'</b>/mo versus '+(showAca||!showCur?'your marketplace plan':'your current plan')+'. '
+        $('ad_body').innerHTML='You’re already saving <b>'+fmt(adAmt)+'</b>/mo versus '+B.your+'. '
           +'Here’s what those same dollars add up to if you simply set them aside — before any growth at all.';
         $('ad_fine').textContent='Simple total of your monthly savings set aside — no investment growth assumed.';
       } else {
         $('ad_l1').textContent='You save / mo';
-        var bD=(showAca||!showCur)?(+a.ded||0):(+Cu.ded||0);
-        $('ad_body').innerHTML=((showAca||!showCur)?'Your marketplace plan':'Your current plan')+' costs <b>'+fmt(bPrem)+'</b>/mo in premium — but its '
+        var bD=B.ded;
+        $('ad_body').innerHTML=(B.k==='aca'?'Your marketplace plan':'Your current plan')+' costs <b>'+fmt(bPrem)+'</b>/mo in premium — but its '
           +fmt(bD)+' deductible is another <b>'+fmt(bD/12)+'</b>/mo you have to be ready to pay. '
           +'That’s <b>'+fmt(bMo)+'</b>/mo in true cost. Your Package of Protection is <b>'+fmt(pMo)+'</b>/mo. '
           +'So when you count the deductible, you’re <b>'+fmt(adAmt)+'</b>/mo better off — here’s what that adds up to '
@@ -2949,8 +2977,7 @@ function buildPrintout(){
       +(ef.any?'<div style="font-size:10.5px;font-style:italic;color:#9a5b00;padding:6px 14px 2px">est. = estimated from 2026 state averages — your exact plan may differ.</div>':'')+'</div>';
   }
   /* Savings are measured against the ACA when it is shown, otherwise against what they have now. */
-  var base=showAca?{mo:aca.mo,yr:aca.yr,prem:netPrem,lab:'ACA',your:'your marketplace plan'}
-          :(showCur?{mo:ct.mo,yr:ct.yr,prem:+Cu.prem||0,lab:'your current plan',your:'your current plan'}:null);
+  var B=anchorBase(), base=B?{mo:B.mo,yr:B.yr,prem:B.prem,premOnly:B.premOnly,ded:B.ded,k:B.k,lab:B.k==='aca'?'ACA':'your current plan',your:B.your}:null;
 
   /* ---- Good / Better / Best comparison ---- */
   if(tiers.length){
@@ -2975,13 +3002,13 @@ function buildPrintout(){
   /* ---- detail sections for the selected package ---- */
   var at=S.activeTab, atLab=labels[at][0], pk=S.packages[at]||{products:[],lb:0,med:0};
   var pMo=tierTotals(at).mo, pYr=pMo*12;
-  var bp=base?base.prem:0, aMo=base?(bp+a.med)-pMo:0, aYr=base?(bp*12+a.med*12)-pYr:0;
+  var bp=base?base.premOnly:0, aMo=base?base.prem-pMo:0, aYr=aMo*12;
   var tMo=base?base.mo-pMo:0, tYr=base?base.yr-pYr:0;
 
   if(base) html+='<div class="po-navy"><div class="cap">Your savings vs '+base.lab+'<small>Based on your '+atLab+' package</small></div>'
       +'<div class="g"><div class="h l">&nbsp;</div><div class="h">Monthly</div><div class="h">Annual</div>'
       +'<div class="c l">ACTUAL — premium vs premium</div><div class="c a">'+saves(aMo,'/mo')+'</div><div class="c a">'+saves(aYr,'/yr')+'</div>'
-      +'<div class="c l tt">TRUE COST — with '+(showAca?'ACA ':'')+'deductible included</div><div class="c t">'+saves(tMo,'/mo')+'</div><div class="c t">'+saves(tYr,'/yr')+'</div></div></div>';
+      +'<div class="c l tt">TRUE COST — with '+(base&&base.k==='aca'?'ACA ':'')+'deductible included</div><div class="c t">'+saves(tMo,'/mo')+'</div><div class="c t">'+saves(tYr,'/yr')+'</div></div></div>';
 
   /* ---- additional programs (pension / TFRA) — omitted when the agent unchecks "Show on quote" ---- */
   var pen=+S.pension.monthly||0;
@@ -3015,7 +3042,7 @@ function buildPrintout(){
       adBody='You are already saving '+fmt2(adAmt)+'/mo versus '+base.your+'. Here is what those same dollars add up to if you simply set them aside — before any growth at all.';
       adFine='Simple total of your monthly savings set aside — no investment growth assumed.';
     } else {
-      var bDed=showAca?(+a.ded||0):(+Cu.ded||0); adBody=(showAca?'Your marketplace plan':'Your current plan')+' costs '+fmt2(bp)+'/mo in premium — but its '+fmt2(bDed)+' deductible is another '+fmt2(bDed/12)+'/mo you have to be ready to pay. That is '+fmt2(base.mo)+'/mo in true cost. Your Package of Protection is '+fmt2(pMo)+'/mo. So when you count the deductible, you are '+fmt2(adAmt)+'/mo better off — here is what that adds up to if you simply set it aside, before any growth at all.';
+      var bDed=base.ded; adBody=(base.k==='aca'?'Your marketplace plan':'Your current plan')+' costs '+fmt2(bp)+'/mo in premium — but its '+fmt2(bDed)+' deductible is another '+fmt2(bDed/12)+'/mo you have to be ready to pay. That is '+fmt2(base.mo)+'/mo in true cost. Your Package of Protection is '+fmt2(pMo)+'/mo. So when you count the deductible, you are '+fmt2(adAmt)+'/mo better off — here is what that adds up to if you simply set it aside, before any growth at all.';
       adFine='Based on your ACA true cost (premium + deductible ÷ 12) minus your package, assuming the deductible is met. Simple total set aside — no investment growth assumed.';
     }
     html+='<div class="po-ad"><div class="eb">Your next step</div>'
@@ -3119,7 +3146,7 @@ function readIntake(){
   S.intake.dv=$('in_dv').checked;
   S.intake.majorcond=$('in_majorcond').checked; S.intake.majorcondNote=$('in_majorcond_note').value;
   S.intake.diabetic=$('in_diabetic').checked; S.intake.diabeticNote=$('in_diabetic_note').value;
-  S.intake.budget=+$('in_budget').value||0; S.intake.budgetComfort=+$('in_budget_comfort').value||0;
+  S.intake.budget=+$('in_budget').value||0; S.intake.budgetComfort=+$('in_budget_comfort').value||0; S.intake.anchor=$('in_anchor').value||'aca';
   S.intake.visits=+$('in_visits').value||0;
   var C=curIn(); ['prem','emp','ded','oop','copay'].forEach(function(k){ C[k]=moneyVal($('in_cur_'+k).value); });
   C.isAca=$('in_cur_isaca').checked; C.show=$('in_cur_show').checked;
@@ -3168,7 +3195,7 @@ function fillIntake(){
   var A=acaIn(); $('in_aca_status').value=A.status||'na'; $('in_aca_show').checked=A.show!==false; $('in_aca_fullded').checked=A.fullded!==false;
   $('in_pincome').value=I.pincome?fmtMoneyStr(String(I.pincome)):''; $('in_sincome').value=I.sincome?fmtMoneyStr(String(I.sincome)):'';
   $('in_income').value=I.income?fmtMoneyStr(String(I.income)):''; $('in_retage').value=I.retage||''; $('in_savings').value=I.savings?fmtMoneyStr(String(I.savings)):''; $('in_invest').value=I.invest?fmtMoneyStr(String(I.invest)):''; $('in_invprot').checked=!!I.invprot; $('in_invsra').checked=!!I.invsra; $('in_invnote').value=I.invnote||'';
-  $('in_budget').value=I.budget||''; $('in_budget_comfort').value=I.budgetComfort||''; $('in_priority').value=I.priority||'coverage'; $('in_notes').value=I.notes||'';
+  $('in_budget').value=I.budget||''; $('in_budget_comfort').value=I.budgetComfort||''; $('in_anchor').value=I.anchor||'aca'; anchorNote(); $('in_priority').value=I.priority||'coverage'; $('in_notes').value=I.notes||'';
   renderMeds(); acaSync(); renderAca();
   $('in_aphone').value=fmtPhone($('in_aphone').value); $('in_phone').value=fmtPhone($('in_phone').value); $('in_date').value=fmtDate($('in_date').value); $('in_sdob').value=fmtDate($('in_sdob').value);
   markValid($('in_phone'),phoneOK($('in_phone').value)); markValid($('in_date'),dateOK($('in_date').value)); markValid($('in_email'),emailOK($('in_email').value)); markValid($('in_sdob'),dateOK($('in_sdob').value));
@@ -3438,7 +3465,11 @@ function bindInputs(){
   $('in_effdate').addEventListener('input',function(){ this.value=fmtDate(this.value); });
   ['in_cur_prem','in_cur_emp','in_cur_ded','in_cur_oop','in_cur_copay','in_savings','in_invest'].forEach(function(id){ var el=$(id); if(el) el.addEventListener('input',function(){ this.value=fmtMoneyStr(this.value); captureIntake(); }); });
   ['in_cur_isaca','in_cur_show','in_aca_fullded'].forEach(function(id){ $(id).addEventListener('change',function(){ captureIntake(); syncChips(); }); });
-  $('in_aca_status').addEventListener('change',function(){ $('in_aca_show').checked=(this.value!=='outside'); captureIntake(); syncChips(); });
+  $('in_aca_status').addEventListener('change',function(){ $('in_aca_show').checked=(this.value!=='outside');
+    /* Outside open enrollment the ACA can't be bought, so it can't be the anchor either. */
+    if(this.value==='outside'&&$('in_anchor').value==='aca') $('in_anchor').value=(+curIn().prem>0)?'cur':'none';
+    captureIntake(); anchorNote(); syncChips(); });
+  $('in_anchor').addEventListener('change',function(){ captureIntake(); anchorNote(); });
   $('in_aca_show').addEventListener('change',function(){ captureIntake(); syncChips(); });
   document.querySelectorAll('a.hspop').forEach(function(a){ a.addEventListener('click',function(ev){ ev.preventDefault();
     var w=window.open(a.href,'healthsherpa','width=1200,height=900'); if(w) w.opener=null; else window.open(a.href,'_blank','noopener'); }); });
@@ -3578,11 +3609,15 @@ function renderBuilder(){
   // Jesse's standard: dental is an add-on, outside the package price. Applied once per quote.
   if(!S.dvhChoice){ S.dvhChoice='addon'; ['good','better','best'].forEach(function(t){ var pk=S.packages[t]; pk.dropped=pk.dropped||[]; if(pk.dropped.indexOf('dvh')<0) pk.dropped.push('dvh'); }); setTimeout(pbReprice,0); }
   var tiers=[['good','Good','Essential'],['better','Better','Complete'],['best','Best','Comprehensive']], totals={};
+  var anc=anchorBase(), ak=(S.intake&&S.intake.anchor)||'aca';
+  var anchorStrip='<div class="pbanchor">'+(anc?'Anchored against <b>'+anc.lab+'</b>: '+pbMoney(anc.prem)+'/mo premium'+(+S.aca.med&&anc.k==='aca'||+S.curMed&&anc.k==='cur'?' incl. drugs':'')+' · '+pbMoney(anc.mo)+'/mo true cost'
+      :(ak==='cur'?'Anchor is the current plan, but there is no current premium — add it under Current Insurance.':(ak==='aca'?'Anchor is the ACA bronze, but it has no premium yet — add the state and ages on the Intake.':'No anchor — the packages are only compared with each other.')))
+    +' <a href="#" class="jump" data-jumpto="in_anchor">change</a></div>';
   var LINEUPS=[['mh','Manhattan only'],['lx-mh-cg','LifeX · Manhattan · Cigna'],['custom','Custom — you choose each']];
   var lineupBar='<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 12px"><span style="font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--muted);text-transform:uppercase">Lineup</span>'
     +'<button type="button" data-act="reload" title="Put all three packages back to POP Pro’s recommendation" style="font:inherit;font-size:13px;font-weight:700;border-radius:999px;padding:7px 14px;cursor:pointer;border:1.5px solid var(--gold);background:#fffdf7;color:#8a6a1f;margin-right:6px">↺ Reload our recommendation</button>'
     +LINEUPS.map(function(L){ var on=(S.lineup||'mh')===L[0]; return '<button type="button" data-lineup="'+L[0]+'" style="font:inherit;font-size:13px;font-weight:600;border-radius:999px;padding:7px 14px;cursor:pointer;border:1px solid '+(on?'var(--navy)':'#d6cdb4')+';background:'+(on?'var(--navy)':'#fff')+';color:'+(on?'#fff':'var(--ink)')+'">'+L[1]+'</button>'; }).join('')+'</div>';
-  var html=lineupBar+'<div class="bh"><h3>Package builder</h3><small>'+st+' · age '+age+' · '+({i:'Individual',s:'Individual + Spouse',c:'Individual + Children',f:'Family'}[householdKey()])+' · prices from the ManhattanLife rate tables</small></div><div class="pb3">';
+  var html=lineupBar+anchorStrip+'<div class="bh"><h3>Package builder</h3><small>'+st+' · age '+age+' · '+({i:'Individual',s:'Individual + Spouse',c:'Individual + Children',f:'Family'}[householdKey()])+' · prices from the ManhattanLife rate tables</small></div><div class="pb3">';
   tiers.forEach(function(T){
     var t=T[0], c=effCfg(t), pk=S.packages[t]||{products:[]}, dropped=pk.dropped||[];
     var built=buildTierProducts(c,null,[]), byK={}; built.forEach(function(p){ byK[p.k]=p; });
@@ -3628,7 +3663,12 @@ function renderBuilder(){
     if(lbAll&&lbMissing.length>1){ addable=addable.filter(function(sl){ return sl.k!=='lbp'&&sl.k!=='lbs'; }); addable.push({k:'lb*',name:'Living benefits (each covered adult)'}); }
     if(addable.length) html+='<div class="pbadd"><select data-act="add" aria-label="Add a product"><option value="">＋ Add product</option>'+addable.map(function(sl){ return '<option value="'+sl.k+'">'+sl.name+'</option>'; }).join('')+'</select></div>';
     totals[t]=sum;
-    html+='<div class="pbtot"><b>Monthly</b><span>'+pbMoney(sum)+'</span></div></div>';
+    html+='<div class="pbtot"><b>Monthly</b><span>'+pbMoney(sum)+'</span></div>';
+    var sv=anchorSavings(anc,sum);
+    if(sv){ var line=function(lab,v){ return '<div class="sv"><span>'+lab+'</span><b class="'+(v>=0?'up':'dn')+'">'+(v>=0?'saves ':'costs ')+pbMoney(Math.abs(v))+(v>=0?'':' more')+'</b></div>'; };
+      html+='<div class="pbsave">'+line('Premium vs premium',sv.actual)+line('True cost',sv.tru)
+        +'<div class="sv tf"><span>Room for a TFRA</span><b>'+(sv.tfra>0?pbMoney(sv.tfra)+'/mo':'—')+'</b></div></div>'; }
+    html+='</div>';
   });
   html+='</div>';
   var ladder=!S.lineup||S.lineup==='mh';   // the step-up check only means something on a Good/Better/Best ladder
@@ -3642,6 +3682,7 @@ function renderBuilder(){
     +'<span style="flex:1"></span><b>'+(dv.price!=null?pbMoney(dv.price)+'/mo':'<span style="color:var(--muted);font-weight:500">'+(dv.note||'not available')+'</span>')+'</b>'
     +'<label style="display:flex;gap:6px;align-items:center;font-size:13px"><input type="checkbox" data-act="dvhinc"'+(inAll?' checked':'')+'> Add to all three packages</label></div>';
   host.innerHTML=html;
+  host.querySelectorAll('[data-jumpto]').forEach(function(a){ a.onclick=function(e){ e.preventDefault(); goStep('intake'); setTimeout(function(){ intakeJump(a.dataset.jumpto); },80); }; });
   host.querySelectorAll('.pbcol').forEach(function(col){
     var t=col.dataset.t;
     col.querySelectorAll('[data-act="tog"]').forEach(function(b){ b.onclick=function(){ var key=t+'|'+b.dataset.k; PB_OPEN[key]=!PB_OPEN[key]; renderBuilder(); }; });

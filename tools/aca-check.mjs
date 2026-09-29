@@ -88,6 +88,15 @@ if (mode === 'engine') {
   ok(CS({ ded: 7000, oop: 9950, med: 125, medDed: 100, visits: 4, copay: 50, fullded: true }) === 7000 + 300 + 200, 'generic $25/mo + 4 visits on top of the deductible');
   ok(CS({ ded: 7000, oop: 9950, med: 900, medDed: 900, visits: 0, copay: 0, fullded: true }) === 9950, 'capped at the out-of-pocket max');
   ok(CS({ ded: 7000, oop: 9950, med: 100, medDed: 100, visits: 0, copay: 0, fullded: false }) === 1200, 'deductible not assumed: only the drug spend');
+  // 13. Savings against the anchor (worked: anchor premium incl. drugs $2,000, true cost $2,450).
+  const A = { prem: 2000, mo: 2450 };
+  let sv = ctx.anchorSavings(A, 1800);
+  ok(sv.actual === 200 && sv.tru === 650 && sv.tfra === 200 && sv.tfraBasis === 'premium', 'saves on premium: TFRA room = premium saving');
+  sv = ctx.anchorSavings(A, 2090);
+  ok(sv.actual === -90 && sv.tru === 360 && sv.tfra === 360 && sv.tfraBasis === 'true', 'costs $90 more on premium but saves on true cost: TFRA room = true-cost saving');
+  sv = ctx.anchorSavings(A, 2600);
+  ok(sv.actual === -600 && sv.tru === -150 && sv.tfra === 0, 'costs more both ways: no TFRA room');
+  ok(ctx.anchorSavings(null, 1800) === null, 'no anchor: no savings');
   if (!fails) console.log('ACA engine checks passed');
 } else if (mode === 'structure') {
   const order = ['sec_meds', 'sec_conds', 'sec_health', 'sec_docs', 'sec_curins', 'sec_aca', 'sec_budget'];
@@ -119,6 +128,14 @@ if (mode === 'engine') {
   const intro = html.slice(html.indexOf('class="introbar"'), html.indexOf('id="sec_who"'));
   ok(intro.includes('href="https://script.ffloptimum.com/"') && intro.includes('Health Discovery'), 'intake top: Script Navigator button naming Health Discovery');
   ok(intro.includes('id="howBtn"') && html.includes('id="howModal"'), 'intake top: How to use this tool');
+  const bud2 = html.slice(html.indexOf('id="sec_budget"'), html.indexOf('id="sec_budget"') + 2500);
+  const an = bud2.slice(bud2.indexOf('id="in_anchor"'), bud2.indexOf('</select>', bud2.indexOf('id="in_anchor"')));
+  const ov = [...an.matchAll(/<option value="([a-z]+)"( selected)?>([^<]+)</g)].map(m => m[1] + ':' + m[3]);
+  ok(ov.join('|') === 'aca:ACA bronze|cur:Current plan|none:No anchor', 'anchor options in order, ACA first (default): ' + ov.join('|'));
+  ok(!/selected/.test(an), 'no other option pre-selected over ACA bronze');
+  ok(html.includes("'No savings figures — the quote just compares the Good, Better and Best packages with each other.'"), 'no-anchor explanation present');
+  ok(html.includes('class="pbsave"') && html.includes('Room for a TFRA'), 'builder savings row per column');
+  ok(html.includes("S.intake.anchor=$('in_anchor').value||'aca'"), 'anchor defaults to ACA when unset');
   if (!fails) console.log('intake structure checks passed');
 } else {
   console.log('usage: node tools/aca-check.mjs engine|structure'); process.exit(2);
