@@ -1,0 +1,823 @@
+{
+ "generated": "2026-09-29",
+ "sources": {
+  "kffPremiumsByMetal2026": "https://www.kff.org/affordable-care-act/state-indicator/average-marketplace-premiums-by-metal-tier/",
+  "cmsStateRatingVariations": "https://www.cms.gov/cciio/programs-and-initiatives/health-insurance-market-reforms/state-rating",
+  "cmsAgeCurvePDF2018": "https://www.cms.gov/CCIIO/Programs-and-Initiatives/Health-Insurance-Market-Reforms/Downloads/StateSpecAgeCrv053117.pdf",
+  "hhsPovertyGuidelines2025_FR": "https://www.federalregister.gov/d/2025-01377",
+  "hhsPovertyGuidelines2025_PDF": "https://public-inspection.federalregister.gov/2025-01377.pdf",
+  "irsRevProc2025_25": "https://www.irs.gov/pub/irs-drop/rp-25-25.pdf",
+  "moop2026_MarketplaceIntegrityRule": "https://www.federalregister.gov/documents/2025/06/25/2025-11606/patient-protection-and-affordable-care-act-marketplace-integrity-and-affordability",
+  "nbpp2026_standardizedPlans": "https://www.federalregister.gov/documents/2025/01/15/2025-00640/patient-protection-and-affordable-care-act-hhs-notice-of-benefit-and-payment-parameters-for-2026-and",
+  "kffCostSharingDeck2026": "https://files.kff.org/attachment/cost-sharing-for-plans-offered-in-the-federal-marketplace-2026.pptx",
+  "kffDeductibleSurge2026": "https://www.kff.org/affordable-care-act/the-average-marketplace-deductible-grew-by-about-1000-per-person-in-2026-with-more-enrollees-shifting-to-higher-deductible-plans-as-enhanced-tax-credits-expired/",
+  "cmsLandscapePY2026": "https://data.healthcare.gov/datafile/py2026/individual_market_medical.zip",
+  "kffMedicaidExpansion": "https://www.kff.org/affordable-care-act/state-indicator/state-activity-around-expanding-medicaid-under-the-affordable-care-act/",
+  "petersonKff2027Premiums": "https://www.healthsystemtracker.org/brief/how-much-and-why-aca-marketplace-premiums-are-going-up-in-2027/",
+  "astho2026Timeline": "https://www.astho.org/communications/blog/2026/aca-enhanced-premium-tax-credits-legislative-developments-2025-2026/",
+  "ahaHousePassage": "https://www.aha.org/news/headline/2026-01-09-house-passes-bill-extending-enhanced-premium-tax-credits"
+ },
+ "statesNote": "Monthly premium for a 40-year-old, KFF State Health Facts 'Average Marketplace Premiums by Metal Tier', timeframe 2026. bronze40 = Average Lowest-Cost Bronze Premium; silver40 = Average Benchmark Premium (second-lowest-cost silver). KFF method: lowest-cost (or benchmark) premium for a 40-year-old in each county, weighted by county plan selections; may include non-EHB premium. These are unsubsidized, averaged statewide - an estimate only; county-level prices vary widely.",
+ "usAverage": {
+  "bronze40": 456,
+  "silver40": 625,
+  "year": 2026
+ },
+ "states": {
+  "AK": {
+   "bronze40": 669,
+   "silver40": 1032,
+   "year": 2026
+  },
+  "AL": {
+   "bronze40": 433,
+   "silver40": 645,
+   "year": 2026
+  },
+  "AR": {
+   "bronze40": 447,
+   "silver40": 774,
+   "year": 2026
+  },
+  "AZ": {
+   "bronze40": 430,
+   "silver40": 532,
+   "year": 2026
+  },
+  "CA": {
+   "bronze40": 440,
+   "silver40": 570,
+   "year": 2026
+  },
+  "CO": {
+   "bronze40": 422,
+   "silver40": 557,
+   "year": 2026
+  },
+  "CT": {
+   "bronze40": 623,
+   "silver40": 870,
+   "year": 2026
+  },
+  "DC": {
+   "bronze40": 505,
+   "silver40": 610,
+   "year": 2026
+  },
+  "DE": {
+   "bronze40": 542,
+   "silver40": 691,
+   "year": 2026
+  },
+  "FL": {
+   "bronze40": 505,
+   "silver40": 683,
+   "year": 2026
+  },
+  "GA": {
+   "bronze40": 485,
+   "silver40": 615,
+   "year": 2026
+  },
+  "HI": {
+   "bronze40": 414,
+   "silver40": 541,
+   "year": 2026
+  },
+  "IA": {
+   "bronze40": 359,
+   "silver40": 501,
+   "year": 2026
+  },
+  "ID": {
+   "bronze40": 346,
+   "silver40": 490,
+   "year": 2026
+  },
+  "IL": {
+   "bronze40": 436,
+   "silver40": 646,
+   "year": 2026
+  },
+  "IN": {
+   "bronze40": 405,
+   "silver40": 474,
+   "year": 2026
+  },
+  "KS": {
+   "bronze40": 508,
+   "silver40": 670,
+   "year": 2026
+  },
+  "KY": {
+   "bronze40": 481,
+   "silver40": 590,
+   "year": 2026
+  },
+  "LA": {
+   "bronze40": 447,
+   "silver40": 646,
+   "year": 2026
+  },
+  "MA": {
+   "bronze40": 393,
+   "silver40": 494,
+   "year": 2026
+  },
+  "MD": {
+   "bronze40": 283,
+   "silver40": 414,
+   "year": 2026
+  },
+  "ME": {
+   "bronze40": 525,
+   "silver40": 709,
+   "year": 2026
+  },
+  "MI": {
+   "bronze40": 384,
+   "silver40": 523,
+   "year": 2026
+  },
+  "MN": {
+   "bronze40": 384,
+   "silver40": 448,
+   "year": 2026
+  },
+  "MO": {
+   "bronze40": 465,
+   "silver40": 605,
+   "year": 2026
+  },
+  "MS": {
+   "bronze40": 589,
+   "silver40": 662,
+   "year": 2026
+  },
+  "MT": {
+   "bronze40": 455,
+   "silver40": 692,
+   "year": 2026
+  },
+  "NC": {
+   "bronze40": 489,
+   "silver40": 638,
+   "year": 2026
+  },
+  "ND": {
+   "bronze40": 398,
+   "silver40": 570,
+   "year": 2026
+  },
+  "NE": {
+   "bronze40": 545,
+   "silver40": 710,
+   "year": 2026
+  },
+  "NH": {
+   "bronze40": 318,
+   "silver40": 401,
+   "year": 2026
+  },
+  "NJ": {
+   "bronze40": 451,
+   "silver40": 545,
+   "year": 2026
+  },
+  "NM": {
+   "bronze40": 473,
+   "silver40": 623,
+   "year": 2026
+  },
+  "NV": {
+   "bronze40": 396,
+   "silver40": 497,
+   "year": 2026
+  },
+  "NY": {
+   "bronze40": 610,
+   "silver40": 817,
+   "year": 2026
+  },
+  "OH": {
+   "bronze40": 400,
+   "silver40": 513,
+   "year": 2026
+  },
+  "OK": {
+   "bronze40": 462,
+   "silver40": 604,
+   "year": 2026
+  },
+  "OR": {
+   "bronze40": 453,
+   "silver40": 543,
+   "year": 2026
+  },
+  "PA": {
+   "bronze40": 364,
+   "silver40": 572,
+   "year": 2026
+  },
+  "RI": {
+   "bronze40": 367,
+   "silver40": 506,
+   "year": 2026
+  },
+  "SC": {
+   "bronze40": 410,
+   "silver40": 564,
+   "year": 2026
+  },
+  "SD": {
+   "bronze40": 484,
+   "silver40": 655,
+   "year": 2026
+  },
+  "TN": {
+   "bronze40": 508,
+   "silver40": 711,
+   "year": 2026
+  },
+  "TX": {
+   "bronze40": 426,
+   "silver40": 661,
+   "year": 2026
+  },
+  "UT": {
+   "bronze40": 510,
+   "silver40": 640,
+   "year": 2026
+  },
+  "VA": {
+   "bronze40": 351,
+   "silver40": 455,
+   "year": 2026
+  },
+  "VT": {
+   "bronze40": 824,
+   "silver40": 1299,
+   "year": 2026
+  },
+  "WA": {
+   "bronze40": 364,
+   "silver40": 612,
+   "year": 2026
+  },
+  "WI": {
+   "bronze40": 443,
+   "silver40": 611,
+   "year": 2026
+  },
+  "WV": {
+   "bronze40": 775,
+   "silver40": 1073,
+   "year": 2026
+  },
+  "WY": {
+   "bronze40": 785,
+   "silver40": 1090,
+   "year": 2026
+  }
+ },
+ "ageCurve": {
+  "federal": {
+   "0-14": 0.765,
+   "15": 0.833,
+   "16": 0.859,
+   "17": 0.885,
+   "18": 0.913,
+   "19": 0.941,
+   "20": 0.97,
+   "21": 1.0,
+   "22": 1.0,
+   "23": 1.0,
+   "24": 1.0,
+   "25": 1.004,
+   "26": 1.024,
+   "27": 1.048,
+   "28": 1.087,
+   "29": 1.119,
+   "30": 1.135,
+   "31": 1.159,
+   "32": 1.183,
+   "33": 1.198,
+   "34": 1.214,
+   "35": 1.222,
+   "36": 1.23,
+   "37": 1.238,
+   "38": 1.246,
+   "39": 1.262,
+   "40": 1.278,
+   "41": 1.302,
+   "42": 1.325,
+   "43": 1.357,
+   "44": 1.397,
+   "45": 1.444,
+   "46": 1.5,
+   "47": 1.563,
+   "48": 1.635,
+   "49": 1.706,
+   "50": 1.786,
+   "51": 1.865,
+   "52": 1.952,
+   "53": 2.04,
+   "54": 2.135,
+   "55": 2.23,
+   "56": 2.333,
+   "57": 2.437,
+   "58": 2.548,
+   "59": 2.603,
+   "60": 2.714,
+   "61": 2.81,
+   "62": 2.873,
+   "63": 2.952,
+   "64": 3.0
+  },
+  "AL": {
+   "0-14": 0.635,
+   "15": 0.635,
+   "16": 0.635,
+   "17": 0.635,
+   "18": 0.635,
+   "19": 0.635,
+   "20": 0.635,
+   "21": 1.0,
+   "22": 1.0,
+   "23": 1.0,
+   "24": 1.0,
+   "25": 1.004,
+   "26": 1.024,
+   "27": 1.048,
+   "28": 1.087,
+   "29": 1.119,
+   "30": 1.135,
+   "31": 1.159,
+   "32": 1.183,
+   "33": 1.198,
+   "34": 1.214,
+   "35": 1.222,
+   "36": 1.23,
+   "37": 1.238,
+   "38": 1.246,
+   "39": 1.262,
+   "40": 1.278,
+   "41": 1.302,
+   "42": 1.325,
+   "43": 1.357,
+   "44": 1.397,
+   "45": 1.444,
+   "46": 1.5,
+   "47": 1.563,
+   "48": 1.635,
+   "49": 1.706,
+   "50": 1.786,
+   "51": 1.865,
+   "52": 1.952,
+   "53": 2.04,
+   "54": 2.135,
+   "55": 2.23,
+   "56": 2.333,
+   "57": 2.437,
+   "58": 2.548,
+   "59": 2.603,
+   "60": 2.714,
+   "61": 2.81,
+   "62": 2.873,
+   "63": 2.952,
+   "64": 3.0
+  },
+  "DC": {
+   "0-14": 0.654,
+   "15": 0.654,
+   "16": 0.654,
+   "17": 0.654,
+   "18": 0.654,
+   "19": 0.654,
+   "20": 0.654,
+   "21": 0.727,
+   "22": 0.727,
+   "23": 0.727,
+   "24": 0.727,
+   "25": 0.727,
+   "26": 0.727,
+   "27": 0.727,
+   "28": 0.744,
+   "29": 0.76,
+   "30": 0.779,
+   "31": 0.799,
+   "32": 0.817,
+   "33": 0.836,
+   "34": 0.856,
+   "35": 0.876,
+   "36": 0.896,
+   "37": 0.916,
+   "38": 0.927,
+   "39": 0.938,
+   "40": 0.975,
+   "41": 1.013,
+   "42": 1.053,
+   "43": 1.094,
+   "44": 1.137,
+   "45": 1.181,
+   "46": 1.227,
+   "47": 1.275,
+   "48": 1.325,
+   "49": 1.377,
+   "50": 1.431,
+   "51": 1.487,
+   "52": 1.545,
+   "53": 1.605,
+   "54": 1.668,
+   "55": 1.733,
+   "56": 1.801,
+   "57": 1.871,
+   "58": 1.944,
+   "59": 2.02,
+   "60": 2.099,
+   "61": 2.181,
+   "62": 2.181,
+   "63": 2.181,
+   "64": 2.181
+  },
+  "MA": {
+   "0-14": 0.751,
+   "15": 0.751,
+   "16": 0.751,
+   "17": 0.751,
+   "18": 0.751,
+   "19": 0.751,
+   "20": 0.751,
+   "21": 1.183,
+   "22": 1.183,
+   "23": 1.183,
+   "24": 1.183,
+   "25": 1.183,
+   "26": 1.183,
+   "27": 1.22,
+   "28": 1.25,
+   "29": 1.275,
+   "30": 1.287,
+   "31": 1.305,
+   "32": 1.323,
+   "33": 1.334,
+   "34": 1.346,
+   "35": 1.352,
+   "36": 1.358,
+   "37": 1.363,
+   "38": 1.369,
+   "39": 1.381,
+   "40": 1.393,
+   "41": 1.41,
+   "42": 1.427,
+   "43": 1.45,
+   "44": 1.478,
+   "45": 1.511,
+   "46": 1.55,
+   "47": 1.593,
+   "48": 1.641,
+   "49": 1.688,
+   "50": 1.741,
+   "51": 1.792,
+   "52": 1.847,
+   "53": 1.902,
+   "54": 1.961,
+   "55": 2.019,
+   "56": 2.08,
+   "57": 2.142,
+   "58": 2.206,
+   "59": 2.28,
+   "60": 2.365,
+   "61": 2.365,
+   "62": 2.365,
+   "63": 2.365,
+   "64": 2.365
+  },
+  "MN": {
+   "0-14": 0.89,
+   "15": 0.89,
+   "16": 0.89,
+   "17": 0.89,
+   "18": 0.89,
+   "19": 0.89,
+   "20": 0.89,
+   "21": 1.0,
+   "22": 1.0,
+   "23": 1.0,
+   "24": 1.0,
+   "25": 1.004,
+   "26": 1.024,
+   "27": 1.048,
+   "28": 1.087,
+   "29": 1.119,
+   "30": 1.135,
+   "31": 1.159,
+   "32": 1.183,
+   "33": 1.198,
+   "34": 1.214,
+   "35": 1.222,
+   "36": 1.23,
+   "37": 1.238,
+   "38": 1.246,
+   "39": 1.262,
+   "40": 1.278,
+   "41": 1.302,
+   "42": 1.325,
+   "43": 1.357,
+   "44": 1.397,
+   "45": 1.444,
+   "46": 1.5,
+   "47": 1.563,
+   "48": 1.635,
+   "49": 1.706,
+   "50": 1.786,
+   "51": 1.865,
+   "52": 1.952,
+   "53": 2.04,
+   "54": 2.135,
+   "55": 2.23,
+   "56": 2.333,
+   "57": 2.437,
+   "58": 2.548,
+   "59": 2.603,
+   "60": 2.714,
+   "61": 2.81,
+   "62": 2.873,
+   "63": 2.952,
+   "64": 3.0
+  },
+  "MS": {
+   "0-14": 0.635,
+   "15": 0.635,
+   "16": 0.635,
+   "17": 0.635,
+   "18": 0.635,
+   "19": 0.635,
+   "20": 0.635,
+   "21": 1.0,
+   "22": 1.0,
+   "23": 1.0,
+   "24": 1.0,
+   "25": 1.004,
+   "26": 1.024,
+   "27": 1.048,
+   "28": 1.087,
+   "29": 1.119,
+   "30": 1.135,
+   "31": 1.159,
+   "32": 1.183,
+   "33": 1.198,
+   "34": 1.214,
+   "35": 1.222,
+   "36": 1.23,
+   "37": 1.238,
+   "38": 1.246,
+   "39": 1.262,
+   "40": 1.278,
+   "41": 1.302,
+   "42": 1.325,
+   "43": 1.357,
+   "44": 1.397,
+   "45": 1.444,
+   "46": 1.5,
+   "47": 1.563,
+   "48": 1.635,
+   "49": 1.706,
+   "50": 1.786,
+   "51": 1.865,
+   "52": 1.952,
+   "53": 2.04,
+   "54": 2.135,
+   "55": 2.23,
+   "56": 2.333,
+   "57": 2.437,
+   "58": 2.548,
+   "59": 2.603,
+   "60": 2.714,
+   "61": 2.81,
+   "62": 2.873,
+   "63": 2.952,
+   "64": 3.0
+  },
+  "OR": {
+   "0-14": 0.635,
+   "15": 0.635,
+   "16": 0.635,
+   "17": 0.635,
+   "18": 0.635,
+   "19": 0.635,
+   "20": 0.635,
+   "21": 1.0,
+   "22": 1.0,
+   "23": 1.0,
+   "24": 1.0,
+   "25": 1.004,
+   "26": 1.024,
+   "27": 1.048,
+   "28": 1.087,
+   "29": 1.119,
+   "30": 1.135,
+   "31": 1.159,
+   "32": 1.183,
+   "33": 1.198,
+   "34": 1.214,
+   "35": 1.222,
+   "36": 1.23,
+   "37": 1.238,
+   "38": 1.246,
+   "39": 1.262,
+   "40": 1.278,
+   "41": 1.302,
+   "42": 1.325,
+   "43": 1.357,
+   "44": 1.397,
+   "45": 1.444,
+   "46": 1.5,
+   "47": 1.563,
+   "48": 1.635,
+   "49": 1.706,
+   "50": 1.786,
+   "51": 1.865,
+   "52": 1.952,
+   "53": 2.04,
+   "54": 2.135,
+   "55": 2.23,
+   "56": 2.333,
+   "57": 2.437,
+   "58": 2.548,
+   "59": 2.603,
+   "60": 2.714,
+   "61": 2.81,
+   "62": 2.873,
+   "63": 2.952,
+   "64": 3.0
+  },
+  "UT": {
+   "0-14": 0.793,
+   "15": 0.793,
+   "16": 0.793,
+   "17": 0.793,
+   "18": 0.793,
+   "19": 0.793,
+   "20": 0.793,
+   "21": 1.0,
+   "22": 1.05,
+   "23": 1.113,
+   "24": 1.191,
+   "25": 1.298,
+   "26": 1.363,
+   "27": 1.39,
+   "28": 1.39,
+   "29": 1.39,
+   "30": 1.39,
+   "31": 1.39,
+   "32": 1.39,
+   "33": 1.39,
+   "34": 1.39,
+   "35": 1.39,
+   "36": 1.39,
+   "37": 1.404,
+   "38": 1.425,
+   "39": 1.45,
+   "40": 1.479,
+   "41": 1.516,
+   "42": 1.562,
+   "43": 1.616,
+   "44": 1.681,
+   "45": 1.748,
+   "46": 1.818,
+   "47": 1.891,
+   "48": 1.966,
+   "49": 2.045,
+   "50": 2.127,
+   "51": 2.212,
+   "52": 2.3,
+   "53": 2.392,
+   "54": 2.488,
+   "55": 2.588,
+   "56": 2.691,
+   "57": 2.799,
+   "58": 2.911,
+   "59": 3.0,
+   "60": 3.0,
+   "61": 3.0,
+   "62": 3.0,
+   "63": 3.0,
+   "64": 3.0
+  },
+  "_notes": "Source: CMS 'State Specific Age Curve Variations' (5-31-2017, effective PY2018), still the latest curve file linked from CMS's Market Rating Reforms page (page table updated 12/10/2021, page modified 09/10/2024). Band '64' = 64 and older. Federal default is used by every state not listed here. MA is published on its own base (age 21 = 1.183, max ratio 2:1) and is NOT normalized to age 21 = 1.000; divide by 1.183 if the tool needs a 21-based ratio. MN differs from the federal default only for ages 0-20 (0.890). AL's curve applies to the individual market only (CMS column header 'Alabama (Individual)'). NJ has a small-group-only curve in the same file and is omitted here; NJ individual market follows the federal default per the CMS table. NY and VT are community rated (1:1 age ratio) so no curve applies."
+ },
+ "communityRated": [
+  "NY",
+  "VT"
+ ],
+ "familyTiers": {
+  "NY": {
+   "oneAdult": 1.0,
+   "twoAdults": 2.0,
+   "oneAdultPlusChildren": 1.7,
+   "twoAdultsPlusChildren": 2.85
+  },
+  "VT": {
+   "oneAdult": 1.0,
+   "twoAdults": 2.0,
+   "oneAdultPlusChildren": 1.93,
+   "twoAdultsPlusChildren": 2.81
+  },
+  "_note": "CMS State Specific Family Tier Ratios table (Market Rating Reforms page; table updated 12/10/2021). Multiply the single-adult rate by the tier factor. Not re-verified against NY DFS / VT DFR 2026 filings."
+ },
+ "fpl2025": {
+  "contiguous": {
+   "base": 15650,
+   "perPerson": 5500
+  },
+  "AK": {
+   "base": 19550,
+   "perPerson": 6880
+  },
+  "HI": {
+   "base": 17990,
+   "perPerson": 6330
+  },
+  "_note": "2025 HHS poverty guidelines (FR Doc. 2025-01377, published 1/17/2025), used for 2026-coverage PTC eligibility. Household size n: base + (n-1)*perPerson (the published tables are exactly linear, e.g. contiguous 4 = $32,150, 8 = $54,150). 400% FPL single contiguous = $62,600."
+ },
+ "applicablePct2026": [
+  {
+   "fromFPL": 0,
+   "toFPL": 133,
+   "startPct": 2.1,
+   "endPct": 2.1
+  },
+  {
+   "fromFPL": 133,
+   "toFPL": 150,
+   "startPct": 3.14,
+   "endPct": 4.19
+  },
+  {
+   "fromFPL": 150,
+   "toFPL": 200,
+   "startPct": 4.19,
+   "endPct": 6.6
+  },
+  {
+   "fromFPL": 200,
+   "toFPL": 250,
+   "startPct": 6.6,
+   "endPct": 8.44
+  },
+  {
+   "fromFPL": 250,
+   "toFPL": 300,
+   "startPct": 8.44,
+   "endPct": 9.96
+  },
+  {
+   "fromFPL": 300,
+   "toFPL": 400,
+   "startPct": 9.96,
+   "endPct": 9.96
+  }
+ ],
+ "applicablePctNote": "IRS Rev. Proc. 2025-25 section 3.01. Bands are 'at least lower but less than upper' except the last, which is 'at least 300% but not more than 400%'. Percentage rises linearly within each band. No credit above 400% FPL. PTC eligibility generally starts at 100% FPL (below that, Medicaid or, in non-expansion states, the coverage gap). Required contribution percentage (employer affordability) 2026 = 9.96%.",
+ "subsidyCliff400": true,
+ "subsidyStatusNote": "The ARPA/IRA enhanced premium tax credits expired on December 31, 2025, so the original ACA schedule above applies for 2026 and the 400% FPL cliff is back. December 2025: Senate votes on competing extension bills (incl. S. 3385) failed to reach 60 votes. January 8, 2026: House passed H.R. 1834, a three-year clean extension, 230-196; the Senate has not passed it and no extension has been enacted. A bipartisan Senate compromise (CARE Act, 2-year extension with minimum premiums/income caps) was reported in Jan 2026 but not enacted. Peterson-KFF (July 8, 2026, updated Aug 3, 2026) still describes the credits as expired and the 400% cliff as in effect. No source found showing any enactment through late September 2026. Some state-based marketplaces (e.g. NM) partly back-filled with state subsidies; the federal calculation does not include those.",
+ "moop2026": {
+  "self": 10600,
+  "family": 21200,
+  "_note": "Final PY2026 maximum annual limitation on cost sharing per the Marketplace Integrity and Affordability final rule (90 FR 27074, June 25, 2025), which replaced the $10,150/$20,300 figures first published in the 2026 Payment Notice. PY2025 was $9,200/$18,400."
+ },
+ "bronze": {
+  "avgDeductible": 7476,
+  "avgDeductibleNote": "KFF, Cost-Sharing for Plans Offered in the Federal Marketplace for 2026 (Nov 5, 2025): average medical deductible in bronze plans with a combined medical+drug deductible, HealthCare.gov states, 2026 (88% of bronze plans have a combined deductible). Plan average, not enrollment-weighted. Cross-check: our own plan-level average from the CMS PY2026 landscape file = $7,502 for combined-deductible bronze plans (median $7,500).",
+  "avgMoop": 9950,
+  "avgMoopNote": "NOT a KFF figure - KFF's 2026 deck gives out-of-pocket limits only for silver. Computed by us from the CMS PY2026 HealthCare.gov landscape file (individual_market_medical, 30 HealthCare.gov states): unweighted mean individual in-network MOOP across 1,300 unique bronze + expanded bronze plans = $9,950; median $10,000; most common values $10,000 (442 plans), $10,600 (356), $10,150 (198). Excludes state-based-marketplace states.",
+  "pcpNote": "From the same CMS PY2026 landscape file (1,300 unique bronze/expanded-bronze plans, HealthCare.gov states, unweighted): 68.9% have a flat primary-care copay that is NOT subject to the deductible, 6.5% cover PCP visits at no charge before the deductible, 0.7% have a pre-deductible copay plus coinsurance, and 23.9% apply the deductible first (no charge / copay / coinsurance after deductible). So ~76% of HealthCare.gov bronze plans give some pre-deductible PCP coverage. Among pre-deductible copays: median $50, mean $50.8, most common $50 (571 plans). CMS's 2026 standardized expanded-bronze design also sets a $50 pre-deductible PCP copay. Some plans limit pre-deductible visits (e.g. first 3 visits) - the landscape file does not show visit caps. State-based marketplaces (e.g. Covered California's first-3-visits design) are not included.",
+  "pcpCopayTypical": 50,
+  "genericRxNote": "CMS PY2026 landscape file, same 1,300 bronze plans: 75.0% charge a flat generic copay not subject to the deductible, 2.5% cover generics at no charge pre-deductible, 22.5% apply the deductible first. Pre-deductible generic copays: median $25, mean $20.4, most common $25 (502 plans), then $3 (164) and $30 (96). HealthCare.gov standardized plans are required to cover generics pre-deductible with a fixed copay.",
+  "genericRxCopayTypical": 25,
+  "bronzeShareOfEnrollees2026": "40% of plan selections (9.2M) in 2026, up from 30% (7.3M) in 2025 - KFF, May 19, 2026."
+ },
+ "nonExpansionStates": [
+  "AL",
+  "FL",
+  "GA",
+  "KS",
+  "MS",
+  "SC",
+  "TN",
+  "TX",
+  "WI",
+  "WY"
+ ],
+ "nonExpansionNote": "KFF Status of State Medicaid Expansion Decisions, as of August 2026: 41 states incl. DC adopted, 10 not. Georgia runs a limited 'Pathways' program with work requirements and Wisconsin covers adults to 100% FPL without formal expansion, but both are listed by KFF as Not Adopted. In non-expansion states, adults under 100% FPL generally fall in the coverage gap (no PTC).",
+ "gaps": [
+  "states: none - all 50 states + DC filled for 2026 from KFF (both bronze and benchmark are 2026).",
+  "bronze.avgMoop: no KFF/CMS published national bronze average found; value is our own unweighted computation from the CMS PY2026 HealthCare.gov landscape file (30 states only, excludes state-based marketplaces).",
+  "bronze PCP and generic Rx figures: our computation from the same CMS landscape file (HealthCare.gov states only, plan-level not enrollment-weighted); no KFF/Peterson national 2026 bronze PCP/generic analysis found. Visit caps on pre-deductible copays are not captured.",
+  "bronze.avgDeductible: KFF figure is for HealthCare.gov states only and is a plan average, not enrollment weighted.",
+  "ageCurve: CMS's newest published state curve file is for PY2018 (5-31-2017); state curve changes after that are not captured by CMS and were not individually re-verified with state insurance departments. MA curve is not normalized to age 21 = 1.000 (see ageCurve._notes). NJ small-group-only curve omitted.",
+  "familyTiers NY/VT: from CMS table dated 12/10/2021; not re-verified against 2026 state filings.",
+  "subsidy status: latest source confirming no extension is Peterson-KFF updated Aug 3, 2026; nothing later than that found either way."
+ ]
+}
