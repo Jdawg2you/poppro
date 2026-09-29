@@ -428,6 +428,30 @@
 #classicWrap[open]>summary{margin-bottom:10px;color:var(--ink)}
 body.client #classicWrap>summary{display:none}
 #sec_builder .bh h3{font-size:24px}
+
+/* Version B intake: kids rows, med type-ahead, conditions */
+.kidcount{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--ink);margin-left:4px}
+.kidcount select{font:inherit;font-size:13px;padding:5px 8px;border:1px solid var(--line);border-radius:8px;background:#fff}
+.kidrow{display:grid;grid-template-columns:auto 1.4fr auto 1fr auto .5fr auto .9fr auto;gap:8px;align-items:center;margin:6px 0}
+.kidrow label{font-size:12px;font-weight:600;color:var(--muted)}
+.kidrow input,.kidrow select{font:inherit;font-size:13px;padding:7px 8px;border:1px solid var(--line);border-radius:7px;background:#fff;min-width:0}
+.kidrow .kdel{border:1px solid var(--line);background:#fff;border-radius:6px;width:26px;height:26px;cursor:pointer;color:var(--muted)}
+@media (max-width:760px){.kidrow{grid-template-columns:auto 1fr auto 1fr}}
+.askq{margin-top:10px;background:#eef3fb;border-left:4px solid var(--navy);border-radius:6px;padding:12px 14px;font-family:var(--serif);font-size:17px;color:var(--navy);display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.askq .asktag{font-family:-apple-system,sans-serif;font-size:10px;font-weight:800;letter-spacing:.08em;background:var(--navy);color:#fff;border-radius:3px;padding:3px 7px}
+.askq input{font:14px -apple-system,sans-serif;padding:7px 9px;border:1px solid var(--navy);border-radius:6px;min-width:180px;flex:1;max-width:280px}
+.medbox{position:relative}
+.medsug{position:absolute;left:0;right:0;top:100%;z-index:50;background:#fff;border:1px solid var(--line);border-radius:8px;box-shadow:0 6px 18px rgba(18,33,59,.12);display:none;max-height:260px;overflow:auto}
+.medsug button{display:block;width:100%;text-align:left;font:inherit;font-size:13px;padding:8px 10px;border:0;background:#fff;cursor:pointer}
+.medsug button:hover,.medsug button.hl{background:#f1ede2}
+#medFlags .mflag{margin:8px 0;background:#fff8ec;border:1px solid #e8c98a;border-radius:8px;padding:9px 12px;font-size:13.5px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+#medFlags .mflag button{font:inherit;font-size:12.5px;font-weight:700;border-radius:7px;padding:5px 10px;cursor:pointer;border:1px solid var(--line);background:#fff}
+#medFlags .mflag button.yes{background:var(--navy);color:#fff;border-color:var(--navy)}
+.condlist{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 8px}
+.condlist .cchip{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:5px 6px 5px 12px;font-size:13px;font-weight:600}
+.condlist .cchip button{border:0;background:#f1ede2;border-radius:50%;width:20px;height:20px;cursor:pointer;color:var(--muted);font-size:11px}
+.condlist .none{font-size:13px;color:var(--muted)}
+.condinput{width:100%;font:inherit;font-size:14px;padding:8px 10px;border:1px solid var(--line);border-radius:8px}
 </style>
 </head>
 <body>
@@ -483,6 +507,7 @@ body.client #classicWrap>summary{display:none}
       <label class="chip on"><input type="checkbox" id="in_who_app" checked> Applicant</label>
       <label class="chip"><input type="checkbox" id="in_who_spouse"> Spouse</label>
       <label class="chip"><input type="checkbox" id="in_who_kids"> Children</label>
+      <label class="kidcount" id="kidCountWrap" style="display:none">How many? <select id="in_kidcount"><option value="">—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option></select></label>
     </div>
 
     <div class="intake-sec">Agent Information <span class="secnote">— set once; appears on every page</span></div>
@@ -526,7 +551,11 @@ body.client #classicWrap>summary{display:none}
 
     <div class="intake-sec" id="sec_kids">Children <span class="sayico" data-beat="5" title="Say this — opens the script">Say this</span> <span class="secnote" id="kidsHint">(to expand, select <b>Children</b> under “Who needs coverage” above)</span></div>
     <div id="kidsGrid" style="display:none">
-      <textarea id="in_kids" rows="3" style="width:100%;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font:inherit;background:#fff;resize:vertical" placeholder="List all children with names and ages/DOBs — e.g. Emma (age 8), Liam (age 5), Noah 03/14/2019. Any number of kids is the same price, so just list who's covered."></textarea>
+      <div id="kidRows"></div>
+      <button type="button" class="addbtn" id="addKid" style="margin-left:0">+ Add another dependant</button>
+      <div class="note" style="padding-top:6px">› Name, date of birth and gender for each child — the age works itself out. No height, weight or tobacco; those only rate the adults.</div>
+      <div class="askq"><span class="asktag">ASK</span><span>And how’s their health — everything all good, or is there anything major, or any medications?</span> <input id="in_kidshealth" placeholder="kids health"></div>
+      <textarea id="in_kids" style="display:none" aria-hidden="true"></textarea>
     </div>
 
     <div class="intake-sec" id="sec_health">Health &amp; Routing <span class="sayico" data-beat="6" title="Say this — opens the script">Say this</span></div>
@@ -569,9 +598,14 @@ body.client #classicWrap>summary{display:none}
     <div class="note" style="padding-top:2px">For each medication enter two costs. <b>ACA copay</b> = the monthly amount the ACA plan would cost for that medication; if the drug isn't copay-covered, enter the full price (that cost will go toward their deductible). <b>Discount</b> = the discounted cash price found by using the links above. These costs will calculate on the Package of Protection sections on the Quote.</div>
     <div class="medhead"><span class="h1">Medication</span><span class="h2">ACA copay</span><span class="h2">Discount</span><span class="hw" title="Primary">P</span><span class="hw" title="Spouse">S</span><span class="hx"></span></div>
     <div id="medList"></div>
+    <div id="medFlags"></div>
     <button class="addbtn" id="addMed" style="margin-left:0">+ Add medication</button>
     <div style="margin-top:8px;display:flex;gap:24px;flex-wrap:wrap;font-family:var(--serif);font-weight:700;color:var(--navy)"><span>ACA copay total: <span id="medTotalACA">$0.00</span></span><span>Discount total: <span id="medTotalDisc">$0.00</span></span></div>
     <label class="chip" style="margin-top:8px"><input type="checkbox" id="in_rx"> Rx prices verified (SingleCare / RXedo / AFC reimbursement)</label>
+
+    <div class="intake-sec" id="sec_conds">Conditions <span class="secnote">— the medications usually tell you these; confirm each one</span></div>
+    <div id="condList" class="condlist"></div>
+    <div class="medbox" style="max-width:420px"><input id="condInput" class="condinput" placeholder="Add a condition — start typing…" autocomplete="off"><div class="medsug" id="condSug"></div></div>
 
     <div class="intake-sec" id="sec_curins">Current Insurance <span class="sayico" data-beat="8" title="Say this — opens the script">Say this</span> <span class="secnote">— fills the ACA side · look up on</span> <a href="https://www.healthsherpa.com/sessions/new" target="_blank" rel="noopener" class="seclink">HealthSherpa ↗</a></div>
     <div class="intakegrid">
@@ -2344,6 +2378,8 @@ function applySuiteClient(c){
   }).join("; "));
   if(h.kidsHealth) kidbits.push("Health: "+h.kidsHealth);
   if(kidbits.length) I.kidsNote=kidbits.join(" \u2014 ");
+  if(kids.length){ I.kids=kids.map(function(k){ return {n:k.name||'',dob:k.dob||'',age:k.age?String(k.age):'',sex:/^f/i.test(k.sex||'')?'Female':/^m/i.test(k.sex||'')?'Male':''}; }); }
+  if(h.kidsHealth) I.kidsHealth=h.kidsHealth;
 
   /* Money. The discovery call asks these in the agent's words; they land here as the
      numbers the subsidy cliff is checked against. */
@@ -2995,6 +3031,7 @@ function captureIntake(){
   autosave();
 }
 function fillIntake(){
+  if(typeof renderKids==='function') setTimeout(renderKids,0);
   var I=S.intake||{}; var w=I.who||{app:true};
   $('in_who_app').checked=w.app!==false; $('in_who_spouse').checked=!!w.spouse; $('in_who_kids').checked=!!w.kids;
   $('in_agency').value=(S.agency&&S.agency!=='HealthFirst')?S.agency:(S.agency||''); $('in_aphone').value=S.agentPhone||''; $('in_aemail').value=S.agentEmail||'';
@@ -3052,6 +3089,7 @@ function renderMeds(){
     var row=document.createElement('div'); row.className='medrow';
     var nm=document.createElement('input'); nm.className='mname'; nm.placeholder='Medication'; nm.value=m.name||'';
     nm.oninput=function(){ S.intake.medList[i].name=nm.value; autosave(); };
+    nm.onchange=function(){ renderMedFlags(); };
     var ca=document.createElement('input'); ca.className='mcost'; ca.type='number'; ca.step='0.01'; ca.placeholder='ACA'; ca.value=(m.aca||m.aca===0)?m.aca:'';
     ca.oninput=function(){ S.intake.medList[i].aca=parseFloat(ca.value)||0; updateMedTotal(); autosave(); };
     var cd=document.createElement('input'); cd.className='mcost'; cd.type='number'; cd.step='0.01'; cd.placeholder='Disc'; var dv=(m.disc!=null)?m.disc:(m.cost!=null?m.cost:''); cd.value=(dv||dv===0)?dv:'';
@@ -3060,9 +3098,11 @@ function renderMeds(){
     var wp=mkWho('forP','Primary'); var ws=mkWho('forS','Spouse');
     var del=document.createElement('button'); del.className='del'; del.title='remove'; del.textContent='×';
     del.onclick=function(){ S.intake.medList.splice(i,1); renderMeds(); autosave(); };
-    row.appendChild(nm); row.appendChild(ca); row.appendChild(cd); row.appendChild(wp); row.appendChild(ws); row.appendChild(del); host.appendChild(row);
+    var nmWrap=document.createElement('div'); nmWrap.className='medbox'; nmWrap.appendChild(nm);
+    row.appendChild(nmWrap); row.appendChild(ca); row.appendChild(cd); row.appendChild(wp); row.appendChild(ws); row.appendChild(del); host.appendChild(row);
+    medTypeahead(nm,function(label){ S.intake.medList[i].name=label; autosave(); renderMedFlags(); });
   });
-  updateMedTotal();
+  updateMedTotal(); renderMedFlags(); renderConds(); bindCondInput();
 }
 function syncChips(){
   document.querySelectorAll('#step-intake .chip').forEach(function(l){var cb=l.querySelector('input');if(cb)l.classList.toggle('on',cb.checked);});
@@ -3070,7 +3110,8 @@ function syncChips(){
   syncSpouse();
 }
 function syncSpouse(){ var on=$('in_who_spouse')&&$('in_who_spouse').checked, g=$('spouseGrid'), h=$('spouseHint'); if(g) g.style.display=on?'':'none'; if(h) h.innerHTML=on?'(if applicable)':'(to expand, select <b>Spouse</b> under “Who needs coverage” above)';
-  var kon=$('in_who_kids')&&$('in_who_kids').checked, kg=$('kidsGrid'), kh=$('kidsHint'); if(kg) kg.style.display=kon?'':'none'; if(kh) kh.innerHTML=kon?'— any number of children is the same price':'(to expand, select <b>Children</b> under “Who needs coverage” above)'; }
+  var kon=$('in_who_kids')&&$('in_who_kids').checked, kg=$('kidsGrid'), kh=$('kidsHint'); if(kg) kg.style.display=kon?'':'none'; if(kh) kh.innerHTML=kon?'— any number of children is the same price':'(to expand, select <b>Children</b> under “Who needs coverage” above)';   if(typeof kidsShowCount==='function') kidsShowCount();
+}
 
 function pkMonthly(pk){ return (pk.products||[]).reduce(function(s,p){return s+(+p.monthly||0);},0)+(+pk.lb||0)+(+pk.med||0); }
 
@@ -3421,6 +3462,9 @@ function bindInputs(){
   ['in_pname','in_sname','in_agent','in_address','in_state','in_zip','in_page','in_sage','in_majorcond_note','in_diabetic_note','in_docs1','in_docs2','in_docs3','in_carrier','in_plan','in_prem','in_oop','in_visits','in_copay','in_income','in_retage','in_savings','in_invest','in_invnote','in_docnote','in_budget','in_notes','in_kids','in_routenote','in_docsnote','in_whyshop','in_effdate']
     .forEach(function(id){ var el=$(id); if(el) el.addEventListener('input',function(){ captureIntake(); }); });
   $('in_zip').addEventListener('input',zipFillsState);
+  if($('in_kidcount')) $('in_kidcount').addEventListener('change',function(){ S.intake.kidsManual=0; kidsSetCount(this.value); });
+  if($('addKid')) $('addKid').addEventListener('click',function(){ kidsList().push({n:'',dob:'',age:'',sex:''}); S.intake.kidsManual=1; renderKids(); autosave(); });
+  if($('in_kidshealth')) $('in_kidshealth').addEventListener('input',function(){ S.intake.kidsHealth=this.value; kidsSyncNote(); autosave(); });
   $('in_state').addEventListener('change',function(){ this.dataset.touched='1'; });
   $('in_phone').addEventListener('input',function(){ this.value=fmtPhone(this.value); markValid(this,phoneOK(this.value)); captureIntake(); });
   $('in_date').addEventListener('input',function(){ this.value=fmtDate(this.value); markValid(this,dateOK(this.value)); var a=ageFromDOB(this.value); if(a) $('in_page').value=a; captureIntake(); });
@@ -3700,6 +3744,53 @@ function pbWhyNot(k,c,st,age){
   var d=document.createElement('details'); d.id='classicWrap';
   d.innerHTML='<summary>▸ Classic view — the old package screen (ACA comparison, product list, totals). Kept here while we compare.</summary>';
   pkg.parentNode.insertBefore(d,pkg); d.appendChild(pkg); })();
+/* ===== Version B intake: children rows (like the Script Navigator), med type-ahead, conditions ===== */
+function kidsList(){ S.intake=S.intake||{}; S.intake.kids=S.intake.kids||[]; return S.intake.kids; }
+function kidsSyncNote(){ var I=S.intake||{}, k=kidsList();
+  var t=k.filter(function(x){ return x.n||x.dob||x.age; }).map(function(x){ return [x.n,(x.age?x.age+'y':''),x.dob,x.sex].filter(Boolean).join(' '); }).join('; ');
+  if(I.kidsHealth) t+=(t?' — ':'')+'Health: '+I.kidsHealth;
+  I.kidsNote=t; var ta=$('in_kids'); if(ta) ta.value=t; }
+function renderKids(){ var host=$('kidRows'); if(!host) return; var k=kidsList(); host.innerHTML='';
+  k.forEach(function(x,i){ var r=document.createElement('div'); r.className='kidrow';
+    r.innerHTML='<label>Name</label><input data-kf="n" value="'+(x.n||'').replace(/"/g,'&quot;')+'"><label>DOB</label><input data-kf="dob" placeholder="MM/DD/YYYY" value="'+(x.dob||'')+'"><label>Age</label><input data-kf="age" value="'+(x.age||'')+'"><label>Gender</label><select data-kf="sex"><option value=""></option><option'+(x.sex==='Male'?' selected':'')+'>Male</option><option'+(x.sex==='Female'?' selected':'')+'>Female</option></select><button type="button" class="kdel" aria-label="Remove child">×</button>';
+    r.querySelectorAll('[data-kf]').forEach(function(el){ el.oninput=el.onchange=function(){ var f=el.dataset.kf;
+      if(f==='dob'){ el.value=fmtDate(el.value); var a=ageFromDOB(el.value); if(a){ x.age=String(a); r.querySelector('[data-kf="age"]').value=a; } }
+      x[f]=el.value; kidsSyncNote(); autosave(); }; });
+    r.querySelector('.kdel').onclick=function(){ k.splice(i,1); S.intake.kidsManual=1; if($('in_kidcount')) $('in_kidcount').value=k.length||''; renderKids(); kidsSyncNote(); autosave(); };
+    host.appendChild(r); });
+  var cnt=$('in_kidcount'); if(cnt&&!S.intake.kidsManual) cnt.value=k.length?String(Math.min(k.length,6)):'';
+  var kh=$('in_kidshealth'); if(kh) kh.value=S.intake.kidsHealth||'';
+}
+function kidsSetCount(n){ var k=kidsList(); n=+n||0; while(k.length<n) k.push({n:'',dob:'',age:'',sex:''}); while(k.length>n&&!(k[k.length-1].n||k[k.length-1].dob)) k.pop(); renderKids(); kidsSyncNote(); autosave(); }
+function kidsShowCount(){ var on=$('in_who_kids')&&$('in_who_kids').checked, w=$('kidCountWrap'); if(w) w.style.display=on?'inline-flex':'none'; if(on&&!kidsList().length) kidsSetCount(1); }
+
+/* Medication type-ahead on each medication row — same dictionary as the navigator (medSuggest). */
+function medTypeahead(inp,onPick){ var box=document.createElement('div'); box.className='medsug'; inp.parentNode.insertBefore(box,inp.nextSibling);
+  var hide=function(){ setTimeout(function(){ box.style.display='none'; },150); };
+  inp.addEventListener('input',function(){ var q=inp.value.trim(); var hits=q.length>=2?medSuggest(q,8):[];
+    box.innerHTML=hits.map(function(h,j){ return '<button type="button"'+(j?'':' class="hl"')+'>'+h+'</button>'; }).join(''); box.style.display=hits.length?'block':'none';
+    box.querySelectorAll('button').forEach(function(b){ b.onmousedown=function(e){ e.preventDefault(); inp.value=b.textContent; box.style.display='none'; onPick(b.textContent); }; }); });
+  inp.addEventListener('keydown',function(e){ if(e.key==='Enter'){ var f=box.querySelector('button'); if(f&&box.style.display==='block'){ e.preventDefault(); inp.value=f.textContent; box.style.display='none'; onPick(f.textContent); } } });
+  inp.addEventListener('blur',hide); }
+function renderMedFlags(){ var host=$('medFlags'); if(!host) return; var fl=popMedFlags();
+  host.innerHTML=fl.map(function(f,i){ return '<div class="mflag"><span><b>'+f.m+'</b> is usually for <b>'+f.c+'</b> — is that why?</span><button type="button" class="yes" data-i="'+i+'">Yes, add it</button><button type="button" data-no="'+i+'">No</button></div>'; }).join('');
+  host.querySelectorAll('[data-i]').forEach(function(b){ b.onclick=function(){ var f=fl[+b.dataset.i]; popAddCond(f.c); autosave(); renderMedFlags(); renderConds(); }; });
+  host.querySelectorAll('[data-no]').forEach(function(b){ b.onclick=function(){ var f=fl[+b.dataset.no]; popSkipCond(f.m,f.c); autosave(); renderMedFlags(); }; }); }
+
+/* Conditions — the navigator's list (PF_CONDS) plus anything typed. Stored in S.intake.conds ({name,yr,mo}). */
+var PF_CONDS=["Cancer","Active cancer","AIDS / HIV / ARC","Wheelchair / electric scooter","Oxygen / ventilator","Dialysis","Heart attack","Stent","Angioplasty / bypass","Defibrillator / pacemaker","Heart surgery","Angina (chest pain)","Arrhythmia / AFib","Stroke / TIA","Aneurysm","Epilepsy / seizures","Diabetes","High blood pressure","High cholesterol","Asthma (chronic)","COPD","Emphysema","Kidney disease / failure","Liver disease","Cirrhosis","Anxiety","Depression","PTSD","Bipolar","Schizophrenia / psychosis","Alzheimer's / dementia","Lupus","Rheumatoid arthritis","Autoimmune disorder","Neuropathy","Blood clots / DVT","Hepatitis B","Hepatitis C","Terminal illness","Hospice","Chronic pain (narcotic prescriptions)","Alcohol / drug abuse or treatment","Heart disease / disorder","Parkinson's disease","Transplant","DUI","Felony"];
+function renderConds(){ var host=$('condList'); if(!host) return; var cs=(S.intake&&S.intake.conds)||[];
+  host.innerHTML=cs.length?cs.map(function(c,i){ return '<span class="cchip">'+c.name+'<button type="button" data-ci="'+i+'" aria-label="Remove '+c.name+'">✕</button></span>'; }).join(''):'<span class="none">None added yet.</span>';
+  host.querySelectorAll('[data-ci]').forEach(function(b){ b.onclick=function(){ S.intake.conds.splice(+b.dataset.ci,1); autosave(); renderConds(); renderMedFlags(); }; }); }
+function bindCondInput(){ var inp=$('condInput'), box=$('condSug'); if(!inp||inp.dataset.bound) return; inp.dataset.bound='1';
+  var add=function(name){ name=String(name||'').trim(); if(!name) return; popAddCond(name); inp.value=''; box.style.display='none'; autosave(); renderConds(); renderMedFlags(); };
+  inp.addEventListener('input',function(){ var q=inp.value.trim().toLowerCase(); var hits=q?PF_CONDS.filter(function(c){ return c.toLowerCase().indexOf(q)>=0; }).slice(0,8):[];
+    if(q&&!hits.some(function(h){ return h.toLowerCase()===q; })) hits.push('Add “'+inp.value.trim()+'”');
+    box.innerHTML=hits.map(function(h){ return '<button type="button">'+h+'</button>'; }).join(''); box.style.display=hits.length?'block':'none';
+    box.querySelectorAll('button').forEach(function(b){ b.onmousedown=function(e){ e.preventDefault(); var t=b.textContent; add(/^Add “/.test(t)?inp.value:t); }; }); });
+  inp.addEventListener('keydown',function(e){ if(e.key==='Enter'){ e.preventDefault(); var f=box.querySelector('button'); add(f&&!/^Add “/.test(f.textContent)?f.textContent:inp.value); } });
+  inp.addEventListener('blur',function(){ setTimeout(function(){ box.style.display='none'; },150); }); }
+
 restore();
 fill();
 bindInputs();
