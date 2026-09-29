@@ -398,7 +398,9 @@
 .pbhead .nm{font-weight:700;font-size:14px;color:var(--ink)}
 .pbhead .pr{margin-left:auto;font-weight:700;font-variant-numeric:tabular-nums;color:var(--navy);white-space:nowrap}
 .pbhead .pr.na{color:var(--muted);font-weight:500;font-size:12px}
-.pbib{border:0;background:transparent;width:30px;height:30px;border-radius:7px;cursor:pointer;color:var(--muted);font-size:14px}
+.pbib{border:0;background:transparent;width:36px;height:36px;border-radius:8px;cursor:pointer;color:var(--muted);font-size:15px;flex:none}
+.pbib[data-act="tog"]{width:40px;height:40px;font-size:24px;line-height:1;color:var(--navy);background:#f1ede2;border:1px solid #e2ddd1}
+.pbib[data-act="tog"]:hover{background:#e7e0cc}
 .pbib:hover{background:#f1ede2;color:var(--ink)}
 .pbbody{border-top:1px solid #eef1f6;padding:10px 12px;display:flex;flex-direction:column;gap:8px;background:#fbfaf6;border-radius:0 0 10px 10px}
 .pbbody .f{display:flex;flex-direction:column;gap:3px;font-size:11.5px;font-weight:600;color:var(--muted)}
@@ -3520,13 +3522,14 @@ function renderBuilder(){
   var tiers=[['good','Good','Essential'],['better','Better','Complete'],['best','Best','Comprehensive']], totals={};
   var LINEUPS=[['mh','Manhattan only'],['lx-mh-cg','LifeX · Manhattan · Cigna'],['mh-mh-cg','Manhattan · Manhattan · Cigna'],['lx-lx-cg','LifeX · LifeX + add-ons · Cigna']];
   var lineupBar='<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 12px"><span style="font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--muted);text-transform:uppercase">Lineup</span>'
+    +'<button type="button" data-act="reload" title="Put all three packages back to POP Pro’s recommendation" style="font:inherit;font-size:13px;font-weight:700;border-radius:999px;padding:7px 14px;cursor:pointer;border:1.5px solid var(--gold);background:#fffdf7;color:#8a6a1f;margin-right:6px">↺ Reload our recommendation</button>'
     +LINEUPS.map(function(L){ var on=(S.lineup||'mh')===L[0]; return '<button type="button" data-lineup="'+L[0]+'" style="font:inherit;font-size:13px;font-weight:600;border-radius:999px;padding:7px 14px;cursor:pointer;border:1px solid '+(on?'var(--navy)':'#d6cdb4')+';background:'+(on?'var(--navy)':'#fff')+';color:'+(on?'#fff':'var(--ink)')+'">'+L[1]+'</button>'; }).join('')+'</div>';
   var html=lineupBar+'<div class="bh"><h3>Package builder</h3><small>'+st+' · age '+age+' · '+({i:'Individual',s:'Individual + Spouse',c:'Individual + Children',f:'Family'}[householdKey()])+' · prices from the ManhattanLife rate tables</small></div><div class="pb3">';
   tiers.forEach(function(T){
     var t=T[0], c=effCfg(t), pk=S.packages[t]||{products:[]}, dropped=pk.dropped||[];
     var built=buildTierProducts(c,null,[]), byK={}; built.forEach(function(p){ byK[p.k]=p; });
     var byKpk={}; (pk.products||[]).forEach(function(p){ if(p.k) byKpk[p.k]=p; });
-    html+='<div class="pbcol'+(S.recommended===t?' rec':'')+'" data-t="'+t+'"><div class="ph"><span class="tt">'+T[1]+'</span><b>'+T[2]+'</b></div>'
+    html+='<div class="pbcol'+(S.recommended===t?' rec':'')+'" data-t="'+t+'"><div class="ph"><span class="tt">'+T[1]+'</span><b>'+T[2]+'</b><span style="flex:1"></span><button type="button" data-act="reset1" title="Put this package back to the recommendation" style="font:inherit;font-size:12px;font-weight:600;border:1px solid #e2ddd1;background:#fff;border-radius:7px;padding:4px 8px;cursor:pointer;color:var(--muted)">↺ Reset</button></div>'
       +'<div style="padding:0 12px 4px"><select data-act="base" aria-label="Base plan" style="width:100%;font:inherit;font-size:13px;padding:6px 8px;border:1px solid #d6cdb4;border-radius:7px">'+pbOpts([['afc','Base: Manhattan Affordable Choice'],['lifex','Base: LifeX'],['triad','Base: Cigna (Triad) PPO']],c.base||'afc')+'</select></div>';
     var sum=0, addable=[];
     PB_SLOTS.forEach(function(sl){
@@ -3583,12 +3586,26 @@ function renderBuilder(){
       pbReprice(); }; });
   });
   host.querySelectorAll('[data-act="base"]').forEach(function(sel){ sel.onchange=function(){ var t=sel.closest('.pbcol').dataset.t; effCfg(t).base=sel.value; S.lineup='custom'; PB_OPEN[t+'|base']=sel.value!=='afc'; pbReprice(); }; });
+  var rl=host.querySelector('[data-act="reload"]'); if(rl) rl.onclick=function(){ ['good','better','best'].forEach(pbResetTier); pbReprice(); };
+  host.querySelectorAll('[data-act="reset1"]').forEach(function(b){ b.onclick=function(){ pbResetTier(b.closest('.pbcol').dataset.t); pbReprice(); }; });
   host.querySelectorAll('[data-lineup]').forEach(function(b){ b.onclick=function(){ pbApplyLineup(b.dataset.lineup); }; });
   host.querySelectorAll('[data-act="dvh"]').forEach(function(el){ el.onchange=function(){ ['good','better','best'].forEach(function(t){ pbSet(effCfg(t),el.dataset.f,el.value); }); pbReprice(); }; });
   var inc=host.querySelector('[data-act="dvhinc"]'); if(inc) inc.onchange=function(){ S.dvhChoice=inc.checked?'included':'addon'; ['good','better','best'].forEach(function(t){ var pk=S.packages[t]; pk.dropped=(pk.dropped||[]).filter(function(x){ return x!=='dvh'; }); if(!inc.checked) pk.dropped.push('dvh'); }); pbReprice(); };
 }
 /* Lineup presets — Jesse, 2026-09-27: Manhattan only; LifeX good / Manhattan better / Cigna best;
    Manhattan, Manhattan, Cigna; LifeX good, LifeX + supplements better, Cigna best (for clients who don't qualify for Manhattan). */
+/* ↺ Back to the recommendation: the tier's recommended levels (TIERCFG), the base plan of the chosen
+   lineup, and every ✕'d product restored. Keeps the dental add-on choice and any typed-in extras. */
+var LINEUP_BASES={'mh':['afc','afc','afc'],'lx-mh-cg':['lifex','afc','triad'],'mh-mh-cg':['afc','afc','triad'],'lx-lx-cg':['lifex','lifex','triad']};
+function pbResetTier(t){
+  var i=['good','better','best'].indexOf(t), lu=LINEUP_BASES[S.lineup]?S.lineup:'mh';
+  S.cfg=S.cfg||{}; S.cfg[t]=cfgClone(TIERCFG[t]); S.cfg[t].base=LINEUP_BASES[lu][i];
+  var pk=S.packages[t], keepDvh=(pk.dropped||[]).indexOf('dvh')>=0;
+  pk.dropped=keepDvh?['dvh']:[];
+  if(lu==='lx-lx-cg'&&t==='good') ['his','acc','gap','hhc','chas'].forEach(function(k){ pk.dropped.push(k); });
+  (pk.products||[]).forEach(function(p){ if(p.k) delete p.manual; });
+  Object.keys(PB_OPEN).forEach(function(k){ if(k.indexOf(t+'|')===0) delete PB_OPEN[k]; });
+}
 function pbApplyLineup(id){
   var map={'mh':['afc','afc','afc'],'lx-mh-cg':['lifex','afc','triad'],'mh-mh-cg':['afc','afc','triad'],'lx-lx-cg':['lifex','lifex','triad']}[id]; if(!map) return;
   ['good','better','best'].forEach(function(t,i){ var c=effCfg(t), pk=S.packages[t]; c.base=map[i]; pk.dropped=(pk.dropped||[]).filter(function(k){ return k==='dvh'; });
