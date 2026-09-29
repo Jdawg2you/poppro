@@ -82,6 +82,12 @@ if (mode === 'engine') {
     const y = E({ st, people: [{ age: 25, role: 'p' }] }), o = E({ st, people: [{ age: 60, role: 'p' }] });
     ok(near(y.bronze, o.bronze) && near(y.bronze, D.states[st].bronze40), st + ' community rated: same price at 25 and 60');
   }
+  // 12. Cost sharing: brand drugs sit inside a met deductible; the OOP max caps it.
+  const CS = a => ctx.acaCostShare(a).cs;
+  ok(CS({ ded: 7000, oop: 9950, med: 100, medDed: 100, visits: 0, copay: 0, fullded: true }) === 7000, 'brand $1,200/yr inside a $7,000 met deductible');
+  ok(CS({ ded: 7000, oop: 9950, med: 125, medDed: 100, visits: 4, copay: 50, fullded: true }) === 7000 + 300 + 200, 'generic $25/mo + 4 visits on top of the deductible');
+  ok(CS({ ded: 7000, oop: 9950, med: 900, medDed: 900, visits: 0, copay: 0, fullded: true }) === 9950, 'capped at the out-of-pocket max');
+  ok(CS({ ded: 7000, oop: 9950, med: 100, medDed: 100, visits: 0, copay: 0, fullded: false }) === 1200, 'deductible not assumed: only the drug spend');
   if (!fails) console.log('ACA engine checks passed');
 } else if (mode === 'structure') {
   const order = ['sec_meds', 'sec_conds', 'sec_health', 'sec_docs', 'sec_curins', 'sec_aca', 'sec_budget'];
@@ -104,6 +110,10 @@ if (mode === 'engine') {
   ok(bud.includes('id="in_budget_comfort"') && bud.includes('id="in_budget"'), 'budget has comfortable and max');
   for (const gone of ['id="in_health"', 'id="in_shealth"', 'in_subsidy', 'id="in_prem"', 'id="in_oop"', 'id="in_copay"', 'effDed(', 'S.acaEdited'])
     ok(!html.includes(gone), 'removed: ' + gone);
+  const mh = html.slice(html.indexOf('<div class="medhead">'), html.indexOf('<div class="medhead">') + 600);
+  const cols = ['>Medication<', '>Rx<', '>ACA copay<', '>Current copay<', '>Discount<'].map(t => mh.indexOf(t));
+  ok(cols.every((p, i) => p > 0 && (i === 0 || p > cols[i - 1])), 'medication columns: Medication, Rx, ACA copay, Current copay, Discount');
+  ok(/id="medTotalCur"/.test(html), 'current copay total shown');
   if (!fails) console.log('intake structure checks passed');
 } else {
   console.log('usage: node tools/aca-check.mjs engine|structure'); process.exit(2);

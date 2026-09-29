@@ -1,0 +1,890 @@
+{
+"Eliquis": {
+"generic": false,
+"gRows": 0,
+"bRows": 234,
+"err": false
+},
+"Xarelto": {
+"generic": true,
+"gRows": 831,
+"bRows": 0,
+"err": false
+},
+"Warfarin": {
+"generic": true,
+"gRows": 3627,
+"bRows": 0,
+"err": false
+},
+"Plavix": {
+"generic": true,
+"gRows": 1917,
+"bRows": 0,
+"err": false
+},
+"Brilinta": {
+"generic": true,
+"gRows": 1151,
+"bRows": 0,
+"err": false
+},
+"Pradaxa": {
+"generic": true,
+"gRows": 1514,
+"bRows": 0,
+"err": false
+},
+"Aspirin": {
+"generic": true,
+"gRows": 3008,
+"bRows": 0,
+"err": false
+},
+"Metoprolol": {
+"generic": true,
+"gRows": 19528,
+"bRows": 0,
+"err": false
+},
+"Carvedilol": {
+"generic": true,
+"gRows": 3392,
+"bRows": 0,
+"err": false
+},
+"Atenolol": {
+"generic": true,
+"gRows": 2392,
+"bRows": 0,
+"err": false
+},
+"Bisoprolol": {
+"generic": true,
+"gRows": 3615,
+"bRows": 0,
+"err": false
+},
+"Lisinopril": {
+"generic": true,
+"gRows": 8846,
+"bRows": 0,
+"err": false
+},
+"Losartan": {
+"generic": true,
+"gRows": 7259,
+"bRows": 0,
+"err": false
+},
+"Valsartan": {
+"generic": true,
+"gRows": 9458,
+"bRows": 0,
+"err": false
+},
+"Amlodipine": {
+"generic": true,
+"gRows": 11071,
+"bRows": 0,
+"err": false
+},
+"Hydrochlorothiazide": {
+"generic": true,
+"gRows": 18551,
+"bRows": 0,
+"err": false
+},
+"Furosemide": {
+"generic": true,
+"gRows": 3146,
+"bRows": 0,
+"err": false
+},
+"Spironolactone": {
+"generic": true,
+"gRows": 3690,
+"bRows": 0,
+"err": false
+},
+"Clonidine": {
+"generic": true,
+"gRows": 3649,
+"bRows": 0,
+"err": false
+},
+"Diltiazem": {
+"generic": true,
+"gRows": 5577,
+"bRows": 0,
+"err": false
+},
+"Digoxin": {
+"generic": true,
+"gRows": 1427,
+"bRows": 0,
+"err": false
+},
+"Isosorbide": {
+"generic": true,
+"gRows": 3790,
+"bRows": 0,
+"err": false
+},
+"Nitroglycerin": {
+"generic": true,
+"gRows": 2448,
+"bRows": 0,
+"err": false
+},
+"Amiodarone": {
+"generic": true,
+"gRows": 1070,
+"bRows": 0,
+"err": false
+},
+"Sotalol": {
+"generic": true,
+"gRows": 1466,
+"bRows": 0,
+"err": false
+},
+"Flecainide": {
+"generic": true,
+"gRows": 1287,
+"bRows": 0,
+"err": false
+},
+"Entresto": {
+"generic": true,
+"gRows": 3332,
+"bRows": 0,
+"err": false
+},
+"Ranexa": {
+"generic": true,
+"gRows": 2482,
+"bRows": 0,
+"err": false
+},
+"Atorvastatin": {
+"generic": true,
+"gRows": 10199,
+"bRows": 0,
+"err": false
+},
+"Simvastatin": {
+"generic": true,
+"gRows": 5887,
+"bRows": 0,
+"err": false
+},
+"Rosuvastatin": {
+"generic": true,
+"gRows": 6254,
+"bRows": 0,
+"err": false
+},
+"Pravastatin": {
+"generic": true,
+"gRows": 3789,
+"bRows": 0,
+"err": false
+},
+"Ezetimibe": {
+"generic": true,
+"gRows": 3118,
+"bRows": 0,
+"err": false
+},
+"Fenofibrate": {
+"generic": true,
+"gRows": 4209,
+"bRows": 0,
+"err": false
+},
+"Repatha": {
+"generic": false,
+"gRows": 0,
+"bRows": 186,
+"err": false
+},
+"Metformin": {
+"generic": true,
+"gRows": 11959,
+"bRows": 0,
+"err": false
+},
+"Glipizide": {
+"generic": true,
+"gRows": 3170,
+"bRows": 0,
+"err": false
+},
+"Glyburide": {
+"generic": true,
+"gRows": 1562,
+"bRows": 0,
+"err": false
+},
+"Januvia": {
+"generic": true,
+"gRows": 252,
+"bRows": 0,
+"err": false
+},
+"Jardiance": {
+"generic": false,
+"gRows": 0,
+"bRows": 234,
+"err": false
+},
+"Farxiga": {
+"generic": true,
+"gRows": 1210,
+"bRows": 0,
+"err": false
+},
+"Trulicity": {
+"generic": false,
+"gRows": 0,
+"bRows": 156,
+"err": false
+},
+"Ozempic": {
+"generic": false,
+"gRows": 0,
+"bRows": 263,
+"err": false
+},
+"Mounjaro": {
+"generic": false,
+"gRows": 0,
+"bRows": 234,
+"err": false
+},
+"Victoza": {
+"generic": true,
+"gRows": 488,
+"bRows": 0,
+"err": false
+},
+"Actos": {
+"generic": true,
+"gRows": 2645,
+"bRows": 0,
+"err": false
+},
+"Lantus": {
+"generic": true,
+"gRows": 188,
+"bRows": 0,
+"err": false
+},
+"Humalog": {
+"generic": true,
+"gRows": 156,
+"bRows": 0,
+"err": false
+},
+"Levemir": {
+"generic": false,
+"gRows": 0,
+"bRows": 2,
+"err": false
+},
+"NovoLog": {
+"generic": false,
+"gRows": 0,
+"bRows": 195,
+"err": false
+},
+"Tresiba": {
+"generic": false,
+"gRows": 0,
+"bRows": 117,
+"err": false
+},
+"Basaglar": {
+"generic": false,
+"gRows": 0,
+"bRows": 75,
+"err": false
+},
+"Insulin": {
+"generic": true,
+"gRows": 656,
+"bRows": 0,
+"err": false
+},
+"Gabapentin": {
+"generic": true,
+"gRows": 10473,
+"bRows": 0,
+"err": false
+},
+"Pregabalin": {
+"generic": true,
+"gRows": 8096,
+"bRows": 0,
+"err": false
+},
+"Duloxetine": {
+"generic": true,
+"gRows": 2914,
+"bRows": 0,
+"err": false
+},
+"Levothyroxine": {
+"generic": true,
+"gRows": 11717,
+"bRows": 0,
+"err": false
+},
+"Methimazole": {
+"generic": true,
+"gRows": 1125,
+"bRows": 0,
+"err": false
+},
+"Prednisone": {
+"generic": true,
+"gRows": 4340,
+"bRows": 0,
+"err": false
+},
+"Methotrexate": {
+"generic": true,
+"gRows": 1040,
+"bRows": 0,
+"err": false
+},
+"Humira": {
+"generic": true,
+"gRows": 235,
+"bRows": 0,
+"err": false
+},
+"Enbrel": {
+"generic": false,
+"gRows": 0,
+"bRows": 156,
+"err": false
+},
+"Plaquenil": {
+"generic": true,
+"gRows": 1213,
+"bRows": 0,
+"err": false
+},
+"Imuran": {
+"generic": true,
+"gRows": 507,
+"bRows": 0,
+"err": false
+},
+"Albuterol": {
+"generic": true,
+"gRows": 4535,
+"bRows": 0,
+"err": false
+},
+"Symbicort": {
+"generic": false,
+"gRows": 0,
+"bRows": 156,
+"err": false
+},
+"Advair": {
+"generic": false,
+"gRows": 0,
+"bRows": 351,
+"err": false
+},
+"Trelegy": {
+"generic": false,
+"gRows": 0,
+"bRows": 156,
+"err": false
+},
+"Breo": {
+"generic": false,
+"gRows": 0,
+"bRows": 195,
+"err": false
+},
+"Spiriva": {
+"generic": true,
+"gRows": 39,
+"bRows": 0,
+"err": false
+},
+"Singulair": {
+"generic": true,
+"gRows": 2908,
+"bRows": 0,
+"err": false
+},
+"Prednisolone": {
+"generic": true,
+"gRows": 2826,
+"bRows": 0,
+"err": false
+},
+"Oxygen": {
+"generic": false,
+"gRows": 0,
+"bRows": 0,
+"err": false
+},
+"Sertraline": {
+"generic": true,
+"gRows": 5627,
+"bRows": 0,
+"err": false
+},
+"Escitalopram": {
+"generic": true,
+"gRows": 2867,
+"bRows": 0,
+"err": false
+},
+"Fluoxetine": {
+"generic": true,
+"gRows": 6194,
+"bRows": 0,
+"err": false
+},
+"Citalopram": {
+"generic": true,
+"gRows": 4745,
+"bRows": 0,
+"err": false
+},
+"Bupropion": {
+"generic": true,
+"gRows": 7678,
+"bRows": 0,
+"err": false
+},
+"Venlafaxine": {
+"generic": true,
+"gRows": 10074,
+"bRows": 0,
+"err": false
+},
+"Trazodone": {
+"generic": true,
+"gRows": 3062,
+"bRows": 0,
+"err": false
+},
+"Mirtazapine": {
+"generic": true,
+"gRows": 3232,
+"bRows": 0,
+"err": false
+},
+"Alprazolam": {
+"generic": true,
+"gRows": 2892,
+"bRows": 0,
+"err": false
+},
+"Lorazepam": {
+"generic": true,
+"gRows": 2342,
+"bRows": 0,
+"err": false
+},
+"Clonazepam": {
+"generic": true,
+"gRows": 3233,
+"bRows": 0,
+"err": false
+},
+"Diazepam": {
+"generic": true,
+"gRows": 1627,
+"bRows": 0,
+"err": false
+},
+"Buspirone": {
+"generic": true,
+"gRows": 5589,
+"bRows": 0,
+"err": false
+},
+"Lithium": {
+"generic": true,
+"gRows": 1536,
+"bRows": 0,
+"err": false
+},
+"Lamotrigine": {
+"generic": true,
+"gRows": 6217,
+"bRows": 0,
+"err": false
+},
+"Quetiapine": {
+"generic": true,
+"gRows": 10550,
+"bRows": 0,
+"err": false
+},
+"Aripiprazole": {
+"generic": true,
+"gRows": 7989,
+"bRows": 0,
+"err": false
+},
+"Risperidone": {
+"generic": true,
+"gRows": 4810,
+"bRows": 0,
+"err": false
+},
+"Olanzapine": {
+"generic": true,
+"gRows": 6079,
+"bRows": 0,
+"err": false
+},
+"Haloperidol": {
+"generic": true,
+"gRows": 5935,
+"bRows": 0,
+"err": false
+},
+"Donepezil": {
+"generic": true,
+"gRows": 2840,
+"bRows": 0,
+"err": false
+},
+"Memantine": {
+"generic": true,
+"gRows": 6844,
+"bRows": 0,
+"err": false
+},
+"Levodopa": {
+"generic": true,
+"gRows": 7702,
+"bRows": 0,
+"err": false
+},
+"Ropinirole": {
+"generic": true,
+"gRows": 3213,
+"bRows": 0,
+"err": false
+},
+"Phenytoin": {
+"generic": true,
+"gRows": 747,
+"bRows": 0,
+"err": false
+},
+"Levetiracetam": {
+"generic": true,
+"gRows": 5123,
+"bRows": 0,
+"err": false
+},
+"Topiramate": {
+"generic": true,
+"gRows": 6253,
+"bRows": 0,
+"err": false
+},
+"Valproate": {
+"generic": true,
+"gRows": 3071,
+"bRows": 0,
+"err": false
+},
+"Oxycodone": {
+"generic": true,
+"gRows": 6455,
+"bRows": 0,
+"err": false
+},
+"Hydrocodone": {
+"generic": true,
+"gRows": 5586,
+"bRows": 0,
+"err": false
+},
+"Tramadol": {
+"generic": true,
+"gRows": 1829,
+"bRows": 0,
+"err": false
+},
+"Morphine": {
+"generic": true,
+"gRows": 2693,
+"bRows": 0,
+"err": false
+},
+"Fentanyl": {
+"generic": true,
+"gRows": 2024,
+"bRows": 0,
+"err": false
+},
+"Methadone": {
+"generic": true,
+"gRows": 900,
+"bRows": 0,
+"err": false
+},
+"Suboxone": {
+"generic": true,
+"gRows": 4541,
+"bRows": 0,
+"err": false
+},
+"Naltrexone": {
+"generic": true,
+"gRows": 819,
+"bRows": 0,
+"err": false
+},
+"Meloxicam": {
+"generic": true,
+"gRows": 1806,
+"bRows": 0,
+"err": false
+},
+"Ibuprofen": {
+"generic": true,
+"gRows": 9106,
+"bRows": 0,
+"err": false
+},
+"Naproxen": {
+"generic": true,
+"gRows": 4270,
+"bRows": 0,
+"err": false
+},
+"Celecoxib": {
+"generic": true,
+"gRows": 4039,
+"bRows": 0,
+"err": false
+},
+"Omeprazole": {
+"generic": true,
+"gRows": 11073,
+"bRows": 0,
+"err": false
+},
+"Pantoprazole": {
+"generic": true,
+"gRows": 3095,
+"bRows": 0,
+"err": false
+},
+"Famotidine": {
+"generic": true,
+"gRows": 4376,
+"bRows": 0,
+"err": false
+},
+"Allopurinol": {
+"generic": true,
+"gRows": 3330,
+"bRows": 0,
+"err": false
+},
+"Colchicine": {
+"generic": true,
+"gRows": 1798,
+"bRows": 0,
+"err": false
+},
+"Tamsulosin": {
+"generic": true,
+"gRows": 1269,
+"bRows": 0,
+"err": false
+},
+"Finasteride": {
+"generic": true,
+"gRows": 1694,
+"bRows": 0,
+"err": false
+},
+"Sildenafil": {
+"generic": true,
+"gRows": 4103,
+"bRows": 0,
+"err": false
+},
+"Tadalafil": {
+"generic": true,
+"gRows": 4683,
+"bRows": 0,
+"err": false
+},
+"Alendronate": {
+"generic": true,
+"gRows": 819,
+"bRows": 0,
+"err": false
+},
+"Vitamin D": {
+"generic": true,
+"gRows": 328,
+"bRows": 0,
+"err": false
+},
+"Potassium": {
+"generic": true,
+"gRows": 12829,
+"bRows": 0,
+"err": false
+},
+"Amoxicillin": {
+"generic": true,
+"gRows": 3802,
+"bRows": 0,
+"err": false
+},
+"Azithromycin": {
+"generic": true,
+"gRows": 3301,
+"bRows": 0,
+"err": false
+},
+"Doxycycline": {
+"generic": true,
+"gRows": 5858,
+"bRows": 0,
+"err": false
+},
+"Tamoxifen": {
+"generic": true,
+"gRows": 523,
+"bRows": 0,
+"err": false
+},
+"Anastrozole": {
+"generic": true,
+"gRows": 819,
+"bRows": 0,
+"err": false
+},
+"Letrozole": {
+"generic": true,
+"gRows": 546,
+"bRows": 0,
+"err": false
+},
+"Keytruda": {
+"generic": false,
+"gRows": 0,
+"bRows": 0,
+"err": false
+},
+"Revlimid": {
+"generic": false,
+"gRows": 0,
+"bRows": 0,
+"err": false
+},
+"Imbruvica": {
+"generic": false,
+"gRows": 0,
+"bRows": 0,
+"err": false
+},
+"Gleevec": {
+"generic": true,
+"gRows": 1268,
+"bRows": 0,
+"err": false
+},
+"Entecavir": {
+"generic": true,
+"gRows": 790,
+"bRows": 0,
+"err": false
+},
+"Epclusa": {
+"generic": false,
+"gRows": 0,
+"bRows": 39,
+"err": false
+},
+"Harvoni": {
+"generic": false,
+"gRows": 0,
+"bRows": 0,
+"err": false
+},
+"Truvada": {
+"generic": false,
+"gRows": 0,
+"bRows": 156,
+"err": false
+},
+"Biktarvy": {
+"generic": false,
+"gRows": 0,
+"bRows": 226,
+"err": false
+},
+"Descovy": {
+"generic": false,
+"gRows": 0,
+"bRows": 117,
+"err": false
+},
+"Dialysis": {
+"generic": false,
+"gRows": 0,
+"bRows": 0,
+"err": false
+},
+"Sevelamer": {
+"generic": true,
+"gRows": 2122,
+"bRows": 0,
+"err": false
+},
+"Epogen": {
+"generic": false,
+"gRows": 0,
+"bRows": 146,
+"err": false
+},
+"Tacrolimus": {
+"generic": true,
+"gRows": 2899,
+"bRows": 0,
+"err": false
+},
+"Cyclosporine": {
+"generic": true,
+"gRows": 2725,
+"bRows": 0,
+"err": false
+},
+"Mycophenolate": {
+"generic": true,
+"gRows": 2255,
+"bRows": 0,
+"err": false
+},
+"Hydroxyurea": {
+"generic": true,
+"gRows": 273,
+"bRows": 0,
+"err": false
+}
+}
