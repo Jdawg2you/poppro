@@ -114,6 +114,11 @@ if (mode === 'engine') {
   const cols = ['>Medication<', '>Rx<', '>ACA copay<', '>Current copay<', '>Discount<'].map(t => mh.indexOf(t));
   ok(cols.every((p, i) => p > 0 && (i === 0 || p > cols[i - 1])), 'medication columns: Medication, Rx, ACA copay, Current copay, Discount');
   ok(/id="medTotalCur"/.test(html), 'current copay total shown');
+  for (const gone of ['sayico', 'openScript', 'SCRIPT_BEATS', 'managePlansBtn', 'planModal', 'MASTER_SHEET_CSV_URL', 'defLibrary', 'S.defaults'])
+    ok(!html.includes(gone), 'removed: ' + gone);
+  const intro = html.slice(html.indexOf('class="introbar"'), html.indexOf('id="sec_who"'));
+  ok(intro.includes('href="https://script.ffloptimum.com/"') && intro.includes('Health Discovery'), 'intake top: Script Navigator button naming Health Discovery');
+  ok(intro.includes('id="howBtn"') && html.includes('id="howModal"'), 'intake top: How to use this tool');
   if (!fails) console.log('intake structure checks passed');
 } else {
   console.log('usage: node tools/aca-check.mjs engine|structure'); process.exit(2);

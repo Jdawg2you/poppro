@@ -123,6 +123,13 @@
   .libhead{display:flex;gap:8px;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:0 4px 4px}
   .libhead .a{flex:1}.libhead .b{width:118px;text-align:right}.libhead .c{width:22px}
   body.client .hidein-client{display:none!important}
+  .introbar{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0 4px}
+  .topbtn{display:inline-flex;flex-direction:column;align-items:flex-start;gap:1px;padding:8px 14px;border-radius:10px;font:700 13px -apple-system,sans-serif;cursor:pointer;text-decoration:none;border:1px solid}
+  .topbtn small{font-weight:400;font-size:11px;opacity:.85}
+  .topbtn.nav{background:var(--navy);color:#fff;border-color:var(--navy)}
+  .topbtn.how{background:var(--gold-pill);color:#26324a;border-color:#b0872f}
+  .howbody h4{font-family:var(--serif);color:var(--navy);margin:14px 0 4px;font-size:15px}.howbody h4:first-child{margin-top:0}
+  .howbody p,.howbody li{font-size:13px;line-height:1.5;margin:3px 0}.howbody ul{margin:2px 0 4px;padding-left:18px}
   .estmark{display:none;margin-left:6px;font:italic 600 10.5px -apple-system,sans-serif;color:#9a5b00;background:#fdf1d8;border-radius:4px;padding:1px 5px;vertical-align:middle}
   .estmark.on{display:inline-block}
   .estline{display:none;font:italic 11.5px -apple-system,sans-serif;color:#9a5b00;padding:6px 0 2px}.estline.on{display:block}
@@ -308,13 +315,6 @@
   #in_pbuild.ok,#in_sbuild.ok{color:#1c6b38;border-color:#5aa46e;background:rgba(90,164,110,.08)}
   #in_pbuild.warn,#in_sbuild.warn{color:#8a5a00;border-color:#d8a23a;background:rgba(216,162,58,.1)}
   #in_pbuild.bad,#in_sbuild.bad{color:#a12525;border-color:#c85a5a;background:rgba(200,90,90,.1)}
-  .sayico{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:700;color:#fff;background:var(--navy);border-radius:20px;padding:3px 11px;margin-left:8px;cursor:pointer;vertical-align:middle;user-select:none;white-space:nowrap;transition:background .15s,color .15s}
-  .sayico::before{content:"";width:12px;height:12px;flex:0 0 12px;background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='%23ffffff' d='M4 3h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H9l-5 4v-4H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z'/></svg>") center/contain no-repeat}
-  .sayico:hover{background:linear-gradient(180deg,#6b7688,#485266)}
-  .sayico.helpico{background:var(--gold-pill);color:#26324a;font-size:11.5px;padding:5px 14px;margin-left:0;border:1px solid #b0872f}
-  .sayico.helpico::before{background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='%2326324a' d='M4 3h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H9l-5 4v-4H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z'/></svg>") center/contain no-repeat}
-  .sayico.helpico:hover{background:#f0e0b8}
-  .sec-flash{outline:3px solid #d8a23a;outline-offset:4px;border-radius:8px}
   .lbrows{padding:6px 15px 10px}
   .lbperson{padding:9px 0;border-top:1px solid var(--line)}
   .lbperson:first-child{border-top:none;padding-top:2px}
@@ -501,7 +501,6 @@ body.client #classicWrap>summary{display:none}
         <button data-view="agent" class="on">Agent Setup</button>
         <button data-view="client">Client View</button>
       </div>
-      <button class="btn-ghost" id="managePlansBtn">Manage Plans</button>
       <button class="btn-ghost" id="newBtn">New</button>
       <button class="btn-ghost" id="loadBtn">Load Quote</button>
       <button class="btn-gold" id="saveBtn">Save Quote</button>
@@ -534,9 +533,12 @@ body.client #classicWrap>summary{display:none}
    <div class="card pad">
     <div class="sectitle"><span class="dot">●</span> Client Intake</div>
     <div class="note" style="padding-top:2px">Fill what the client gives you, then hit Build Quote. It pre-fills the comparison and recommends Good / Better / Best from your answers.</div>
-    <div style="margin:10px 0 2px"><span class="sayico helpico" data-set="help" data-beat="0" title="A quick walkthrough of how this tool works">New here? How to use this tool</span></div>
+    <div class="introbar">
+      <a class="topbtn nav" href="https://script.ffloptimum.com/" target="_blank" rel="noopener">Open the Script Navigator ↗<small>choose Health Discovery, then push the client here</small></a>
+      <button type="button" class="topbtn how" id="howBtn">How to use this tool<small>the flow, start to finish</small></button>
+    </div>
 
-    <div class="intake-sec" id="sec_who">Who needs coverage <span class="sayico" data-beat="0" title="Say this — opens the script">Say this</span></div>
+    <div class="intake-sec" id="sec_who">Who needs coverage</div>
     <div class="chips">
       <label class="chip on"><input type="checkbox" id="in_who_app" checked> Applicant</label>
       <label class="chip"><input type="checkbox" id="in_who_spouse"> Spouse</label>
@@ -552,7 +554,7 @@ body.client #classicWrap>summary{display:none}
       <div class="fld"><label>Agent email</label><input id="in_aemail" placeholder="you@agency.com"></div>
     </div>
 
-    <div class="intake-sec" id="sec_client">Client Information <span class="sayico" data-beat="1" title="Say this — opens the script">Say this</span></div>
+    <div class="intake-sec" id="sec_client">Client Information</div>
     <div class="fld" style="margin-bottom:8px"><label>Why shopping / current-plan pain <small>what prompted them · what they dislike</small></label><input id="in_whyshop" placeholder="e.g. premium jumped, deductible too high, lost group plan"></div>
     <div class="intakegrid">
       <div class="fld"><label>Primary name</label><input id="in_pname" class="keyfield" placeholder="First and Last"></div>
@@ -571,7 +573,7 @@ body.client #classicWrap>summary{display:none}
       <div class="fld"><label>Desired effective date <small>1st/15th · ≥15 days out</small></label><input id="in_effdate" placeholder="MM/DD/YYYY"></div>
     </div>
 
-    <div class="intake-sec" id="sec_spouse">Spouse Information <span class="sayico" data-beat="5" title="Say this — opens the script">Say this</span> <span class="secnote" id="spouseHint">(to expand, select <b>Spouse</b> under “Who needs coverage” above)</span></div>
+    <div class="intake-sec" id="sec_spouse">Spouse Information <span class="secnote" id="spouseHint">(to expand, select <b>Spouse</b> under “Who needs coverage” above)</span></div>
     <div class="intakegrid" id="spouseGrid" style="display:none">
       <div class="fld"><label>Spouse name</label><input id="in_sname" placeholder="First and Last"></div>
       <div class="fld"><label>Date of birth</label><input id="in_sdob" class="keyfield" placeholder="MM/DD/YYYY"></div>
@@ -583,7 +585,7 @@ body.client #classicWrap>summary{display:none}
       <div class="fld"><label>Build check <small>ManhattanLife</small></label><input id="in_sbuild" readonly placeholder="—"></div>
     </div>
 
-    <div class="intake-sec" id="sec_kids">Children <span class="sayico" data-beat="5" title="Say this — opens the script">Say this</span> <span class="secnote" id="kidsHint">(to expand, select <b>Children</b> under “Who needs coverage” above)</span></div>
+    <div class="intake-sec" id="sec_kids">Children <span class="secnote" id="kidsHint">(to expand, select <b>Children</b> under “Who needs coverage” above)</span></div>
     <div id="kidsGrid" style="display:none">
       <div id="kidRows"></div>
       <button type="button" class="addbtn" id="addKid" style="margin-left:0">+ Add another dependant</button>
@@ -592,7 +594,7 @@ body.client #classicWrap>summary{display:none}
       <textarea id="in_kids" style="display:none" aria-hidden="true"></textarea>
     </div>
 
-    <div class="intake-sec" id="sec_meds">Medications <span class="sayico" data-beat="6" title="Say this — opens the script">Say this</span> <span class="secnote">— look up best price:</span> <a href="https://www.singlecare.com" target="_blank" rel="noopener" class="seclink">SingleCare ↗</a> <a href="https://www.goodrx.com/" target="_blank" rel="noopener" class="seclink">GoodRx ↗</a> <a href="https://www.costplusdrugs.com/" target="_blank" rel="noopener" class="seclink">Cost Plus ↗</a> <a href="https://www.mdsave.com/" target="_blank" rel="noopener" class="seclink">MDSave ↗</a></div>
+    <div class="intake-sec" id="sec_meds">Medications <span class="secnote">— look up best price:</span> <a href="https://www.singlecare.com" target="_blank" rel="noopener" class="seclink">SingleCare ↗</a> <a href="https://www.goodrx.com/" target="_blank" rel="noopener" class="seclink">GoodRx ↗</a> <a href="https://www.costplusdrugs.com/" target="_blank" rel="noopener" class="seclink">Cost Plus ↗</a> <a href="https://www.mdsave.com/" target="_blank" rel="noopener" class="seclink">MDSave ↗</a></div>
     <div class="note" style="padding-top:2px"><b>ACA copay</b> fills itself as an estimate from the bronze averages: a drug sold as a generic ≈ $25/mo; a brand-only drug counts toward the deductible, so it uses the discount price until you type the real figure. Check the drug on HealthSherpa and type over it. <b>Current copay</b> = what they pay now on their current plan. <b>Discount</b> = the cash price from the links above.</div>
     <div class="medhead"><span class="h1">Medication</span><span class="hk" title="G = a generic is sold · B = brand only">Rx</span><span class="h2">ACA copay</span><span class="h2">Current copay</span><span class="h2">Discount</span><span class="hw" title="Primary">P</span><span class="hw" title="Spouse">S</span><span class="hx"></span></div>
     <div id="medList"></div>
@@ -607,7 +609,7 @@ body.client #classicWrap>summary{display:none}
     <div class="medbox" style="margin-top:4px"><input id="condInput" class="condinput" placeholder="Add a condition — start typing…" autocomplete="off"><div class="medsug" id="condSug"></div></div>
 
 
-    <div class="intake-sec" id="sec_health">Health &amp; Routing <span class="sayico" data-beat="6" title="Say this — opens the script">Say this</span></div>
+    <div class="intake-sec" id="sec_health">Health &amp; Routing</div>
     <div class="chips">
       <span class="ps-ctrl">Family history of cancer? <label class="tob"><input type="checkbox" id="in_famcancer_p"> P</label><label class="tob"><input type="checkbox" id="in_famcancer_s"> S</label></span>
       <span class="ps-ctrl">Family history of heart attack / stroke? <label class="tob"><input type="checkbox" id="in_famheart_p"> P</label><label class="tob"><input type="checkbox" id="in_famheart_s"> S</label></span>
@@ -628,7 +630,7 @@ body.client #classicWrap>summary{display:none}
     </div>
     <div style="margin-top:10px"><label style="font-family:var(--serif);font-size:15px;font-weight:700;color:var(--navy);display:block;margin-bottom:4px">Anything else I should know about?</label><textarea id="in_routenote" rows="6" style="width:100%;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font:inherit;background:#fff;resize:vertical" placeholder="Anything about their health, conditions, timing or situation that should shape the placement. Conditions from the script navigator land here."></textarea></div>
 
-    <div class="intake-sec" id="sec_docs">Preferred Doctors <span class="sayico" data-beat="7" title="Say this — opens the script">Say this</span> <a href="https://providerlocator.firsthealth.com/LocateProvider/LocateProviderSearch/" target="_blank" rel="noopener" class="seclink">↗ Look up First Health network</a></div>
+    <div class="intake-sec" id="sec_docs">Preferred Doctors <a href="https://providerlocator.firsthealth.com/LocateProvider/LocateProviderSearch/" target="_blank" rel="noopener" class="seclink">↗ Look up First Health network</a></div>
     <div class="intakegrid">
       <div class="fld"><label>Doctor / facility 1</label><input id="in_docs1" placeholder="Dr. Ramirez (cardiology)"></div>
       <div class="fld"><label>Doctor / facility 2</label><input id="in_docs2" placeholder="(optional)"></div>
@@ -643,7 +645,7 @@ body.client #classicWrap>summary{display:none}
     <label class="chip" style="margin-top:8px"><input type="checkbox" id="in_net"> Network status verified with client (First Health)</label>
     <div style="margin-top:10px"><label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px">Preferred doctor notes</label><textarea id="in_docsnote" rows="2" style="width:100%;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font:inherit;background:#fff;resize:vertical" placeholder="Notes on providers / networks — e.g. wants to keep current PCP, specialist not in-network, willing to switch."></textarea></div>
 
-    <div class="intake-sec" id="sec_curins">Current Insurance <span class="sayico" data-beat="8" title="Say this — opens the script">Say this</span> <span class="secnote">— what they have today, if anything</span></div>
+    <div class="intake-sec" id="sec_curins">Current Insurance <span class="secnote">— what they have today, if anything</span></div>
     <div class="intakegrid">
       <div class="fld"><label>Carrier</label><input id="in_carrier" placeholder="carrier"></div>
       <div class="fld"><label>Plan name</label><input id="in_plan" placeholder="plan name"></div>
@@ -696,7 +698,7 @@ body.client #classicWrap>summary{display:none}
     <div class="fld" style="margin-top:10px"><label>Investment notes</label><input id="in_invnote" placeholder="e.g., old 401k (eligible), current-employer plan (locked), sitting in CDs"></div>
     <div class="note" style="padding-top:2px">Protected = already out of the market. Eligible for SRA = available to move into a Secure Retirement Account (e.g., an old policy, not a current-employer plan). Reserves under ~6 months of income → stronger case for living benefits / accident.</div>
 
-    <div class="intake-sec" id="sec_budget">Budget &amp; Notes <span class="sayico" data-beat="9" title="Say this — opens the script">Say this</span></div>
+    <div class="intake-sec" id="sec_budget">Budget &amp; Notes</div>
     <div class="intakegrid" style="grid-template-columns:1fr 1fr 1fr">
       <div class="fld"><label>Comfortable monthly budget</label><input id="in_budget_comfort" type="number" step="0.01" placeholder="e.g., 700"></div>
       <div class="fld"><label>Max monthly <small>the top of what they’d spend</small></label><input id="in_budget" type="number" step="0.01" placeholder="e.g., 1000"></div>
@@ -723,7 +725,7 @@ body.client #classicWrap>summary{display:none}
   <div id="recFlags" class="hidein-client"></div>
 
   <div class="estcard hidein-client" id="sec_est">
-    <div class="sectitle" style="justify-content:space-between;flex-wrap:wrap;gap:8px"><span><span class="dot">●</span> Ballpark estimate <span class="sayico" data-set="quote" data-beat="0" title="Presentation call script">Say this</span> <span class="sayico" data-set="obj" data-beat="0" title="Objection handling">Objections</span> <span class="note" style="display:inline;padding:0;font-style:normal">— full package per tier; AFC from the rate guide; not the final quote</span></span>
+    <div class="sectitle" style="justify-content:space-between;flex-wrap:wrap;gap:8px"><span><span class="dot">●</span> Ballpark estimate <span class="note" style="display:inline;padding:0;font-style:normal">— full package per tier; AFC from the rate guide; not the final quote</span></span>
       <span class="ageseg" id="ageseg"><button data-band="0">18–29</button><button data-band="1">30–39</button><button data-band="2">40–49</button><button data-band="3">50–64</button></span>
     </div>
     <div id="estBody" style="margin-top:8px"></div>
@@ -744,7 +746,6 @@ body.client #classicWrap>summary{display:none}
     </div>
 
     <div class="pad hidein-client" style="border-bottom:1px solid var(--line)">
-      <div style="margin-bottom:6px"><span class="sayico" data-set="quote" data-beat="2" title="Presentation call script">Say this</span></div>
       <div class="note" id="drugsDocsReminder" style="padding-top:0">Before you present: confirm on the Intake that the client's doctors were checked against the First Health network and their medication prices were looked up. Don't present the savings below until both are done.</div>
     </div>
 
@@ -805,7 +806,6 @@ body.client #classicWrap>summary{display:none}
   </div>
 
   <div class="card pad" id="sec_save">
-    <div class="hidein-client" style="margin-bottom:6px"><span class="sayico" data-set="quote" data-beat="6" title="Close + living benefits script">Say this — Close</span></div>
     <div class="band-navy baseonly">
       <div class="savegrid">
         <div class="h l" id="o_sav_head">YOUR SAVINGS vs ACA</div><div class="h">Monthly</div><div class="h">Annual</div>
@@ -947,18 +947,36 @@ body.client #classicWrap>summary{display:none}
 <div id="printout"></div>
 
 <!-- PLAN LIBRARY MODAL -->
-<div class="modal-backdrop" id="planModal">
+<div class="modal-backdrop" id="howModal">
   <div class="modal">
-    <div class="modal-head"><b>Plan Library</b><span>Every plan available to this client, priced live</span><button class="btn-gold" id="closePlans">Done</button></div>
-    <div class="modal-body">
-      <div id="masterStatus" class="note" style="padding-top:0;font-style:normal;color:var(--navy);font-weight:600"></div>
-      <div class="note" style="padding-top:0">This list is generated from the <b>master rate matrix</b> — you don't edit it. Every plan is priced for <i>this</i> client's state, rating age and household from the intake, so what you see here is what the "pick a plan" dropdowns will add. Plans marked <i>rate not loaded</i> aren't filed in this client's state; <i>enter price</i> means no rate sheet exists yet and you type the number.</div>
-      <div class="libhead"><div class="a">Plan name</div><div class="b">Monthly $</div><div class="c"></div></div>
-      <div id="libList"></div>
-      <div style="border-top:1px solid var(--line);margin:16px 0 6px"></div>
-      <div class="sectitle" style="font-size:14px">Default bundles <span style="font-family:-apple-system,sans-serif;font-weight:400;font-size:12px;color:var(--muted)">— what loads on each tab for a new quote</span></div>
-      <div class="note" style="padding-top:2px">Edit each tab's starting bundle, or click "Use current … tab" to capture what you've built live. New quotes and "Reset to default" use these. Saved with your quotes.</div>
-      <div id="defWrap"></div>
+    <div class="modal-head"><b>How to use POP Pro</b><span>Intake → Quote → Enroll</span><button class="btn-ghost" id="closeHow">Done</button></div>
+    <div class="modal-body howbody">
+      <h4>1 · Start the call in the Script Navigator</h4>
+      <p>Open the Script Navigator (button at the top of the Intake), choose <b>Health Discovery</b>, and run the call there. At the end, <b>Push client to MyPOP Pro</b> fills this intake for you — people, medications, conditions, doctors, current plan, income and budget. No navigator? Fill the intake by hand.</p>
+      <h4>2 · Check the Intake, top to bottom</h4>
+      <ul>
+        <li><b>Who needs coverage</b>, client, spouse, children (any number of children is the same price).</li>
+        <li><b>Medications</b> — type ahead from the list. <b>Rx</b> shows G (a generic is sold) or B (brand only); click to flip. <b>ACA copay</b> fills an orange estimate until you type the real figure; <b>Current copay</b> is what they pay today.</li>
+        <li><b>Conditions</b> — confirm each one and tick P and/or S. The medications suggest most of them.</li>
+        <li><b>Health &amp; Routing</b> — family history, tobacco, maternity, and the big <b>Anything else I should know about?</b> box.</li>
+        <li><b>Doctors</b> — who they want to keep, and <b>doctor visits a year</b>.</li>
+        <li><b>Current Insurance</b> — only what they have today. Tick <b>Show current coverage on the presentation</b> if you want it beside your recommendation.</li>
+        <li><b>ACA / Marketplace</b> — POP Pro estimates the bronze plan from their state, ages, household and income. Look the plan up on <b>HealthSherpa</b> and type the real numbers over the estimates. Pick the <b>ACA status</b>; "outside open enrollment" still calculates but leaves the ACA off the presentation.</li>
+        <li><b>Finances</b> and <b>Budget</b> — comfortable and max. The max caps the recommendation.</li>
+      </ul>
+      <h4>3 · Quote — the package builder</h4>
+      <ul>
+        <li><b>Manhattan only</b> is the default lineup: Good, Better, Best on the core four. Switch to LifeX · Manhattan · Cigna or Custom only on a buying signal.</li>
+        <li>Open a row to change its options; the price follows the rate tables. Type a price to override it; <b>↺</b> puts the rate-table price back.</li>
+        <li><b>↺ Reload our recommendation</b> resets all three packages; <b>↺ Reset</b> resets one.</li>
+      </ul>
+      <h4>4 · Present it</h4>
+      <ul>
+        <li><b>Client View</b> hides everything that is for you. Any ACA figure you didn't type shows <b>est.</b> with a note that it comes from state averages — type the HealthSherpa numbers and the labels go.</li>
+        <li><b>Save Quote</b> downloads a file; <b>Load Quote</b> opens it again. <b>Print Quote</b> makes the client's copy.</li>
+      </ul>
+      <h4>5 · Enroll</h4>
+      <p>The Enroll step lists the follow-ups for the package they chose.</p>
     </div>
   </div>
 </div>
@@ -1865,85 +1883,6 @@ function afcBandIdx(age){ age=+age||0; if(age<30)return 0; if(age<40)return 1; i
 function afcLevelIdx(name){ var n=(name||'').toLowerCase(); if(n.indexOf('elite plus')>=0)return 0; if(n.indexOf('elite')>=0)return 1; if(n.indexOf('classic plus')>=0)return 2; if(n.indexOf('classic')>=0)return 3; return -1; }
 function afcRate(state,bandIdx,levelIdx){ var gi=AFC_STATE[(state||'').toUpperCase().trim()]; if(gi===undefined||levelIdx<0)return null; return AFC_RATES[gi][bandIdx][levelIdx]; }
 
-/* ========== MASTER PLAN LIST (optional shared source) ==========
-   To share ONE plan list + Good/Better/Best defaults across everyone:
-   1) Make a Google Sheet with a header row: Name, Price, Good, Better, Best
-      (put an "x" in Good/Better/Best to mark which plans load by default on each tab)
-   2) Share it so anyone with the link can VIEW, then copy its ID from the URL and use:
-      https://docs.google.com/spreadsheets/d/SHEET_ID/gviz/tq?tqx=out:csv
-   3) Paste that link between the quotes below. Leave blank to use the built-in list.
-   Row order in the sheet = order in the dropdowns and default bundles. */
-var MASTER_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/1O9lQcrAvKYE6Uww3tTvZkhwEyAMZls0IhIwscdUSsvM/gviz/tq?tqx=out:csv&gid=1809100986';
-var masterConnected = false;
-
-function parseCSV(t){
-  var rows=[],cur=[],field='',inQ=false;
-  for(var i=0;i<t.length;i++){var c=t[i];
-    if(inQ){ if(c==='"'){ if(t[i+1]==='"'){field+='"';i++;} else inQ=false; } else field+=c; }
-    else { if(c==='"') inQ=true; else if(c===','){cur.push(field);field='';} else if(c==='\n'){cur.push(field);rows.push(cur);cur=[];field='';} else if(c!=='\r') field+=c; }
-  }
-  if(field.length||cur.length){cur.push(field);rows.push(cur);}
-  return rows;
-}
-function applyMaster(text){
-  var rows=parseCSV(text); if(rows.length<2) return false;
-  var hdr=rows[0].map(function(h){return h.trim().toLowerCase();});
-  var find=function(){for(var a=0;a<arguments.length;a++){var k=hdr.indexOf(arguments[a]);if(k>=0)return k;}return -1;};
-  var iName=find('name','plan name','plan'); if(iName<0)iName=0;
-  var iPrice=find('price','monthly','monthly $','cost');
-  var iG=find('good'), iB=find('better'), iX=find('best');
-  var flag=function(row,i){return i>=0 && /^(x|yes|true|1|y|✓)$/i.test(String(row[i]||'').trim());};
-  var lib=[], defs={good:[],better:[],best:[]};
-  for(var r=1;r<rows.length;r++){
-    var row=rows[r]; var name=(row[iName]||'').trim(); if(!name) continue;
-    var price=iPrice>=0? (parseFloat(String(row[iPrice]).replace(/[^0-9.\-]/g,''))||0):0;
-    lib.push({name:name,price:price});
-    if(flag(row,iG)) defs.good.push({name:name,monthly:price});
-    if(flag(row,iB)) defs.better.push({name:name,monthly:price});
-    if(flag(row,iX)) defs.best.push({name:name,monthly:price});
-  }
-  if(!lib.length) return false;
-  S.library=lib;
-  if(defs.good.length||defs.better.length||defs.best.length) S.defaults=defs;
-  masterConnected=true; return true;
-}
-function loadMaster(cb){
-  if(!MASTER_SHEET_CSV_URL){ updateMasterStatus(); if(cb)cb(false); return; }
-  var url=MASTER_SHEET_CSV_URL+(MASTER_SHEET_CSV_URL.indexOf('?')>=0?'&':'?')+'t='+Date.now();
-  fetch(url).then(function(r){return r.text();}).then(function(txt){
-    var ok=applyMaster(txt); renderProducts(); compute(); updateMasterStatus(); if(cb)cb(ok);
-  }).catch(function(){ updateMasterStatus(); if(cb)cb(false); });
-}
-function updateMasterStatus(){
-  var el=$('masterStatus'); if(!el) return;
-  var st=(S.client.state||'').toUpperCase(), ag=ratingAge(), hh=householdKey();
-  var hhTxt={i:'Individual',s:'Individual + Spouse',c:'Individual + Child(ren)',f:'Family'}[hh]||hh;
-  if(!st||!ag){ el.textContent='Enter the client’s state and age on the intake to price this list.'; return; }
-  el.textContent='Priced for '+st+' · rating age '+ag+' · '+hhTxt+'  —  change the intake and these prices follow.';
-}
-
-function defLibrary(){
-  return [
-    {name:'AFC — Elite Plus',price:278.76},
-    {name:'AFC — Elite',price:197.87},
-    {name:'AFC — Classic Plus',price:150.06},
-    {name:'AFC — Classic',price:114.46},
-    {name:'Cancer Lump Sum — Aetna Cancer $30K',price:62.50},
-    {name:'Cancer Lump Sum — Aetna Cancer $15K',price:0},
-    {name:'Heart Attack & Stroke — Aetna $10K',price:19.17},
-    {name:'24-Hr Accident — MLAC (2 Unit)',price:35.31},
-    {name:'24-Hr Accident — MLAC (1 Unit)',price:0},
-    {name:'Hospital Indemnity — MLAC HI Select $10K',price:62.31},
-    {name:'Hospital Indemnity — MLAC HI Select $5K',price:0},
-    {name:'Home Health Care — MLAC HHC Deluxe',price:32.80},
-    {name:'Out-of-Pocket / Gap — MLAC Out-of-Pocket Protection',price:96.00},
-    {name:'Dental • Vision • Hearing — MLAC DVH $3K',price:59.58},
-    {name:'Dental • Vision • Hearing — MLAC DVH $1.5K',price:0},
-    {name:'Final Expense Life — MLAC $10K',price:27.90},
-    {name:'Living Benefit Life — Americo HMS 125',price:45.00},
-    {name:'Specified Disease Rider — 250K / 50K deductible',price:0}
-  ];
-}
 function defProducts(tier){
   var L={
     afcElitePlus:{name:'Core Health Plan — AFC Elite Plus',monthly:278.76},
@@ -1971,8 +1910,6 @@ function blankState(){
     tabLabels:{good:'Affordable core',better:'Solid package',best:'Full package of protection'},
     aca:{subsidy:0,prem:0,ded:0,oop:0,med:0,visits:0,copay:0,fullded:true},
     activeTab:'best',
-    library:defLibrary(),
-    defaults:{good:defProducts('good'),better:defProducts('better'),best:defProducts('best')},
     packages:{
       good:{products:defProducts('good'),dropped:[],lb:0,lbCarrier:'',lbCov:'',med:0,rxBenefit:0},
       better:{products:defProducts('better'),dropped:[],lb:0,lbCarrier:'',lbCov:'',med:0,rxBenefit:0},
@@ -2160,51 +2097,6 @@ function renderProducts(){
     host.appendChild(row);
   });
 }
-
-function renderLib(){
-  var host=$('libList'); host.innerHTML=''; var last='';
-  PLAN_CATALOG.forEach(function(p){
-    if(p.g!==last){
-      var h=document.createElement('div');
-      h.style.cssText='font-weight:700;color:var(--navy);font-size:12px;letter-spacing:.04em;text-transform:uppercase;margin:12px 0 4px';
-      h.textContent=p.g; host.appendChild(h); last=p.g;
-    }
-    var info=catalogPriceInfo(p), txt, col='var(--navy)';
-    if(info.price==null||info.price===0){ txt=info.tag.replace(/^ — /,''); col='var(--muted)'; }
-    else if(info.fallback){ txt=info.tag.replace(/^ — /,''); col='var(--maroon)'; }
-    else txt='$'+info.price.toFixed(2);
-    var row=document.createElement('div'); row.className='librow';
-    var nm=document.createElement('div'); nm.className='lname'; nm.style.cssText='padding:6px 2px'; nm.textContent=p.n;
-    var pe=document.createElement('div'); pe.className='lprice'; pe.style.cssText='padding:6px 2px;text-align:right;font-weight:700;color:'+col; pe.textContent=txt;
-    row.appendChild(nm); row.appendChild(pe); row.appendChild(document.createElement('div'));
-    host.appendChild(row);
-  });
-}
-
-function renderDefaults(){
-  var host=$('defWrap'); host.innerHTML='';
-  [['good','GOOD'],['better','BETTER'],['best','BEST']].forEach(function(tp){
-    var t=tp[0];
-    var box=document.createElement('div'); box.style.margin='12px 0';
-    var head=document.createElement('div'); head.style.display='flex'; head.style.justifyContent='space-between'; head.style.alignItems='center'; head.style.marginBottom='4px';
-    var h=document.createElement('b'); h.textContent=tp[1]; h.style.fontFamily='var(--serif)'; h.style.color='var(--navy)';
-    var use=document.createElement('button'); use.textContent='Use current '+tp[1]+' tab'; use.style.cssText='border:1px solid #c9c0a8;background:#f3efe3;color:#26324a;border-radius:8px;padding:5px 10px;font-weight:600;font-size:12px;cursor:pointer';
-    use.onclick=function(){ read(); S.defaults[t]=copyArr(S.packages[t].products); renderDefaults(); };
-    head.appendChild(h); head.appendChild(use); box.appendChild(head);
-    S.defaults[t].forEach(function(p,i){
-      var row=document.createElement('div'); row.className='librow';
-      var nm=document.createElement('input'); nm.className='lname'; nm.value=p.name; nm.oninput=function(){S.defaults[t][i].name=nm.value;};
-      var pr=document.createElement('input'); pr.className='lprice'; pr.type='number'; pr.step='0.01'; pr.value=p.monthly; pr.oninput=function(){S.defaults[t][i].monthly=parseFloat(pr.value)||0;};
-      var del=document.createElement('button'); del.textContent='×'; del.title='remove'; del.onclick=function(){S.defaults[t].splice(i,1);renderDefaults();};
-      row.appendChild(nm); row.appendChild(pr); row.appendChild(del); box.appendChild(row);
-    });
-    var add=document.createElement('button'); add.className='addbtn'; add.style.margin='6px 0 0'; add.textContent='+ Add to '+tp[1]+' default';
-    add.onclick=function(){ S.defaults[t].push({name:'New product',monthly:0}); renderDefaults(); };
-    box.appendChild(add);
-    host.appendChild(box);
-  });
-}
-
 
 /* ============================================================================
    MEDICATION DICTIONARY - PORTED VERBATIM FROM THE SCRIPT NAVIGATOR
@@ -3184,11 +3076,9 @@ function loadFile(file){
   var rd=new FileReader();
   rd.onload=function(){
     try{ var obj=JSON.parse(rd.result); S=deepMerge(blankState(),obj); migrateAca(obj);
-      if(!S.library) S.library=defLibrary();
-      if(!S.defaults) S.defaults=blankState().defaults;
       if(!S.packages||!S.packages[S.activeTab]) S.packages=blankState().packages;
       if(!S.aca) S.aca=blankState().aca;
-      fill(); compute(); loadMaster(); goStep('quote');
+      fill(); compute(); goStep('quote');
       alert('Quote loaded'+(S.client&&S.client.pname?': '+S.client.pname:'')+'. Edit and Save again to keep a new version.');
     }catch(e){ alert('Could not read that file — is it a HealthFirst quote (.json)?'); }
   };
@@ -3205,7 +3095,7 @@ function migrateAca(raw){ if(!raw||raw.acaIn) return; var A=acaIn(), a=raw.aca||
   if(+a.copay>0) A.ov.visit=+a.copay;
   if(+a.visits>0){ S.intake=S.intake||{}; S.intake.visits=+a.visits; }
   A.fullded=a.fullded!==false; }
-function restore(){ try{ var s=localStorage.getItem('hf_pop_last'); if(s){ var raw=JSON.parse(s); S=deepMerge(blankState(),raw); migrateAca(raw); if(!S.library)S.library=defLibrary(); if(!S.defaults)S.defaults=blankState().defaults; if(!S.aca)S.aca=blankState().aca; } }catch(e){} }
+function restore(){ try{ var s=localStorage.getItem('hf_pop_last'); if(s){ var raw=JSON.parse(s); S=deepMerge(blankState(),raw); migrateAca(raw); if(!S.aca)S.aca=blankState().aca; } }catch(e){} }
 
 /* ========== INTAKE + RECOMMENDATION ENGINE ========== */
 function readIntake(){
@@ -3467,179 +3357,6 @@ function buildEmail(){
 }
 
 /* ========== INTAKE "SAY THIS" SCRIPT (discovery call) ========== */
-var SCRIPT_BEATS=[
- {title:"Opening & permission",sec:"sec_who",html:
-   "<p class=say>“Hi, [first name]! (pause) This is [your name], your health insurance expert. (pause) How are you?”</p>"
-  +"<p class=say>“It looks like you responded to an ad for more affordable PPO health plans. Is this an appropriate time?”</p>"
-  +"<p class=note>Give them the option to work with you — offering the choice sets you up as a professional whose time they should respect.</p>"},
- {title:"Why they're shopping",sec:"sec_client",html:
-   "<p class=say>“Before I get into who we are and all that boring stuff, I need to see if I can even help you. Did you already find a good plan, or are you still looking for something better?”</p>"
-  +"<p class=say>“So I can understand your situation — what prompted you to start looking into new health insurance?”</p>"
-  +"<p class=say>“What type of insurance do you have now, if any? Was it more the cost, the coverage, or something else that made you say ‘this isn’t working for me’?”</p>"
-  +"<p class=note>Whatever they say, they’re right — agree with them, and bring their reasons back up on the presentation call. Jot it in the “Why shopping” field.</p>"},
- {title:"Positioning",sec:"sec_client",html:
-   "<p class=say>“I specialize in helping small business owners and self-employed folks who are frustrated with the high cost of healthcare. My job is to get you an affordable, comprehensive plan that’s easy to understand — no paying for benefits you don’t need, like maternity if you’re not planning kids.”</p>"
-  +"<p class=say>“Every marketplace plan includes 10 essential benefits; most people don’t need all of them, so I tailor a private plan to what you actually need — saving money while still getting great coverage. Sound familiar?”</p>"},
- {title:"Demographics + effective date",sec:"sec_client",html:
-   "<p class=say>“So, provided we can get you qualified, when would you like the coverage to start?”</p>"
-  +"<p class=note>Usually no sooner than 15 days out — the 1st or 15th of the month.</p>"
-  +"<p class=say>“I see you live in [state] — can I grab your zip code? And what’s your age and birthday?”</p>"
-  +"<p class=note>Make a little small talk about where they live.</p>"},
- {title:"Tobacco + build",sec:"sec_client",html:
-   "<p class=say>“Are you a smoker, or do you use any tobacco products?”</p>"
-  +"<p class=note>Needed for the other products, not AFC.</p>"
-  +"<p class=say>“Some carriers use build charts — no need to get on a scale, but roughly how tall are you and about how much do you weigh?”</p>"},
- {title:"Who's covered — spouse & kids",sec:"sec_spouse",html:
-   "<p class=say>“Are you looking for coverage just for yourself, or possibly for someone else — your spouse or partner, or kids?”</p>"
-  +"<p class=note>Get ages, DOBs, heights and weights for everyone who needs coverage.</p>"},
- {title:"Health — meds, surgeries, history",sec:"sec_health",html:
-   "<p class=say>“Do any of you have health problems or take regular prescription medications?”</p>"
-  +"<p class=note>Note the dosage and frequency.</p>"
-  +"<p class=say>“Have any of you been hospitalized or had surgeries in the past 2 years?”</p>"
-  +"<p class=say>“Have any of you had serious health problems in the past — a heart attack, stroke, or cancer?”</p>"
-  +"<p class=note>Heart attack: when, # of occurrences, treatments. Cancer: type, stage, recurrence, location, treatment. Stroke: severity, recurrence. Targeting working business owners means you won’t hit many major concerns.</p>"},
- {title:"Preferred doctor + First Health",sec:"sec_docs",html:
-   "<p class=say>“Do you currently have a primary care provider you’re in love with? What’s their name — and when did you last see them?”</p>"
-  +"<p class=note>If they’re married to their PCP, verify the provider participates in the First Health Network.</p>"},
- {title:"Current coverage cost",sec:"sec_curins",html:
-   "<p class=say>“(If they have coverage) What are you paying roughly per month now? Any deductibles or co-pays? Did you hit your deductible last year?”</p>"
-  +"<p class=note>Acknowledge what a bummer it is to hit a large deductible before getting much benefit from a big monthly premium.</p>"},
- {title:"Soft close — book Call 2 (BAMFAM)",sec:"sec_budget",html:
-   "<p class=say>“I think I can show you a few private plans that meet your exact needs — without paying for benefits you don’t use — would you be open to looking at those options?”</p>"
-  +"<p class=say>“Are you also open to seeing how bundling dental, vision, life or retirement could actually lower your total monthly cost while giving you more protection?”</p>"
-  +"<p class=say>“Looking at my schedule, I have time at [time A] or [time B] — which works best for you and [spouse]?”</p>"
-  +"<p class=note>BAMFAM — Book A Meeting From A Meeting. Confirm their email, restate day/date/time, and send a text reminder with your license # or digital card.</p>"}
-];
-/* ---- Quote / Presentation Call (Call 2) ---- */
-var SCRIPT_QUOTE=[
- {title:"Prep + open",sec:"sec_est",html:
-   "<p class=say>“Hey [Name], thanks for taking my call again today. I think you’ll be pleasantly surprised by the options I found for you and your family. Depending on what you like, I can email you brochures afterward. Sound good? Let’s walk through it together.”</p>"
-  +"<p class=note>Before the call, be logged into HealthSherpa / HealthCare.gov (ACA compare), firsthealthlbp.com (providers), and SingleCare.com (Rx) — with the Package of Protection quote ready to share.</p>"},
- {title:"Set the stage",sec:"sec_est",html:
-   "<p class=say>“To review, I specialize in helping small business owners and 1099 professionals find affordable private coverage. Marketplace plans are great if you qualify for big subsidies — but they must include 10 government-mandated Essential Health Benefits, even ones you may never use. If you’re not pregnant, why pay for maternity? Our private PPO options let you pay for what you need and skip what you don’t. Make sense?”</p>"},
- {title:"Networks & providers",sec:"sec_pkg",html:
-   "<p class=say>“The first thing I looked at was healthcare.gov — great if you qualify for discounts, but with your income you’d pay full price. So I checked your private PPO options. The one that stood out is through ManhattanLife — one of the largest private health carriers in the country, and one of the oldest U.S. insurers, around since 1850. They specialize in helping everyday Americans save money instead of paying exorbitant fees for services most people will never use. Their plan — Affordable Choice Elite — gives you day-one, first-dollar benefits and 10 doctor visits per person a year, and unused visits roll over.”</p>"
-  +"<p class=note>First Health Network (same as Aetna) — 810,000+ providers, 6,000 hospitals, 125,000 urgent cares. Look up local doctors at firsthealthlbp.com.</p>"},
- {title:"Common questions",sec:"sec_pkg",html:
-   "<p class=say>“About out-of-network — you’re covered either way. In-network is direct billing; out-of-network is reimbursed to you, usually within two weeks. Underwriting just means you get better benefits if you qualify — I already reviewed your info and you should be good to go.”</p>"},
- {title:"How coverage works — 3 buckets",sec:"sec_pkg",html:
-   "<p class=say><b>Day-to-day:</b> “Each person gets 10 doctor visits a year — and yes, you can use them for chiropractic care.”</p>"
-  +"<p class=say><b>Preventive:</b> “Wellness checks, mammograms, colonoscopies — a routine colonoscopy benefit alone is around $4,200, which exceeds the actual cost in most states.”</p>"
-  +"<p class=say><b>Prescriptions:</b> “$50/day Rx benefit ($75 on Elite Plus), up to $750/yr — but use SingleCare or RXedo for big discounts. I already looked yours up and texted you the best coupons; you’re well under the daily benefit.”</p>"
-  +"<p class=say><b>Catastrophic:</b> “ER and urgent care, hospital admission, surgery, and cancer coverage — zero deductible, zero coinsurance on Elite. $2,000 just for being admitted, plus up to $80,000/yr in cancer coverage.”</p>"},
- {title:"Bonus benefits + exclusions",sec:"sec_pkg",html:
-   "<p class=say>“You also get free unlimited 24/7 telehealth, fixed annual premiums level to age 65, zero deductible, Green Imaging & Direct Labs discounts, and CareGuide for care coordination and bill savings.”</p>"
-  +"<p class=note><b>Exclusions:</b> to keep costs low, these plans don’t include maternity or mental health. Pre-existing conditions aren’t covered the first 12 months — but your medications are.</p>"
-  +"<p class=say>“Based on everything you’ve told me, this puts you in a better spot than before and checks all your boxes — would you agree?”</p>"},
- {title:"The close",sec:"sec_save",html:
-   "<p class=say>“So the entire package — your AFC Elite health plan with the Specified Disease umbrella, DVH Select, ER/accident, out-of-pocket protection, and the Hospital Select rider — comes to $____ per month. That’s locked in, and you’re saving $____ vs. what you were paying.”</p>"
-  +"<p class=say><b>Living benefits:</b> “Here’s what most people do after we save them this much: take a small piece — usually $40–$70 — and protect their income with living-benefit insurance that pays YOU while you’re alive if you get cancer, a heart attack, or stroke. Health takes care of the bills; living benefits take care of your income. Want me to show you what that looks like for your age?”</p>"},
- {title:"The bold step — submit the app",sec:"sec_save",html:
-   "<p class=say>“The next step is simple — we’ll submit your application. No cost to apply, takes about 10 minutes, and I’m your point of contact throughout. Underwriting reviews it and we should have approval in 3–5 business days. Ready to get that started?”</p>"
-  +"<p class=note>If they take living benefits, submit the life app first. If they need to think or talk to a spouse: “No problem — I’ll email the brochures and quote summary. Let’s talk same time tomorrow and put in the app then.” Confidence is key — never pause when it’s time to move forward.</p>"}
-];
-/* ---- Objection Handling · Feel–Felt–Found (list view) ---- */
-var SCRIPT_OBJ=[
- {title:"“That sounds expensive.”",html:"<p class=say>I understand how you feel. Most people feel that way comparing it to $0 ACA ads. What they found is these plans save money long-term because they’re first-dollar — no $8,000 deductibles or surprise co-pays. <b>“Can I show you how it pays you back on real visits?”</b></p>"},
- {title:"“I already have something through work / my spouse.”",html:"<p class=say>Glad you’re proactive. Clients felt the same, but found work plans leave gaps in dental, accident, and income protection — and a plan that pays them directly was a no-brainer. <b>“Open to seeing how this backs up your work plan?”</b></p>"},
- {title:"“I want to think about it.”",html:"<p class=say>I understand — it’s important. What clients found is that having the quote in writing made it easier, and approval is based on today’s health. <b>“Let’s reserve your approval while you think — no harm if you pass. Sound fair?”</b></p>"},
- {title:"“I need to talk to my spouse.”",html:"<p class=say>Smart — it’s a household decision. Clients found it helpful to get the spouse on a short follow-up so both hear it firsthand. <b>“Tomorrow evening or Saturday morning for 10 minutes?”</b></p>"},
- {title:"“I can’t afford that right now.”",html:"<p class=say>Budgeting is real. Clients felt that way until they realized one ER visit is $3,000–$5,000. <b>“If I build a package that fits your budget and still protects you, worth reviewing together?”</b></p>"},
- {title:"“I want something with no deductible.”",html:"<p class=say>Most people feel that way. These aren’t high-deductible ACA plans — they’re defined-benefit, first-dollar, paying from day one. <b>“Can I show you how that works in a real example?”</b></p>"},
- {title:"“Why not just stick with my ACA plan?”",html:"<p class=say>Folks felt that way, especially with a subsidy. They found ACA = narrow networks, high deductibles, yearly rate jumps. ManhattanLife = renewable, stable, First Health PPO freedom. <b>“Want to see it side-by-side?”</b></p>"},
- {title:"“I’ve never heard of ManhattanLife.”",html:"<p class=say>Fair — not a household name, but around since 1850, one of the oldest U.S. insurers. Clients found the private PPO via First Health gives more control, fewer restrictions. <b>“Want to see their AM Best rating and network?”</b></p><p class=note><a href='https://ratings.ambest.com/CompanyProfile.aspx?BL=0&amp;ambnum=6222&amp;AltNum=7486222&amp;AltSrc=3' target='_blank' style='color:#8ab4ff'>ManhattanLife AM Best rating ↗</a> — pull it up live if they want to see it.</p>"},
- {title:"“I’m healthy — I don’t need insurance.”",html:"<p class=say>Best time to buy. People felt that way until an accident or surprise bill. Being healthy locks in low rates that hold to age 65. <b>“Makes sense to protect your good health while it’s most affordable, right?”</b></p>"},
- {title:"“Can you just send me some info?”",html:"<p class=say>Absolutely — but clients found reading alone didn’t show what they personally qualify for. I’ll send it and walk you through it in 5 minutes. <b>“This evening or tomorrow morning?”</b></p>"}
-];
-/* ---- How to use this tool (new-agent guide) ---- */
-var SCRIPT_HELP=[
- {title:"Start here — three steps",html:
-   "<p class=say>The tool runs left to right: <b>Intake → Quote → Enroll</b>. Work them in order and most of the rest fills itself in.</p>"},
- {title:"Step 1 · Intake — capture the client",html:
-   "<p class=say>This is your discovery call. Grab the basics first — state, both dates of birth, and who's being covered — then keep the conversation going and fill in the rest as it comes up. Nothing has to be entered in order, and it saves as you type.</p>"
-  +"<p class=note>The <b>green-outlined fields</b> are the ones the tool needs in order to price a plan: name, date of birth, sex, height, weight, phone, email, state and ZIP. Get those and you can quote.</p>"},
- {title:"The “Say this” bubbles",html:
-   "<p class=say>Every section header has a small <b>Say this</b> bubble. Click it and a script window opens with the exact words for that part of the call.</p>"
-  +"<p class=say>As you click <b>Next</b> through the script, the tool follows along — it jumps to the part of the form that matches what you're saying and outlines it in gold. So the fields you need are always sitting right in front of you as you talk, and you're never hunting for where to type.</p>"
-  +"<p class=say>Drag the script window to a second screen and it stays put. Clicking a different section just swaps the script inside that same window.</p>"
-  +"<p class=note>On the Quote step there's also an <b>Objections</b> bubble with Feel · Felt · Found answers to the ten things clients say most.</p>"},
- {title:"Step 2 · Quote — the pricing is done for you",html:
-   "<p class=say>Hit <b>Build Quote</b> and all three packages price themselves from ManhattanLife's current rate guide. No lookups, no spreadsheets.</p>"
-  +"<p class=say>It automatically uses the state you picked, the <b>older of the two ages</b> (that's how these plans rate), and whether a spouse or children are covered. Policy fees are already folded in, and the ACA side pre-fills with a marketplace estimate you can replace with their real quote.</p>"
-  +"<p class=note>If a rate isn't on file for that state, the line still appears with a “verify” note so nothing silently disappears.</p>"},
- {title:"Nothing is locked — tweak any price",html:
-   "<p class=say>Every price in the tool is editable. If you want to nudge someone's coverage up or down without moving them to a whole different tier, you have two ways to do it: <b>pick a different option from the dropdown</b>, or <b>type the exact price</b> on that line.</p>"
-  +"<p class=say>That's true on the package products, on Living Benefits, and on the ACA side. Add a bit more coverage and type the new premium — the totals, savings, and POP Score all update instantly.</p>"
-  +"<p class=note>A typed price sticks until you touch that line's dropdown again, which snaps it back to the rate sheet. Manually-entered prices are shaded so you can spot them at a glance.</p>"},
- {title:"Good / Better / Best",html:
-   "<p class=say>Three packages are always built. They carry the same core protection, stepped by <b>coverage amount</b> rather than by pulling products out. Best carries the richest coverage plus home health care; Good keeps the essentials at the lowest monthly.</p>"
-  +"<p class=say>You can customize any tier without leaving it — swap a product from its dropdown or type a price on any line to give them a little more or a little less. You're never stuck choosing between three fixed options.</p>"},
- {title:"The POP Score",html:
-   "<p class=say>The dial scores how completely a package protects <b>this specific client</b>, 0 to 100. It weighs seven areas: everyday care, preventive, hospitalization, accident, critical illness, dental/vision/hearing, and income protection.</p>"
-  +"<p class=say>It's personalized. A family history of cancer pushes critical illness up. Being older, or heavier for their height, pushes hospitalization up. A young, healthy client isn't penalized for lighter coverage the way a 58-year-old would be.</p>"
-  +"<p class=note><b>What's lifting it</b> shows what's already working — those are your talking points for why the package is strong.</p>"
-  +"<p class=note><b>FYI — the score evolves.</b> We keep refining how the POP Score weighs risk and the data from the intake form, so as the methodology evolves the score may shift slightly. The aim is to match each client with the most complete package of protection for their situation — weighing their real exposure, potential health risks, and personal concerns.</p>"},
- {title:"Raising the score",html:
-   "<p class=say><b>How to raise it</b> lists exactly what to add, biggest impact first, showing the <b>points gained</b> and the <b>monthly cost</b> side by side.</p>"
-  +"<p class=say>Click any one and it's added to the package — the price and the score both update instantly. That's your upgrade conversation in one line: “for about $15 more a month, we close this gap.”</p>"},
- {title:"Saving a quote and picking it back up",html:
-   "<p class=say><b>Save Quote</b> downloads the quote to your computer and names the file for you — the client's name plus today's date — so you're never guessing which file is which.</p>"
-  +"<p class=say>To return to it later, open the tool and click <b>Load Quote</b>, then choose that file from wherever it saved. Everything comes back exactly as you left it and you can keep working.</p>"
-  +"<p class=note>The tool also autosaves your current quote as you go, so a closed tab won't lose your work.</p>"},
- {title:"Step 3 · Enroll — apply and send",html:
-   "<p class=say>Confirm the package, then the carrier buttons take you straight to the application portal.</p>"
-  +"<p class=say>To send it: click <b>Email to client — Gmail</b> or <b>Outlook</b> and a message opens with the subject and wording already written. Then click <b>Print / PDF Quote</b>, save the PDF, and attach it to that email yourself.</p>"
-  +"<p class=note>Attaching is manual on purpose. Quotes evolve as you adjust coverage, so this way you're always sending the exact version you just walked through with them — never an older one.</p>"},
- {title:"Worth knowing",html:
-   "<p class=note>• <b>Client view</b> hides your notes and agent-only tools — switch to it before you share your screen.<br>"
-  +"• Medication prices you look up on the intake feed the package math automatically.<br>"
-  +"• Build-chart and underwriting flags appear as you enter height and weight, so you'll know early if something needs a closer look.<br>"
-  +"• If household income is under the subsidy threshold, the ACA subsidy field on the Intake lights up — look it up and enter it, and it comes off the marketplace premium on the Quote.</p>"}
-];
-var SCRIPTS={
- help:{label:"How to use this tool",mode:"list",beats:SCRIPT_HELP},
- intake:{label:"Intake · Discovery Call",mode:"paged",beats:SCRIPT_BEATS},
- quote:{label:"Quote · Presentation Call",mode:"paged",beats:SCRIPT_QUOTE},
- obj:{label:"Objection Handling · Feel–Felt–Found",mode:"list",beats:SCRIPT_OBJ}
-};
-var _scriptSec=null;
-function scriptFlash(secId){
-  if(_scriptSec){ var prev=document.getElementById(_scriptSec); if(prev) prev.classList.remove('sec-flash'); }
-  var el=document.getElementById(secId); if(!el){ _scriptSec=null; return; }
-  el.classList.add('sec-flash'); _scriptSec=secId;
-  try{ el.scrollIntoView({behavior:'smooth',block:'center'}); }catch(e){}
-}
-function openScript(setKey,idx){
-  var set=SCRIPTS[setKey]; if(!set) return;
-  var w=window.open('','hfScript','width=560,height=760');
-  if(!w){ alert('Allow pop-ups for this site to use the script window.'); return; }
-  var css="body{font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;margin:0;background:#0f1d2e;color:#eef3f8}"
-   +".loc{background:#1f3a5f;color:#cfe0f5;font-size:12px;font-weight:700;padding:11px 18px;letter-spacing:.03em}"
-   +".nav{display:flex;gap:8px;padding:10px 16px;background:#16283f;position:sticky;top:0}"
-   +".nav button{flex:1;font:inherit;font-weight:700;font-size:13px;padding:9px;border:none;border-radius:8px;background:#2f5183;color:#fff;cursor:pointer}"
-   +".nav button:disabled{opacity:.35;cursor:default}"
-   +".body{padding:18px 22px;font-size:17px;line-height:1.5}"
-   +".body p{margin:0 0 14px}.say{color:#fff}"
-   +".note{color:#9fb6d4;font-size:13.5px;font-style:italic;border-left:3px solid #d8a23a;padding-left:11px}"
-   +".obj{border-top:1px solid #24405f;padding:14px 0}.obj:first-child{border-top:none}"
-   +".objq{color:#d8a23a;font-weight:700;font-size:15px;margin-bottom:6px}";
-  var loc,nav="",body;
-  if(set.mode==="list"){
-    if(_scriptSec){ var pv=document.getElementById(_scriptSec); if(pv) pv.classList.remove('sec-flash'); _scriptSec=null; }
-    loc=set.label;
-    body=""; set.beats.forEach(function(b){ body+="<div class=obj><div class=objq>"+b.title+"</div>"+b.html+"</div>"; });
-  } else {
-    idx=Math.max(0,Math.min(set.beats.length-1,idx));
-    var b=set.beats[idx]; scriptFlash(b.sec);
-    loc=set.label+" · beat "+(idx+1)+" of "+set.beats.length+" — "+b.title;
-    nav="<div class=nav><button onclick=\"opener.openScript('"+setKey+"',"+(idx-1)+")\""+(idx===0?" disabled":"")+">‹ Prev</button>"
-      +"<button onclick=\"opener.openScript('"+setKey+"',"+(idx+1)+")\""+(idx===set.beats.length-1?" disabled":"")+">Next ›</button></div>";
-    body=b.html;
-  }
-  var html="<!doctype html><html><head><meta charset=utf-8><title>"+set.label+"</title><style>"+css+"</style></head><body>"
-   +"<div class=loc>"+loc+"</div>"+nav+"<div class=body>"+body+"</div></body></html>";
-  w.document.open(); w.document.write(html); w.document.close(); w.focus();
-}
 /* ZIP -> state. Same table as the Script Navigator: the first three digits of a ZIP decide the
    state. The ZIP fills State unless the agent has picked a state by hand, which always wins. */
 var ZIP3=[[5,5,"NY"],[6,9,"PR"],[10,27,"MA"],[28,29,"RI"],[30,38,"NH"],[39,49,"ME"],[50,59,"VT"],
@@ -3702,7 +3419,6 @@ function bindInputs(){
   $('c_date').addEventListener('input',function(){ this.value=fmtDate(this.value); markValid(this,dateOK(this.value)); compute(); });
   $('in_priority').addEventListener('change',function(){ readIntake(); autosave(); });
   $('addMed').onclick=function(){ S.intake.medList=S.intake.medList||[]; S.intake.medList.push({name:'',cost:0,forP:true,forS:false}); renderMeds(); };
-  document.querySelectorAll('.sayico').forEach(function(s){ s.onclick=function(){ openScript(s.dataset.set||'intake', +s.dataset.beat||0); }; });
   $('p_lb_cov').addEventListener('input',function(){ this.value=fmtMoneyStr(this.value); });
   ['p_pension','pp_cv10','pp_cv20','pp_cv30','pp_leg1','pp_leg25'].forEach(function(id){
     var el=$(id); if(el) el.addEventListener('input',function(){ this.value=fmtMoneyStr(this.value); });
@@ -3763,12 +3479,12 @@ function bindInputs(){
   };
   $('loadBtn').onclick=function(){ $('fileInput').click(); };
   $('fileInput').onchange=function(e){ if(e.target.files[0]) loadFile(e.target.files[0]); e.target.value=''; };
-  $('newBtn').onclick=function(){ if(confirm('Start a new blank quote? Unsaved changes will be lost.')){ var lib=S.library, defs=S.defaults, ag=S.agency, agn=S.client.agent, aph=S.agentPhone, aem=S.agentEmail; S=blankState(); S.library=lib; S.defaults=defs; S.agency=ag; S.client.agent=agn; S.agentPhone=aph; S.agentEmail=aem; S.packages={good:{products:copyArr(defs.good),lb:0,lbCarrier:'',lbCov:'',med:0,rxBenefit:0},better:{products:copyArr(defs.better),lb:0,lbCarrier:'',lbCov:'',med:0,rxBenefit:0},best:{products:copyArr(defs.best),lb:45,lbCarrier:'Mutual of Omaha TLE',lbCov:'$50,000',med:0,rxBenefit:0}}; fill(); compute(); goStep('intake'); } };
+  $('newBtn').onclick=function(){ if(confirm('Start a new blank quote? Unsaved changes will be lost.')){ var ag=S.agency, agn=S.client.agent, aph=S.agentPhone, aem=S.agentEmail; S=blankState(); S.agency=ag; S.client.agent=agn; S.agentPhone=aph; S.agentEmail=aem; fill(); compute(); goStep('intake'); } };
   $('reloadBase').onclick=function(){ read(); reloadBaseTier(S.activeTab); renderProducts(); compute(); };
-  $('resetTab').onclick=function(){ read(); S.packages[S.activeTab].products=copyArr(S.defaults[S.activeTab]); if(S.packages[S.activeTab]) S.packages[S.activeTab].dropped=[]; renderProducts(); compute(); };
-  $('managePlansBtn').onclick=function(){ renderLib(); renderDefaults(); updateMasterStatus(); $('planModal').classList.add('open'); };
-  $('closePlans').onclick=function(){ $('planModal').classList.remove('open'); renderProducts(); compute(); autosave(); };
-  $('planModal').addEventListener('click',function(e){ if(e.target===$('planModal')){ $('planModal').classList.remove('open'); renderProducts(); compute(); } });
+  $('resetTab').onclick=function(){ read(); pbResetTier(S.activeTab); autoPriceTiers(); renderProducts(); compute(); if(typeof renderBuilder==='function') renderBuilder(); autosave(); };   // same as the builder's ↺ Reset
+  $('howBtn').onclick=function(){ $('howModal').classList.add('open'); };
+  $('closeHow').onclick=function(){ $('howModal').classList.remove('open'); };
+  $('howModal').addEventListener('click',function(e){ if(e.target===$('howModal')) $('howModal').classList.remove('open'); });
 }
 
 /* ===== PACKAGE BUILDER — one row per product, options inline, ✕ to remove, ＋ to add =====
@@ -4052,7 +3768,6 @@ fill();
 bindInputs();
 compute();
 goStep(S.step||'intake');
-loadMaster();
 loadPortalRates();
 loadBaseRates();
 </script>
