@@ -941,6 +941,28 @@ function prVal(tbl,key,hh,age){
   var v=s[1][age-s[0]]; return v==null?null:v;
 }
 function prMoney(n){ return '$'+Number(n).toLocaleString('en-US'); }
+/* ===== BASE-PLAN ALTERNATIVES: LifeX and Cigna (Triad) — flat rate books by age band and tier =====
+   rates/lifex-rates.json  (LifeX Rate Book V4 6.15.26)   rates/triad-rates.json (USA Health Plans, 2026) */
+var LX=null, TRI=null;
+var BASE_TIER={i:'EE',s:'ES',c:'EC',f:'FAM'};
+function bandOf(bands,age){ for(var i=0;i<bands.length;i++){ var p=bands[i].split('-'); if(age>=+p[0]&&age<=+p[1]) return bands[i]; } return null; }
+function pLIFEX(age,hh,plan){
+  if(!LX) return {price:null,note:'LifeX rates loading'};
+  var pl=LX.plans[plan]; if(!pl) return {price:null,note:'LifeX plan '+plan+' not found'};
+  var b=bandOf(LX.bands,age); if(!b) return {price:null,note:'LifeX is ages 18–64'};
+  return {price:pl.rates[b][BASE_TIER[hh]],note:'Screen with the LifeX questionnaire first — pregnancy is a decline, and the client becomes a W-2 LifeX employee.'};
+}
+function pTRIAD(age,hh,plan){
+  if(!TRI) return {price:null,note:'Cigna rates loading'};
+  var pl=TRI.plans['Triad Cigna '+plan]; if(!pl) return {price:null,note:'Cigna plan '+plan+' not found'};
+  var b=bandOf(TRI.bands,age); if(!b) return {price:null,note:'Cigna (Triad) is ages 18–64'};
+  return {price:pl.rates[b][BASE_TIER[hh]],note:'Pre-underwritten estimate — the approved rate can land higher after underwriting.'};
+}
+function loadBaseRates(){
+  [['rates/lifex-rates.json',function(j){LX=j;}],['rates/triad-rates.json',function(j){TRI=j;}]].forEach(function(x){
+    fetch(x[0],{cache:'no-cache'}).then(function(r){ return r.ok?r.json():null; }).then(function(j){ if(!j) return; x[1](j); try{ autoPriceTiers(); fill(); compute(); }catch(e){} }).catch(function(){});
+  });
+}
 function loadPortalRates(){
   fetch('rates/portal-rates.json',{cache:'no-cache'}).then(function(r){ return r.ok?r.json():null; }).then(function(j){
     if(!j) return; PR=j;
@@ -1336,9 +1358,13 @@ function buildTierProducts(c,byKey,extras){
     if(res.price==null) return;
     out.push({k:k,name:name,monthly:res.price,note:res.note||'',auto:true});
   }
+  if(c.base==='lifex') add('base','Health Plan — LifeX '+(c.lifexPlan||'$500 PPO'), pLIFEX(age,hh,c.lifexPlan||'$500 PPO'));
+  else if(c.base==='triad') add('base','Health Plan — Cigna (Triad) $'+Number(c.triadPlan||'3500').toLocaleString('en-US')+' deductible', pTRIAD(age,hh,c.triadPlan||'3500'));
+  else {
   add('afc','Core Health Plan — AFC '+LVLNAME[c.afc], pAFC(R,st,age,hh,c.afc));
   var sd=pSDR(R,st,age,hh,c.sdr,false);
   add('sdr','Specified Disease Rider — $'+(+c.sdr.max/1000)+'K / $'+((+(sd.ded||c.sdr.ded))/1000)+'K ded', sd);
+  }
   add('his','Hospital Indemnity — HI Select $10K'+(c.his.outp?' + Outpatient $'+c.his.outp:''), pHIS(R,st,age,hh,c.his));
   add('acc','Accident Cash — 24-Hr Accident ('+c.acc+' Unit)', pACC(R,hh,c.acc));
   add('gap','Out-of-Pocket / Gap — $'+c.gap.daily+'/day · $'+c.gap.adm+' admission', pGAP(R,st,age,hh,c.gap));
@@ -3429,6 +3455,7 @@ function bindInputs(){
    Local-preview feature (2026-09-28); design notes in DESIGN-NOTES.md. */
 var PB_OPEN={};
 var PB_SLOTS=[
+ {k:'base',name:'Health plan'},
  {k:'afc', name:'Affordable Choice'},
  {k:'sdr', name:'Specified Disease Rider'},
  {k:'his', name:'Hospital Indemnity Select'},
@@ -3443,6 +3470,10 @@ function pbMoney(v){ return '$'+(+v).toFixed(2); }
 function pbOpts(list,cur){ return list.map(function(o){ return '<option value="'+o[0]+'"'+(String(o[0])===String(cur)?' selected':'')+'>'+o[1]+'</option>'; }).join(''); }
 function pbAmt(a){ return a.map(function(v){ return [v, v? '$'+Number(v).toLocaleString('en-US') : 'None']; }); }
 function pbControls(k,c){
+  if(k==='base'&&c.base==='lifex') return '<div class="f">LifeX plan<select data-f="lifexPlan">'+pbOpts(Object.keys((LX&&LX.plans)||{}).filter(function(n){ return n!=='VL $250'; }).map(function(n){ return [n,n+' · '+LX.plans[n].family]; }),c.lifexPlan||'$500 PPO')+'</select></div>'
+    +'<div style="font-size:11.5px;color:var(--maroon)">Screen with the LifeX questionnaire first — pregnancy is a decline. The client becomes a W-2 employee of LifeX.</div>';
+  if(k==='base'&&c.base==='triad') return '<div class="f">Deductible<select data-f="triadPlan">'+pbOpts(Object.keys((TRI&&TRI.plans)||{}).map(function(n){ var d=n.replace('Triad Cigna ',''); return [d,'$'+d.replace(/(\d+)/,function(x){return Number(x).toLocaleString('en-US');})]; }),c.triadPlan||'3500')+'</select></div>'
+    +'<div style="font-size:11.5px;color:var(--muted)">Pre-underwritten rate — the approved rate can come in higher.</div>';
   if(k==='afc') return '<div class="f">Plan<select data-f="afc">'+pbOpts([['ElitePlus','Elite Plus'],['Elite','Elite'],['ClassicPlus','Classic Plus'],['Classic','Classic']],c.afc)+'</select></div>';
   if(k==='sdr') return '<div class="two"><div class="f">Annual max<select data-f="sdr.max">'+pbOpts(pbAmt([250000,500000]),c.sdr.max)+'</select></div><div class="f">Deductible<select data-f="sdr.ded">'+pbOpts(pbAmt([25000,50000,75000,100000]),c.sdr.ded)+'</select></div></div>';
   if(k==='his') return '<div class="two"><div class="f">Per hospital stay<select data-f="his.ben">'+pbOpts(pbAmt([1000,2000,3000,4000,5000,6000,7000,8000,9000,10000]),c.his.ben)+'</select></div><div class="f">Outpatient surgery<select data-f="his.outp">'+pbOpts(pbAmt([0,250,500,750,1000,1250,1500]),c.his.outp)+'</select></div></div>'
@@ -3470,15 +3501,22 @@ function renderBuilder(){
   // Jesse's standard: dental is an add-on, outside the package price. Applied once per quote.
   if(!S.dvhChoice){ S.dvhChoice='addon'; ['good','better','best'].forEach(function(t){ var pk=S.packages[t]; pk.dropped=pk.dropped||[]; if(pk.dropped.indexOf('dvh')<0) pk.dropped.push('dvh'); }); setTimeout(pbReprice,0); }
   var tiers=[['good','Good','Essential'],['better','Better','Complete'],['best','Best','Comprehensive']], totals={};
-  var html='<div class="bh"><h3>Package builder</h3><small>'+st+' · age '+age+' · '+({i:'Individual',s:'Individual + Spouse',c:'Individual + Children',f:'Family'}[householdKey()])+' · prices from the ManhattanLife rate tables</small></div><div class="pb3">';
+  var LINEUPS=[['mh','Manhattan only'],['lx-mh-cg','LifeX · Manhattan · Cigna'],['mh-mh-cg','Manhattan · Manhattan · Cigna'],['lx-lx-cg','LifeX · LifeX + add-ons · Cigna']];
+  var lineupBar='<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 12px"><span style="font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--muted);text-transform:uppercase">Lineup</span>'
+    +LINEUPS.map(function(L){ var on=(S.lineup||'mh')===L[0]; return '<button type="button" data-lineup="'+L[0]+'" style="font:inherit;font-size:13px;font-weight:600;border-radius:999px;padding:7px 14px;cursor:pointer;border:1px solid '+(on?'var(--navy)':'#d6cdb4')+';background:'+(on?'var(--navy)':'#fff')+';color:'+(on?'#fff':'var(--ink)')+'">'+L[1]+'</button>'; }).join('')+'</div>';
+  var html=lineupBar+'<div class="bh"><h3>Package builder</h3><small>'+st+' · age '+age+' · '+({i:'Individual',s:'Individual + Spouse',c:'Individual + Children',f:'Family'}[householdKey()])+' · prices from the ManhattanLife rate tables</small></div><div class="pb3">';
   tiers.forEach(function(T){
     var t=T[0], c=effCfg(t), pk=S.packages[t]||{products:[]}, dropped=pk.dropped||[];
     var built=buildTierProducts(c,null,[]), byK={}; built.forEach(function(p){ byK[p.k]=p; });
     var byKpk={}; (pk.products||[]).forEach(function(p){ if(p.k) byKpk[p.k]=p; });
-    html+='<div class="pbcol'+(S.recommended===t?' rec':'')+'" data-t="'+t+'"><div class="ph"><span class="tt">'+T[1]+'</span><b>'+T[2]+'</b></div>';
+    html+='<div class="pbcol'+(S.recommended===t?' rec':'')+'" data-t="'+t+'"><div class="ph"><span class="tt">'+T[1]+'</span><b>'+T[2]+'</b></div>'
+      +'<div style="padding:0 12px 4px"><select data-act="base" aria-label="Base plan" style="width:100%;font:inherit;font-size:13px;padding:6px 8px;border:1px solid #d6cdb4;border-radius:7px">'+pbOpts([['afc','Base: Manhattan Affordable Choice'],['lifex','Base: LifeX'],['triad','Base: Cigna (Triad) PPO']],c.base||'afc')+'</select></div>';
     var sum=0, addable=[];
     PB_SLOTS.forEach(function(sl){
       var k=sl.k, inCfg=(k==='hhc'?!!c.hhc:k==='chas'?!!(c.chas&&(c.chas.cancer||c.chas.hs)):true);
+      var isMH=!c.base||c.base==='afc';
+      if(k==='base'&&isMH) return; if((k==='afc'||k==='sdr')&&!isMH) return;
+      if(k==='base') sl={k:'base',name:c.base==='lifex'?'LifeX health plan':'Cigna (Triad) PPO'};
       if(k==='dvh'){ if(dropped.indexOf('dvh')<0&&byK.dvh) sum+=+byK.dvh.monthly||0; return; }   // Dental: add-on bar below
       var why=pbWhyNot(k,c,st,age); if(/not sold in/.test(why)) return;   // never offer what the state doesn't sell
       if(!inCfg||dropped.indexOf(k)>=0){ addable.push(sl); return; }
@@ -3527,13 +3565,24 @@ function renderBuilder(){
       if(el.dataset.f==='chas.cancer'||el.dataset.f==='chas.hs'){ if(!c.chas.cancer&&!c.chas.hs){ var pk=S.packages[t]; pk.dropped=pk.dropped||[]; pk.dropped.push('chas'); } }
       pbReprice(); }; });
   });
+  host.querySelectorAll('[data-act="base"]').forEach(function(sel){ sel.onchange=function(){ var t=sel.closest('.pbcol').dataset.t; effCfg(t).base=sel.value; S.lineup='custom'; PB_OPEN[t+'|base']=sel.value!=='afc'; pbReprice(); }; });
+  host.querySelectorAll('[data-lineup]').forEach(function(b){ b.onclick=function(){ pbApplyLineup(b.dataset.lineup); }; });
   host.querySelectorAll('[data-act="dvh"]').forEach(function(el){ el.onchange=function(){ ['good','better','best'].forEach(function(t){ pbSet(effCfg(t),el.dataset.f,el.value); }); pbReprice(); }; });
   var inc=host.querySelector('[data-act="dvhinc"]'); if(inc) inc.onchange=function(){ S.dvhChoice=inc.checked?'included':'addon'; ['good','better','best'].forEach(function(t){ var pk=S.packages[t]; pk.dropped=(pk.dropped||[]).filter(function(x){ return x!=='dvh'; }); if(!inc.checked) pk.dropped.push('dvh'); }); pbReprice(); };
+}
+/* Lineup presets — Jesse, 2026-09-27: Manhattan only; LifeX good / Manhattan better / Cigna best;
+   Manhattan, Manhattan, Cigna; LifeX good, LifeX + supplements better, Cigna best (for clients who don't qualify for Manhattan). */
+function pbApplyLineup(id){
+  var map={'mh':['afc','afc','afc'],'lx-mh-cg':['lifex','afc','triad'],'mh-mh-cg':['afc','afc','triad'],'lx-lx-cg':['lifex','lifex','triad']}[id]; if(!map) return;
+  ['good','better','best'].forEach(function(t,i){ var c=effCfg(t), pk=S.packages[t]; c.base=map[i]; pk.dropped=(pk.dropped||[]).filter(function(k){ return k==='dvh'; });
+    if(id==='lx-lx-cg'&&t==='good') ['his','acc','gap','hhc','chas'].forEach(function(k){ pk.dropped.push(k); }); });
+  S.lineup=id; pbReprice();
 }
 function pbWhyNot(k,c,st,age){
   var R=HF_RATES, hh=householdKey(), r=null;
   try{
-    if(k==='afc') r=pAFC(R,st,age,hh,c.afc); else if(k==='sdr') r=pSDR(R,st,age,hh,c.sdr,false); else if(k==='his') r=pHIS(R,st,age,hh,c.his);
+    if(k==='base') r=c.base==='lifex'?pLIFEX(age,hh,c.lifexPlan||'$500 PPO'):pTRIAD(age,hh,c.triadPlan||'3500');
+    else if(k==='afc') r=pAFC(R,st,age,hh,c.afc); else if(k==='sdr') r=pSDR(R,st,age,hh,c.sdr,false); else if(k==='his') r=pHIS(R,st,age,hh,c.his);
     else if(k==='acc') r=pACC(R,hh,c.acc); else if(k==='gap') r=pGAP(R,st,age,hh,c.gap); else if(k==='hhc') r=pHHC(R,st,age,c.hhc); else if(k==='chas') r=pCHAS(st,age,hh,c.chas);
   }catch(e){}
   return (r&&r.note)||'No rate for this client.';
@@ -3547,6 +3596,7 @@ compute();
 goStep(S.step||'intake');
 loadMaster();
 loadPortalRates();
+loadBaseRates();
 </script>
 </body>
 </html>
