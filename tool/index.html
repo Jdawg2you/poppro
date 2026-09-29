@@ -462,6 +462,9 @@ body.client #classicWrap>summary{display:none}
 .acarow input{text-align:right;border:1px solid var(--line);border-radius:7px;padding:6px 8px;font:inherit;width:100%;box-sizing:border-box;background:#fff}
 .acarow input.typed{border-color:var(--navy);background:#eef3fa}
 .acarow button{border:0;background:transparent;color:var(--muted);cursor:pointer;font-size:15px}
+.acarow a.jump,.acahead a.hspop{color:#9a5b00;text-decoration:none;border-bottom:1px dotted #d9b36a;cursor:pointer}
+.acahead a.hspop{letter-spacing:.06em}
+.jumpflash{outline:3px solid #f0c75e!important;outline-offset:3px;transition:outline-color .3s}
 .acaflags{font-size:12px;padding:6px 0}.acaflags div{padding:3px 0}.acaflags .warn{color:#a33}
 .acatrue{display:flex;gap:18px;flex-wrap:wrap;align-items:center;border-top:2px solid var(--navy);margin-top:6px;padding-top:8px;font-family:var(--serif);color:var(--navy)}
 .acatrue b{font-size:18px;margin-left:6px}.acatrue label{font-family:inherit;font-size:12px;color:var(--muted)}
@@ -649,17 +652,18 @@ body.client #classicWrap>summary{display:none}
     </div>
     <div class="note" id="curNote" style="padding-top:4px"></div>
 
-    <div class="intake-sec" id="sec_aca">ACA / Marketplace <span class="secnote">— estimated from state, ages, household and income · confirm on</span> <a href="https://www.healthsherpa.com/sessions/new" target="_blank" rel="noopener" class="seclink">HealthSherpa ↗</a></div>
+    <div class="intake-sec" id="sec_aca">ACA / Marketplace <span class="secnote">— estimated from state, ages, household and income · confirm on</span> <a href="https://www.healthsherpa.com/sessions/new" target="_blank" rel="noopener" class="seclink hspop">HealthSherpa ↗</a></div>
     <div class="intakegrid" style="grid-template-columns:1fr 1fr">
       <div class="fld"><label>ACA status</label><select id="in_aca_status" class="selfld">
+        <option value="na">Not applicable</option>
         <option value="open">Can enroll — open enrollment or a special enrollment event</option>
         <option value="onaca">Already on an ACA plan</option>
-        <option value="outside">Outside enrollment — calculate only</option></select></div>
-      <div style="display:flex;align-items:flex-end;padding-bottom:2px"><label class="chip tone-yellow"><input type="checkbox" id="in_aca_show" checked> Show the ACA on the presentation</label></div>
+        <option value="outside">Outside open enrollment — calculate only</option></select></div>
+      <div style="display:flex;align-items:flex-end;padding-bottom:2px"><label class="chip tone-yellow"><input type="checkbox" id="in_aca_show" checked> Show the ACA as the anchor on the presentation</label></div>
     </div>
     <div class="acabox">
       <div class="acanote" id="acaBasis"></div>
-      <div class="acahead"><span>ACA bronze</span><span>Estimate</span><span>HealthSherpa / actual</span><span></span></div>
+      <div class="acahead"><span>ACA bronze</span><span>Estimate</span><span><a href="https://www.healthsherpa.com/sessions/new" class="hspop" title="Opens HealthSherpa in its own window">HealthSherpa ↗</a> / actual</span><span></span></div>
       <div id="acaRows"></div>
       <div class="acaflags" id="acaFlags"></div>
       <div class="acatrue">
@@ -1364,7 +1368,7 @@ function acaPeople(){
   return p;
 }
 function acaEstimate(){ return acaEstimateCore({st:S.client.state, people:acaPeople(), income:householdIncome()}); }
-function acaIn(){ S.acaIn=S.acaIn||{status:'open',show:true,fullded:true,ov:{}}; S.acaIn.ov=S.acaIn.ov||{}; return S.acaIn; }
+function acaIn(){ S.acaIn=S.acaIn||{status:'na',show:true,fullded:true,ov:{}}; S.acaIn.ov=S.acaIn.ov||{}; return S.acaIn; }
 function curIn(){ S.cur=S.cur||{}; return S.cur; }
 /* Resolve every ACA figure (typed > current ACA plan > estimate) into S.aca, the object the
    quote page and true cost already read. */
@@ -1402,13 +1406,13 @@ function renderAca(){
   var net=Math.max(0,(+S.aca.prem||0)-(+S.aca.subsidy||0));
   host.innerHTML=
      row('prem','Monthly premium','lowest-cost bronze, before any subsidy',r.prem,e.ok?e.bronze:null)
-    +row('subsidy','Monthly subsidy (APTC)','applied to the premium, never the deductible',r.subsidy,e.ok?e.subsidy:null)
+    +row('subsidy','Monthly subsidy (APTC)',(e.ok&&e.fpl==null&&r.subsidy.src!=='typed')?'<a class="jump" data-jump="in_pincome">fill out income to see the potential subsidy ↓</a>':'applied to the premium, never the deductible',r.subsidy,e.ok?e.subsidy:null)
     +calc('Net monthly premium','premium − subsidy',fmt2(net))
     +row('ded','Annual deductible',e.ok&&e.size>1?'family':'individual',r.ded,e.ok?e.ded:null)
     +row('oop','Out-of-pocket max',e.ok&&e.size>1?'family':'individual',r.oop,e.ok?e.oop:null)
     +row('visit','Cost per doctor visit','bronze visits usually count toward the deductible',r.visit,e.ok?e.visit:null)
-    +calc('Doctor visits / year',(+I.visits||0)?'from Doctors':'from Doctors — not asked yet',String(+I.visits||0))
-    +calc('Medications / month','ACA copay column, from Medications',fmt2(+S.aca.med||0));
+    +calc('Doctor visits / year',(+I.visits||0)?'from Doctors':'<a class="jump" data-jump="in_visits">complete in the Doctors section ↑</a>',String(+I.visits||0))
+    +calc('Medications / month',(+S.aca.med||0)?'ACA copay column, from Medications':'<a class="jump" data-jump="sec_meds">complete in the Medications section ↑</a>',fmt2(+S.aca.med||0));
   var yrLbl=e.ok?('<b class="est">Estimate</b> '+e.st+' '+e.year+' average for '+e.size+(e.size>1?' people':' person')
       +(e.fpl!=null?' · income '+fmt(e.income)+' = '+Math.round(e.fpl)+'% of poverty level':' · add income to estimate the subsidy')
       +'. Type the real numbers from HealthSherpa over any of them.'):('<b class="est">Estimate</b> '+e.why+'.');
@@ -1426,10 +1430,15 @@ function renderAca(){
   $('acaTrueHow').textContent='Annual = net premium × 12'+(S.aca.fullded?' + deductible':'')+' + medications × 12 + visits × cost per visit.';
   host.querySelectorAll('[data-ov]').forEach(function(inp){ inp.oninput=function(){ var v=inp.value.replace(/[^0-9.]/g,''); A.ov[inp.dataset.ov]=v===''?null:+v; acaSync(); autosave(); renderAcaTotalsOnly(); };
     inp.onchange=function(){ renderAca(); }; });
+  host.querySelectorAll('[data-jump]').forEach(function(a){ a.onclick=function(ev){ ev.preventDefault(); intakeJump(a.dataset.jump); }; });
   host.querySelectorAll('[data-clr]').forEach(function(b){ b.onclick=function(){ A.ov[b.dataset.clr]=null; acaSync(); autosave(); renderAca(); }; });
   var cn=$('curNote'); if(cn){ var C=curIn(), ct=curTrue();
     cn.innerHTML=(+C.prem>0)?('Current true cost ≈ <b>'+fmt2(ct.mo)+'</b>/mo · '+fmt2(ct.yr)+'/yr (they pay'+((S.acaIn.fullded!==false)?' + deductible':'')+' + visits × copay)'+((+C.emp>0)?' · real cost with employer share '+fmt2((+C.prem||0)+(+C.emp||0))+'/mo':'')):''; }
 }
+/* Jump to a field on the intake, flash it, and put the cursor in it. */
+function intakeJump(id){ var el=$(id); if(!el) return; el.scrollIntoView({behavior:'smooth',block:'center'});
+  el.classList.add('jumpflash'); setTimeout(function(){ el.classList.remove('jumpflash'); },1600);
+  if(el.focus&&/INPUT|SELECT|TEXTAREA/.test(el.tagName)) setTimeout(function(){ el.focus({preventScroll:true}); },450); }
 function renderAcaTotalsOnly(){ var t=acaTrueParts(); if($('acaTrueMo')) $('acaTrueMo').textContent=fmt2(t.mo); if($('acaTrueYr')) $('acaTrueYr').textContent=fmt2(t.yr); }
 function renderAcaNote(){
   var e=S.acaRes?S.acaRes.e:acaEstimate(), r=S.acaRes;
@@ -1948,7 +1957,7 @@ function blankState(){
     include:{good:true,better:true,best:true},   // agent toggle — which tiers reach the client view & printout
     showTfra:true,                                // agent toggle — hide the TFRA section from client view & printout
     showPop:true,                                 // agent toggle — hide the POP Score from client view
-    acaIn:{status:'open',show:true,fullded:true,ov:{}},   // ACA section: typed HealthSherpa figures win over the estimate
+    acaIn:{status:'na',show:true,fullded:true,ov:{}},   // ACA section: typed HealthSherpa figures win over the estimate
     cur:{},                                        // Current Insurance — what they have today
     lastBasis:'',
     follow:{},
@@ -3229,7 +3238,7 @@ function fillIntake(){
   $('in_carrier').value=I.carrier||''; $('in_plan').value=I.plan||'';
   var C=curIn(); ['prem','emp','ded','oop','copay'].forEach(function(k){ $('in_cur_'+k).value=(+C[k])?fmtMoneyStr(String(C[k])):''; });
   $('in_cur_isaca').checked=!!C.isAca; $('in_cur_show').checked=!!C.show; $('in_visits').value=I.visits||'';
-  var A=acaIn(); $('in_aca_status').value=A.status||'open'; $('in_aca_show').checked=A.show!==false; $('in_aca_fullded').checked=A.fullded!==false;
+  var A=acaIn(); $('in_aca_status').value=A.status||'na'; $('in_aca_show').checked=A.show!==false; $('in_aca_fullded').checked=A.fullded!==false;
   $('in_pincome').value=I.pincome?fmtMoneyStr(String(I.pincome)):''; $('in_sincome').value=I.sincome?fmtMoneyStr(String(I.sincome)):'';
   $('in_income').value=I.income?fmtMoneyStr(String(I.income)):''; $('in_retage').value=I.retage||''; $('in_savings').value=I.savings?fmtMoneyStr(String(I.savings)):''; $('in_invest').value=I.invest?fmtMoneyStr(String(I.invest)):''; $('in_invprot').checked=!!I.invprot; $('in_invsra').checked=!!I.invsra; $('in_invnote').value=I.invnote||'';
   $('in_budget').value=I.budget||''; $('in_budget_comfort').value=I.budgetComfort||''; $('in_priority').value=I.priority||'coverage'; $('in_notes').value=I.notes||'';
@@ -3654,6 +3663,8 @@ function bindInputs(){
   ['in_cur_isaca','in_cur_show','in_aca_fullded'].forEach(function(id){ $(id).addEventListener('change',function(){ captureIntake(); syncChips(); }); });
   $('in_aca_status').addEventListener('change',function(){ $('in_aca_show').checked=(this.value!=='outside'); captureIntake(); syncChips(); });
   $('in_aca_show').addEventListener('change',function(){ captureIntake(); syncChips(); });
+  document.querySelectorAll('a.hspop').forEach(function(a){ a.addEventListener('click',function(ev){ ev.preventDefault();
+    var w=window.open(a.href,'healthsherpa','width=1200,height=900'); if(w) w.opener=null; else window.open(a.href,'_blank','noopener'); }); });
   /* Typing on the quote page is the same as typing on the intake: it becomes the actual figure. */
   [['a_prem','prem'],['a_ded','ded'],['a_oop','oop'],['a_copay','visit']].forEach(function(m){ var el=$(m[0]); if(el) el.addEventListener('input',function(){ acaIn().ov[m[1]]=el.value===''?null:+el.value; }); });
   if($('a_visits')) $('a_visits').addEventListener('input',function(){ S.intake.visits=+this.value||0; });
