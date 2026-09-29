@@ -396,6 +396,9 @@
 .pbrow.off{opacity:.55}
 .pbhead{display:flex;align-items:center;gap:6px;padding:8px 4px 8px 12px;min-height:40px}
 .pbhead .nm{font-weight:700;font-size:14px;color:var(--ink)}
+.pbhead input.pbprice{width:92px;font:inherit;font-weight:700;font-size:15px;color:var(--navy);text-align:right;padding:5px 6px;border:1.5px solid var(--gold);border-radius:7px;background:#fffdf7}
+.pbrow.edited{border-color:var(--gold)}
+.edtag{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;background:var(--gold);color:#12213b;border-radius:999px;padding:1px 7px;margin-left:4px;vertical-align:middle}
 .pbhead .nm .cov{display:block;font-weight:500;font-size:12px;color:var(--muted);margin-top:2px;line-height:1.35}
 .pbhead .pr{margin-left:auto;font-weight:700;font-variant-numeric:tabular-nums;color:var(--navy);white-space:nowrap}
 .pbhead .pr.na{color:var(--muted);font-weight:500;font-size:12px}
@@ -3595,11 +3598,16 @@ function renderBuilder(){
           +'<div class="pbnote">'+pbWhyNot(k,c,st,age)+'</div></div>';
         return;
       }
-      sum+=+price||0; var open=PB_OPEN[t+'|'+k];
-      html+='<div class="pbrow"><div class="pbhead"><span class="nm">'+sl.name+'<span class="cov">'+pbSummary(k,c,live)+'</span></span><span class="pr">'+pbMoney(price)+'</span>'
+      sum+=+price||0; var open=PB_OPEN[t+'|'+k], edited=!!(live&&live.manual);
+      var prHtml=open?'<span class="pr"><span style="font-weight:600;color:var(--muted)">$</span><input class="pbprice" type="number" step="0.01" min="0" data-k="'+k+'" value="'+(+price).toFixed(2)+'" aria-label="Monthly price for '+sl.name+'"></span>'
+                    :'<span class="pr">'+pbMoney(price)+'</span>';
+      html+='<div class="pbrow'+(edited?' edited':'')+'"><div class="pbhead"><span class="nm">'+sl.name+(edited?' <span class="edtag">edited</span>':'')+'<span class="cov">'+pbSummary(k,c,live)+'</span></span>'+prHtml
         +'<button class="pbib" data-act="tog" data-k="'+k+'" aria-label="Change '+sl.name+'">'+(open?'▴':'▾')+'</button>'
         +'<button class="pbib" data-act="rm" data-k="'+k+'" title="Remove" aria-label="Remove '+sl.name+'">✕</button></div>'
-        +(open?'<div class="pbbody" data-k="'+k+'">'+pbControls(k,c)+'</div>':'')+'</div>';
+        +(open?'<div class="pbbody" data-k="'+k+'">'+pbControls(k,c)
+          +(edited?'<div style="font-size:12px;color:var(--maroon)">Price typed in by hand. <a href="#" data-act="unedit" data-k="'+k+'">↺ Use the rate-table price</a></div>'
+                  :'<div style="font-size:11.5px;color:var(--muted)">Click the price to type over it if a rate looks wrong.</div>')
+          +'</div>':'')+'</div>';
     });
     (pk.products||[]).forEach(function(p,i){ if(p.k) return; sum+=+p.monthly||0;
       html+='<div class="pbrow"><div class="pbhead"><span class="nm">'+p.name.replace(/</g,'&lt;')+'<br><span style="font-size:11px;font-weight:500;color:var(--maroon)">typed in — not from the rate tables</span></span><span class="pr">'+pbMoney(p.monthly)+'</span>'
@@ -3635,7 +3643,11 @@ function renderBuilder(){
       if(k==='lb*'||k==='lbp'||k==='lbs'){ c.lb=c.lb||{}; (k==='lb*'?lbPersons().map(function(pp){ return pp.k; }):[k.slice(2)]).forEach(function(w){ if(!(c.lb[w]&&c.lb[w].face)) c.lb[w]=cfgClone(PB_DEFAULT.lb); pk.dropped=pk.dropped.filter(function(x){ return x!=='lb'+w; }); PB_OPEN[t+'|lb'+w]=true; }); pbReprice(); return; }
       if(k==='hhc'&&!c.hhc) c.hhc=PB_DEFAULT.hhc; if(k==='chas'&&!(c.chas&&(c.chas.cancer||c.chas.hs))) c.chas=cfgClone(PB_DEFAULT.chas);
       PB_OPEN[t+'|'+k]=true; pbReprice(); }; });
-    col.querySelectorAll('.pbbody select, .pbbody input').forEach(function(el){ el.onchange=function(){ var c=effCfg(t); pbSet(c,el.dataset.f, el.type==='checkbox'?(el.checked?1:0):el.value);
+    col.querySelectorAll('input.pbprice').forEach(function(inp){ inp.onchange=function(){ var v=parseFloat(inp.value); var pk=S.packages[t]; var pr=(pk.products||[]).filter(function(x){ return x.k===inp.dataset.k; })[0]; if(!pr) return;
+      if(isNaN(v)||v<0){ delete pr.manual; } else { pr.monthly=Math.round(v*100)/100; pr.manual=true; } pbReprice(); }; inp.onkeydown=function(e){ if(e.key==='Enter') inp.blur(); }; });
+    col.querySelectorAll('[data-act="unedit"]').forEach(function(a){ a.onclick=function(e){ e.preventDefault(); var pr=(S.packages[t].products||[]).filter(function(x){ return x.k===a.dataset.k; })[0]; if(pr) delete pr.manual; pbReprice(); }; });
+    col.querySelectorAll('.pbbody select, .pbbody input[type="checkbox"]').forEach(function(el){ el.onchange=function(){ var c=effCfg(t); pbSet(c,el.dataset.f, el.type==='checkbox'?(el.checked?1:0):el.value);
+      var kk=el.closest('.pbbody').dataset.k, pr=(S.packages[t].products||[]).filter(function(x){ return x.k===kk; })[0]; if(pr) delete pr.manual;   // new options → rate-table price again
       if(el.dataset.f==='chas.cancer'||el.dataset.f==='chas.hs'){ if(!c.chas.cancer&&!c.chas.hs){ var pk=S.packages[t]; pk.dropped=pk.dropped||[]; pk.dropped.push('chas'); } }
       pbReprice(); }; });
   });
