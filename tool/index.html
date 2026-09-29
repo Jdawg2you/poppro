@@ -396,6 +396,7 @@
 .pbrow.off{opacity:.55}
 .pbhead{display:flex;align-items:center;gap:6px;padding:8px 4px 8px 12px;min-height:40px}
 .pbhead .nm{font-weight:700;font-size:14px;color:var(--ink)}
+.pbhead .nm .cov{display:block;font-weight:500;font-size:12px;color:var(--muted);margin-top:2px;line-height:1.35}
 .pbhead .pr{margin-left:auto;font-weight:700;font-variant-numeric:tabular-nums;color:var(--navy);white-space:nowrap}
 .pbhead .pr.na{color:var(--muted);font-weight:500;font-size:12px}
 .pbib{border:0;background:transparent;width:36px;height:36px;border-radius:8px;cursor:pointer;color:var(--muted);font-size:15px;flex:none}
@@ -904,8 +905,8 @@ var HF_RATES={"afc":{"lv":["ElitePlus","Elite","ClassicPlus","Classic"],"g":[{"s
    benefits; Comprehensive adds the separate Cancer / Heart & Stroke plan and heavier living benefits.
    SDR and Home Health Care are off the defaults (available under ＋). Dental is an add-on. */
 var TIERCFG={
- best:  {afc:'ElitePlus',  sdr:null, his:{ben:10000,amb:1,outp:1000},acc:2,gap:{daily:'200',adm:'5000',outp:'1000',ea:1},dvh:{max:'3000',ded:'0'},hhc:null, chas:{cancer:20000,hs:10000}, lb:{face:'50000',carrier:'moo'}},
- better:{afc:'Elite',      sdr:null, his:{ben:10000,amb:1,outp:500}, acc:2,gap:{daily:'100',adm:'2500',outp:'1000',ea:1},dvh:{max:'1500',ded:'0'},hhc:null, chas:null,                   lb:{face:'25000',carrier:'moo'}},
+ best:  {afc:'ElitePlus',  sdr:null, his:{ben:10000,amb:1,outp:1000},acc:2,gap:{daily:'200',adm:'5000',outp:'1000',ea:1},dvh:{max:'3000',ded:'0'},hhc:null, chas:{cancer:20000,hs:10000}, lb:{p:{face:'50000',carrier:'moo'},s:{face:'50000',carrier:'moo'}}},
+ better:{afc:'Elite',      sdr:null, his:{ben:10000,amb:1,outp:500}, acc:2,gap:{daily:'100',adm:'2500',outp:'1000',ea:1},dvh:{max:'1500',ded:'0'},hhc:null, chas:null,                   lb:{p:{face:'25000',carrier:'moo'},s:{face:'25000',carrier:'moo'}}},
  good:  {afc:'ClassicPlus',sdr:null, his:{ben:10000,amb:1,outp:0},   acc:1,gap:{daily:'100',adm:'2500',outp:0,     ea:1},dvh:{max:'1500',ded:'0'},hhc:null, chas:null,                   lb:null}
 };
 var DEDSTEP={'100000':'75000','75000':'50000','50000':'25000','25000':'25000'};
@@ -1061,6 +1062,12 @@ function pGAP(R,st,age,hh,cfg){
 /* Living benefits as a package product: one 20-year term policy per covered adult (primary, and spouse
    if covered). Mutual of Omaha TLE is the default (Jacob: 3-month chargeback vs Americo's 6); where MoO
    can't price someone (over 50, or sex not entered) it falls back to Americo Term 125 and says so. */
+function pLB1(pp,lc){
+  var car=lc.carrier||'moo', r=lbRate(car,pp.age,pp.sex,pp.tob,lc.face,'20'), note='';
+  if(r.price==null&&car==='moo'){ var r2=lbRate('americo',pp.age,pp.sex,pp.tob,lc.face,'20'); if(r2.price!=null){ note='Americo used — Mutual of Omaha: '+(r.note||'n/a'); r=r2; car='americo'; } }
+  if(r.price==null) return {price:null,note:pp.tag+': '+(r.note||'no term rate')};
+  return {price:r.price,note:note,carrier:LB_RATES[car].label};
+}
 function pLB(cfg){
   var ps=lbPersons(), tot=0, used=[], notes=[];
   if(!ps.length) return {price:null,note:'no covered adults'};
@@ -1404,7 +1411,8 @@ function buildTierProducts(c,byKey,extras){
   add('gap','Out-of-Pocket / Gap — $'+c.gap.daily+'/day · $'+c.gap.adm+' admission', pGAP(R,st,age,hh,c.gap));
   add('dvh','Dental • Vision • Hearing — DVH Select $'+(+c.dvh.max/1000)+'K', pDVH(R,age,hh,c.dvh,st));
   if(c.hhc) add('hhc','Home Health Care — HHC '+c.hhc, pHHC(R,st,age,c.hhc));
-  if(c.lb&&c.lb.face) add('lb','Living Benefits — term life $'+(+c.lb.face/1000)+'K each, 20-year', pLB(c.lb));
+  if(c.lb){ lbPersons().forEach(function(pp){ var lc=c.lb[pp.k]; if(!lc||!lc.face) return;
+    var r=pLB1(pp,lc); add('lb'+pp.k,'Living Benefits — '+pp.tag+' $'+(+lc.face/1000)+'K term life, 20-year ('+(r.carrier||'')+')', r); }); }
   if(c.chas&&(c.chas.cancer||c.chas.hs)) add('chas','Cancer / Heart Attack & Stroke — CHAS'+(c.chas.cancer?' Cancer $'+(c.chas.cancer/1000)+'K':'')+(c.chas.hs?(c.chas.cancer?' ·':'')+' Heart & Stroke $'+(c.chas.hs/1000)+'K':''), pCHAS(st,age,hh,c.chas));
   return out.concat(extras||[]);
 }
@@ -1458,7 +1466,7 @@ function popSuggestions(tier){
   var hasName=function(re){ return extras.some(function(p){ return re.test((p.name||'').toLowerCase()); }); };
   cand('Add Cancer lump sum ($20K, CHAS)',function(x){ if(x.chas&&x.chas.cancer) return false; x.chas={cancer:20000,hs:(x.chas&&x.chas.hs)||0}; });
   cand('Add Heart Attack & Stroke ($10K, CHAS)',function(x){ if(x.chas&&x.chas.hs) return false; x.chas={cancer:(x.chas&&x.chas.cancer)||0,hs:10000}; });
-  if(!(+pk.lb>0)&&!(pk.products||[]).some(function(p){ return p.k==='lb'; })) cand('Add Living Benefits',function(x){ if(x.lb&&x.lb.face) return false; x.lb={face:'25000',carrier:'moo'}; });
+  if(!(+pk.lb>0)&&!(pk.products||[]).some(function(p){ return /^lb/.test(p.k||''); })) cand('Add Living Benefits',function(x){ if(x.lb&&(x.lb.p||x.lb.s)) return false; x.lb={}; lbPersons().forEach(function(pp){ x.lb[pp.k]={face:'25000',carrier:'moo'}; }); });
   cand('Upgrade AFC to Elite Plus',function(x){ if(x.afc==='ElitePlus') return false; x.afc='ElitePlus'; });
   cand('Raise Specified Disease max to $500K',function(x){ if(!x.sdr||x.sdr.max==='500000') return false; x.sdr.max='500000'; });
   cand('Lower Specified Disease deductible one step',function(x){ if(!x.sdr) return false; var n=DEDSTEP[x.sdr.ded]; if(!n||n===x.sdr.ded) return false; x.sdr.ded=n; });
@@ -3074,7 +3082,7 @@ function recommendBundles(){
     chas :{name:'Cancer / Heart Attack & Stroke — Lump Sum',monthly:74.00}
   };
   // Version B: every product is rate-driven from TIERCFG — no flat placeholder prices. Dental starts as an add-on.
-  S.cfg={}; S.dvhChoice='addon';
+  S.cfg={}; S.dvhChoice='addon'; S.cfgVersion='B-core4-v2';
   S.packages={
     good:{products:[],dropped:['dvh'],lb:0,lbCarrier:'',lbCov:'',med:0,rxBenefit:0},
     better:{products:[],dropped:['dvh'],lb:0,lbCarrier:'',lbCov:'',med:0,rxBenefit:0},
@@ -3496,11 +3504,13 @@ var PB_SLOTS=[
  {k:'acc', name:'24-Hour Accident'},
  {k:'gap', name:'Out-of-Pocket Protection'},
  {k:'chas',name:'Cancer / Heart Attack & Stroke'},
- {k:'lb',  name:'Living benefits (term life)'},
+ {k:'lbp', name:'Living benefits — Primary'},
+ {k:'lbs', name:'Living benefits — Spouse'},
  {k:'hhc', name:'Home Health Care'},
  {k:'dvh', name:'Dental · Vision · Hearing'}
 ];
 var PB_DEFAULT={hhc:'Classic', chas:{cancer:20000,hs:0}, sdr:{max:'250000',ded:'50000'}, lb:{face:'25000',carrier:'moo'}};
+function pbHasSpouse(){ return lbPersons().some(function(p){ return p.k==='s'; }); }
 function pbMoney(v){ return '$'+(+v).toFixed(2); }
 function pbOpts(list,cur){ return list.map(function(o){ return '<option value="'+o[0]+'"'+(String(o[0])===String(cur)?' selected':'')+'>'+o[1]+'</option>'; }).join(''); }
 function pbAmt(a){ return a.map(function(v){ return [v, v? '$'+Number(v).toLocaleString('en-US') : 'None']; }); }
@@ -3519,22 +3529,41 @@ function pbControls(k,c){
   if(k==='chas'){ var a=[0]; for(var v=5000;v<=75000;v+=5000) a.push(v);
     return '<div class="two"><div class="f">Cancer<select data-f="chas.cancer">'+pbOpts(pbAmt(a),c.chas.cancer)+'</select></div><div class="f">Heart attack &amp; stroke<select data-f="chas.hs">'+pbOpts(pbAmt(a),c.chas.hs)+'</select></div></div>'
     +'<div style="font-size:11.5px;color:var(--muted)">Two separate policies — if the budget shrinks, drop Heart &amp; Stroke first.</div>'; }
-  if(k==='lb') return '<div class="two"><div class="f">Coverage each<select data-f="lb.face">'+pbOpts([['25000','$25,000'],['50000','$50,000']],c.lb.face)+'</select></div><div class="f">Carrier<select data-f="lb.carrier">'+pbOpts([['moo','Mutual of Omaha'],['americo','Americo']],c.lb.carrier||'moo')+'</select></div></div>'
-    +'<div style="font-size:11.5px;color:var(--muted)">20-year term with living benefits, one policy per covered adult. $100K and 30-year rates aren’t loaded yet.</div>';
+  if(k==='lbp'||k==='lbs'){ var w=k.slice(2), lc=c.lb[w]; return '<div class="two"><div class="f">Coverage<select data-f="lb.'+w+'.face">'+pbOpts([['25000','$25,000'],['50000','$50,000']],lc.face)+'</select></div><div class="f">Carrier<select data-f="lb.'+w+'.carrier">'+pbOpts([['moo','Mutual of Omaha'],['americo','Americo']],lc.carrier||'moo')+'</select></div></div>'
+    +'<div style="font-size:11.5px;color:var(--muted)">20-year term with living benefits for this person. $100K and 30-year rates aren’t loaded yet.</div>'; }
   if(k==='hhc') return '<div class="f">Plan<select data-f="hhc">'+pbOpts([['Classic','Classic'],['Premier','Premier'],['Deluxe','Deluxe']],c.hhc)+'</select></div>';
   if(k==='dvh') return '<div class="two"><div class="f">Annual max<select data-f="dvh.max">'+pbOpts(pbAmt(['1000','1500','3000','5000']),c.dvh.max)+'</select></div><div class="f">Deductible<select data-f="dvh.ded">'+pbOpts([['0','$0'],['100','$100']],c.dvh.ded)+'</select></div></div>';
+  return '';
+}
+/* What each row actually buys — shown under the product name so the price never stands alone. */
+function pbSummary(k,c,live){
+  var m=function(v){ return '$'+Number(v).toLocaleString('en-US'); };
+  if(k==='base') return c.base==='lifex'?(c.lifexPlan||'$500 PPO')+' · '+((LX&&LX.plans[c.lifexPlan||'$500 PPO']||{}).family||''):'$'+Number(c.triadPlan||3500).toLocaleString('en-US')+' deductible PPO';
+  if(k==='afc') return LVLNAME[c.afc]+' plan';
+  if(k==='sdr') return m(c.sdr.max)+' annual max · '+m(c.sdr.ded)+' deductible';
+  if(k==='his') return m(c.his.ben)+' per hospital stay'+(+c.his.outp?' · '+m(c.his.outp)+' outpatient surgery':'')+' · ambulance';
+  if(k==='acc') return c.acc+' unit'+(c.acc>1?'s':'')+' · up to '+m(2000*c.acc)+' accident medical';
+  if(k==='gap') return m(c.gap.daily)+'/day in hospital · '+m(c.gap.adm)+' admission'+(+c.gap.outp?' · '+m(c.gap.outp)+' outpatient':'')+(c.gap.ea?' · $250 ER':'');
+  if(k==='chas') return [c.chas.cancer?'Cancer '+m(c.chas.cancer):'',c.chas.hs?'Heart attack & stroke '+m(c.chas.hs):''].filter(Boolean).join(' · ')+' lump sum';
+  if(k==='hhc') return c.hhc+' plan';
+  if(k==='lbp'||k==='lbs'){ var lc=c.lb[k.slice(2)]; return m(lc.face)+' term life · 20-year · '+((live&&live.name||'').match(/\(([^)]+)\)$/)||[,'Mutual of Omaha'])[1]; }
   return '';
 }
 function pbSet(c,path,val){
   var p=path.split('.'); var num=/^(acc|his\.ben|his\.outp|his\.amb|gap\.ea|chas\.cancer|chas\.hs)$/.test(path);
   var v=num?+val:String(val);
-  if(p.length===1) c[p[0]]=v; else { c[p[0]]=c[p[0]]||{}; c[p[0]][p[1]]=v; }
+  if(p.length===1) c[p[0]]=v;
+  else if(p.length===2){ c[p[0]]=c[p[0]]||{}; c[p[0]][p[1]]=v; }
+  else { c[p[0]]=c[p[0]]||{}; c[p[0]][p[1]]=c[p[0]][p[1]]||{}; c[p[0]][p[1]][p[2]]=v; }
 }
 function pbReprice(){ autoPriceTiers(); fill(); compute(); autosave(); }
 function renderBuilder(){
   var host=$('sec_builder'); if(!host) return;
   var st=(S.client.state||'').toUpperCase(), age=ratingAge();
   if(!st||!age){ host.innerHTML='<div class="bh"><h3>Package builder</h3><small>Enter the client’s state and age on the Intake to build packages.</small></div>'; return; }
+  // Version B structure (2026-09-29): saved quotes from before it carry old per-package settings (SDR in
+  // every tier, a flat $45 life line). Reset those once so every package starts from the core four.
+  if(S.cfgVersion!=='B-core4-v2'){ S.cfgVersion='B-core4-v2'; S.cfg={}; ['good','better','best'].forEach(function(t){ var pk=S.packages[t]; if(!pk) return; pk.lb=0; pk.lbCarrier=''; pk.lbCov=''; pk.dropped=(pk.dropped||[]).filter(function(k){ return k==='dvh'; }); }); setTimeout(pbReprice,0); }
   // Jesse's standard: dental is an add-on, outside the package price. Applied once per quote.
   if(!S.dvhChoice){ S.dvhChoice='addon'; ['good','better','best'].forEach(function(t){ var pk=S.packages[t]; pk.dropped=pk.dropped||[]; if(pk.dropped.indexOf('dvh')<0) pk.dropped.push('dvh'); }); setTimeout(pbReprice,0); }
   var tiers=[['good','Good','Essential'],['better','Better','Complete'],['best','Best','Comprehensive']], totals={};
@@ -3551,7 +3580,9 @@ function renderBuilder(){
       +'<div style="padding:0 12px 4px"><select data-act="base" aria-label="Base plan" style="width:100%;font:inherit;font-size:13px;padding:6px 8px;border:1px solid #d6cdb4;border-radius:7px">'+pbOpts([['afc','Base: Manhattan Affordable Choice'],['lifex','Base: LifeX'],['triad','Base: Cigna (Triad) PPO']],c.base||'afc')+'</select></div>';
     var sum=0, addable=[];
     PB_SLOTS.forEach(function(sl){
-      var k=sl.k, inCfg=(k==='hhc'?!!c.hhc:k==='chas'?!!(c.chas&&(c.chas.cancer||c.chas.hs)):k==='sdr'?!!c.sdr:k==='lb'?!!(c.lb&&c.lb.face):true);
+      var k=sl.k; if(k==='lbs'&&!pbHasSpouse()) return;
+      var lbk=(k==='lbp'||k==='lbs')?k.slice(2):null;
+      var inCfg=(k==='hhc'?!!c.hhc:k==='chas'?!!(c.chas&&(c.chas.cancer||c.chas.hs)):k==='sdr'?!!c.sdr:lbk?!!(c.lb&&c.lb[lbk]&&c.lb[lbk].face):true);
       var isMH=!c.base||c.base==='afc';
       if(k==='base'&&isMH) return; if((k==='afc'||k==='sdr')&&!isMH) return;
       if(k==='base') sl={k:'base',name:c.base==='lifex'?'LifeX health plan':'Cigna (Triad) PPO'};
@@ -3565,7 +3596,7 @@ function renderBuilder(){
         return;
       }
       sum+=+price||0; var open=PB_OPEN[t+'|'+k];
-      html+='<div class="pbrow"><div class="pbhead"><span class="nm">'+sl.name+'</span><span class="pr">'+pbMoney(price)+'</span>'
+      html+='<div class="pbrow"><div class="pbhead"><span class="nm">'+sl.name+'<span class="cov">'+pbSummary(k,c,live)+'</span></span><span class="pr">'+pbMoney(price)+'</span>'
         +'<button class="pbib" data-act="tog" data-k="'+k+'" aria-label="Change '+sl.name+'">'+(open?'▴':'▾')+'</button>'
         +'<button class="pbib" data-act="rm" data-k="'+k+'" title="Remove" aria-label="Remove '+sl.name+'">✕</button></div>'
         +(open?'<div class="pbbody" data-k="'+k+'">'+pbControls(k,c)+'</div>':'')+'</div>';
@@ -3573,8 +3604,11 @@ function renderBuilder(){
     (pk.products||[]).forEach(function(p,i){ if(p.k) return; sum+=+p.monthly||0;
       html+='<div class="pbrow"><div class="pbhead"><span class="nm">'+p.name.replace(/</g,'&lt;')+'<br><span style="font-size:11px;font-weight:500;color:var(--maroon)">typed in — not from the rate tables</span></span><span class="pr">'+pbMoney(p.monthly)+'</span>'
         +'<button class="pbib" data-act="rmx" data-i="'+i+'" title="Remove" aria-label="Remove '+p.name.replace(/"/g,'')+'">✕</button></div></div>'; });
-    if(+pk.lb){ sum+=+pk.lb; html+='<div class="pbrow"><div class="pbhead"><span class="nm">Living benefits (term life)<br><span style="font-size:11px;font-weight:500;color:var(--muted)">'+((pk.lbCarrier||'')+' '+(pk.lbCov||'')).trim().replace(/</g,'&lt;')+'</span></span><span class="pr">'+pbMoney(pk.lb)+'</span></div></div>'; }
+
     if(+pk.med){ sum+=+pk.med; html+='<div class="pbrow"><div class="pbhead"><span class="nm">Medications</span><span class="pr">'+pbMoney(pk.med)+'</span></div></div>'; }
+    var lbMissing=addable.filter(function(sl){ return sl.k==='lbp'||sl.k==='lbs'; });
+    var lbAll=lbMissing.length===(pbHasSpouse()?2:1);
+    if(lbAll&&lbMissing.length>1){ addable=addable.filter(function(sl){ return sl.k!=='lbp'&&sl.k!=='lbs'; }); addable.push({k:'lb*',name:'Living benefits (each covered adult)'}); }
     if(addable.length) html+='<div class="pbadd"><select data-act="add" aria-label="Add a product"><option value="">＋ Add product</option>'+addable.map(function(sl){ return '<option value="'+sl.k+'">'+sl.name+'</option>'; }).join('')+'</select></div>';
     totals[t]=sum;
     html+='<div class="pbtot"><b>Monthly</b><span>'+pbMoney(sum)+'</span></div></div>';
@@ -3597,7 +3631,8 @@ function renderBuilder(){
     col.querySelectorAll('[data-act="rmx"]').forEach(function(b){ b.onclick=function(){ S.packages[t].products.splice(+b.dataset.i,1); pbReprice(); }; });
     col.querySelectorAll('[data-act="add"]').forEach(function(sel){ sel.onchange=function(){ var k=sel.value; if(!k) return; var c=effCfg(t), pk=S.packages[t];
       pk.dropped=(pk.dropped||[]).filter(function(x){ return x!==k; });
-      if(k==='sdr'&&!c.sdr) c.sdr=cfgClone(PB_DEFAULT.sdr); if(k==='lb'&&!(c.lb&&c.lb.face)) c.lb=cfgClone(PB_DEFAULT.lb);
+      if(k==='sdr'&&!c.sdr) c.sdr=cfgClone(PB_DEFAULT.sdr);
+      if(k==='lb*'||k==='lbp'||k==='lbs'){ c.lb=c.lb||{}; (k==='lb*'?lbPersons().map(function(pp){ return pp.k; }):[k.slice(2)]).forEach(function(w){ if(!(c.lb[w]&&c.lb[w].face)) c.lb[w]=cfgClone(PB_DEFAULT.lb); pk.dropped=pk.dropped.filter(function(x){ return x!=='lb'+w; }); PB_OPEN[t+'|lb'+w]=true; }); pbReprice(); return; }
       if(k==='hhc'&&!c.hhc) c.hhc=PB_DEFAULT.hhc; if(k==='chas'&&!(c.chas&&(c.chas.cancer||c.chas.hs))) c.chas=cfgClone(PB_DEFAULT.chas);
       PB_OPEN[t+'|'+k]=true; pbReprice(); }; });
     col.querySelectorAll('.pbbody select, .pbbody input').forEach(function(el){ el.onchange=function(){ var c=effCfg(t); pbSet(c,el.dataset.f, el.type==='checkbox'?(el.checked?1:0):el.value);
@@ -3636,7 +3671,7 @@ function pbWhyNot(k,c,st,age){
   try{
     if(k==='base') r=c.base==='lifex'?pLIFEX(age,hh,c.lifexPlan||'$500 PPO'):pTRIAD(age,hh,c.triadPlan||'3500');
     else if(k==='afc') r=pAFC(R,st,age,hh,c.afc); else if(k==='sdr') r=pSDR(R,st,age,hh,c.sdr,false); else if(k==='his') r=pHIS(R,st,age,hh,c.his);
-    else if(k==='acc') r=pACC(R,hh,c.acc); else if(k==='lb') r=pLB(c.lb); else if(k==='gap') r=pGAP(R,st,age,hh,c.gap); else if(k==='hhc') r=pHHC(R,st,age,c.hhc); else if(k==='chas') r=pCHAS(st,age,hh,c.chas);
+    else if(k==='acc') r=pACC(R,hh,c.acc); else if(k==='lbp'||k==='lbs'){ var pp=lbPersons().filter(function(x){ return 'lb'+x.k===k; })[0]; r=pp?pLB1(pp,c.lb[k.slice(2)]):{note:'no spouse covered'}; } else if(k==='gap') r=pGAP(R,st,age,hh,c.gap); else if(k==='hhc') r=pHHC(R,st,age,c.hhc); else if(k==='chas') r=pCHAS(st,age,hh,c.chas);
   }catch(e){}
   return (r&&r.note)||'No rate for this client.';
 }
