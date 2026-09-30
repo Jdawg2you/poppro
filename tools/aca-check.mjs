@@ -206,6 +206,11 @@ if (mode === 'engine') {
   // Anchor
   ok(ctx.evAnchorOwe('major', 20000, { oop: 9950 }) === 9950, 'ACA: capped at its out-of-pocket max');
   ok(ctx.evAnchorOwe('everyday', 600, { oop: 9950, visit: 50 }, 'visit', 3) === 150 && ctx.evAnchorOwe('everyday', 6000, { oop: 9950, visit: 50 }, 'osurg', 1) === 6000, 'ACA everyday: visit copay vs full charge before the deductible');
+  // Medical Bill Saver: a Manhattan bill is negotiated down; major medical is not touched; 0 = off.
+  r = ctx.evMajor({ bal: 20000, days: 3, afc: n, negotPct: 40 });
+  ok(r.negotiated === 12000 && r.owe0 === 12000 && Math.abs(r.net - (12000 - r.pays)) < 0.01, 'negotiation lowers a Manhattan bill (40% of $20,000 -> $12,000)');
+  ok(ctx.evMajor({ bal: 20000, days: 3, major: { oop: 7350 }, negotPct: 40 }).negotiated === null, 'negotiation never applies to major medical');
+  ok(ctx.evMajor({ bal: 20000, days: 3, afc: n, negotPct: 0 }).owe0 === 20000, 'no percentage = no negotiation');
   if (!fails) console.log('event checks passed');
 } else if (mode === 'pop') {
   const a = html.indexOf('/* ACA-ENGINE:BEGIN */'), b = html.indexOf('/* ACA-ENGINE:END */');

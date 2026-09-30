@@ -325,6 +325,9 @@
   .bdsrc{padding:10px 16px 0;font-size:11px;color:var(--muted)}.bdsrc a{color:#8a6a1f}.bdtip{padding:4px 16px 0;font-size:11px;color:#8a6a1f}
   .bdempty{padding:18px 16px;font-size:13px;color:var(--muted)}
   @media(max-width:640px){.bendrawer.wide{width:100vw}.bdrow.cmp,.bdcmphead{grid-template-columns:1fr 1fr 1fr}}
+  .negbar{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;font-size:13px;padding:8px 0}.negbar small{color:#8a6a1f;flex-basis:100%}
+  #printout .negtog{margin-left:auto;font:600 12px -apple-system,sans-serif;border:1px solid #fff;background:transparent;color:#fff;border-radius:999px;padding:4px 12px;cursor:pointer}#printout .negtog.on{background:#2f9e56;border-color:#2f9e56}
+  @media print{#printout .negtog{display:none!important}}
   .pbshow{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);padding:0 0 6px}
   .pbcol.excl{opacity:.55}
   .tfrahint{font-size:12px;color:var(--navy);background:#fbf9f2;border:1px solid var(--line);border-top:none;padding:8px 12px;line-height:1.6}
@@ -935,6 +938,9 @@ body.client #classicWrap>summary{display:none}
         <label><input type="checkbox" id="b_acc"> Caused by an accident</label>
         <select id="b_dx" class="selfld" style="max-width:220px"><option value="">No cancer / heart / stroke diagnosis</option><option value="cancer">Cancer diagnosis</option><option value="heart">Heart attack</option><option value="stroke">Stroke</option></select></div></div>
     </div>
+    <div class="negbar hidein-client"><label><input type="checkbox" id="neg_on"> Medical Bill Saver (care negotiation) on Manhattan packages</label>
+      <span>average reduction <input id="neg_pct" type="number" min="0" max="90" step="1" placeholder="%" style="width:64px"> %</span>
+      <small id="neg_note"></small></div>
     <div id="evMajor" class="evwrap"></div>
   </div>
 
@@ -1503,8 +1509,10 @@ function evMajor(p){ var parts=[], pays=0, days=+p.days||0, bal=Math.max(0,+p.ba
   if(p.gap&&p.er&&p.acc&&p.gap.ea) add('Out-of-Pocket — ER accident',250);
   if(p.accU&&p.acc){ add('24-Hour Accident — medical',Math.min(bal,2000*p.accU)); add('24-Hour Accident — hospital days',150*p.accU*Math.min(days,30)); }
   if(p.chas&&p.dx==='cancer') add('Cancer lump sum',p.chas.cancer); if(p.chas&&(p.dx==='heart'||p.dx==='stroke')) add('Heart attack & stroke lump sum',p.chas.hs);
-  var owe0=p.major?Math.min(bal,+p.major.oop||bal):bal;
-  return {pays:pays,parts:parts,owe0:owe0,net:owe0-pays}; }
+  /* Medical Bill Saver negotiates a Manhattan client's bill down; a major-medical plan already has network pricing. */
+  var negotiated=(!p.major&&+p.negotPct>0)?Math.round(bal*(1-(+p.negotPct)/100)*100)/100:null;
+  var owe0=p.major?Math.min(bal,+p.major.oop||bal):(negotiated!=null?negotiated:bal);
+  return {pays:pays,parts:parts,owe0:owe0,net:owe0-pays,negotiated:negotiated}; }
 /* p: {type:'visit'|'urgent'|'er'|'osurg'|'imaging', charge (each), count, afc, hisOutp, gapOutp, major:{visit,urgent}} */
 function evEveryday(p){ var c=Math.max(1,+p.count||1), ch=Math.max(0,+p.charge||0), bill=ch*c, parts=[], pays=0;
   var add=function(lab,v){ v=Math.round((+v||0)*100)/100; if(v>0){ parts.push({lab:lab,v:v}); pays+=v; } };
@@ -2096,6 +2104,7 @@ function blankState(){
     },
     pension:{monthly:0,note:'e.g., IUL / tax-free retirement savings for your future',cv10:0,cv20:0,cv30:0,leg1:0,leg25:0},
     big:{desc:'Hospital stay – 7 days',charge:41660.41,disc:18747.18,days:7,er:1,amb:0,acc:0,dx:''},
+    negot:{on:false,pct:null},   // Medical Bill Saver - % stays blank until a ManhattanLife source is on file
     reg:{desc:'Outpatient knee surgery',type:'osurg',count:1,charge:6000},
     intake:{who:{app:true,spouse:false,kids:false},phone:'',email:'',tobaccoP:false,tobaccoS:false,maternityP:false,maternityS:false,maternity:false,dv:false,famcancerP:false,famcancerS:false,famcancer:false,famheartP:false,famheartS:false,famheart:false,mentalP:false,mentalS:false,mental:false,surg2yrP:false,surg2yrS:false,surg2yr:false,majorcond:false,majorcondNote:'',diabetic:false,diabeticNote:'',health:'',income:0,pincome:0,sincome:0,hhManual:false,retage:'',savings:0,invest:0,invprot:false,invsra:false,invnote:'',docs1:'',docs2:'',docs3:'',keepaca:'',keepafc:'',docnote:'',medList:[],budget:0,priority:'coverage',notes:'',carrier:'',plan:'',pheight:'',pweight:'',sheight:'',sweight:'',psex:'',ssex:'',kidsNote:'',routeNote:'',docsNote:'',whyShop:'',effDate:''},
     recommended:'best',
@@ -2815,7 +2824,7 @@ function fill(){
   $('p_pension').value=(+S.pension.monthly)?fmtMoneyStr(String(S.pension.monthly)):'';$('p_pnote').value=S.pension.note;
   ;['cv10','cv20','cv30','leg1','leg25'].forEach(function(k){ $('pp_'+k).value=(+S.pension[k])?fmtMoneyStr(String(S.pension[k])):''; });
   $('b_desc').value=S.big.desc;$('b_charge').value=S.big.charge;$('b_disc').value=S.big.disc;$('b_days').value=S.big.days;$('b_er').checked=!!S.big.er;$('b_amb').checked=!!S.big.amb;$('b_acc').checked=!!S.big.acc;$('b_dx').value=S.big.dx||'';
-  $('r_desc').value=S.reg.desc;$('r_charge').value=S.reg.charge;$('r_type').value=S.reg.type||'visit';$('r_count').value=S.reg.count||1;
+  $('r_desc').value=S.reg.desc;S.negot=S.negot||{on:false,pct:null}; $('neg_on').checked=!!S.negot.on; $('neg_pct').value=S.negot.pct==null?'':S.negot.pct; $('r_charge').value=S.reg.charge;$('r_type').value=S.reg.type||'visit';$('r_count').value=S.reg.count||1;
   $('tl_good').textContent=S.tabLabels.good;$('tl_better').textContent=S.tabLabels.better;$('tl_best').textContent=S.tabLabels.best;
   document.querySelectorAll('#tabs button').forEach(function(b){b.classList.toggle('on',b.dataset.tab===S.activeTab);b.classList.toggle('rec',b.dataset.tab===S.recommended);});
   S.include=S.include||{good:true,better:true,best:true};
@@ -2830,6 +2839,7 @@ function read(){
   var pk=S.packages[S.activeTab]; pk.lb=+$('p_lb').value||0; pk.rxBenefit=+$('p_rxben').value||0; pk.lbCarrier=$('p_lb_carrier').value; pk.lbCov=$('p_lb_cov').value;
   S.pension={monthly:moneyNum($('p_pension').value),note:$('p_pnote').value,cv10:moneyNum($('pp_cv10').value),cv20:moneyNum($('pp_cv20').value),cv30:moneyNum($('pp_cv30').value),leg1:moneyNum($('pp_leg1').value),leg25:moneyNum($('pp_leg25').value)};
   S.big={desc:$('b_desc').value,charge:+$('b_charge').value||0,disc:+$('b_disc').value||0,days:+$('b_days').value||0,er:$('b_er').checked?1:0,amb:$('b_amb').checked?1:0,acc:$('b_acc').checked?1:0,dx:$('b_dx').value};
+  S.negot={on:$('neg_on').checked,pct:$('neg_pct').value===''?null:+$('neg_pct').value};
   S.reg={desc:$('r_desc').value,charge:+$('r_charge').value||0,type:$('r_type').value,count:+$('r_count').value||1};
 }
 
@@ -3180,13 +3190,14 @@ function buildPrintout(){
 
   /* ---- event illustrations: every package side by side against the anchor ---- */
   var showEvents=false, evM=evTableHTML('major'), evE=evTableHTML('everyday');
-  if(evM){ showEvents=true; html+='<div class="po-event"><div class="band">If a major event happens'+(S.big.desc?' <span class="d">'+esc(S.big.desc)+'</span>':'')+'</div>'+evM+'</div>'; }
+  if(evM){ showEvents=true; html+='<div class="po-event"><div class="band">If a major event happens'+(S.big.desc?' <span class="d">'+esc(S.big.desc)+'</span>':'')+negToggleHTML()+'</div>'+evM+'</div>'; }
   if(evE){ showEvents=true; html+='<div class="po-event"><div class="band">On an everyday event'+(S.reg.desc?' <span class="d">'+esc(S.reg.desc)+'</span>':'')+'</div>'+evE+'</div>'; }
   if(showEvents) html+='<div class="po-illus">The examples above are for illustrative purposes only, shown to demonstrate how the coverage responds. The actual event, length of stay, and benefits paid vary by person and policy.</div>';
 
   html+=renderAfcPartnersHTML(true);
   html+='<div class="po-foot">'+esc(agency)+' — Package of Protection. Figures are estimates from the inputs provided; confirm exact benefits in the policy / ARC. ManhattanLife plans are limited-benefit indemnity coverage, not major medical.</div>';
   $('printout').innerHTML=html;
+  $('printout').querySelectorAll('[data-negtog]').forEach(function(b){ b.onclick=function(){ S.negot.on=!S.negot.on; $('neg_on').checked=S.negot.on; compute(); autosave(); }; });
 }
 
 function currentQuote(){read();return JSON.parse(JSON.stringify(S));}
@@ -3527,7 +3538,8 @@ function bindInputs(){
    'b_desc','b_charge','b_disc','b_days','r_desc','r_charge','r_count']
    .forEach(function(id){ $(id).addEventListener('input',compute); });
   $('a_fullded').addEventListener('change',compute);
-  ['b_er','b_amb','b_acc','b_dx','r_type'].forEach(function(id){ $(id).addEventListener('change',compute); });
+  ['b_er','b_amb','b_acc','b_dx','r_type','neg_on'].forEach(function(id){ $(id).addEventListener('change',compute); });
+  $('neg_pct').addEventListener('input',compute);
   ['in_keepaca','in_keepafc'].forEach(function(id){ $(id).addEventListener('change',function(){ readIntake(); autosave(); }); });
   document.querySelectorAll('#tabs button').forEach(function(b){ b.onclick=function(){ read(); S.activeTab=b.dataset.tab; fill(); compute(); }; });
   ['good','better','best'].forEach(function(t){ var c=$('inc_'+t); if(c) c.onchange=function(){ S.include=S.include||{}; S.include[t]=c.checked; updateTabVisibility(); compute(); autosave(); }; });
@@ -3796,7 +3808,7 @@ function evTableHTML(kind){ var tiers=evIncluded(); if(!tiers.length) return '';
   var A=evAnchor(), B=anchorBase(), res=[], bill, head;
   if(kind==='major'){ var b=S.big; bill=Math.max(0,(+b.charge||0)-(+b.disc||0)); if(!(bill>0)) return '';
     head=fmt2(bill)+' after the network discount · '+(+b.days||0)+' day'+(+b.days===1?'':'s')+' in the hospital'+(b.er?' · through the ER':'')+(b.amb?' · ambulance':'')+(b.acc?' · accident':'')+(b.dx?' · '+b.dx+' diagnosis':'');
-    tiers.forEach(function(T){ var o=evTierPack(T[0]); res.push({T:T,o:o,r:evMajor({bal:bill,days:b.days,er:b.er,amb:b.amb,acc:b.acc,dx:b.dx,afc:o.afc,his:o.his,gap:o.gap,accU:o.accU,chas:o.chas,major:o.major})}); }); }
+    tiers.forEach(function(T){ var o=evTierPack(T[0]); res.push({T:T,o:o,r:evMajor({bal:bill,days:b.days,er:b.er,amb:b.amb,acc:b.acc,dx:b.dx,afc:o.afc,his:o.his,gap:o.gap,accU:o.accU,chas:o.chas,major:o.major,negotPct:negOn()?S.negot.pct:0})}); }); }
   else { var r=S.reg, cnt=Math.max(1,+r.count||1); bill=(+r.charge||0)*cnt; if(!(bill>0)) return '';
     head=({visit:'Doctor visit',urgent:'Urgent care',er:'ER visit',osurg:'Outpatient surgery',imaging:'MRI / CT scan'}[r.type]||'Visit')+' · '+cnt+'× at '+fmt2(+r.charge||0)+' = '+fmt2(bill);
     tiers.forEach(function(T){ var o=evTierPack(T[0]); res.push({T:T,o:o,r:evEveryday({type:r.type,charge:r.charge,count:cnt,afc:o.afc,hisOutp:o.hisOutp,gapOutp:o.gapOutp,major:o.major})}); }); }
@@ -3805,6 +3817,8 @@ function evTableHTML(kind){ var tiers=evIncluded(); if(!tiers.length) return '';
   h+='<div class="c l"></div>'+(A?'<div class="c h anc">'+A.lab+'</div>':'')+res.map(function(x){ return '<div class="c h">'+x.T[1]+'</div>'; }).join('');
   h+='<div class="c l">Your plan pays</div>'+(A?'<div class="c anc">'+fmt2(Math.max(0,bill-aOwe))+'<small>toward the bill</small></div>':'')
     +res.map(function(x){ return '<div class="c">'+(x.o.unknown&&!x.r.pays?'—':fmt2(x.r.pays+(x.o.major?Math.max(0,bill-x.r.owe0):0)))+'<small>'+(x.o.major?'plan + cash benefits':'paid to you')+'</small></div>'; }).join('');
+  if(kind==='major'&&negOn()) h+='<div class="c l">Bill after Medical Bill Saver <small>'+S.negot.pct+'% average reduction</small></div>'+(A?'<div class="c anc">—<small>network price already</small></div>':'')
+    +res.map(function(x){ return '<div class="c">'+(x.r.negotiated!=null?fmt2(x.r.negotiated):'—<small>major medical</small>')+'</div>'; }).join('');
   h+='<div class="c l">You pay <small>(or receive)</small></div>'+(A?'<div class="c anc big">'+fmt2(aOwe)+(A.note?'<small>'+A.note+'</small>':'')+'</div>':'')
     +res.map(function(x){ var n=x.r.net; return '<div class="c big '+(n<=0?'up':'dn')+'">'+(x.o.unknown&&!x.r.pays?'<small>'+x.o.unknown+'</small>':(n<=0?'You receive '+fmt2(-n):'You pay '+fmt2(n)))+'</div>'; }).join('');
   if(A&&B){ h+='<div class="c l">This year <small>premium savings + this event</small></div><div class="c anc">—</div>'
@@ -3813,8 +3827,13 @@ function evTableHTML(kind){ var tiers=evIncluded(); if(!tiers.length) return '';
   var parts=res.filter(function(x){ return x.r.parts.length; }).map(function(x){ return '<b>'+x.T[1]+':</b> '+x.r.parts.map(function(p){ return p.lab+' '+fmt2(p.v); }).join(' · '); }).join('<br>');
   if(parts) h+='<details class="evparts hidein-client"><summary>How each package pays</summary>'+parts+'<div>Surgery benefits on Affordable Choice are paid on the policy fee schedule and are not included here — the real payout is higher.</div></details>';
   return h; }
+function negOn(){ var n=S.negot||{}; return !!n.on&&+n.pct>0; }
+function negToggleHTML(){ var n=S.negot||{}; if(!(+n.pct>0)) return '';
+  return '<button type="button" class="negtog noprint'+(n.on?' on':'')+'" data-negtog="1">Medical Bill Saver: '+(n.on?'On':'Off')+'</button>'; }
 function renderEvents(){ var need=['afc','triad'].filter(function(f){ return !BEN_DATA[f]; });
   if(need.length&&!renderEvents._loading){ renderEvents._loading=true; Promise.all(need.map(function(f){ return benLoad(f).catch(function(){}); })).then(function(){ renderEvents._loading=false; renderEvents(); if(document.body.classList.contains('client')) buildPrintout(); }); }
+  var nn=$('neg_note'); if(nn) nn.textContent=(+(S.negot||{}).pct>0)?'':'Enter the average reduction from ManhattanLife’s Medical Bill Saver material to use this — no figure is on file yet.';
+  if($('neg_on')) $('neg_on').disabled=!(+(S.negot||{}).pct>0);
   if($('evMajor')) $('evMajor').innerHTML=evTableHTML('major')||'<div class="note">Enter the billed charges to see what each package pays.</div>';
   if($('evEveryday')) $('evEveryday').innerHTML=evTableHTML('everyday')||'<div class="note">Enter the charge to see what each package pays.</div>';
   var bh=$('o_big_desc_h'); if(bh) bh.textContent=S.big.desc||''; var rh=$('o_reg_desc_h'); if(rh) rh.textContent=S.reg.desc||''; }
