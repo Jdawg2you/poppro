@@ -1764,10 +1764,23 @@ function acaEstFlags(){ var A=acaIn(), C=curIn(), ov=A.ov, onAca=(A.status==='on
 /* The one baseline every savings figure uses - builder, client view, printout. */
 function anchorBase(){ var k=(S.intake&&S.intake.anchor)||'aca';
   if(k==='aca'){ if(!(+S.aca.prem>0)) return null;   // nothing priced yet (a full subsidy still has a gross premium)
-    var t=acaTrueParts(); return {k:'aca',lab:'ACA bronze',short:'ACA',your:'your marketplace plan',prem:t.net+(+S.aca.med||0),premOnly:t.net,mo:t.mo,yr:t.yr,ded:+S.aca.ded||0}; }
+    var t=acaTrueParts(), v=+((S.intake||{}).visits)||0, cp=+S.aca.copay||0, cm=v*cp/12;
+    return {k:'aca',lab:'ACA bronze',short:'ACA',your:'your marketplace plan',prem:t.net+cm,premOnly:t.net,copayMo:cm,visits:v,copay:cp,mo:t.mo,yr:t.yr,ded:+S.aca.ded||0}; }
   if(k==='cur'){ var C=curIn(); if(!(+C.prem>0)) return null; var c=curTrue();
-    return {k:'cur',lab:'Current plan',short:'current plan',your:'your current plan',prem:(+C.prem)+(+S.curMed||0),premOnly:+C.prem,mo:c.mo,yr:c.yr,ded:+C.ded||0}; }
+    var v2=+((S.intake||{}).visits)||0, cp2=+C.copay||0, cm2=v2*cp2/12;
+    return {k:'cur',lab:'Current plan',short:'current plan',your:'your current plan',prem:(+C.prem)+cm2,premOnly:+C.prem,copayMo:cm2,visits:v2,copay:cp2,mo:c.mo,yr:c.yr,ded:+C.ded||0}; }
   return null; }
+/* The package's side of 'premium vs premium': its premiums plus any doctor copays it charges (a
+   Cigna copay x visits / 12). Medications are left out on both sides - a separate bucket. */
+function pkgPremMo(t){ var pk=S.packages[t]||{}, m=tierTotals(t).mo-(+pk.med||0), x=null;
+  if(popIsMajor(t)){ x=popInputsFor(effCfg(t),pk.products); m+=(+((S.intake||{}).visits)||0)*((x.major&&x.major.visit)||0)/12; }
+  return m; }
+function pkgCopayMo(t){ return pkgPremMo(t)-(tierTotals(t).mo-(+(S.packages[t]||{}).med||0)); }
+/* The small line under 'Premium vs premium' that shows the copays folded in. */
+function copayNote(B,t){ var bits=[];
+  if(B&&B.copayMo>0) bits.push(B.short+' side incl. '+fmt2(B.copayMo)+'/mo doctor copays ('+B.visits+' visits × '+fmt2(B.copay)+' ÷ 12)');
+  var pc=t?pkgCopayMo(t):0; if(pc>0) bits.push('package incl. '+fmt2(pc)+'/mo copays');
+  return bits.join(' · '); }
 function anchorNote(){ var el=$('anchorNote'); if(!el) return; var k=$('in_anchor').value;
   el.innerHTML=k==='none'?'No savings figures — the quote just compares the Good, Better and Best packages with each other.'
     :(k==='cur'&&!(+curIn().prem>0)?'<span style="color:var(--maroon)">Add their current premium under Current Insurance, or nothing is compared.</span>'
@@ -3089,7 +3102,7 @@ function compute(){
   var bPrem=B?B.premOnly:0, bMo=B?B.mo:0, bYr=B?B.yr:0;
   if($('o_sav_head')) $('o_sav_head').textContent='YOUR SAVINGS vs '+(B?B.short.toUpperCase():'—');
   if($('o_tot_net_lab')) $('o_tot_net_lab').textContent='Still ahead vs '+(B?B.short:'—');
-  var sv=anchorSavings(B,pMo,pMo+tierTrue(S.activeTab).extra)||{actual:0,tru:0};
+  var sv=anchorSavings(B,pkgPremMo(S.activeTab),pMo+tierTrue(S.activeTab).extra)||{actual:0,tru:0};
   var aMo=sv.actual, aYr=aMo*12;
   var tMo=sv.tru, tYr=tMo*12;
   $('o_sav_amo').textContent=saves(aMo,'/mo');$('o_sav_ayr').textContent=saves(aYr,'/yr');
@@ -3280,9 +3293,9 @@ function buildPrintout(){
       if(+x.pk.lb>0) html+='<div class="po-li"><span>Living Benefits'+(x.pk.lbCarrier?' — '+esc(x.pk.lbCarrier):'')+'</span><span>'+fmt2(+x.pk.lb)+'</span></div>';
       if(+x.pk.med>0) html+='<div class="po-li"><span>Medications (net)</span><span>'+fmt2(+x.pk.med)+'</span></div>';
       html+='</div><div class="po-tot"><div class="m"><span>Monthly</span><b>'+fmt2(x.mo)+'</b></div><div class="a"><span>Annual</span><span>'+fmt2(x.yr)+'</span></div></div>';
-      if(base){ var ttx=tierTrue(x.t), sv=anchorSavings(base,x.mo,x.mo+ttx.extra), vs=base.k==='aca'?'your marketplace plan':'your current plan';
+      if(base){ var ttx=tierTrue(x.t), sv=anchorSavings(base,pkgPremMo(x.t),x.mo+ttx.extra), cpn=copayNote(B,x.t), vs=base.k==='aca'?'your marketplace plan':'your current plan';
         var ln=function(lab,v){ return '<div class="ln"><span>'+lab+'</span><b class="'+(v>=0?'up':'dn')+'">'+(v>=0?'saves ':'costs ')+fmt2(Math.abs(v))+'/mo'+(v>=0?'':' more')+'</b></div>'; };
-        html+='<div class="po-save"><div class="vs">Compared with '+vs+'</div>'+ln('Premium',sv.actual)+ln('True cost',sv.tru)+(ttx.note?'<div class="tn">'+ttx.note+'</div>':'')
+        html+='<div class="po-save"><div class="vs">Compared with '+vs+'</div>'+ln('Premium',sv.actual)+(cpn?'<div class="tn">'+cpn+'</div>':'')+ln('True cost',sv.tru)+(ttx.note?'<div class="tn">'+ttx.note+'</div>':'')
           +'<div class="yr '+(sv.tru>=0?'up':'dn')+'">'+(sv.tru>=0?'Ahead '+fmt2(sv.tru*12)+' a year':'Behind '+fmt2(-sv.tru*12)+' a year')+'<small>on true cost</small></div></div>'; }
       var dp=dentalPrice(x.t), hasD=tierHasDental(x.t);
       html+='<div class="po-choose'+(isCh?' on':'')+'" data-choose="'+x.t+'" role="button" tabindex="0"><span class="box">'+(isCh?'☑':'☐')+'</span> This is my plan</div>';
@@ -4052,7 +4065,7 @@ function evTableHTML(kind){ var tiers=evIncluded(); if(!tiers.length) return '';
   h+='<div class="c l">You pay <small>(or receive)</small></div>'+(A?'<div class="c anc big">'+fmt2(aOwe)+(A.note?'<small>'+A.note+'</small>':(A.how&&aOwe>=A.oop?'<small>'+A.how+'</small>':''))+'</div>':'')
     +res.map(function(x){ var n=x.r.net; return '<div class="c big '+(n<=0?'up':'dn')+'">'+(x.o.unknown&&!x.r.pays?'<small>'+x.o.unknown+'</small>':(n<=0?'You receive '+fmt2(-n):'You pay '+fmt2(n)))+'</div>'; }).join('');
   if(A&&B){ h+='<div class="c l">This year <small>premium savings + this event</small></div><div class="c anc">—</div>'
-    +res.map(function(x){ var sv=anchorSavings(B,tierTotals(x.T[0]).mo)||{actual:0}, v=sv.actual*12+(aOwe-x.r.net); return '<div class="c '+(v>=0?'up':'dn')+'">'+(v>=0?'Ahead ':'Behind ')+fmt(Math.abs(v))+'</div>'; }).join(''); }
+    +res.map(function(x){ var sv=anchorSavings(B,pkgPremMo(x.T[0]))||{actual:0}, v=sv.actual*12+(aOwe-x.r.net); return '<div class="c '+(v>=0?'up':'dn')+'">'+(v>=0?'Ahead ':'Behind ')+fmt(Math.abs(v))+'</div>'; }).join(''); }
   h+='</div>';
   if(res.some(function(x){ return !x.o.major; })) h+='<div class="evhow"><b>How the money reaches you:</b> the Manhattan benefits are fixed amounts paid for the event, not a share of the bill. In network, show the card and the provider bills ManhattanLife directly; whatever the benefits pay beyond the bill comes back to you. Out of network, you pay the provider and the benefits are paid to you.</div>';
   var src=kind==='major'?(S.big||{}).src:(S.reg||{}).src; if(src) h+='<div class="evsrc">National average (what insurance pays): '+esc(src)+'</div>';
@@ -4078,7 +4091,7 @@ function renderEvents(){ var need=['afc','triad'].filter(function(f){ return !BE
 function renderTfraHint(){ var el=$('tfraHint'); if(!el) return; var B=anchorBase();
   if(!B){ el.innerHTML='No anchor chosen, so there are no savings to fund a TFRA from. Set one in Budget &amp; Notes.'; return; }
   var inc=evIncluded(); if(!inc.length){ el.innerHTML='No packages are set to show on the quote.'; return; }
-  var rows=inc.map(function(T){ var m0=tierTotals(T[0]).mo, sv=anchorSavings(B,m0,m0+tierTrue(T[0]).extra); return {t:T[0],lab:T[1],mo:m0,room:sv.tfra,tru:sv.tru}; });
+  var rows=inc.map(function(T){ var m0=tierTotals(T[0]).mo, sv=anchorSavings(B,pkgPremMo(T[0]),m0+tierTrue(T[0]).extra); return {t:T[0],lab:T[1],mo:m0,room:sv.tfra,tru:sv.tru}; });
   /* Size to the most expensive package shown: its saving is the smallest, so the TFRA still fits
      whichever package they choose - picking a cheaper one only leaves them more room. */
   var top=rows.slice().sort(function(a,b){ return b.mo-a.mo; })[0], anc=B.k==='aca'?'the ACA bronze':'their current plan';
@@ -4110,7 +4123,7 @@ function renderBuilder(){
   if(!S.dvhChoice){ S.dvhChoice='addon'; ['good','better','best'].forEach(function(t){ var pk=S.packages[t]; pk.dropped=pk.dropped||[]; if(pk.dropped.indexOf('dvh')<0) pk.dropped.push('dvh'); }); setTimeout(pbReprice,0); }
   var tiers=[['good','Good','Essential'],['better','Better','Complete'],['best','Best','Comprehensive']], totals={};
   var anc=anchorBase(), ak=(S.intake&&S.intake.anchor)||'aca';
-  var anchorStrip='<div class="pbanchor">'+(anc?'Anchored against <b>'+anc.lab+'</b>: '+pbMoney(anc.prem)+'/mo premium'+(+S.aca.med&&anc.k==='aca'||+S.curMed&&anc.k==='cur'?' incl. drugs':'')+' · '+pbMoney(anc.mo)+'/mo true cost'
+  var anchorStrip='<div class="pbanchor">'+(anc?'Anchored against <b>'+anc.lab+'</b>: '+pbMoney(anc.prem)+'/mo premium'+(anc.copayMo>0?' + doctor copays':'')+' · '+pbMoney(anc.mo)+'/mo true cost'
       :(ak==='cur'?'Anchor is the current plan, but there is no current premium — add it under Current Insurance.':(ak==='aca'?'Anchor is the ACA bronze, but it has no premium yet — add the state and ages on the Intake.':'No anchor — the packages are only compared with each other.')))
     +' <a href="#" class="jump" data-jumpto="in_anchor">change</a></div>';
   var LINEUPS=[['mh','Manhattan only'],['lx-mh-cg','LifeX · Manhattan · Cigna'],['custom','Custom — you choose each']];
@@ -4168,9 +4181,9 @@ function renderBuilder(){
       +(unavail.length?'<div class="pbna">Not sold in '+st+': '+unavail.join(', ')+'</div>':'')+'</div>';
     totals[t]=sum;
     html+='<div class="pbtot"><b>Monthly</b><span>'+pbMoney(sum)+'</span></div>';
-    var tt=tierTrue(t), sv=anchorSavings(anc,sum,sum+tt.extra);
+    var tt=tierTrue(t), sv=anchorSavings(anc,pkgPremMo(t),sum+tt.extra), cpn=copayNote(anc,t);
     if(sv){ var line=function(lab,v){ return '<div class="sv"><span>'+lab+'</span><b class="'+(v>=0?'up':'dn')+'">'+(v>=0?'saves ':'costs ')+pbMoney(Math.abs(v))+(v>=0?'':' more')+'</b></div>'; };
-      html+='<div class="pbsave">'+line('Premium vs premium',sv.actual)+line('True cost',sv.tru)
+      html+='<div class="pbsave">'+line('Premium vs premium',sv.actual)+(cpn?'<div class="sv" style="font-size:10.5px;color:var(--muted)">'+cpn+'</div>':'')+line('True cost',sv.tru)
         +'<div class="sv tf"><span>Room for a TFRA <i style="font-style:normal;color:var(--muted);font-size:10.5px">(premium saving)</i></span><b>'+(sv.tfra>0?pbMoney(sv.tfra)+'/mo':'—')+'</b></div>'+(tt.note?'<div class="sv" style="color:#8a6a1f;font-size:11px">'+tt.note+'</div>':'')+'</div>'; }
     html+='<button type="button" class="pbchoose'+(chosenTier()===t?' on':'')+'" data-act="choose" title="The package the client is going with — it carries to Client View and Enroll">'+(chosenTier()===t?'✓ Client’s choice — this is their plan':'Choose this plan')+'</button>';
     html+='</div>';
