@@ -342,6 +342,11 @@
   .evtab .c.h.anc,#printout .evtab .c.h.anc{background:var(--maroon)}.evtab .c.anc,#printout .evtab .c.anc{background:#fbf3f1}
   .evtab .c.big,#printout .evtab .c.big{font-family:var(--serif);font-weight:700;font-size:15px}
   .evtab .up,#printout .evtab .up{color:var(--green)}.evtab .dn,#printout .evtab .dn{color:var(--maroon)}
+  .evbill,#printout .evbill{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;padding:10px 2px 8px}
+  .evbill span,#printout .evbill span{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  .evbill b,#printout .evbill b{font-family:var(--serif);font-size:30px;color:var(--navy);line-height:1}
+  .evbill small,#printout .evbill small{flex-basis:100%;font-size:11.5px;color:var(--muted)}
+  .evneg,#printout .evneg{background:#eef6ec;border:1px solid #b7d3b0;border-radius:8px;padding:8px 12px;margin:0 0 8px;font-size:12.5px;color:#1c5a2e}
   .evsrc,#printout .evsrc{font-size:10.5px;color:var(--muted);font-style:italic;padding:5px 2px 0}
   .evparts{font-size:11.5px;color:var(--muted);padding:6px 2px;line-height:1.5}.evparts summary{cursor:pointer;color:#8a6a1f}
   #printout .po-save .vs{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
@@ -941,7 +946,7 @@ body.client #classicWrap>summary{display:none}
         <label><input type="checkbox" id="b_acc"> Caused by an accident</label>
         <select id="b_dx" class="selfld" style="max-width:220px"><option value="">No cancer / heart / stroke diagnosis</option><option value="cancer">Cancer diagnosis</option><option value="heart">Heart attack</option><option value="stroke">Stroke</option></select></div></div>
     </div>
-    <div class="negbar hidein-client"><label><input type="checkbox" id="neg_on"> Medical Bill Saver (care negotiation) on Manhattan packages</label>
+    <div class="negbar hidein-client"><label><input type="checkbox" id="neg_on"> Medical Bill Saver (care negotiation) on the Manhattan packages — both events</label>
       <span>average reduction <input id="neg_pct" type="number" min="0" max="90" step="1" placeholder="%" style="width:64px"> %</span>
       <small id="neg_note"></small></div>
     <div id="evMajor" class="evwrap"></div>
@@ -1526,9 +1531,9 @@ function evEveryday(p){ var c=Math.max(1,+p.count||1), ch=Math.max(0,+p.charge||
     else if(p.type==='er') afcPay=a.er*lim(a.erN); else if(p.type==='osurg') afcPay=a.osurg*c; else if(p.type==='imaging') afcPay=a.mri*c;
     if(a.outLimit) afcPay=Math.min(afcPay,a.outLimit); add('Affordable Choice',afcPay); }
   if(p.type==='osurg'){ add('HI Select — outpatient surgery',+p.hisOutp||0); add('Out-of-Pocket — outpatient surgery',+p.gapOutp||0); }
-  var owe0=bill;
+  var negotiated=(!p.major&&+p.negotPct>0)?Math.round(bill*(1-(+p.negotPct)/100)*100)/100:null, owe0=negotiated!=null?negotiated:bill;
   if(p.major){ if(p.type==='visit'&&p.major.visit) owe0=Math.min(bill,p.major.visit*c); else if(p.type==='urgent'&&p.major.urgent) owe0=Math.min(bill,p.major.urgent*c); }
-  return {pays:pays,parts:parts,owe0:owe0,net:owe0-pays}; }
+  return {pays:pays,parts:parts,owe0:owe0,net:owe0-pays,negotiated:negotiated}; }
 /* The anchor's share: what the client pays on the ACA / their current plan. */
 function evAnchorOwe(kind,bill,A,type,count){ if(!A) return null; var cap=A.oop>0?A.oop:bill;
   if(kind==='everyday'&&type==='visit'&&A.visit>0) return Math.min(bill,A.visit*Math.max(1,+count||1),cap);
@@ -3196,7 +3201,7 @@ function buildPrintout(){
   /* ---- event illustrations: every package side by side against the anchor ---- */
   var showEvents=false, evM=evTableHTML('major'), evE=evTableHTML('everyday');
   if(evM){ showEvents=true; html+='<div class="po-event"><div class="band">If a major event happens'+(S.big.desc?' <span class="d">'+esc(S.big.desc)+'</span>':'')+negToggleHTML()+'</div>'+evM+'</div>'; }
-  if(evE){ showEvents=true; html+='<div class="po-event"><div class="band">On an everyday event'+(S.reg.desc?' <span class="d">'+esc(S.reg.desc)+'</span>':'')+'</div>'+evE+'</div>'; }
+  if(evE){ showEvents=true; html+='<div class="po-event"><div class="band">On an everyday event'+(S.reg.desc?' <span class="d">'+esc(S.reg.desc)+'</span>':'')+negToggleHTML()+'</div>'+evE+'</div>'; }
   if(showEvents) html+='<div class="po-illus">The examples above are for illustrative purposes only, shown to demonstrate how the coverage responds. The actual event, length of stay, and benefits paid vary by person and policy.</div>';
 
   html+=renderAfcPartnersHTML(true);
@@ -3548,10 +3553,14 @@ function bindInputs(){
   $('b_preset').addEventListener('change',function(){ if(this.value) evApplyPreset('major',this.value); else { S.big.preset=''; S.big.src=''; compute(); } });
   $('r_preset').addEventListener('change',function(){ if(this.value) evApplyPreset('everyday',this.value); else { S.reg.preset=''; S.reg.src=''; compute(); } });
   /* A hand-edited figure is no longer the national average - drop the source so it isn't cited. */
-  ['b_charge','b_disc','b_days'].forEach(function(id){ $(id).addEventListener('input',function(){ S.big.preset=''; S.big.src=''; $('b_preset').value=''; compute(); }); });
-  ['r_charge','r_count'].forEach(function(id){ $(id).addEventListener('input',function(){ S.reg.preset=''; S.reg.src=''; $('r_preset').value=''; compute(); }); });
-  ['b_er','b_amb','b_acc','b_dx'].forEach(function(id){ $(id).addEventListener('change',function(){ S.big.preset=''; S.big.src=''; $('b_preset').value=''; compute(); }); });
-  $('r_type').addEventListener('change',function(){ S.reg.preset=''; S.reg.src=''; $('r_preset').value=''; compute(); });
+  /* Leaving a preset: drop its citation, and its name too if the agent hasn't renamed it. */
+  var evCustom=function(kind){ var st=kind==='major'?S.big:S.reg, sel=$(kind==='major'?'b_preset':'r_preset'), de=$(kind==='major'?'b_desc':'r_desc');
+    var pr=EV_PRESETS[kind].filter(function(x){ return x.id===st.preset; })[0]; if(pr&&de.value===pr.desc){ de.value=''; st.desc=''; }
+    st.preset=''; st.src=''; sel.value=''; compute(); };
+  ['b_charge','b_disc','b_days'].forEach(function(id){ $(id).addEventListener('input',function(){ evCustom('major'); }); });
+  ['r_charge','r_count'].forEach(function(id){ $(id).addEventListener('input',function(){ evCustom('everyday'); }); });
+  ['b_er','b_amb','b_acc','b_dx'].forEach(function(id){ $(id).addEventListener('change',function(){ evCustom('major'); }); });
+  $('r_type').addEventListener('change',function(){ evCustom('everyday'); });
   ['in_keepaca','in_keepafc'].forEach(function(id){ $(id).addEventListener('change',function(){ readIntake(); autosave(); }); });
   document.querySelectorAll('#tabs button').forEach(function(b){ b.onclick=function(){ read(); S.activeTab=b.dataset.tab; fill(); compute(); }; });
   ['good','better','best'].forEach(function(t){ var c=$('inc_'+t); if(c) c.onchange=function(){ S.include=S.include||{}; S.include[t]=c.checked; updateTabVisibility(); compute(); autosave(); }; });
@@ -3833,25 +3842,30 @@ function evTierPack(t){ var c=effCfg(t), st=(S.client.state||'').toUpperCase(), 
   if(evHas(t,'base')&&c.base==='lifex') o.unknown='LifeX benefit summary not on file';
   return o; }
 function evAnchor(){ var B=anchorBase(); if(!B) return null;
-  if(B.k==='aca') return {lab:'Your ACA plan',oop:+S.aca.oop||0,visit:+S.aca.copay||0};
+  if(B.k==='aca'){ var fam=acaPeople().length>1, r=S.acaRes||{}, bz=ACA26.bronze||{}, cap=(ACA26.moop2026||{}).self||10600;
+    /* An event happens to one person. ACA family plans must cap each person at the self-only limit
+       (embedded out-of-pocket, federal rule since 2016), so one person's bill stops there. */
+    var oop=+S.aca.oop||0, ded=+S.aca.ded||0, estO=r.oop&&r.oop.src==='est', estD=r.ded&&r.ded.src==='est';
+    if(fam){ oop=estO?Math.min(bz.avgMoop||cap,cap):Math.min(oop,cap); ded=estD?(bz.avgDeductible||ded/2):0; }
+    return {lab:'Your ACA plan',oop:oop,visit:+S.aca.copay||0,how:(ded?'deductible '+fmt(ded)+', then coinsurance — ':'')+'capped at the '+fmt(oop)+(fam?' per-person':'')+' out-of-pocket limit'}; }
   var C=curIn(); return {lab:'Your current plan',oop:+C.oop>0?+C.oop:(+C.ded||0),visit:+C.copay||0,note:+C.oop>0?'':'out-of-pocket max not entered — using their deductible'}; }
 function evMoneyTxt(v){ return (v<0?'+':'')+fmt2(Math.abs(v)); }
 function evTableHTML(kind){ var tiers=evIncluded(); if(!tiers.length) return '';
   var A=evAnchor(), B=anchorBase(), res=[], bill, head;
   if(kind==='major'){ var b=S.big; bill=Math.max(0,(+b.charge||0)-(+b.disc||0)); if(!(bill>0)) return '';
-    head=fmt2(bill)+' after the network discount · '+((+b.days||0)>0?(+b.days)+' day'+(+b.days===1?'':'s')+' in the hospital':'no hospital stay')+(b.er?' · through the ER':'')+(b.amb?' · ambulance':'')+(b.acc?' · accident':'')+(b.dx?' · '+b.dx+' diagnosis':'');
+    head=((+b.disc||0)>0?'Billed '+fmt2(+b.charge)+', network price after a '+fmt2(+b.disc)+' discount · ':'Network price — what insurance actually pays · ')+((+b.days||0)>0?(+b.days)+' day'+(+b.days===1?'':'s')+' in the hospital':'no hospital stay')+(b.er?' · through the ER':'')+(b.amb?' · ambulance':'')+(b.acc?' · accident':'')+(b.dx?' · '+b.dx+' diagnosis':'');
     tiers.forEach(function(T){ var o=evTierPack(T[0]); res.push({T:T,o:o,r:evMajor({bal:bill,days:b.days,er:b.er,amb:b.amb,acc:b.acc,dx:b.dx,afc:o.afc,his:o.his,gap:o.gap,accU:o.accU,chas:o.chas,major:o.major,negotPct:negOn()?S.negot.pct:0})}); }); }
   else { var r=S.reg, cnt=Math.max(1,+r.count||1); bill=(+r.charge||0)*cnt; if(!(bill>0)) return '';
-    head=({visit:'Doctor visit',urgent:'Urgent care',er:'ER visit',osurg:'Outpatient surgery',imaging:'MRI / CT scan'}[r.type]||'Visit')+' · '+cnt+'× at '+fmt2(+r.charge||0)+' = '+fmt2(bill);
-    tiers.forEach(function(T){ var o=evTierPack(T[0]); res.push({T:T,o:o,r:evEveryday({type:r.type,charge:r.charge,count:cnt,afc:o.afc,hisOutp:o.hisOutp,gapOutp:o.gapOutp,major:o.major})}); }); }
+    head=({visit:'Doctor visit',urgent:'Urgent care',er:'ER visit',osurg:'Outpatient surgery',imaging:'MRI / CT scan'}[r.type]||'Visit')+(cnt>1?' · '+cnt+' times at '+fmt2(+r.charge||0):'')+' · network price — what insurance actually pays';
+    tiers.forEach(function(T){ var o=evTierPack(T[0]); res.push({T:T,o:o,r:evEveryday({type:r.type,charge:r.charge,count:cnt,afc:o.afc,hisOutp:o.hisOutp,gapOutp:o.gapOutp,major:o.major,negotPct:negOn()?S.negot.pct:0})}); }); }
   var aOwe=A?evAnchorOwe(kind,bill,A,S.reg.type,S.reg.count):null;
-  var cols=(A?1:0)+res.length, h='<div class="evhead">'+head+'</div><div class="evtab" style="grid-template-columns:minmax(120px,1.1fr) repeat('+cols+',1fr)">';
+  var cols=(A?1:0)+res.length, h='<div class="evbill"><span>This event costs</span><b>'+fmt2(bill)+'</b><small>'+head+'</small></div>'+(negOn()?'<div class="evneg"><b>Medical Bill Saver is on.</b> On the Manhattan packages, ManhattanLife negotiates the bill down about '+S.negot.pct+'% before you pay it. The plan still pays its full benefits, so more of that money stays with you.</div>':'')+'<div class="evtab" style="grid-template-columns:minmax(120px,1.1fr) repeat('+cols+',1fr)">';
   h+='<div class="c l"></div>'+(A?'<div class="c h anc">'+A.lab+'</div>':'')+res.map(function(x){ return '<div class="c h">'+x.T[1]+'</div>'; }).join('');
   h+='<div class="c l">Your plan pays</div>'+(A?'<div class="c anc">'+fmt2(Math.max(0,bill-aOwe))+'<small>toward the bill</small></div>':'')
     +res.map(function(x){ return '<div class="c">'+(x.o.unknown&&!x.r.pays?'—':fmt2(x.r.pays+(x.o.major?Math.max(0,bill-x.r.owe0):0)))+'<small>'+(x.o.major?'plan + cash benefits':'paid to you')+'</small></div>'; }).join('');
-  if(kind==='major'&&negOn()) h+='<div class="c l">Bill after Medical Bill Saver <small>'+S.negot.pct+'% average reduction</small></div>'+(A?'<div class="c anc">—<small>network price already</small></div>':'')
+  if(negOn()) h+='<div class="c l">Bill after Medical Bill Saver <small>'+S.negot.pct+'% average reduction</small></div>'+(A?'<div class="c anc">—<small>network price already</small></div>':'')
     +res.map(function(x){ return '<div class="c">'+(x.r.negotiated!=null?fmt2(x.r.negotiated):'—<small>major medical</small>')+'</div>'; }).join('');
-  h+='<div class="c l">You pay <small>(or receive)</small></div>'+(A?'<div class="c anc big">'+fmt2(aOwe)+(A.note?'<small>'+A.note+'</small>':'')+'</div>':'')
+  h+='<div class="c l">You pay <small>(or receive)</small></div>'+(A?'<div class="c anc big">'+fmt2(aOwe)+(A.note?'<small>'+A.note+'</small>':(A.how&&aOwe>=A.oop?'<small>'+A.how+'</small>':''))+'</div>':'')
     +res.map(function(x){ var n=x.r.net; return '<div class="c big '+(n<=0?'up':'dn')+'">'+(x.o.unknown&&!x.r.pays?'<small>'+x.o.unknown+'</small>':(n<=0?'You receive '+fmt2(-n):'You pay '+fmt2(n)))+'</div>'; }).join('');
   if(A&&B){ h+='<div class="c l">This year <small>premium savings + this event</small></div><div class="c anc">—</div>'
     +res.map(function(x){ var sv=anchorSavings(B,tierTotals(x.T[0]).mo)||{actual:0}, v=sv.actual*12+(aOwe-x.r.net); return '<div class="c '+(v>=0?'up':'dn')+'">'+(v>=0?'Ahead ':'Behind ')+fmt(Math.abs(v))+'</div>'; }).join(''); }
