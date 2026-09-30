@@ -340,6 +340,24 @@
   .popcol ul.sg li.sugg:hover{border-color:#b0872f;background:#fff5dc}.popcol ul.sg li.sugg b{color:#2f7d4a;font-size:12px}.popcol ul.sg li.sugg i{grid-column:2;font-style:normal;color:var(--muted);font-size:11px;text-align:right}
   @media(max-width:860px){.pop3col{grid-template-columns:1fr}}
   .pbna{font-size:11px;color:var(--muted);padding:4px 2px 0;text-decoration:none}
+  .pbchoose{font:inherit;font-size:12px;font-weight:700;border:1px solid #b0872f;background:#fff;color:#8a6a1f;border-radius:7px;padding:4px 9px;cursor:pointer;margin-right:6px}
+  .pbchoose.on{background:#2f7d4a;border-color:#2f7d4a;color:#fff}.pbcol.chosen{box-shadow:0 0 0 3px #2f7d4a inset;border-radius:12px}
+  #printout .po-col.chosen{border-color:#2f7d4a;box-shadow:0 0 0 2px #2f7d4a,0 8px 20px rgba(18,33,59,.08);position:relative}
+  #printout .po-ribbon{background:#2f7d4a;color:#fff;font:700 11px -apple-system,sans-serif;letter-spacing:.1em;text-transform:uppercase;text-align:center;padding:4px}
+  #printout .po-choose{display:flex;align-items:center;gap:8px;justify-content:center;padding:10px 16px;border-top:1px solid var(--line);font-family:var(--serif);font-weight:700;color:var(--navy);cursor:pointer;background:#fff}
+  #printout .po-choose .box{font-size:20px;line-height:1;color:#2f7d4a}#printout .po-choose:hover{background:#f3faf1}#printout .po-choose.on{background:#eef6ec}
+  #printout .po-dental{padding:8px 16px 12px;border-top:1px dashed #cfe4cf;background:#f7fbf5;text-align:center}
+  #printout .po-dental .q{font-size:12px;color:var(--navy);font-weight:600;margin-bottom:6px}
+  #printout .po-dental button{font:inherit;font-size:12px;border:1px solid #b7d3b0;background:#fff;border-radius:8px;padding:5px 10px;margin:0 3px;cursor:pointer;color:#1f6b3b}
+  #printout .po-dental button.on{background:#2f7d4a;color:#fff;border-color:#2f7d4a}
+  .printonly{display:none}@media print{.printonly{display:block}#printout .po-choose{cursor:default}}
+  .en-hd{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;border-bottom:2px solid var(--navy);padding-bottom:8px;margin-bottom:6px}
+  .en-nm{font-family:var(--serif);font-size:18px;color:var(--navy);font-weight:700}.en-pk{font-size:13px;margin-top:2px}.en-warn{color:#a3372e;font-size:12px}
+  .en-tot{text-align:right}.en-tot span{display:block;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}.en-tot b{font-family:var(--serif);font-size:22px;color:var(--navy)}
+  .en-grp{margin-top:8px}.en-car{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:#8a6a1f;font-weight:700;padding:4px 0}
+  .en-row{display:grid;grid-template-columns:minmax(150px,1fr) 2fr auto;gap:10px;padding:6px 0;border-bottom:1px solid #f1ede2;font-size:13px;align-items:baseline}
+  .en-row .nm{font-weight:600;color:var(--navy)}.en-row .lv{color:#2a3346}.en-row b{font-variant-numeric:tabular-nums}
+  .en-dental{margin-top:8px;font-size:12.5px;color:var(--muted)}
   .pbshow{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);padding:0 0 6px}
   .pbcol.excl{opacity:.55}
   .tfrahint{font-size:12px;color:var(--navy);background:#fbf9f2;border:1px solid var(--line);border-top:none;padding:8px 12px;line-height:1.6}
@@ -2234,6 +2252,7 @@ function blankState(){
     reg:{desc:'Urgent care visit',type:'urgent',count:1,charge:220,acc:0,preset:'urgent',src:'HCCI 2022 — average urgent care visit'},
     intake:{who:{app:true,spouse:false,kids:false},phone:'',email:'',tobaccoP:false,tobaccoS:false,maternityP:false,maternityS:false,maternity:false,dv:false,famcancerP:false,famcancerS:false,famcancer:false,famheartP:false,famheartS:false,famheart:false,mentalP:false,mentalS:false,mental:false,surg2yrP:false,surg2yrS:false,surg2yr:false,majorcond:false,majorcondNote:'',diabetic:false,diabeticNote:'',health:'',income:0,pincome:0,sincome:0,hhManual:false,retage:'',savings:0,invest:0,invprot:false,invsra:false,invnote:'',docs1:'',docs2:'',docs3:'',keepaca:'',keepafc:'',docnote:'',medList:[],budget:0,priority:'coverage',notes:'',carrier:'',plan:'',pheight:'',pweight:'',sheight:'',sweight:'',psex:'',ssex:'',kidsNote:'',routeNote:'',docsNote:'',whyShop:'',effDate:''},
     recommended:'best',
+    chosen:{tier:null},   // the package the client picked - carries from the builder / Client View to Enroll
     include:{good:true,better:true,best:true},   // agent toggle — which tiers reach the client view & printout
     showTfra:true,                                // agent toggle — hide the TFRA section from client view & printout
     showPop:true,                                 // agent toggle — hide the POP Score from client view
@@ -3244,7 +3263,8 @@ function buildPrintout(){
     tiers.forEach(function(x){
       var lab=labels[x.t];
       var pop=S.showPop!==false?computePop(x.t):null, pc=pop?(pop.score>=80?'#2f7d4a':pop.score>=60?'#a57a1c':'#b24b4b'):'';
-      html+='<div class="po-col"><div class="po-hd"><h3>'+lab[0]+'<small>'+esc(lab[1])+'</small></h3>'
+      var isCh=chosenTier()===x.t;
+      html+='<div class="po-col'+(isCh?' chosen':'')+'">'+(isCh?'<div class="po-ribbon">Your new plan</div>':'')+'<div class="po-hd"><h3>'+lab[0]+'<small>'+esc(lab[1])+'</small></h3>'
         +(pop?'<div class="popchip" style="border-color:'+pc+';color:'+pc+'"><span>POP Score</span><b>'+pop.score+'</b>'+(pop.s.provisional?'<small>provisional</small>':'')+'</div>':'')+'</div><div class="po-items">';
       (x.pk.products||[]).forEach(function(p){ if(!(+p.monthly)) return;
         html+='<div class="po-li"><span>'+esc(p.name)+'</span><span>'+fmt2(+p.monthly||0)+'</span></div>'; });
@@ -3255,6 +3275,11 @@ function buildPrintout(){
         var ln=function(lab,v){ return '<div class="ln"><span>'+lab+'</span><b class="'+(v>=0?'up':'dn')+'">'+(v>=0?'saves ':'costs ')+fmt2(Math.abs(v))+'/mo'+(v>=0?'':' more')+'</b></div>'; };
         html+='<div class="po-save"><div class="vs">Compared with '+vs+'</div>'+ln('Premium',sv.actual)+ln('True cost',sv.tru)+(ttx.note?'<div class="tn">'+ttx.note+'</div>':'')
           +'<div class="yr '+(sv.tru>=0?'up':'dn')+'">'+(sv.tru>=0?'Ahead '+fmt2(sv.tru*12)+' a year':'Behind '+fmt2(-sv.tru*12)+' a year')+'<small>on true cost</small></div></div>'; }
+      var dp=dentalPrice(x.t), hasD=tierHasDental(x.t);
+      html+='<div class="po-choose'+(isCh?' on':'')+'" data-choose="'+x.t+'" role="button" tabindex="0"><span class="box">'+(isCh?'☑':'☐')+'</span> This is my plan</div>';
+      if(isCh) html+='<div class="po-dental"><div class="q">Add dental, vision &amp; hearing?</div>'
+        +'<button type="button" class="noprint'+(hasD?'':' on')+'" data-dental="0" data-t="'+x.t+'">Base plan</button><button type="button" class="noprint'+(hasD?' on':'')+'" data-dental="1" data-t="'+x.t+'">Base plan + dental'+(dp!=null&&!hasD?' (+'+fmt2(dp)+'/mo)':'')+'</button>'
+        +'<div class="printonly">'+(hasD?'Dental, vision &amp; hearing: included':'Dental, vision &amp; hearing: not included')+'</div></div>';
       html+='</div>';
     });
     html+='</div>';
@@ -3326,6 +3351,8 @@ function buildPrintout(){
   html+='<div class="po-foot">'+esc(agency)+' — Package of Protection. Figures are estimates from the inputs provided; confirm exact benefits in the policy / ARC. ManhattanLife plans are limited-benefit indemnity coverage, not major medical.</div>';
   $('printout').innerHTML=html;
   evBindToggles($('printout'));
+  $('printout').querySelectorAll('[data-choose]').forEach(function(el){ el.onclick=function(){ chooseTier(el.dataset.choose); }; el.onkeydown=function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); chooseTier(el.dataset.choose); } }; });
+  $('printout').querySelectorAll('[data-dental]').forEach(function(b){ b.onclick=function(){ setDental(b.dataset.t,b.dataset.dental==='1'); }; });
   $('printout').querySelectorAll('[data-negtog]').forEach(function(b){ b.onclick=function(){ var ev=b.dataset.negtog==='everyday', k=ev?'onEvery':'on'; S.negot[k]=!S.negot[k]; $(ev?'neg_on2':'neg_on').checked=S.negot[k]; compute(); autosave(); }; });
 }
 
@@ -3575,11 +3602,22 @@ function renderFlags(){
 function renderEnroll(){
   if($('followList')) renderFollowUps();
   if($('in_followNote')) { $('in_followNote').value=(S.follow&&S.follow.note)||''; autoGrow($('in_followNote')); }
-  var pk=S.packages[S.activeTab]||{products:[]};
-  var mo=pkMonthly(pk);
+  var t=chosenTier()||S.activeTab, pk=S.packages[t]||{products:[]}, c=effCfg(t);
   var name=S.client.pname||'Client'; if(S.client.sname) name+=' & '+S.client.sname;
-  var isRec=(S.activeTab===S.recommended);
-  $('enrollSummary').innerHTML='<div class="enroll-card"><div style="font-family:var(--serif);font-size:18px;color:var(--navy);font-weight:700">'+esc(name)+' — '+S.activeTab.toUpperCase()+(isRec?' <span class="recbadge">BEST FIT</span>':'')+'</div><div style="margin-top:6px;color:#3a4358">Package of Protection: <b>'+fmt2(mo)+' / mo</b></div></div>';
+  var carrierOf=function(p){ if(p.k==='base') return c.base==='lifex'?'LifeX (E123 site)':'Cigna — USA Health / Triad (1Enrollment)';
+    if(p.k==='lbp'||p.k==='lbs'){ var nm=String(p.name||''); if(/americo/i.test(nm)) return 'Americo'; if(/mutual|omaha/i.test(nm)) return 'Mutual of Omaha';   // the policy actually priced
+      var lc=(c.lb||{})[p.k.slice(2)]||{}; return lc.carrier==='americo'?'Americo':'Mutual of Omaha'; } return 'ManhattanLife'; };
+  var rows=(pk.products||[]).filter(function(p){ return (+p.monthly||0)>0; }), groups={}, order=[];
+  rows.forEach(function(p){ var g=carrierOf(p); if(!groups[g]){ groups[g]=[]; order.push(g); } groups[g].push(p); });
+  var total=rows.reduce(function(s2,p){ return s2+(+p.monthly||0); },0);
+  var sname=function(p){ var sl=PB_SLOTS.filter(function(x){ return x.k===p.k; })[0]; return p.k==='base'?(c.base==='lifex'?'LifeX health plan':'Cigna PPO'):(sl?sl.name:p.name); };
+  var h='<div class="enroll-card">'
+    +'<div class="en-hd"><div><div class="en-nm">'+esc(name)+'</div><div class="en-pk">Enrolling: <b>'+TIER_NAME[t]+'</b>'+(chosenTier()?'':' <span class="en-warn">— no package chosen yet; showing '+TIER_NAME[t]+'. Mark the client’s choice on the builder or in Client View.</span>')+'</div></div>'
+    +'<div class="en-tot"><span>Monthly</span><b>'+fmt2(total)+'</b></div></div>';
+  order.forEach(function(g){ h+='<div class="en-grp"><div class="en-car">'+esc(g)+'</div>'
+    +groups[g].map(function(p){ return '<div class="en-row"><span class="nm">'+esc(sname(p))+'</span><span class="lv">'+esc(pbSummary(p.k,c,p)||'')+'</span><b>'+fmt2(+p.monthly||0)+'</b></div>'; }).join('')+'</div>'; });
+  h+='<div class="en-dental">Dental, vision &amp; hearing: <b>'+(tierHasDental(t)?'included':'not included')+'</b></div></div>';
+  $('enrollSummary').innerHTML=h;
   $('lnkManhattan').href=MANHATTAN_URL;
   $('lnkMutual').href=MUTUAL_URL;
   $('lnkAmerico').href=AMERICO_URL;
@@ -3849,6 +3887,7 @@ function pbSummary(k,c,live){
   if(k==='gap') return m(c.gap.daily)+'/day in hospital · '+m(c.gap.adm)+' admission'+(+c.gap.outp?' · '+m(c.gap.outp)+' outpatient':'')+(c.gap.ea?' · $250 ER':'');
   if(k==='chas') return [c.chas.cancer?'Cancer '+m(c.chas.cancer):'',c.chas.hs?'Heart attack & stroke '+m(c.chas.hs):''].filter(Boolean).join(' · ')+' lump sum';
   if(k==='hhc') return c.hhc+' plan';
+  if(k==='dvh'&&c.dvh) return m(c.dvh.max)+' annual max · '+m(c.dvh.ded||0)+' deductible · vision & hearing riders';
   if(k==='lbp'||k==='lbs'){ var lc=c.lb[k.slice(2)]; return m(lc.face)+' term life · 20-year · '+((live&&live.name||'').match(/\(([^)]+)\)$/)||[,'Mutual of Omaha'])[1]; }
   return '';
 }
@@ -4042,6 +4081,15 @@ function renderTfraHint(){ var el=$('tfraHint'); if(!el) return; var B=anchorBas
   if(ctx.length) h+='<div class="tfractx">Not for funding — in a year with a claim they are also ahead on true cost: '+ctx.map(function(r){ return r.lab+' '+fmt2(r.tru)+'/mo'; }).join(' · ')+'.</div>';
   el.innerHTML=h;
   el.querySelectorAll('.tfrause').forEach(function(b){ b.onclick=function(){ var inp=$('p_pension'); inp.value=b.dataset.amt; inp.dispatchEvent(new Event('input')); compute(); autosave(); }; }); }
+/* ===== The client's choice (builder + Client View -> Enroll) ===== */
+var TIER_NAME={good:'Essential',better:'Complete',best:'Comprehensive'};
+function chosenTier(){ return (S.chosen&&S.chosen.tier)||null; }
+function chooseTier(t){ S.chosen=S.chosen||{}; S.chosen.tier=(S.chosen.tier===t)?null:t; if(S.chosen.tier){ S.activeTab=t; S.include=S.include||{}; S.include[t]=true; } compute(); autosave(); }
+function tierHasDental(t){ return ((S.packages[t]||{}).products||[]).some(function(p){ return p.k==='dvh'&&(+p.monthly||0)>0; }); }
+function dentalPrice(t){ try{ var r=pDVH(HF_RATES,ratingAge(),householdKey(),effCfg(t).dvh,(S.client.state||'').toUpperCase()); return r&&r.price!=null?+r.price:null; }catch(e){ return null; } }
+/* Dental stays a yes/no after the choice: the three packages are compared without it, then the
+   chosen one is 'base plan' or 'base plan + dental'. */
+function setDental(t,on){ var pk=S.packages[t]; if(!pk) return; pk.dropped=(pk.dropped||[]).filter(function(k){ return k!=='dvh'; }); if(!on) pk.dropped.push('dvh'); autoPriceTiers(); compute(); autosave(); }
 function renderBuilder(){
   var host=$('sec_builder'); if(!host) return;
   var st=(S.client.state||'').toUpperCase(), age=ratingAge();
@@ -4067,7 +4115,7 @@ function renderBuilder(){
     var byKpk={}; (pk.products||[]).forEach(function(p){ if(p.k) byKpk[p.k]=p; });
     var hdr=(S.lineup==='lx-mh-cg'||S.lineup==='custom')&&c.base&&c.base!=='afc'?[c.base==='lifex'?'Pivot down':'Pivot up',c.base==='lifex'?'LifeX':'Cigna']:(S.lineup==='lx-mh-cg'?['Lead','Manhattan']:[T[1],T[2]]);
     var incT=(S.include||{})[t]!==false;
-    html+='<div class="pbcol'+(S.recommended===t?' rec':'')+(incT?'':' excl')+'" data-t="'+t+'"><label class="pbshow"><input type="checkbox" data-act="inc"'+(incT?' checked':'')+'> Show on quote</label><div class="ph"><span class="tt">'+hdr[0]+'</span><b>'+hdr[1]+'</b><span style="flex:1"></span><button type="button" data-act="reset1" title="Put this package back to the recommendation" style="font:inherit;font-size:12px;font-weight:600;border:1px solid #e2ddd1;background:#fff;border-radius:7px;padding:4px 8px;cursor:pointer;color:var(--muted)">↺ Reset</button></div>'
+    html+='<div class="pbcol'+(S.recommended===t?' rec':'')+(incT?'':' excl')+(chosenTier()===t?' chosen':'')+'" data-t="'+t+'"><label class="pbshow"><input type="checkbox" data-act="inc"'+(incT?' checked':'')+'> Show on quote</label><div class="ph"><span class="tt">'+hdr[0]+'</span><b>'+hdr[1]+'</b><span style="flex:1"></span><button type="button" class="pbchoose'+(chosenTier()===t?' on':'')+'" data-act="choose" title="The package the client is going with - it carries to Client View and Enroll">'+(chosenTier()===t?'✓ Client’s choice':'Choose')+'</button><button type="button" data-act="reset1" title="Put this package back to the recommendation" style="font:inherit;font-size:12px;font-weight:600;border:1px solid #e2ddd1;background:#fff;border-radius:7px;padding:4px 8px;cursor:pointer;color:var(--muted)">↺ Reset</button></div>'
       +((S.lineup==='custom')?'':'<!--')+'<div style="padding:0 12px 4px"><select data-act="base" aria-label="Base plan" style="width:100%;font:inherit;font-size:13px;padding:6px 8px;border:1px solid #d6cdb4;border-radius:7px">'+pbOpts([['afc','Base: Manhattan Affordable Choice'],['lifex','Base: LifeX'],['triad','Base: Cigna (Triad) PPO']],c.base||'afc')+'</select></div>'+((S.lineup==='custom')?'':'-->');
     var sum=0, addable=[], unavail=[];
     PB_SLOTS.forEach(function(sl){
@@ -4134,6 +4182,7 @@ function renderBuilder(){
   benRefresh();
   host.querySelectorAll('.pbcol').forEach(function(col){
     var t=col.dataset.t;
+    col.querySelectorAll('[data-act="choose"]').forEach(function(b){ b.onclick=function(){ chooseTier(t); }; });
     col.querySelectorAll('[data-act="inc"]').forEach(function(x){ x.onchange=function(){ S.include=S.include||{}; S.include[t]=x.checked; var cl=$('inc_'+t); if(cl) cl.checked=x.checked; compute(); autosave(); }; });
     col.querySelectorAll('[data-act="tog"]').forEach(function(b){ b.onclick=function(){ var key=t+'|'+b.dataset.k; PB_OPEN[key]=!PB_OPEN[key]; renderBuilder(); }; });
     col.querySelectorAll('[data-act="rm"]').forEach(function(b){ b.onclick=function(){ var pk=S.packages[t]; pk.dropped=pk.dropped||[]; if(pk.dropped.indexOf(b.dataset.k)<0) pk.dropped.push(b.dataset.k); pbReprice(); }; });
