@@ -1,0 +1,954 @@
+{
+  "product": "chas",
+  "name": "Cancer, Heart Attack & Stroke",
+  "carrier": "ManhattanLife",
+  "columns": {
+    "by": "*",
+    "values": [
+      "*"
+    ]
+  },
+  "tokens": {
+    "{chas.cancer}": "the Cancer lump-sum benefit amount chosen on the row ($5,000–$75,000)",
+    "{chas.hs}": "the Heart Attack & Stroke lump-sum benefit amount chosen on the row ($5,000–$75,000)"
+  },
+  "brochures": [
+    {
+      "code": "CHAS-BR_0525",
+      "file": "CHAS-BR_0525 (AK Cancer Heart Attack and Stroke - Cancer, Heart & Stroke Brochure).pdf",
+      "states": [
+        "AK",
+        "AL",
+        "AR",
+        "AZ",
+        "DC",
+        "GA",
+        "HI",
+        "IA",
+        "IL",
+        "KS",
+        "KY",
+        "LA",
+        "ME",
+        "MI",
+        "MO",
+        "MS",
+        "NC",
+        "ND",
+        "NV",
+        "OH",
+        "OK",
+        "OR",
+        "PA",
+        "RI",
+        "SC",
+        "TN",
+        "TX",
+        "UT",
+        "VT",
+        "WI",
+        "WV"
+      ],
+      "page": "4-5",
+      "sections": [
+        {
+          "title": "Cancer",
+          "rows": [
+            {
+              "label": "Cancer diagnosis — lump sum",
+              "values": {
+                "*": "100% of {chas.cancer}"
+              },
+              "when": "chas.cancer>0",
+              "key": true,
+              "note": "Paid directly to the insured."
+            }
+          ]
+        },
+        {
+          "title": "Heart Attack & Stroke",
+          "rows": [
+            {
+              "label": "Heart Attack",
+              "values": {
+                "*": "100% of {chas.hs}"
+              },
+              "when": "chas.hs>0",
+              "key": true
+            },
+            {
+              "label": "Stroke",
+              "values": {
+                "*": "100% of {chas.hs}"
+              },
+              "when": "chas.hs>0",
+              "key": true
+            },
+            {
+              "label": "Heart Transplant",
+              "values": {
+                "*": "100% of {chas.hs}"
+              },
+              "when": "chas.hs>0"
+            },
+            {
+              "label": "Coronary Artery Bypass Surgery",
+              "values": {
+                "*": "25% of {chas.hs}"
+              },
+              "when": "chas.hs>0",
+              "key": true
+            },
+            {
+              "label": "Aortic Surgery",
+              "values": {
+                "*": "25% of {chas.hs}"
+              },
+              "when": "chas.hs>0"
+            },
+            {
+              "label": "Heart Valve Replacement/Repair Surgery",
+              "values": {
+                "*": "25% of {chas.hs}"
+              },
+              "when": "chas.hs>0"
+            },
+            {
+              "label": "Angioplasty",
+              "values": {
+                "*": "10% of {chas.hs}"
+              },
+              "when": "chas.hs>0",
+              "key": true
+            },
+            {
+              "label": "Stent",
+              "values": {
+                "*": "10% of {chas.hs}"
+              },
+              "when": "chas.hs>0"
+            },
+            {
+              "label": "Partial benefits",
+              "values": {
+                "*": "Reduce the remaining Heart & Stroke benefit amount"
+              },
+              "when": "chas.hs>0",
+              "key": true,
+              "note": "Brochure Claims Example 3: a $50,000 plan pays $12,500 (25%) for Aortic Surgery and $5,000 (10%) for Angioplasty, leaving $32,500."
+            },
+            {
+              "label": "After a full Heart & Stroke payout",
+              "values": {
+                "*": "Coverage terminates after the initial payout (without the Restoration Rider)"
+              },
+              "when": "chas.hs>0",
+              "note": "Brochure Claims Example 4: $20,000 paid for a Stroke; no benefit for a Heart Attack 6 months later."
+            },
+            {
+              "label": "Waiting period",
+              "values": {
+                "*": "30 Day Waiting Period"
+              },
+              "when": "chas.hs>0",
+              "key": true,
+              "note": "Mentioned only in the brochure's Heart & Stroke claims example; see the policy for the full provision."
+            }
+          ]
+        },
+        {
+          "title": "Cancer Recurrence Rider (optional)",
+          "rows": [
+            {
+              "label": "Recurrence — less than 2 years",
+              "values": {
+                "*": "0%"
+              },
+              "when": "chas.cancer>0",
+              "note": "Optional rider (\"optional recurrence benefit\"); pays only if added to the policy. % of the cancer benefit amount."
+            },
+            {
+              "label": "Recurrence — 2 years or more but less than 5",
+              "values": {
+                "*": "25% of {chas.cancer}"
+              },
+              "when": "chas.cancer>0"
+            },
+            {
+              "label": "Recurrence — 5 years or more but less than 10",
+              "values": {
+                "*": "50% of {chas.cancer}"
+              },
+              "when": "chas.cancer>0"
+            },
+            {
+              "label": "Recurrence — 10 years or more",
+              "values": {
+                "*": "100% of {chas.cancer}"
+              },
+              "when": "chas.cancer>0"
+            }
+          ]
+        },
+        {
+          "title": "Heart & Stroke Restoration Rider (optional)",
+          "rows": [
+            {
+              "label": "Restoration — less than 2 years",
+              "values": {
+                "*": "0%"
+              },
+              "when": "chas.hs>0",
+              "note": "Optional rider; pays only if added to the policy. % of the Heart & Stroke benefit amount."
+            },
+            {
+              "label": "Restoration — 2 years or more but less than 5",
+              "values": {
+                "*": "25% of {chas.hs}"
+              },
+              "when": "chas.hs>0"
+            },
+            {
+              "label": "Restoration — 5 years or more but less than 10",
+              "values": {
+                "*": "75% of {chas.hs}"
+              },
+              "when": "chas.hs>0"
+            },
+            {
+              "label": "Restoration — 10 years or more",
+              "values": {
+                "*": "100% of {chas.hs}"
+              },
+              "when": "chas.hs>0"
+            }
+          ]
+        }
+      ],
+      "notes": [
+        "\"Choose a benefit level from $5K to $75K for either Cancer, Heart & Stroke or both!\"",
+        "ISSUE AGES: 20-84",
+        "Form numbers: Lump Sum Cancer Policy AK7029, Lump Sum Heart & Stroke Policy AK7030, Cancer Recurrence Rider AK7029CR, Heart & Stroke Restoration of Benefits Rider AK7030RR (including state variations).",
+        "Lump sums are paid directly to the insured (\"These costs could include: Childcare, Transportation, Lodging, Deductibles, Lab Tests.\").",
+        "Cancer and Heart & Stroke are separate policies, each with its own benefit amount.",
+        "Brochure: \"This is not a complete disclosure of plan qualifications and limitations\" — full list at disclosure.manhattanlife.com."
+      ]
+    },
+    {
+      "code": "CHAS-FLBR_0825",
+      "file": "CHAS-FLBR_0825 (FL Cancer Heart Attack and Stroke - Cancer, Heart & Stroke Brochure).pdf",
+      "states": [
+        "FL"
+      ],
+      "page": "4-5",
+      "sameAs": "CHAS-BR_0525",
+      "notes": [
+        "\"Choose a benefit level from $5K to $75K for either Cancer, Heart & Stroke or both!\"",
+        "Same benefit percentages as CHAS-BR_0525; FL state policy forms. Issue ages are not stated on the benefits page (rate tables run to 80-84).",
+        "Lump sums are paid directly to the insured (\"These costs could include: Childcare, Transportation, Lodging, Deductibles, Lab Tests.\").",
+        "Cancer and Heart & Stroke are separate policies, each with its own benefit amount.",
+        "Brochure: \"This is not a complete disclosure of plan qualifications and limitations\" — full list at disclosure.manhattanlife.com."
+      ]
+    },
+    {
+      "code": "CHAS-MDBR_0525",
+      "file": "CHAS-MDBR_0525 (MD Cancer Heart Attack and Stroke - Cancer, Heart & Stroke Brochure).pdf",
+      "states": [
+        "MD"
+      ],
+      "page": "4-5",
+      "sameAs": "CHAS-BR_0525",
+      "notes": [
+        "\"Choose a benefit level from $5K to $75K for either Cancer, Heart & Stroke or both!\"",
+        "Same benefit percentages as CHAS-BR_0525; MD state policy forms. Issue ages are not stated on the benefits page (rate tables run to 80-84).",
+        "Lump sums are paid directly to the insured (\"These costs could include: Childcare, Transportation, Lodging, Deductibles, Lab Tests.\").",
+        "Cancer and Heart & Stroke are separate policies, each with its own benefit amount.",
+        "Brochure: \"This is not a complete disclosure of plan qualifications and limitations\" — full list at disclosure.manhattanlife.com."
+      ]
+    },
+    {
+      "code": "CHAS-MNBR_0525",
+      "file": "CHAS-MNBR_0525 (MN Cancer Heart Attack and Stroke - Cancer, Heart & Stroke Brochure).pdf",
+      "states": [
+        "MN"
+      ],
+      "page": "4-5",
+      "sameAs": "CHAS-BR_0525",
+      "notes": [
+        "\"Choose a benefit level from $5K to $75K for either Cancer, Heart & Stroke or both!\"",
+        "Same benefit percentages as CHAS-BR_0525; MN state policy forms. Issue ages are not stated on the benefits page (rate tables run to 80-84).",
+        "Lump sums are paid directly to the insured (\"These costs could include: Childcare, Transportation, Lodging, Deductibles, Lab Tests.\").",
+        "Cancer and Heart & Stroke are separate policies, each with its own benefit amount.",
+        "Brochure: \"This is not a complete disclosure of plan qualifications and limitations\" — full list at disclosure.manhattanlife.com."
+      ]
+    },
+    {
+      "code": "CHAS-NEBR_0525",
+      "file": "CHAS-NEBR_0525 (NE Cancer Heart Attack and Stroke - Cancer, Heart & Stroke Brochure).pdf",
+      "states": [
+        "NE"
+      ],
+      "page": "4-5",
+      "sameAs": "CHAS-BR_0525",
+      "notes": [
+        "\"Choose a benefit level from $5K to $75K for either Cancer, Heart & Stroke or both!\"",
+        "Same benefit percentages as CHAS-BR_0525; NE state policy forms. Issue ages are not stated on the benefits page (rate tables run to 80-84).",
+        "Lump sums are paid directly to the insured (\"These costs could include: Childcare, Transportation, Lodging, Deductibles, Lab Tests.\").",
+        "Cancer and Heart & Stroke are separate policies, each with its own benefit amount.",
+        "Brochure: \"This is not a complete disclosure of plan qualifications and limitations\" — full list at disclosure.manhattanlife.com."
+      ]
+    },
+    {
+      "code": "CHAS-CABR_0525",
+      "file": "CHAS-CABR_0525 (CA Cancer Heart Attack and Stroke - Cancer, Heart & Stroke Brochure).pdf",
+      "states": [
+        "CA"
+      ],
+      "page": "4-5",
+      "sections": [
+        {
+          "title": "Cancer",
+          "rows": [
+            {
+              "label": "Cancer diagnosis — lump sum",
+              "values": {
+                "*": "100% of {chas.cancer}"
+              },
+              "when": "chas.cancer>0",
+              "key": true,
+              "note": "Paid directly to the insured."
+            }
+          ]
+        },
+        {
+          "title": "Heart Attack & Stroke",
+          "rows": [
+            {
+              "label": "Heart Attack",
+              "values": {
+                "*": "100% of {chas.hs}"
+              },
+              "when": "chas.hs>0",
+              "key": true
+            },
+            {
+              "label": "Stroke",
+              "values": {
+                "*": "100% of {chas.hs}"
+              },
+              "when": "chas.hs>0",
+              "key": true
+            },
+            {
+              "label": "Heart Transplant",
+              "values": {
+                "*": "100% of {chas.hs}"
+              },
+              "when": "chas.hs>0"
+            },
+            {
+              "label": "Coronary Artery Bypass Surgery",
+              "values": {
+                "*": "25% of {chas.hs}"
+              },
+              "when": "chas.hs>0",
+              "key": true
+            },
+            {
+              "label": "Aortic Surgery",
+              "values": {
+                "*": "25% of {chas.hs}"
+              },
+              "when": "chas.hs>0"
+            },
+            {
+              "label": "Heart Valve Replacement/Repair Surgery",
+              "values": {
+                "*": "25% of {chas.hs}"
+              },
+              "when": "chas.hs>0"
+            },
+            {
+              "label": "Angioplasty",
+              "values": {
+                "*": "10% of {chas.hs}"
+              },
+              "when": "chas.hs>0",
+              "key": true
+            },
+            {
+              "label": "Stent",
+              "values": {
+                "*": "10% of {chas.hs}"
+              },
+              "when": "chas.hs>0"
+            },
+            {
+              "label": "Partial benefits",
+              "values": {
+                "*": "Reduce the remaining Heart & Stroke benefit amount"
+              },
+              "when": "chas.hs>0",
+              "key": true,
+              "note": "Brochure Claims Example 3: a $50,000 plan pays $12,500 (25%) for Aortic Surgery and $5,000 (10%) for Angioplasty, leaving $32,500."
+            },
+            {
+              "label": "After a full Heart & Stroke payout",
+              "values": {
+                "*": "Coverage terminates after the initial payout (without the Restoration Rider)"
+              },
+              "when": "chas.hs>0",
+              "note": "Brochure Claims Example 4: $20,000 paid for a Stroke; no benefit for a Heart Attack 6 months later."
+            },
+            {
+              "label": "Waiting period",
+              "values": {
+                "*": "30 Day Waiting Period"
+              },
+              "when": "chas.hs>0",
+              "key": true,
+              "note": "Mentioned only in the brochure's Heart & Stroke claims example; see the policy for the full provision."
+            }
+          ]
+        },
+        {
+          "title": "Cancer Recurrence Rider (optional)",
+          "rows": [
+            {
+              "label": "Recurrence — less than 2 years",
+              "values": {
+                "*": "0%"
+              },
+              "when": "chas.cancer>0",
+              "note": "Optional rider (\"optional recurrence benefit\"); pays only if added to the policy. % of the cancer benefit amount."
+            },
+            {
+              "label": "Recurrence — 2 years or more but less than 5",
+              "values": {
+                "*": "25% of {chas.cancer}"
+              },
+              "when": "chas.cancer>0"
+            },
+            {
+              "label": "Recurrence — 5 years or more but less than 10",
+              "values": {
+                "*": "75% of {chas.cancer}"
+              },
+              "when": "chas.cancer>0"
+            },
+            {
+              "label": "Recurrence — 10 years or more",
+              "values": {
+                "*": "100% of {chas.cancer}"
+              },
+              "when": "chas.cancer>0"
+            }
+          ]
+        },
+        {
+          "title": "Heart & Stroke Restoration Rider (optional)",
+          "rows": [
+            {
+              "label": "Restoration — less than 2 years",
+              "values": {
+                "*": "0%"
+              },
+              "when": "chas.hs>0",
+              "note": "Optional rider; pays only if added to the policy. % of the Heart & Stroke benefit amount."
+            },
+            {
+              "label": "Restoration — 2 years or more but less than 5",
+              "values": {
+                "*": "25% of {chas.hs}"
+              },
+              "when": "chas.hs>0"
+            },
+            {
+              "label": "Restoration — 5 years or more but less than 10",
+              "values": {
+                "*": "75% of {chas.hs}"
+              },
+              "when": "chas.hs>0"
+            },
+            {
+              "label": "Restoration — 10 years or more",
+              "values": {
+                "*": "100% of {chas.hs}"
+              },
+              "when": "chas.hs>0"
+            }
+          ]
+        }
+      ],
+      "notes": [
+        "\"Choose a benefit level from $10K to $75K for either Cancer, Heart & Stroke or both!\" — POP Pro offers $5,000; the minimum here is $10,000.",
+        "Cancer Recurrence Rider pays 75% (not 50%) at 5 to less than 10 years.",
+        "Rate tables stop at the 60-64 age band; the brochure does not state issue ages — confirm age eligibility before quoting anyone 65+.",
+        "Lump sums are paid directly to the insured (\"These costs could include: Childcare, Transportation, Lodging, Deductibles, Lab Tests.\").",
+        "Cancer and Heart & Stroke are separate policies, each with its own benefit amount.",
+        "Brochure: \"This is not a complete disclosure of plan qualifications and limitations\" — full list at disclosure.manhattanlife.com."
+      ]
+    },
+    {
+      "code": "CHAS-CTBR_0525",
+      "file": "CHAS-CTBR_0525 (CT Cancer Heart Attack and Stroke - Cancer, Heart & Stroke Brochure).pdf",
+      "states": [
+        "CT"
+      ],
+      "page": "4-5",
+      "sameAs": "CHAS-CABR_0525",
+      "notes": [
+        "\"Choose a benefit level from $10K to $75K for either Cancer, Heart & Stroke or both!\" — POP Pro offers $5,000; the minimum here is $10,000.",
+        "Cancer Recurrence Rider pays 75% (not 50%) at 5 to less than 10 years.",
+        "Rate tables stop at the 60-64 age band; the brochure does not state issue ages — confirm age eligibility before quoting anyone 65+.",
+        "Lump sums are paid directly to the insured (\"These costs could include: Childcare, Transportation, Lodging, Deductibles, Lab Tests.\").",
+        "Cancer and Heart & Stroke are separate policies, each with its own benefit amount.",
+        "Brochure: \"This is not a complete disclosure of plan qualifications and limitations\" — full list at disclosure.manhattanlife.com."
+      ]
+    },
+    {
+      "code": "CHAS-NHBR_0525",
+      "file": "CHAS-NHBR_0525 (NH Cancer Heart Attack and Stroke - Cancer, Heart & Stroke Brochure).pdf",
+      "states": [
+        "NH"
+      ],
+      "page": "4-5",
+      "sameAs": "CHAS-CABR_0525",
+      "notes": [
+        "\"Choose a benefit level from $10K to $75K for either Cancer, Heart & Stroke or both!\" — POP Pro offers $5,000; the minimum here is $10,000.",
+        "Cancer Recurrence Rider pays 75% (not 50%) at 5 to less than 10 years.",
+        "Rate tables run to 80-84.",
+        "Lump sums are paid directly to the insured (\"These costs could include: Childcare, Transportation, Lodging, Deductibles, Lab Tests.\").",
+        "Cancer and Heart & Stroke are separate policies, each with its own benefit amount.",
+        "Brochure: \"This is not a complete disclosure of plan qualifications and limitations\" — full list at disclosure.manhattanlife.com."
+      ]
+    },
+    {
+      "code": "CHAS-CO_BR_0726",
+      "file": "CHAS-CO_BR_0726 (CO Cancer Heart Attack and Stroke - Cancer, Heart & Stroke Brochure).pdf",
+      "states": [
+        "CO"
+      ],
+      "page": "4-5",
+      "sections": [
+        {
+          "title": "Cancer",
+          "rows": [
+            {
+              "label": "Cancer diagnosis — lump sum",
+              "values": {
+                "*": "100% of {chas.cancer}"
+              },
+              "when": "chas.cancer>0",
+              "key": true,
+              "note": "Paid directly to the insured."
+            }
+          ]
+        },
+        {
+          "title": "Heart Attack & Stroke",
+          "rows": [
+            {
+              "label": "Heart Attack",
+              "values": {
+                "*": "100% of {chas.hs}"
+              },
+              "when": "chas.hs>0",
+              "key": true
+            },
+            {
+              "label": "Stroke",
+              "values": {
+                "*": "100% of {chas.hs}"
+              },
+              "when": "chas.hs>0",
+              "key": true
+            },
+            {
+              "label": "Heart Transplant",
+              "values": {
+                "*": "100% of {chas.hs}"
+              },
+              "when": "chas.hs>0"
+            },
+            {
+              "label": "Coronary Artery Bypass Surgery",
+              "values": {
+                "*": "25% of {chas.hs}"
+              },
+              "when": "chas.hs>0",
+              "key": true
+            },
+            {
+              "label": "Aortic Surgery",
+              "values": {
+                "*": "25% of {chas.hs}"
+              },
+              "when": "chas.hs>0"
+            },
+            {
+              "label": "Heart Valve Replacement/Repair Surgery",
+              "values": {
+                "*": "25% of {chas.hs}"
+              },
+              "when": "chas.hs>0"
+            },
+            {
+              "label": "Angioplasty",
+              "values": {
+                "*": "10% of {chas.hs}"
+              },
+              "when": "chas.hs>0",
+              "key": true
+            },
+            {
+              "label": "Stent",
+              "values": {
+                "*": "10% of {chas.hs}"
+              },
+              "when": "chas.hs>0"
+            },
+            {
+              "label": "Partial benefits",
+              "values": {
+                "*": "Reduce the remaining Heart & Stroke benefit amount"
+              },
+              "when": "chas.hs>0",
+              "key": true,
+              "note": "Brochure Claims Example 3: a $50,000 plan pays $12,500 (25%) for Aortic Surgery and $5,000 (10%) for Angioplasty, leaving $32,500."
+            },
+            {
+              "label": "After a full Heart & Stroke payout",
+              "values": {
+                "*": "Coverage terminates after the initial payout (without the Restoration Rider)"
+              },
+              "when": "chas.hs>0",
+              "note": "Brochure Claims Example 4: $20,000 paid for a Stroke; no benefit for a Heart Attack 6 months later."
+            },
+            {
+              "label": "Waiting period",
+              "values": {
+                "*": "30 Day Waiting Period"
+              },
+              "when": "chas.hs>0",
+              "key": true,
+              "note": "Mentioned only in the brochure's Heart & Stroke claims example; see the policy for the full provision."
+            }
+          ]
+        },
+        {
+          "title": "Cancer Recurrence Rider (optional)",
+          "rows": [
+            {
+              "label": "Recurrence — less than 2 years",
+              "values": {
+                "*": "0%"
+              },
+              "when": "chas.cancer>0",
+              "note": "Optional rider (\"optional recurrence benefit\"); pays only if added to the policy. % of the cancer benefit amount."
+            },
+            {
+              "label": "Recurrence — 2 years or more but less than 5",
+              "values": {
+                "*": "25% of {chas.cancer}"
+              },
+              "when": "chas.cancer>0"
+            },
+            {
+              "label": "Recurrence — 5 years or more but less than 10",
+              "values": {
+                "*": "50% of {chas.cancer}"
+              },
+              "when": "chas.cancer>0"
+            },
+            {
+              "label": "Recurrence — 10 years or more",
+              "values": {
+                "*": "100% of {chas.cancer}"
+              },
+              "when": "chas.cancer>0"
+            }
+          ]
+        },
+        {
+          "title": "Heart & Stroke Restoration Rider (optional)",
+          "rows": [
+            {
+              "label": "Restoration — less than 2 years",
+              "values": {
+                "*": "0%"
+              },
+              "when": "chas.hs>0",
+              "note": "Optional rider; pays only if added to the policy. % of the Heart & Stroke benefit amount."
+            },
+            {
+              "label": "Restoration — 2 years or more but less than 5",
+              "values": {
+                "*": "25% of {chas.hs}"
+              },
+              "when": "chas.hs>0"
+            },
+            {
+              "label": "Restoration — 5 years or more but less than 10",
+              "values": {
+                "*": "50% of {chas.hs}"
+              },
+              "when": "chas.hs>0"
+            },
+            {
+              "label": "Restoration — 10 years or more",
+              "values": {
+                "*": "100% of {chas.hs}"
+              },
+              "when": "chas.hs>0"
+            }
+          ]
+        }
+      ],
+      "notes": [
+        "Heart & Stroke Restoration Rider pays 50% (not 75%) at 5 to less than 10 years.",
+        "The CO brochure does not print the $5K–$75K benefit-level line; rate tables are per $5,000.",
+        "Claims Example 1 calls it a \"Secure Plus Cancer Policy\".",
+        "Lump sums are paid directly to the insured (\"These costs could include: Childcare, Transportation, Lodging, Deductibles, Lab Tests.\").",
+        "Cancer and Heart & Stroke are separate policies, each with its own benefit amount.",
+        "Brochure: \"This is not a complete disclosure of plan qualifications and limitations\" — full list at disclosure.manhattanlife.com."
+      ]
+    },
+    {
+      "code": "CHAS-INBR_0525",
+      "file": "CHAS-INBR_0525 (IN Cancer Heart Attack and Stroke - Cancer, Heart & Stroke Brochure).pdf",
+      "states": [
+        "IN"
+      ],
+      "page": "4-5",
+      "sameAs": "CHAS-CO_BR_0726",
+      "notes": [
+        "\"Choose a benefit level from $5K to $75K for either Cancer, Heart & Stroke or both!\"",
+        "Heart & Stroke Restoration Rider pays 50% (not 75%) at 5 to less than 10 years.",
+        "Both rider tables are headed \"Period without medical advice or treatment\" instead of the rider names — the recurrence clock appears to run from the last medical advice or treatment; confirm in the policy.",
+        "Lump sums are paid directly to the insured (\"These costs could include: Childcare, Transportation, Lodging, Deductibles, Lab Tests.\").",
+        "Cancer and Heart & Stroke are separate policies, each with its own benefit amount.",
+        "Brochure: \"This is not a complete disclosure of plan qualifications and limitations\" — full list at disclosure.manhattanlife.com."
+      ]
+    },
+    {
+      "code": "CHAS-WABR_0525",
+      "file": "CHAS-WABR_0525 (WA Cancer Heart Attack and Stroke - Cancer, Heart & Stroke Brochure).pdf",
+      "states": [
+        "WA"
+      ],
+      "page": "4-5",
+      "sections": [
+        {
+          "title": "Cancer",
+          "rows": [
+            {
+              "label": "Cancer diagnosis — lump sum",
+              "values": {
+                "*": "100% of {chas.cancer}"
+              },
+              "when": "chas.cancer>0",
+              "key": true,
+              "note": "Paid directly to the insured."
+            }
+          ]
+        },
+        {
+          "title": "Heart Attack & Stroke",
+          "rows": [
+            {
+              "label": "Heart Attack",
+              "values": {
+                "*": "100% of {chas.hs}"
+              },
+              "when": "chas.hs>0",
+              "key": true
+            },
+            {
+              "label": "Stroke",
+              "values": {
+                "*": "100% of {chas.hs}"
+              },
+              "when": "chas.hs>0",
+              "key": true
+            },
+            {
+              "label": "After a full Heart & Stroke payout",
+              "values": {
+                "*": "Coverage terminates after the initial payout (without the Restoration Rider)"
+              },
+              "when": "chas.hs>0",
+              "key": true,
+              "note": "Brochure Claims Example 4: $20,000 paid for a Stroke; no benefit for a Heart Attack 6 months later."
+            },
+            {
+              "label": "Waiting period",
+              "values": {
+                "*": "Not stated in this brochure"
+              },
+              "when": "chas.hs>0",
+              "key": true,
+              "note": "Check the policy for the waiting-period provision."
+            }
+          ]
+        },
+        {
+          "title": "Cancer Recurrence Rider (optional)",
+          "rows": [
+            {
+              "label": "Recurrence — less than 2 years",
+              "values": {
+                "*": "0%"
+              },
+              "when": "chas.cancer>0",
+              "note": "Optional rider (\"optional recurrence benefit\"); pays only if added to the policy. % of the cancer benefit amount."
+            },
+            {
+              "label": "Recurrence — 2 years or more but less than 5",
+              "values": {
+                "*": "25% of {chas.cancer}"
+              },
+              "when": "chas.cancer>0"
+            },
+            {
+              "label": "Recurrence — 5 years or more but less than 10",
+              "values": {
+                "*": "50% of {chas.cancer}"
+              },
+              "when": "chas.cancer>0"
+            },
+            {
+              "label": "Recurrence — 10 years or more",
+              "values": {
+                "*": "100% of {chas.cancer}"
+              },
+              "when": "chas.cancer>0"
+            }
+          ]
+        },
+        {
+          "title": "Heart & Stroke Restoration Rider (optional)",
+          "rows": [
+            {
+              "label": "Restoration — less than 2 years",
+              "values": {
+                "*": "0%"
+              },
+              "when": "chas.hs>0",
+              "note": "Optional rider; pays only if added to the policy. % of the Heart & Stroke benefit amount."
+            },
+            {
+              "label": "Restoration — 2 years or more but less than 5",
+              "values": {
+                "*": "25% of {chas.hs}"
+              },
+              "when": "chas.hs>0"
+            },
+            {
+              "label": "Restoration — 5 years or more but less than 10",
+              "values": {
+                "*": "75% of {chas.hs}"
+              },
+              "when": "chas.hs>0"
+            },
+            {
+              "label": "Restoration — 10 years or more",
+              "values": {
+                "*": "100% of {chas.hs}"
+              },
+              "when": "chas.hs>0"
+            }
+          ]
+        }
+      ],
+      "notes": [
+        "\"Choose a benefit level from $5K to $75K for either Cancer, Heart & Stroke or both!\"",
+        "WA pays Heart Attack and Stroke only — no Heart Transplant, Bypass, Aortic, Valve, Angioplasty or Stent benefits.",
+        "The WA brochure drops the claims example that mentions the 30 Day Waiting Period.",
+        "Lump sums are paid directly to the insured (\"These costs could include: Childcare, Transportation, Lodging, Deductibles, Lab Tests.\").",
+        "Cancer and Heart & Stroke are separate policies, each with its own benefit amount.",
+        "Brochure: \"This is not a complete disclosure of plan qualifications and limitations\" — full list at disclosure.manhattanlife.com."
+      ]
+    },
+    {
+      "code": "CHAS-IDBR_0525",
+      "file": "CHAS-IDBR_0525 (ID Cancer Heart Attack and Stroke - Cancer, Heart & Stroke Brochure).pdf",
+      "states": [
+        "ID"
+      ],
+      "page": "3",
+      "sections": [
+        {
+          "title": "Cancer",
+          "rows": [
+            {
+              "label": "Cancer diagnosis — lump sum",
+              "values": {
+                "*": "100% of {chas.cancer}"
+              },
+              "when": "chas.cancer>0",
+              "key": true,
+              "note": "Paid directly to the insured."
+            }
+          ]
+        },
+        {
+          "title": "Heart Attack & Stroke",
+          "rows": [
+            {
+              "label": "Heart Attack & Stroke coverage",
+              "values": {
+                "*": "Not included — the ID brochure is Cancer only"
+              },
+              "when": "chas.hs>0",
+              "key": true
+            }
+          ]
+        },
+        {
+          "title": "Cancer Recurrence Rider (optional)",
+          "rows": [
+            {
+              "label": "Recurrence — less than 2 years",
+              "values": {
+                "*": "0%"
+              },
+              "when": "chas.cancer>0",
+              "note": "Optional rider (\"optional recurrence benefit\"); pays only if added to the policy. % of the cancer benefit amount."
+            },
+            {
+              "label": "Recurrence — 2 years or more but less than 5",
+              "values": {
+                "*": "25% of {chas.cancer}"
+              },
+              "when": "chas.cancer>0",
+              "key": true
+            },
+            {
+              "label": "Recurrence — 5 years or more but less than 10",
+              "values": {
+                "*": "50% of {chas.cancer}"
+              },
+              "when": "chas.cancer>0",
+              "key": true
+            },
+            {
+              "label": "Recurrence — 10 years or more",
+              "values": {
+                "*": "100% of {chas.cancer}"
+              },
+              "when": "chas.cancer>0",
+              "key": true
+            }
+          ]
+        }
+      ],
+      "notes": [
+        "\"Choose a benefit level from $5K to $75K for Cancer!\"",
+        "Idaho brochure is \"This is a Cancer Insurance Policy\" — no Heart Attack & Stroke coverage is offered in ID.",
+        "Form numbers: Lump Sum Cancer Policy AK7029ID; Cancer Recurrence Rider AK7029CR.",
+        "Brochure: \"This is not a complete disclosure of plan qualifications and limitations\" — full list at disclosure.manhattanlife.com."
+      ]
+    }
+  ]
+}

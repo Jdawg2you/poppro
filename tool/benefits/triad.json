@@ -1,0 +1,558 @@
+{
+ "product": "triad",
+ "name": "Cigna PPO (Triad / USA Health Plans)",
+ "carrier": "Triad Benefits — self-insured group plan on the Cigna PPO network",
+ "columns": {
+  "by": "plan",
+  "values": [
+   "Triad Cigna 1000",
+   "Triad Cigna 1500",
+   "Triad Cigna 2500",
+   "Triad Cigna 3500",
+   "Triad Cigna 5000",
+   "Triad Cigna 3500 HSA",
+   "Triad Cigna 5000 HSA",
+   "Triad Cigna 7350"
+  ]
+ },
+ "brochures": [
+  {
+   "code": "Triad-Cigna-SBC-2026",
+   "file": "Triad CIGNA 1000/1500/2500/3500/5000/7350 Plan SBC 2026.pdf + Rate Sheet - Triad 2026.pdf (~/Downloads; summary in data/triad/TRIAD-Cigna-PPO.md)",
+   "states": [
+    "*"
+   ],
+   "page": "SBC pp. 1-5 (coverage period 01/01/2026-12/31/2026); rate sheet p. 1",
+   "sections": [
+    {
+     "title": "Deductible & out-of-pocket",
+     "rows": [
+      {
+       "label": "Calendar-year deductible",
+       "values": {
+        "Triad Cigna 1000": "$1,000/individual or $2,000/family in network; $2,000/individual or $4,000 family out of network",
+        "Triad Cigna 1500": "$1,500/individual or $3,000/family in network; $3,000/individual or $6,000/family out of network",
+        "Triad Cigna 2500": "$2,500/individual or $5,000/family in network; $5,000/individual or $10,000/family out of network",
+        "Triad Cigna 3500": "$3,500/individual or $7,000/family in network; $7,000/individual or $14,000/family out of network",
+        "Triad Cigna 5000": "$5,000/individual or $10,000/family in network; $10,000/individual or $20,000/family out of network",
+        "Triad Cigna 3500 HSA": "$3,500 (rate sheet; family and out-of-network amounts not listed)",
+        "Triad Cigna 5000 HSA": "$5,000 (rate sheet; family and out-of-network amounts not listed)",
+        "Triad Cigna 7350": "$7,350/individual or $14,700/family in network; $14,700/individual or $29,400/family out of network"
+       },
+       "key": true,
+       "note": "Runs January 1 to December 31 whatever the start date. Each family member meets their own deductible until the family total is met."
+      },
+      {
+       "label": "Out-of-pocket maximum",
+       "values": {
+        "Triad Cigna 1000": "$5,000/individual or $10,000/family in network; $10,000/individual or $20,000/family out of network",
+        "Triad Cigna 1500": "$7,350/individual or $14,700/family in network; $14,700/individual or $29,400/family out of network",
+        "Triad Cigna 2500": "$7,350/individual or $14,700/family in network; $14,700/individual or $29,400/family out of network",
+        "Triad Cigna 3500": "$7,350/individual or $14,700/family in network; $14,700/individual or $29,400/family out of network",
+        "Triad Cigna 5000": "$7,350/individual or $14,700/family in network; $14,700/individual or $29,400/family out of network",
+        "Triad Cigna 3500 HSA": "$6,550 (rate sheet; family and out-of-network amounts not listed)",
+        "Triad Cigna 5000 HSA": "$6,550 (rate sheet; family and out-of-network amounts not listed)",
+        "Triad Cigna 7350": "$7,350/individual or $14,700/family in network; $14,700/individual or $29,400/family out of network"
+       },
+       "key": true,
+       "note": "Premiums, balance-billing charges and non-covered care do not count toward it."
+      },
+      {
+       "label": "Lifetime maximum",
+       "values": {
+        "Triad Cigna 1000": "Unlimited Benefit",
+        "Triad Cigna 1500": "Unlimited Benefit",
+        "Triad Cigna 2500": "Unlimited Benefit",
+        "Triad Cigna 3500": "Unlimited Benefit",
+        "Triad Cigna 5000": "Unlimited Benefit",
+        "Triad Cigna 3500 HSA": "Unlimited Benefit",
+        "Triad Cigna 5000 HSA": "Unlimited Benefit",
+        "Triad Cigna 7350": "Unlimited Benefit"
+       }
+      },
+      {
+       "label": "Referral needed for a specialist",
+       "values": {
+        "Triad Cigna 1000": "No",
+        "Triad Cigna 1500": "No",
+        "Triad Cigna 2500": "No",
+        "Triad Cigna 3500": "No",
+        "Triad Cigna 5000": "No",
+        "Triad Cigna 3500 HSA": "Not listed on the rate sheet (no SBC for the HSA plans on file)",
+        "Triad Cigna 5000 HSA": "Not listed on the rate sheet (no SBC for the HSA plans on file)",
+        "Triad Cigna 7350": "No"
+       }
+      }
+     ]
+    },
+    {
+     "title": "Doctor office visits",
+     "rows": [
+      {
+       "label": "Primary care visit (injury or illness)",
+       "values": {
+        "Triad Cigna 1000": "$20 copayment/visit",
+        "Triad Cigna 1500": "$30 copayment/visit",
+        "Triad Cigna 2500": "$30 copayment/visit",
+        "Triad Cigna 3500": "$45 copayment/visit",
+        "Triad Cigna 5000": "$45 copayment/visit",
+        "Triad Cigna 3500 HSA": "Ded + 20% (rate sheet)",
+        "Triad Cigna 5000 HSA": "Ded + 20% (rate sheet)",
+        "Triad Cigna 7350": "$50 copayment/visit"
+       },
+       "key": true
+      },
+      {
+       "label": "Specialist visit",
+       "values": {
+        "Triad Cigna 1000": "$40 copayment/visit",
+        "Triad Cigna 1500": "$60 copayment/visit",
+        "Triad Cigna 2500": "$60 copayment/visit",
+        "Triad Cigna 3500": "$90 copayment/visit",
+        "Triad Cigna 5000": "$90 copayment/visit",
+        "Triad Cigna 3500 HSA": "Ded + 20% (rate sheet)",
+        "Triad Cigna 5000 HSA": "Ded + 20% (rate sheet)",
+        "Triad Cigna 7350": "$100 copayment/visit"
+       },
+       "key": true
+      },
+      {
+       "label": "Urgent care",
+       "values": {
+        "Triad Cigna 1000": "$40 copayment/visit",
+        "Triad Cigna 1500": "$60 copayment/visit",
+        "Triad Cigna 2500": "$60 copayment/visit",
+        "Triad Cigna 3500": "$90 copayment/visit",
+        "Triad Cigna 5000": "$90 copayment/visit",
+        "Triad Cigna 3500 HSA": "Ded + 20% (rate sheet)",
+        "Triad Cigna 5000 HSA": "Ded + 20% (rate sheet)",
+        "Triad Cigna 7350": "$100 copayment/visit"
+       },
+       "key": true
+      },
+      {
+       "label": "Chiropractic visit",
+       "values": {
+        "Triad Cigna 1000": "$20 copayment/visit",
+        "Triad Cigna 1500": "$20 copayment/visit",
+        "Triad Cigna 2500": "$20 copayment/visit",
+        "Triad Cigna 3500": "$20 copayment/visit",
+        "Triad Cigna 5000": "$20 copayment/visit",
+        "Triad Cigna 3500 HSA": "Ded + 20% (rate sheet)",
+        "Triad Cigna 5000 HSA": "Ded + 20% (rate sheet)",
+        "Triad Cigna 7350": "$20 copayment/visit"
+       },
+       "note": "Limited to 15 chiropractic visits per calendar year (SBC rehabilitation limits)."
+      },
+      {
+       "label": "Mental health / substance use — outpatient",
+       "values": {
+        "Triad Cigna 1000": "$20 copayment/visit",
+        "Triad Cigna 1500": "$30 copayment/visit",
+        "Triad Cigna 2500": "$30 copayment/visit",
+        "Triad Cigna 3500": "$45 copayment/visit",
+        "Triad Cigna 5000": "$45 copayment/visit",
+        "Triad Cigna 3500 HSA": "Ded + 20% (rate sheet)",
+        "Triad Cigna 5000 HSA": "Ded + 20% (rate sheet)",
+        "Triad Cigna 7350": "$50 copayment/visit"
+       },
+       "note": "The 1000 plan SBC shows $20; the rate sheet shows $30 for the 1000 plan. The SBC governs — confirm with USA Health before quoting the 1000 plan."
+      }
+     ]
+    },
+    {
+     "title": "Preventive care",
+     "rows": [
+      {
+       "label": "Preventive care / screening / immunization",
+       "values": {
+        "Triad Cigna 1000": "0% coinsurance in network (no charge); not covered out of network",
+        "Triad Cigna 1500": "0% coinsurance in network (no charge); not covered out of network",
+        "Triad Cigna 2500": "0% coinsurance in network (no charge); not covered out of network",
+        "Triad Cigna 3500": "0% coinsurance in network (no charge); not covered out of network",
+        "Triad Cigna 5000": "0% coinsurance in network (no charge); not covered out of network",
+        "Triad Cigna 3500 HSA": "Covered 100% (rate sheet)",
+        "Triad Cigna 5000 HSA": "Covered 100% (rate sheet)",
+        "Triad Cigna 7350": "0% coinsurance in network (no charge); not covered out of network"
+       },
+       "note": "Covered before the deductible."
+      }
+     ]
+    },
+    {
+     "title": "Hospital stay",
+     "rows": [
+      {
+       "label": "Hospital facility (e.g. hospital room)",
+       "values": {
+        "Triad Cigna 1000": "20% after deductible",
+        "Triad Cigna 1500": "20% after deductible",
+        "Triad Cigna 2500": "20% after deductible",
+        "Triad Cigna 3500": "20% after deductible",
+        "Triad Cigna 5000": "20% after deductible",
+        "Triad Cigna 3500 HSA": "Ded + 20% (rate sheet)",
+        "Triad Cigna 5000 HSA": "Ded + 20% (rate sheet)",
+        "Triad Cigna 7350": "0% after deductible"
+       },
+       "key": true,
+       "note": "Failure to obtain precertification results in a 50% benefit reduction ($2,500 maximum)."
+      },
+      {
+       "label": "Hospital physician / surgeon fees",
+       "values": {
+        "Triad Cigna 1000": "20% after deductible",
+        "Triad Cigna 1500": "20% after deductible",
+        "Triad Cigna 2500": "20% after deductible",
+        "Triad Cigna 3500": "20% after deductible",
+        "Triad Cigna 5000": "20% after deductible",
+        "Triad Cigna 3500 HSA": "Ded + 20% (rate sheet)",
+        "Triad Cigna 5000 HSA": "Ded + 20% (rate sheet)",
+        "Triad Cigna 7350": "0% after deductible"
+       }
+      },
+      {
+       "label": "Mental health / substance use — inpatient",
+       "values": {
+        "Triad Cigna 1000": "20% after deductible",
+        "Triad Cigna 1500": "20% after deductible",
+        "Triad Cigna 2500": "20% after deductible",
+        "Triad Cigna 3500": "20% after deductible",
+        "Triad Cigna 5000": "20% after deductible",
+        "Triad Cigna 3500 HSA": "Ded + 20% (rate sheet)",
+        "Triad Cigna 5000 HSA": "Ded + 20% (rate sheet)",
+        "Triad Cigna 7350": "0% after deductible"
+       },
+       "note": "Precertification required (50% benefit reduction, $2,500 maximum, if missed)."
+      }
+     ]
+    },
+    {
+     "title": "Surgery",
+     "rows": [
+      {
+       "label": "Outpatient surgery facility (e.g. ambulatory surgery center)",
+       "values": {
+        "Triad Cigna 1000": "20% after deductible",
+        "Triad Cigna 1500": "20% after deductible",
+        "Triad Cigna 2500": "20% after deductible",
+        "Triad Cigna 3500": "20% after deductible",
+        "Triad Cigna 5000": "20% after deductible",
+        "Triad Cigna 3500 HSA": "Ded + 20% (rate sheet)",
+        "Triad Cigna 5000 HSA": "Ded + 20% (rate sheet)",
+        "Triad Cigna 7350": "0% after deductible"
+       },
+       "note": "Precertification required (50% benefit reduction, $2,500 maximum, if missed)."
+      },
+      {
+       "label": "Outpatient physician / surgeon fees",
+       "values": {
+        "Triad Cigna 1000": "20% after deductible",
+        "Triad Cigna 1500": "20% after deductible",
+        "Triad Cigna 2500": "20% after deductible",
+        "Triad Cigna 3500": "20% after deductible",
+        "Triad Cigna 5000": "20% after deductible",
+        "Triad Cigna 3500 HSA": "Ded + 20% (rate sheet)",
+        "Triad Cigna 5000 HSA": "Ded + 20% (rate sheet)",
+        "Triad Cigna 7350": "0% after deductible"
+       }
+      }
+     ]
+    },
+    {
+     "title": "Emergency & ambulance",
+     "rows": [
+      {
+       "label": "Emergency room care",
+       "values": {
+        "Triad Cigna 1000": "20% after deductible",
+        "Triad Cigna 1500": "20% after deductible",
+        "Triad Cigna 2500": "20% after deductible",
+        "Triad Cigna 3500": "20% after deductible",
+        "Triad Cigna 5000": "20% after deductible",
+        "Triad Cigna 3500 HSA": "Not listed on the rate sheet (no SBC for the HSA plans on file)",
+        "Triad Cigna 5000 HSA": "Not listed on the rate sheet (no SBC for the HSA plans on file)",
+        "Triad Cigna 7350": "0% after deductible"
+       },
+       "key": true,
+       "note": "Out of network: same cost share, subject to the plan's allowable fee."
+      },
+      {
+       "label": "Emergency medical transportation",
+       "values": {
+        "Triad Cigna 1000": "20% after deductible",
+        "Triad Cigna 1500": "20% after deductible",
+        "Triad Cigna 2500": "20% after deductible",
+        "Triad Cigna 3500": "20% after deductible",
+        "Triad Cigna 5000": "20% after deductible",
+        "Triad Cigna 3500 HSA": "Not listed on the rate sheet (no SBC for the HSA plans on file)",
+        "Triad Cigna 5000 HSA": "Not listed on the rate sheet (no SBC for the HSA plans on file)",
+        "Triad Cigna 7350": "0% after deductible"
+       }
+      }
+     ]
+    },
+    {
+     "title": "Diagnostics",
+     "rows": [
+      {
+       "label": "Diagnostic test (blood work)",
+       "values": {
+        "Triad Cigna 1000": "20% after deductible",
+        "Triad Cigna 1500": "20% after deductible",
+        "Triad Cigna 2500": "20% after deductible",
+        "Triad Cigna 3500": "20% after deductible",
+        "Triad Cigna 5000": "20% after deductible",
+        "Triad Cigna 3500 HSA": "Ded + 20% (rate sheet)",
+        "Triad Cigna 5000 HSA": "Ded + 20% (rate sheet)",
+        "Triad Cigna 7350": "0% after deductible"
+       }
+      },
+      {
+       "label": "Imaging (X-ray, CT/PET scans, MRIs)",
+       "values": {
+        "Triad Cigna 1000": "20% after deductible",
+        "Triad Cigna 1500": "20% after deductible",
+        "Triad Cigna 2500": "20% after deductible",
+        "Triad Cigna 3500": "20% after deductible",
+        "Triad Cigna 5000": "20% after deductible",
+        "Triad Cigna 3500 HSA": "Ded + 20% (rate sheet)",
+        "Triad Cigna 5000 HSA": "Ded + 20% (rate sheet)",
+        "Triad Cigna 7350": "0% after deductible"
+       },
+       "note": "Precertification required (50% benefit reduction, $2,500 maximum, if missed)."
+      }
+     ]
+    },
+    {
+     "title": "Prescriptions (TrueScripts)",
+     "rows": [
+      {
+       "label": "Generic / preferred / non-preferred brand",
+       "values": {
+        "Triad Cigna 1000": "Generic $15 · Preferred brand $45 · Non-preferred brand $85 (1-30 day supply); 31-90 day supply: $45 / $90 / $150",
+        "Triad Cigna 1500": "Generic $15 · Preferred brand $45 · Non-preferred brand $85 (1-30 day supply); 31-90 day supply: $45 / $90 / $150",
+        "Triad Cigna 2500": "Generic $15 · Preferred brand $45 · Non-preferred brand $85 (1-30 day supply); 31-90 day supply: $45 / $90 / $150",
+        "Triad Cigna 3500": "Generic $15 · Preferred brand $65 · Non-preferred brand $100 (1-30 day supply); 31-90 day supply: $45 / $90 / $150",
+        "Triad Cigna 5000": "Generic $15 · Preferred brand $65 · Non-preferred brand $100 (1-30 day supply); 31-90 day supply: $45 / $90 / $150",
+        "Triad Cigna 3500 HSA": "$15 / $65 / $100 / 20% after Ded (rate sheet)",
+        "Triad Cigna 5000 HSA": "$15 / $65 / $100 / 20% after Ded (rate sheet)",
+        "Triad Cigna 7350": "Generic $15 · Preferred brand $65 · Non-preferred brand $100 (1-30 day supply); 31-90 day supply: $45 / $90 / $150"
+       },
+       "key": true,
+       "note": "Copayments apply to retail and mail order. Out-of-network pharmacies are not covered."
+      },
+      {
+       "label": "Specialty drugs",
+       "values": {
+        "Triad Cigna 1000": "50% copayment (1-30 day supply); prior authorization required",
+        "Triad Cigna 1500": "50% copayment (1-30 day supply); prior authorization required",
+        "Triad Cigna 2500": "50% copayment (1-30 day supply); prior authorization required",
+        "Triad Cigna 3500": "50% copayment (1-30 day supply); prior authorization required",
+        "Triad Cigna 5000": "50% copayment (1-30 day supply); prior authorization required",
+        "Triad Cigna 3500 HSA": "Not listed on the rate sheet (no SBC for the HSA plans on file)",
+        "Triad Cigna 5000 HSA": "Not listed on the rate sheet (no SBC for the HSA plans on file)",
+        "Triad Cigna 7350": "50% copayment (1-30 day supply); prior authorization required"
+       },
+       "note": "The rate sheet shows 20% for the fourth tier; the SBCs show 50%. The SBC governs — confirm before quoting a specialty drug."
+      }
+     ]
+    },
+    {
+     "title": "Pregnancy",
+     "rows": [
+      {
+       "label": "Prenatal office visits",
+       "values": {
+        "Triad Cigna 1000": "20% after deductible",
+        "Triad Cigna 1500": "20% after deductible",
+        "Triad Cigna 2500": "20% after deductible",
+        "Triad Cigna 3500": "20% after deductible",
+        "Triad Cigna 5000": "20% after deductible",
+        "Triad Cigna 3500 HSA": "Not listed on the rate sheet (no SBC for the HSA plans on file)",
+        "Triad Cigna 5000 HSA": "Not listed on the rate sheet (no SBC for the HSA plans on file)",
+        "Triad Cigna 7350": "0% after deductible"
+       }
+      },
+      {
+       "label": "Childbirth / delivery — professional and facility",
+       "values": {
+        "Triad Cigna 1000": "20% after deductible",
+        "Triad Cigna 1500": "20% after deductible",
+        "Triad Cigna 2500": "20% after deductible",
+        "Triad Cigna 3500": "20% after deductible",
+        "Triad Cigna 5000": "20% after deductible",
+        "Triad Cigna 3500 HSA": "Not listed on the rate sheet (no SBC for the HSA plans on file)",
+        "Triad Cigna 5000 HSA": "Not listed on the rate sheet (no SBC for the HSA plans on file)",
+        "Triad Cigna 7350": "0% after deductible"
+       }
+      }
+     ]
+    },
+    {
+     "title": "Recovery & special needs",
+     "rows": [
+      {
+       "label": "Home health care",
+       "values": {
+        "Triad Cigna 1000": "20% after deductible",
+        "Triad Cigna 1500": "20% after deductible",
+        "Triad Cigna 2500": "20% after deductible",
+        "Triad Cigna 3500": "20% after deductible",
+        "Triad Cigna 5000": "20% after deductible",
+        "Triad Cigna 3500 HSA": "Not listed on the rate sheet (no SBC for the HSA plans on file)",
+        "Triad Cigna 5000 HSA": "Not listed on the rate sheet (no SBC for the HSA plans on file)",
+        "Triad Cigna 7350": "0% after deductible"
+       },
+       "note": "Precertification required."
+      },
+      {
+       "label": "Rehabilitation services",
+       "values": {
+        "Triad Cigna 1000": "0% after copayment, per visit",
+        "Triad Cigna 1500": "0% after copayment, per visit",
+        "Triad Cigna 2500": "0% after copayment, per visit",
+        "Triad Cigna 3500": "0% after copayment, per visit",
+        "Triad Cigna 5000": "0% after copayment, per visit",
+        "Triad Cigna 3500 HSA": "Not listed on the rate sheet (no SBC for the HSA plans on file)",
+        "Triad Cigna 5000 HSA": "Not listed on the rate sheet (no SBC for the HSA plans on file)",
+        "Triad Cigna 7350": "0% after copayment, per visit"
+       },
+       "note": "Limited to 20 visits per calendar year for physical and occupational therapies combined, 20 visits for speech, 15 visits for chiropractic."
+      },
+      {
+       "label": "Habilitation services",
+       "values": {
+        "Triad Cigna 1000": "0% after copayment, per visit",
+        "Triad Cigna 1500": "0% after copayment, per visit",
+        "Triad Cigna 2500": "0% after copayment, per visit",
+        "Triad Cigna 3500": "0% after copayment, per visit",
+        "Triad Cigna 5000": "0% after copayment, per visit",
+        "Triad Cigna 3500 HSA": "Not listed on the rate sheet (no SBC for the HSA plans on file)",
+        "Triad Cigna 5000 HSA": "Not listed on the rate sheet (no SBC for the HSA plans on file)",
+        "Triad Cigna 7350": "0% after copayment, per visit"
+       },
+       "note": "Limited to 20 visits per calendar year, combined with the rehabilitation therapies."
+      },
+      {
+       "label": "Skilled nursing care",
+       "values": {
+        "Triad Cigna 1000": "20% after deductible",
+        "Triad Cigna 1500": "20% after deductible",
+        "Triad Cigna 2500": "20% after deductible",
+        "Triad Cigna 3500": "20% after deductible",
+        "Triad Cigna 5000": "20% after deductible",
+        "Triad Cigna 3500 HSA": "Not listed on the rate sheet (no SBC for the HSA plans on file)",
+        "Triad Cigna 5000 HSA": "Not listed on the rate sheet (no SBC for the HSA plans on file)",
+        "Triad Cigna 7350": "0% after deductible"
+       },
+       "note": "Limited to 60 days per calendar year. Precertification required."
+      },
+      {
+       "label": "Durable medical equipment",
+       "values": {
+        "Triad Cigna 1000": "20% after deductible",
+        "Triad Cigna 1500": "20% after deductible",
+        "Triad Cigna 2500": "20% after deductible",
+        "Triad Cigna 3500": "20% after deductible",
+        "Triad Cigna 5000": "20% after deductible",
+        "Triad Cigna 3500 HSA": "Not listed on the rate sheet (no SBC for the HSA plans on file)",
+        "Triad Cigna 5000 HSA": "Not listed on the rate sheet (no SBC for the HSA plans on file)",
+        "Triad Cigna 7350": "0% after deductible"
+       },
+       "note": "Precertification required. Limited to 12-month rental or purchase price, whichever is less."
+      },
+      {
+       "label": "Hospice services",
+       "values": {
+        "Triad Cigna 1000": "20% after deductible",
+        "Triad Cigna 1500": "20% after deductible",
+        "Triad Cigna 2500": "20% after deductible",
+        "Triad Cigna 3500": "20% after deductible",
+        "Triad Cigna 5000": "20% after deductible",
+        "Triad Cigna 3500 HSA": "Not listed on the rate sheet (no SBC for the HSA plans on file)",
+        "Triad Cigna 5000 HSA": "Not listed on the rate sheet (no SBC for the HSA plans on file)",
+        "Triad Cigna 7350": "0% after deductible"
+       },
+       "note": "Precertification required."
+      }
+     ]
+    },
+    {
+     "title": "Children's eye & dental",
+     "rows": [
+      {
+       "label": "Children's eye exam",
+       "values": {
+        "Triad Cigna 1000": "No charge in network; not covered out of network",
+        "Triad Cigna 1500": "No charge in network; not covered out of network",
+        "Triad Cigna 2500": "No charge in network; not covered out of network",
+        "Triad Cigna 3500": "No charge in network; not covered out of network",
+        "Triad Cigna 5000": "No charge in network; not covered out of network",
+        "Triad Cigna 3500 HSA": "Not listed on the rate sheet (no SBC for the HSA plans on file)",
+        "Triad Cigna 5000 HSA": "Not listed on the rate sheet (no SBC for the HSA plans on file)",
+        "Triad Cigna 7350": "No charge in network; not covered out of network"
+       }
+      },
+      {
+       "label": "Children's glasses",
+       "values": {
+        "Triad Cigna 1000": "Not covered",
+        "Triad Cigna 1500": "Not covered",
+        "Triad Cigna 2500": "Not covered",
+        "Triad Cigna 3500": "Not covered",
+        "Triad Cigna 5000": "Not covered",
+        "Triad Cigna 3500 HSA": "Not listed on the rate sheet (no SBC for the HSA plans on file)",
+        "Triad Cigna 5000 HSA": "Not listed on the rate sheet (no SBC for the HSA plans on file)",
+        "Triad Cigna 7350": "Not covered"
+       }
+      },
+      {
+       "label": "Children's dental check-up",
+       "values": {
+        "Triad Cigna 1000": "Not covered",
+        "Triad Cigna 1500": "Not covered",
+        "Triad Cigna 2500": "Not covered",
+        "Triad Cigna 3500": "Not covered",
+        "Triad Cigna 5000": "Not covered",
+        "Triad Cigna 3500 HSA": "Not listed on the rate sheet (no SBC for the HSA plans on file)",
+        "Triad Cigna 5000 HSA": "Not listed on the rate sheet (no SBC for the HSA plans on file)",
+        "Triad Cigna 7350": "Not covered"
+       }
+      }
+     ]
+    },
+    {
+     "title": "Out of network",
+     "rows": [
+      {
+       "label": "Out-of-network services (most)",
+       "values": {
+        "Triad Cigna 1000": "Deductible, then 40% coinsurance subject to Plan's allowable fee",
+        "Triad Cigna 1500": "Deductible, then 40% coinsurance subject to Plan's allowable fee",
+        "Triad Cigna 2500": "Deductible, then 40% coinsurance subject to Plan's allowable fee",
+        "Triad Cigna 3500": "Deductible, then 40% coinsurance subject to Plan's allowable fee",
+        "Triad Cigna 5000": "Deductible, then 40% coinsurance subject to Plan's allowable fee",
+        "Triad Cigna 3500 HSA": "Not listed on the rate sheet (no SBC for the HSA plans on file)",
+        "Triad Cigna 5000 HSA": "Not listed on the rate sheet (no SBC for the HSA plans on file)",
+        "Triad Cigna 7350": "Deductible, then 0% coinsurance subject to Plan's allowable fee"
+       },
+       "note": "Out-of-network providers may balance bill. On the 7350 SBC the out-of-network specialist visit reads \"Deductible, 50% coinsurance\" while other out-of-network lines read 0% — as printed; confirm before quoting."
+      }
+     ]
+    }
+   ],
+   "notes": [
+    "HSA plans (3500 HSA, 5000 HSA): no SBC is on file, so their values come from the one-page rate sheet only; everything the rate sheet does not list is marked as not listed.",
+    "Where the rate sheet and an SBC disagree, the SBC is used — the rate sheet itself says the Schedule of Benefits / plan documents govern.",
+    "Self-insured group plan. Cigna is the network, not the insurance company.",
+    "Medically underwritten — approval is not guaranteed and final rates can land above or below the quoted rate.",
+    "Applicant must be self-employed with their own EIN (per the USA Health product page summarized in TRIAD-Cigna-PPO.md).",
+    "Deductible and out-of-pocket maximum run on the calendar year (January 1 – December 31).",
+    "Failure to obtain precertification reduces the benefit by 50%, up to a $2,500 maximum penalty.",
+    "Not covered: acupuncture, bariatric surgery, cosmetic surgery, adult dental care, adult hearing aids, infertility treatments, long-term care, non-emergency care when traveling outside the U.S., private-duty nursing, routine foot care, weight loss programs.",
+    "Other covered services (limits may apply): chiropractic care, durable medical equipment, hearing aids (under age 18), routine eye care (adult).",
+    "Cigna PPO provider search: select \"Employer or School\", continue as guest, then choose \"PPO, Choice Fund PPO\"."
+   ]
+  }
+ ]
+}

@@ -41,7 +41,7 @@ def group(R, states):
     return {"states": sorted(states), "rep": R.get("st", "TX"),
             "sexRated": sex_rated(R["plans"]),
             "plans": series(R["plans"], lambda r: f'{r["plan"]} | {r["unit"].strip()}'),
-            "riders": series(R["riders"], lambda r: f'{r["rider"]} | {str(r["unit"]).strip()}')}
+            "riders": series(R["riders"], lambda r: f'{r["rider"]} | {str(r["unit"]).strip()}' + (f' | ded {int(r["ded"])*1000}' if r.get("ded") else ''))}
 
 products = {}
 BATCH_UNSAFE = {"703"}   # HI Select: batched requests collapse coverage amounts and households.

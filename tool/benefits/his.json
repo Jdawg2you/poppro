@@ -1,0 +1,400 @@
+{
+  "product": "his",
+  "name": "Hospital Indemnity Select",
+  "carrier": "ManhattanLife",
+  "columns": {
+    "by": "*",
+    "values": [
+      "*"
+    ]
+  },
+  "tokens": {
+    "{his.ben}": "the per-hospital-stay (1 Day plan daily benefit) amount chosen on the row",
+    "{his.outp}": "the outpatient surgical procedure rider amount chosen on the row"
+  },
+  "brochures": [
+    {
+      "code": "HIS-BR_0126",
+      "file": "HIS-BR_0126 (AL Hospital Indemnity Select - Hospital Indemnity Select Brochure).pdf",
+      "states": [
+        "AL",
+        "AR",
+        "AZ",
+        "CA",
+        "CT",
+        "DC",
+        "FL",
+        "GA",
+        "HI",
+        "IN",
+        "KY",
+        "LA",
+        "MD",
+        "MI",
+        "MN",
+        "MO",
+        "MS",
+        "NC",
+        "ND",
+        "NE",
+        "NV",
+        "OH",
+        "OK",
+        "OR",
+        "SC",
+        "SD",
+        "TN",
+        "VA",
+        "WI",
+        "WV"
+      ],
+      "page": "3",
+      "sections": [
+        {
+          "title": "Hospital stay",
+          "rows": [
+            {
+              "label": "Hospital confinement benefit — 1 Day plan (issue ages 18 to 64½)",
+              "values": {
+                "*": "{his.ben} for 1 day per hospital confinement or observation stay"
+              },
+              "key": true,
+              "note": "Brochure: pays a daily benefit if hospitalized for observation or confinement; daily benefit $50 to $10,000, selectable in $50 increments. Under 64½ the only benefit period is 1 Day, so it pays once per confinement (brochure claim example: 3 nights paid the 1 Day benefit once)."
+            },
+            {
+              "label": "Hospital confinement benefit — issue ages 64½ to 89",
+              "values": {
+                "*": "3 Days, 6 Days or 10 Days plan; daily benefit $50 to $750"
+              },
+              "note": "Paid per day of confinement up to the plan's number of days. Not available in CA (CA issue ages are 18 to 64½ only)."
+            },
+            {
+              "label": "Benefit restoration",
+              "values": {
+                "*": "After 60 days of being discharged, your benefits will fully restore"
+              },
+              "key": true
+            },
+            {
+              "label": "Short duration hospital stay",
+              "values": {
+                "*": "Discharged within 12 and 23 hours (observation or confinement): 1 Day plan pays 25% of the hospital confinement amount; 3, 6 and 10 Days plans pay 100% of the daily benefit amount"
+              },
+              "key": true,
+              "note": "In SD there is no time restriction — paid while in the Hospital and never admitted, for sickness or injury."
+            },
+            {
+              "label": "Mental health confinement",
+              "values": {
+                "*": "$175 per day, up to 7 days per calendar year"
+              },
+              "note": "For a mental or nervous disorder; paid in lieu of the hospital confinement indemnity benefit."
+            }
+          ]
+        },
+        {
+          "title": "Surgery",
+          "rows": [
+            {
+              "label": "Outpatient surgical procedure rider",
+              "values": {
+                "*": "{his.outp} per day when a surgical procedure is performed in an ambulatory surgical center or outpatient hospital facility, up to 2 times per calendar year"
+              },
+              "key": true,
+              "when": "his.outp>0",
+              "note": "Rider amounts in the brochure: $250, $500, $750, $1,000, $1,250 or $1,500. Not available in CT."
+            }
+          ]
+        },
+        {
+          "title": "Emergency & ambulance",
+          "rows": [
+            {
+              "label": "Emergency room or urgent care (injury)",
+              "values": {
+                "*": "$150 if treated for an Injury in an Emergency Room or an Urgent Care Facility, up to 6 days per calendar year"
+              },
+              "key": true,
+              "note": "Injury only — the brochure does not pay this for sickness."
+            },
+            {
+              "label": "Ambulance",
+              "values": {
+                "*": "$200 per ground or air ambulance ride to or from a medical facility, up to 4 times per calendar year, lifetime maximum of 15 trips"
+              },
+              "key": true
+            }
+          ]
+        },
+        {
+          "title": "Optional riders",
+          "rows": [
+            {
+              "label": "Skilled Nursing Facility rider (not available under age 40)",
+              "values": {
+                "*": "Option 1: $100, $150, $200 or $250 per day for days 1 through 50. Option 2: $100, $150, $200 or $250 per day for days 21 through 100"
+              },
+              "note": "Skilled nursing confinement must be within 30 days of a hospital confinement of at least three consecutive days. POP Pro does not quote this rider."
+            },
+            {
+              "label": "First Day Hospital Admission rider (not available under 64½)",
+              "values": {
+                "*": "$250, $500 or $750 upon admission to the hospital, up to 6 times per calendar year"
+              },
+              "note": "Paid in addition to the base hospital confinement benefit. POP Pro does not quote this rider."
+            }
+          ]
+        }
+      ],
+      "notes": [
+        "Brochure: \"Benefits available immediately\" — it states no waiting period and no pre-existing condition limitation. Full limitations are only at disclosure.manhattanlife.com, not in the brochure.",
+        "Brochure: \"Guarantee Issued for ages 64½ to 70\"; \"Available for ages 18-89\"; \"Guaranteed Renewable for life\"; \"Rates DO NOT increase as you age\".",
+        "Individual, Individual & Spouse, Individual + Children and Family rates available.",
+        "Benefits are paid directly to the policyholder, regardless of any other insurance.",
+        "POP Pro per-stay amounts ($1,000–$10,000) fit only the 1 Day plan (issue ages 18 to 64½). Issue ages 64½ to 89 choose a 3, 6 or 10 Days plan capped at $750 a day.",
+        "CA: issue ages 18-64½ only, so only the 1 Day plan; the 3/6/10 Days plans are not available in CA.",
+        "CT: the Outpatient Surgical Procedure rider is not available.",
+        "HI: spouse or reciprocal beneficiary; NV and OR: spouse or domestic partner.",
+        "Policy form AN7003 (and state variations); riders AN7003HA, AN7003OS, AN7003SN."
+      ]
+    },
+    {
+      "code": "HIS-IAPATXUTBR_0126",
+      "file": "HIS-IAPATXUTBR_0126 (IA Hospital Indemnity Select - Hospital Indemnity Select Brochure).pdf",
+      "states": [
+        "IA",
+        "PA",
+        "TX",
+        "UT"
+      ],
+      "page": "3",
+      "sections": [
+        {
+          "title": "Hospital stay",
+          "rows": [
+            {
+              "label": "Hospital confinement benefit — 1 Day plan (issue ages 18 to 64½)",
+              "values": {
+                "*": "{his.ben} for 1 day per hospital confinement or observation stay"
+              },
+              "key": true,
+              "note": "Brochure: pays a daily benefit if hospitalized for observation or confinement; daily benefit $50 to $10,000, selectable in $50 increments. Under 64½ the only benefit period is 1 Day, so it pays once per confinement (brochure claim example: 3 nights paid the 1 Day benefit once)."
+            },
+            {
+              "label": "Hospital confinement benefit — issue ages 64½ to 89",
+              "values": {
+                "*": "3 Days, 6 Days or 10 Days plan; daily benefit $50 to $750"
+              },
+              "note": "Paid per day of confinement up to the plan's number of days."
+            },
+            {
+              "label": "Continuing daily benefit",
+              "values": {
+                "*": "IA $40 per day; PA $15 per day; TX $15 per day; UT $50 per day — for each additional day of the same confinement after the base benefit is exhausted, up to a maximum of 31 days"
+              },
+              "key": true,
+              "note": "Only in this brochure (IA, PA, TX, UT). Brochure TX claim example: 3 nights paid the 1 Day benefit plus $15 for day 2 and $15 for day 3."
+            },
+            {
+              "label": "Benefit restoration",
+              "values": {
+                "*": "After 60 days of being discharged, your benefits will fully restore"
+              },
+              "key": true
+            },
+            {
+              "label": "Short duration hospital stay",
+              "values": {
+                "*": "Admitted and discharged within 12 and 24 hours (observation or confinement): 1 Day plan pays 25% of the daily benefit amount; 3, 6 and 10 Days plans pay 100% of the daily benefit amount"
+              },
+              "key": true
+            },
+            {
+              "label": "Mental health confinement",
+              "values": {
+                "*": "$175 per day, up to 7 days per calendar year"
+              },
+              "note": "For a mental or nervous disorder; paid in lieu of the hospital confinement indemnity benefit."
+            }
+          ]
+        },
+        {
+          "title": "Surgery",
+          "rows": [
+            {
+              "label": "Outpatient surgical procedure rider",
+              "values": {
+                "*": "{his.outp} per day when a surgical procedure is performed in an ambulatory surgical center or outpatient hospital facility, up to 2 times per calendar year"
+              },
+              "key": true,
+              "when": "his.outp>0",
+              "note": "Rider amounts in the brochure: $250, $500, $750, $1,000, $1,250 or $1,500."
+            }
+          ]
+        },
+        {
+          "title": "Emergency & ambulance",
+          "rows": [
+            {
+              "label": "Emergency room or urgent care (injury)",
+              "values": {
+                "*": "$150 if treated for an Injury in an Emergency Room or an Urgent Care Facility, up to 6 days per calendar year"
+              },
+              "key": true,
+              "note": "Injury only — the brochure does not pay this for sickness."
+            },
+            {
+              "label": "Ambulance",
+              "values": {
+                "*": "$200 per ground or air ambulance ride to or from a medical facility, up to 4 times per calendar year, lifetime maximum of 15 trips"
+              },
+              "key": true
+            }
+          ]
+        },
+        {
+          "title": "Optional riders",
+          "rows": [
+            {
+              "label": "Skilled Nursing Facility rider (not available under age 40)",
+              "values": {
+                "*": "Option 1: $100, $150, $200 or $250 per day for days 1 through 50. Option 2: $100, $150, $200 or $250 per day for days 21 through 100"
+              },
+              "note": "Skilled nursing confinement must be within 30 days of a hospital confinement of at least three consecutive days. POP Pro does not quote this rider."
+            },
+            {
+              "label": "First Day Hospital Admission rider (not available under 64½)",
+              "values": {
+                "*": "$250, $500 or $750 upon admission to the hospital, up to 6 times per calendar year"
+              },
+              "note": "Paid in addition to the base hospital confinement benefit. POP Pro does not quote this rider."
+            }
+          ]
+        }
+      ],
+      "notes": [
+        "Brochure: \"Benefits available immediately\" — it states no waiting period and no pre-existing condition limitation. Full limitations are only at disclosure.manhattanlife.com, not in the brochure.",
+        "Brochure: \"Guarantee Issued for ages 64½ to 70\"; \"Available for ages 18-89\"; \"Guaranteed Renewable for life\"; \"Rates DO NOT increase as you age\".",
+        "Individual, Individual & Spouse, Individual + Children and Family rates available.",
+        "Benefits are paid directly to the policyholder, regardless of any other insurance.",
+        "POP Pro per-stay amounts ($1,000–$10,000) fit only the 1 Day plan (issue ages 18 to 64½). Issue ages 64½ to 89 choose a 3, 6 or 10 Days plan capped at $750 a day.",
+        "Brochure cover prints the code as HIS-IATXUTBR 0126; the library file (and PA folder) is HIS-IAPATXUTBR_0126 and the benefit table names PA.",
+        "Policy form AN7003 (and state variations); riders AN7003HA, AN7003OS, AN7003SN."
+      ]
+    },
+    {
+      "code": "HIS-ILBR_0126",
+      "file": "HIS-ILBR_0126 (IL Hospital Indemnity Select - Hospital Indemnity Select Brochure).pdf",
+      "states": [
+        "IL"
+      ],
+      "page": "3",
+      "sections": [
+        {
+          "title": "Hospital stay",
+          "rows": [
+            {
+              "label": "Hospital confinement benefit — 1 Day plan (issue ages 18 to 64½)",
+              "values": {
+                "*": "{his.ben} for 1 day per hospital confinement or observation stay"
+              },
+              "key": true,
+              "note": "Brochure: pays a daily benefit if hospitalized for observation or confinement; daily benefit $50 to $5,000, selectable in $50 increments. Under 64½ the only benefit period is 1 Day, so it pays once per confinement (brochure claim example: 3 nights paid the 1 Day benefit once). Illinois maximum is $5,000 — POP Pro amounts above $5,000 are not available in IL."
+            },
+            {
+              "label": "Hospital confinement benefit — issue ages 64½ to 89",
+              "values": {
+                "*": "3 Days, 6 Days or 10 Days plan; daily benefit $50 to $750"
+              },
+              "note": "Paid per day of confinement up to the plan's number of days."
+            },
+            {
+              "label": "Benefit restoration",
+              "values": {
+                "*": "After 60 days of being discharged, your benefits will fully restore"
+              },
+              "key": true
+            },
+            {
+              "label": "Short duration hospital stay",
+              "values": {
+                "*": "Admitted and discharged within 12 and 24 hours (observation or confinement): 1 Day plan pays 25% of the daily benefit amount; 3, 6 and 10 Days plans pay 100% of the daily benefit amount"
+              },
+              "key": true
+            },
+            {
+              "label": "Mental health confinement",
+              "values": {
+                "*": "$175 per day, up to 7 days per calendar year"
+              },
+              "note": "For a mental or nervous disorder; paid in lieu of the hospital confinement indemnity benefit."
+            }
+          ]
+        },
+        {
+          "title": "Surgery",
+          "rows": [
+            {
+              "label": "Outpatient surgical procedure rider",
+              "values": {
+                "*": "{his.outp} per day when a surgical procedure is performed in an ambulatory surgical center or outpatient hospital facility, up to 2 times per calendar year"
+              },
+              "key": true,
+              "when": "his.outp>0",
+              "note": "Rider amounts in the brochure: $250, $500, $750, $1,000, $1,250 or $1,500."
+            }
+          ]
+        },
+        {
+          "title": "Emergency & ambulance",
+          "rows": [
+            {
+              "label": "Emergency room or urgent care (injury)",
+              "values": {
+                "*": "Not included"
+              },
+              "key": true,
+              "note": "The Illinois brochure lists no emergency room benefit."
+            },
+            {
+              "label": "Ambulance",
+              "values": {
+                "*": "Not included"
+              },
+              "key": true,
+              "note": "The Illinois brochure lists no ambulance benefit — do not tell an IL client ambulance is included."
+            }
+          ]
+        },
+        {
+          "title": "Optional riders",
+          "rows": [
+            {
+              "label": "Skilled Nursing Facility rider (not available under age 40)",
+              "values": {
+                "*": "Option 1: $100, $150, $200 or $250 per day for days 1 through 50. Option 2: $100, $150, $200 or $250 per day for days 21 through 100"
+              },
+              "note": "Skilled nursing confinement must be within 30 days of a hospital confinement of at least three consecutive days. POP Pro does not quote this rider."
+            },
+            {
+              "label": "First Day Hospital Admission rider (not available under 64½)",
+              "values": {
+                "*": "$250, $500 or $750 upon admission to the hospital, up to 6 times per calendar year"
+              },
+              "note": "Paid in addition to the base hospital confinement benefit. POP Pro does not quote this rider."
+            }
+          ]
+        }
+      ],
+      "notes": [
+        "Brochure: \"Benefits available immediately\" — it states no waiting period and no pre-existing condition limitation. Full limitations are only at disclosure.manhattanlife.com, not in the brochure.",
+        "Brochure: \"Guarantee Issued for ages 64½ to 70\"; \"Available for ages 18-89\"; \"Guaranteed Renewable for life\"; \"Rates DO NOT increase as you age\".",
+        "Individual, Individual & Spouse, Individual + Children and Family rates available.",
+        "Benefits are paid directly to the policyholder, regardless of any other insurance.",
+        "POP Pro per-stay amounts ($1,000–$10,000) fit only the 1 Day plan (issue ages 18 to 64½). Issue ages 64½ to 89 choose a 3, 6 or 10 Days plan capped at $750 a day.",
+        "IL daily benefit for the 1 Day plan is $50 to $5,000 (not $10,000).",
+        "Policy form AN7003-IL; riders AN7003HA-IL, AN7003OS-IL, AN7003SN-IL."
+      ]
+    }
+  ]
+}

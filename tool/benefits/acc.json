@@ -1,0 +1,278 @@
+{
+  "product": "acc",
+  "name": "Enhanced 24 Hour Accident Expense Plan",
+  "carrier": "ManhattanLife",
+  "columns": {
+    "by": "units",
+    "values": [
+      "1",
+      "2"
+    ]
+  },
+  "tokens": {},
+  "brochures": [
+    {
+      "code": "EAEP-BR_0622",
+      "file": "EAEP-BR_0622 (AL 24-Hour Accident - 24 Hour Accident Brochure).pdf",
+      "states": [
+        "AL",
+        "AR",
+        "GA",
+        "IA",
+        "IL",
+        "KS",
+        "MO",
+        "MS",
+        "MT",
+        "NC",
+        "ND",
+        "NE",
+        "NM",
+        "NV",
+        "OK",
+        "TN",
+        "TX",
+        "WV",
+        "WY"
+      ],
+      "page": "2",
+      "sections": [
+        {
+          "title": "Accident medical expense",
+          "rows": [
+            {
+              "label": "Medical Expense Benefit (maximum per accident)",
+              "values": {
+                "1": "$2,000",
+                "2": "$4,000"
+              },
+              "key": true,
+              "note": "Pays covered expenses for medical treatment due to accidental injury to the maximum shown: physician's fees, surgery, x-rays, reduction of fractures or other emergency first-aid expenses. All covered expenses must be incurred within 28 days of the accident. A $50 deductible applies for each accidental injury when expenses are incurred at a hospital emergency room."
+            }
+          ]
+        },
+        {
+          "title": "Hospital",
+          "rows": [
+            {
+              "label": "Daily Hospital Confinement Benefit",
+              "values": {
+                "1": "$150 per day",
+                "2": "$300 per day"
+              },
+              "key": true,
+              "note": "Fixed amount per day beginning the first day of confinement, to a maximum of 30 days per hospital confinement resulting from any one accidental injury."
+            }
+          ]
+        },
+        {
+          "title": "Ambulance",
+          "rows": [
+            {
+              "label": "Air and Ground Ambulance Benefit (maximum)",
+              "values": {
+                "1": "$5,000",
+                "2": "$10,000"
+              },
+              "key": true,
+              "note": "Covered expenses for ground or air ambulance transportation within 28 calendar days of the accident, to the maximum shown."
+            }
+          ]
+        },
+        {
+          "title": "Accidental death",
+          "rows": [
+            {
+              "label": "Accidental Death",
+              "values": {
+                "1": "$25,000",
+                "2": "$50,000"
+              },
+              "key": true,
+              "note": "Death must occur within 90 days of the accident."
+            }
+          ]
+        },
+        {
+          "title": "Accidental dismemberment (Primary Insured)",
+          "rows": [
+            {
+              "label": "Loss of Finger or Toe — Single Loss Benefit",
+              "values": {
+                "1": "$500",
+                "2": "$1,000"
+              }
+            },
+            {
+              "label": "Loss of Finger or Toe — Multiple Loss Benefit",
+              "values": {
+                "1": "$1,000",
+                "2": "$2,000"
+              }
+            },
+            {
+              "label": "Loss of Hand, Arm, Foot, Leg — Single Loss Benefit",
+              "values": {
+                "1": "$5,000",
+                "2": "$10,000"
+              },
+              "key": true
+            },
+            {
+              "label": "Loss of Hand, Arm, Foot, Leg — Multiple Loss Benefit",
+              "values": {
+                "1": "$10,000",
+                "2": "$20,000"
+              }
+            },
+            {
+              "label": "Loss of Sight — Single Loss Benefit (one eye)",
+              "values": {
+                "1": "$5,000",
+                "2": "$10,000"
+              }
+            },
+            {
+              "label": "Loss of Sight — Multiple Loss Benefit (both eyes)",
+              "values": {
+                "1": "$10,000",
+                "2": "$20,000"
+              }
+            },
+            {
+              "label": "Maximum Dismemberment Benefit Per Accident",
+              "values": {
+                "1": "$10,000",
+                "2": "$20,000"
+              },
+              "key": true,
+              "note": "Paid if the Primary Insured suffers the dismemberment as a result of accidental injury; it must occur within 90 days of the accident."
+            }
+          ]
+        }
+      ],
+      "notes": [
+        "Coverage 24 hours a day, anywhere in the world; pays on the job or off the job accidents.",
+        "Pays in addition to any other insurance.",
+        "Issue ages 18 - 74; guaranteed renewable to age 80.",
+        "Individual, Individual & Spouse, Single Parent, and Family coverage available.",
+        "Uninsurable occupations include demolitions, forestry/fishing, logging, oil field roughnecks, oil or gas exploration/refining/production, professional athletes, pyrotechnicians, and underground mining/explosives/fireworks (see brochure page 1 for the full list)."
+      ]
+    },
+    {
+      "code": "EAEP-AZ-BR_0622",
+      "file": "EAEP-AZ-BR_0622 (AZ 24-Hour Accident - 24 Hour Accident Brochure).pdf",
+      "states": [
+        "AZ"
+      ],
+      "page": "2",
+      "sameAs": "EAEP-BR_0622",
+      "notes": [
+        "Benefit table identical to EAEP-BR_0622; only the monthly rates and policy form number differ.",
+        "AZ brochure adds to 'anywhere in the world': \"(provided insured has not traveled outside the U.S. for the purpose of receiving medical services, drugs or supplies)\"."
+      ]
+    },
+    {
+      "code": "EAEP-CT-BR_0825",
+      "file": "EAEP-CT-BR_0825 (CT 24-Hour Accident - 24 Hour Accident Brochure).pdf",
+      "states": [
+        "CT"
+      ],
+      "page": "2",
+      "sameAs": "EAEP-BR_0622",
+      "notes": [
+        "Benefit table identical to EAEP-BR_0622; only the monthly rates and policy form number differ."
+      ]
+    },
+    {
+      "code": "EAEP-FL-BR 1024",
+      "file": "EAEP-FL-BR 1024 (FL 24-Hour Accident - 24 Hour Accident Brochure).pdf",
+      "states": [
+        "FL"
+      ],
+      "page": "2",
+      "sameAs": "EAEP-BR_0622",
+      "notes": [
+        "Benefit table identical to EAEP-BR_0622; only the monthly rates and policy form number differ."
+      ]
+    },
+    {
+      "code": "EAEP-IN-BR_0126",
+      "file": "EAEP-IN-BR_0126 (IN 24-Hour Accident - 24 Hour Accident Brochure).pdf",
+      "states": [
+        "IN"
+      ],
+      "page": "2",
+      "sameAs": "EAEP-BR_0622",
+      "notes": [
+        "Benefit table identical to EAEP-BR_0622; only the monthly rates and policy form number differ."
+      ]
+    },
+    {
+      "code": "EAEP-KYOHPASCUTWI-BR_0224",
+      "file": "EAEP-KYOHPASCUTWI-BR_0224 (KY 24-Hour Accident - 24 Hour Accident Brochure).pdf",
+      "states": [
+        "KY",
+        "OH",
+        "PA",
+        "SC",
+        "UT",
+        "WI"
+      ],
+      "page": "2",
+      "sameAs": "EAEP-BR_0622",
+      "notes": [
+        "Benefit table identical to EAEP-BR_0622; only the monthly rates and policy form number differ."
+      ]
+    },
+    {
+      "code": "EAEP-LA-BR_0622",
+      "file": "EAEP-LA-BR_0622 (LA 24-Hour Accident - 24 Hour Accident Brochure).pdf",
+      "states": [
+        "LA"
+      ],
+      "page": "2",
+      "sameAs": "EAEP-BR_0622",
+      "notes": [
+        "Benefit table identical to EAEP-BR_0622; only the monthly rates and policy form number differ."
+      ]
+    },
+    {
+      "code": "EAEP-MN-BR_0825",
+      "file": "EAEP-MN-BR_0825 (MN 24-Hour Accident - 24 Hour Accident Brochure).pdf",
+      "states": [
+        "MN"
+      ],
+      "page": "2",
+      "sameAs": "EAEP-BR_0622",
+      "notes": [
+        "Benefit table identical to EAEP-BR_0622; only the monthly rates and policy form number differ."
+      ]
+    },
+    {
+      "code": "EAEP-SD-BR_0622",
+      "file": "EAEP-SD-BR_0622 (SD 24-Hour Accident - 24 Hour Accident Brochure).pdf",
+      "states": [
+        "SD"
+      ],
+      "page": "2",
+      "sameAs": "EAEP-BR_0622",
+      "notes": [
+        "Benefit table identical to EAEP-BR_0622; only the monthly rates and policy form number differ."
+      ]
+    },
+    {
+      "code": "EAEP-VA-BR_0425",
+      "file": "EAEP-VA-BR_0425 (VA 24-Hour Accident - 24 Hour Accident Brochure).pdf",
+      "states": [
+        "VA"
+      ],
+      "page": "2",
+      "sameAs": "EAEP-BR_0622",
+      "notes": [
+        "Benefit table identical to EAEP-BR_0622; only the monthly rates and policy form number differ.",
+        "VA wording: death and hospital benefits apply to a \"covered person\"; the dismemberment benefit applies to \"the Policyholder\" (other states say \"the Primary Insured\")."
+      ]
+    }
+  ]
+}
