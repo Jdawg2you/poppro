@@ -342,6 +342,7 @@
   .evtab .c.h.anc,#printout .evtab .c.h.anc{background:var(--maroon)}.evtab .c.anc,#printout .evtab .c.anc{background:#fbf3f1}
   .evtab .c.big,#printout .evtab .c.big{font-family:var(--serif);font-weight:700;font-size:15px}
   .evtab .up,#printout .evtab .up{color:var(--green)}.evtab .dn,#printout .evtab .dn{color:var(--maroon)}
+  .evsrc,#printout .evsrc{font-size:10.5px;color:var(--muted);font-style:italic;padding:5px 2px 0}
   .evparts{font-size:11.5px;color:var(--muted);padding:6px 2px;line-height:1.5}.evparts summary{cursor:pointer;color:#8a6a1f}
   #printout .po-save .vs{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
   #printout .po-save .ln{display:flex;justify-content:space-between;gap:6px;font-size:12px}#printout .po-save .ln b.up{color:var(--green)}#printout .po-save .ln b.dn{color:var(--maroon)}
@@ -929,6 +930,7 @@ body.client #classicWrap>summary{display:none}
   <div class="card pad">
     <div class="plainband">If a major event happens <span class="desc" id="o_big_desc_h"></span></div>
     <div class="claim hidein-client">
+      <div class="row"><div class="lab">Scenario</div><select id="b_preset" class="selfld" style="max-width:320px"></select></div>
       <div class="row"><div class="lab">Description</div><input id="b_desc" style="flex:1;border:1px solid var(--line);border-radius:7px;padding:6px 8px"></div>
       <div class="row"><div class="lab">Total billed charges</div><input class="num" id="b_charge" type="number" step="0.01"></div>
       <div class="row"><div class="lab">Network discount / adjustment</div><input class="num" id="b_disc" type="number" step="0.01"></div>
@@ -948,6 +950,7 @@ body.client #classicWrap>summary{display:none}
   <div class="card pad">
     <div class="plainband">On an everyday event <span class="desc" id="o_reg_desc_h"></span></div>
     <div class="claim hidein-client">
+      <div class="row"><div class="lab">Scenario</div><select id="r_preset" class="selfld" style="max-width:320px"></select></div>
       <div class="row"><div class="lab">Description</div><input id="r_desc" style="flex:1;border:1px solid var(--line);border-radius:7px;padding:6px 8px"></div>
       <div class="row"><div class="lab">Kind of visit</div><select id="r_type" class="selfld" style="max-width:260px"><option value="visit">Doctor visit</option><option value="urgent">Urgent care</option><option value="er">ER visit (not admitted)</option><option value="osurg">Outpatient surgery</option><option value="imaging">MRI / CT scan</option></select></div>
       <div class="row"><div class="lab">How many times this year</div><input class="num" id="r_count" type="number" min="1"></div>
@@ -2105,9 +2108,9 @@ function blankState(){
       best:{products:defProducts('best'),dropped:[],lb:45,lbCarrier:'',lbCov:'',med:0,rxBenefit:0}
     },
     pension:{monthly:0,note:'e.g., IUL / tax-free retirement savings for your future',cv10:0,cv20:0,cv30:0,leg1:0,leg25:0},
-    big:{desc:'Hospital stay – 7 days',charge:41660.41,disc:18747.18,days:7,er:1,amb:0,acc:0,dx:''},
+    big:{desc:'Hospital stay — national average',charge:28038,disc:0,days:5,er:1,amb:0,acc:0,dx:'',preset:'hosp',src:'HCCI 2022 (average commercial payment for an inpatient stay, facility) · HCUP 2022 (5.2-day average stay)'},
     negot:{on:false,pct:null},   // Medical Bill Saver - % stays blank until a ManhattanLife source is on file
-    reg:{desc:'Outpatient knee surgery',type:'osurg',count:1,charge:6000},
+    reg:{desc:'Outpatient knee surgery (arthroscopy)',type:'osurg',count:1,charge:7595,preset:'knee',src:'Peterson-KFF Health System Tracker 2018 — outpatient meniscus repair'},
     intake:{who:{app:true,spouse:false,kids:false},phone:'',email:'',tobaccoP:false,tobaccoS:false,maternityP:false,maternityS:false,maternity:false,dv:false,famcancerP:false,famcancerS:false,famcancer:false,famheartP:false,famheartS:false,famheart:false,mentalP:false,mentalS:false,mental:false,surg2yrP:false,surg2yrS:false,surg2yr:false,majorcond:false,majorcondNote:'',diabetic:false,diabeticNote:'',health:'',income:0,pincome:0,sincome:0,hhManual:false,retage:'',savings:0,invest:0,invprot:false,invsra:false,invnote:'',docs1:'',docs2:'',docs3:'',keepaca:'',keepafc:'',docnote:'',medList:[],budget:0,priority:'coverage',notes:'',carrier:'',plan:'',pheight:'',pweight:'',sheight:'',sweight:'',psex:'',ssex:'',kidsNote:'',routeNote:'',docsNote:'',whyShop:'',effDate:''},
     recommended:'best',
     include:{good:true,better:true,best:true},   // agent toggle — which tiers reach the client view & printout
@@ -2825,8 +2828,8 @@ function fill(){
   $('p_lb').value=pk.lb;$('p_rxben').value=pk.rxBenefit||'';$('p_lb_carrier').value=pk.lbCarrier||'';$('p_lb_cov').value=pk.lbCov||'';
   $('p_pension').value=(+S.pension.monthly)?fmtMoneyStr(String(S.pension.monthly)):'';$('p_pnote').value=S.pension.note;
   ;['cv10','cv20','cv30','leg1','leg25'].forEach(function(k){ $('pp_'+k).value=(+S.pension[k])?fmtMoneyStr(String(S.pension[k])):''; });
-  $('b_desc').value=S.big.desc;$('b_charge').value=S.big.charge;$('b_disc').value=S.big.disc;$('b_days').value=S.big.days;$('b_er').checked=!!S.big.er;$('b_amb').checked=!!S.big.amb;$('b_acc').checked=!!S.big.acc;$('b_dx').value=S.big.dx||'';
-  $('r_desc').value=S.reg.desc;S.negot=S.negot||{on:false,pct:null}; $('neg_on').checked=!!S.negot.on; $('neg_pct').value=S.negot.pct==null?'':S.negot.pct; $('r_charge').value=S.reg.charge;$('r_type').value=S.reg.type||'visit';$('r_count').value=S.reg.count||1;
+  $('b_desc').value=S.big.desc;$('b_charge').value=S.big.charge;$('b_disc').value=S.big.disc;$('b_preset').innerHTML=evPresetOpts('major',S.big.preset||''); $('b_days').value=S.big.days;$('b_er').checked=!!S.big.er;$('b_amb').checked=!!S.big.amb;$('b_acc').checked=!!S.big.acc;$('b_dx').value=S.big.dx||'';
+  $('r_desc').value=S.reg.desc;$('r_preset').innerHTML=evPresetOpts('everyday',S.reg.preset||''); S.negot=S.negot||{on:false,pct:null}; $('neg_on').checked=!!S.negot.on; $('neg_pct').value=S.negot.pct==null?'':S.negot.pct; $('r_charge').value=S.reg.charge;$('r_type').value=S.reg.type||'visit';$('r_count').value=S.reg.count||1;
   $('tl_good').textContent=S.tabLabels.good;$('tl_better').textContent=S.tabLabels.better;$('tl_best').textContent=S.tabLabels.best;
   document.querySelectorAll('#tabs button').forEach(function(b){b.classList.toggle('on',b.dataset.tab===S.activeTab);b.classList.toggle('rec',b.dataset.tab===S.recommended);});
   S.include=S.include||{good:true,better:true,best:true};
@@ -2840,9 +2843,9 @@ function read(){
   S.aca={subsidy:+S.aca.subsidy||0,prem:+$('a_prem').value||0,ded:+$('a_ded').value||0,oop:+$('a_oop').value||0,med:+$('a_med').value||0,visits:+$('a_visits').value||0,copay:+$('a_copay').value||0,fullded:$('a_fullded').checked};
   var pk=S.packages[S.activeTab]; pk.lb=+$('p_lb').value||0; pk.rxBenefit=+$('p_rxben').value||0; pk.lbCarrier=$('p_lb_carrier').value; pk.lbCov=$('p_lb_cov').value;
   S.pension={monthly:moneyNum($('p_pension').value),note:$('p_pnote').value,cv10:moneyNum($('pp_cv10').value),cv20:moneyNum($('pp_cv20').value),cv30:moneyNum($('pp_cv30').value),leg1:moneyNum($('pp_leg1').value),leg25:moneyNum($('pp_leg25').value)};
-  S.big={desc:$('b_desc').value,charge:+$('b_charge').value||0,disc:+$('b_disc').value||0,days:+$('b_days').value||0,er:$('b_er').checked?1:0,amb:$('b_amb').checked?1:0,acc:$('b_acc').checked?1:0,dx:$('b_dx').value};
+  S.big={desc:$('b_desc').value,charge:+$('b_charge').value||0,disc:+$('b_disc').value||0,days:+$('b_days').value||0,er:$('b_er').checked?1:0,amb:$('b_amb').checked?1:0,acc:$('b_acc').checked?1:0,dx:$('b_dx').value,preset:(S.big||{}).preset||'',src:(S.big||{}).src||''};
   S.negot={on:$('neg_on').checked,pct:$('neg_pct').value===''?null:+$('neg_pct').value};
-  S.reg={desc:$('r_desc').value,charge:+$('r_charge').value||0,type:$('r_type').value,count:+$('r_count').value||1};
+  S.reg={desc:$('r_desc').value,charge:+$('r_charge').value||0,type:$('r_type').value,count:+$('r_count').value||1,preset:(S.reg||{}).preset||'',src:(S.reg||{}).src||''};
 }
 
 var AFC_PARTNERS=[
@@ -3542,6 +3545,13 @@ function bindInputs(){
   $('a_fullded').addEventListener('change',compute);
   ['b_er','b_amb','b_acc','b_dx','r_type','neg_on'].forEach(function(id){ $(id).addEventListener('change',compute); });
   $('neg_pct').addEventListener('input',compute);
+  $('b_preset').addEventListener('change',function(){ if(this.value) evApplyPreset('major',this.value); else { S.big.preset=''; S.big.src=''; compute(); } });
+  $('r_preset').addEventListener('change',function(){ if(this.value) evApplyPreset('everyday',this.value); else { S.reg.preset=''; S.reg.src=''; compute(); } });
+  /* A hand-edited figure is no longer the national average - drop the source so it isn't cited. */
+  ['b_charge','b_disc','b_days'].forEach(function(id){ $(id).addEventListener('input',function(){ S.big.preset=''; S.big.src=''; $('b_preset').value=''; compute(); }); });
+  ['r_charge','r_count'].forEach(function(id){ $(id).addEventListener('input',function(){ S.reg.preset=''; S.reg.src=''; $('r_preset').value=''; compute(); }); });
+  ['b_er','b_amb','b_acc','b_dx'].forEach(function(id){ $(id).addEventListener('change',function(){ S.big.preset=''; S.big.src=''; $('b_preset').value=''; compute(); }); });
+  $('r_type').addEventListener('change',function(){ S.reg.preset=''; S.reg.src=''; $('r_preset').value=''; compute(); });
   ['in_keepaca','in_keepafc'].forEach(function(id){ $(id).addEventListener('change',function(){ readIntake(); autosave(); }); });
   document.querySelectorAll('#tabs button').forEach(function(b){ b.onclick=function(){ read(); S.activeTab=b.dataset.tab; fill(); compute(); }; });
   ['good','better','best'].forEach(function(t){ var c=$('inc_'+t); if(c) c.onchange=function(){ S.include=S.include||{}; S.include[t]=c.checked; updateTabVisibility(); compute(); autosave(); }; });
@@ -3785,6 +3795,26 @@ function benRefresh(){ if(!BEN_VIEW.length) return; var views=BEN_VIEW.slice();
   Promise.all(views.map(function(v){ return v.missing?Promise.resolve(v):benLoad(v.f).then(function(d){ return benView(d,v.f,v.t,v.k); }); }))
     .then(function(vs){ BEN_VIEW=vs; benRender(); },function(){}); }
 document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&BEN_VIEW.length){ BEN_VIEW=[]; benRender(); } });
+/* National-average scenarios - what commercial insurance actually pays (allowed amount), so the
+   "bill after discount" is the real network price. Sources: data/aca/national-event-costs.json. */
+var EV_PRESETS={
+ major:[
+  {id:'hosp',label:'Hospital stay (national average)',desc:'Hospital stay — national average',charge:28038,days:5,er:1,amb:0,acc:0,dx:'',src:'HCCI 2022 (average commercial payment for an inpatient stay, facility) · HCUP 2022 (5.2-day average stay)'},
+  {id:'arm',label:'Broken arm — cast, no surgery',desc:'Broken arm (cast, no surgery)',charge:2209,days:0,er:1,amb:0,acc:1,dx:'',src:'Shapiro et al., J Hand Microsurg 2023 — non-surgical wrist fracture, whole episode, MarketScan 2007–16'},
+  {id:'armsx',label:'Broken arm — needs surgery',desc:'Broken arm with surgery',charge:6577,days:0,er:1,amb:0,acc:1,dx:'',src:'Huetteman et al., J Hand Surg Am 2018 — surgical wrist fracture, $6,577–$8,181 published range (low end used), MarketScan 2009–15'},
+  {id:'heart',label:'Heart attack',desc:'Heart attack hospitalization',charge:47666,days:5,er:1,amb:1,acc:0,dx:'heart',src:'Peterson-KFF Health System Tracker 2018 (average allowed, large employer plans); 5-day average stay'},
+  {id:'cancer',label:'Cancer — first year of treatment',desc:'Cancer — first year of treatment',charge:43600,days:0,er:0,amb:0,acc:0,dx:'cancer',src:'Mariotto et al. 2020 (NCI, SEER-Medicare) — first-year cancer cost, 2019 dollars; commercial costs are typically higher'}],
+ everyday:[
+  {id:'visit',label:'Doctor visit',desc:'Doctor visit',type:'visit',count:1,charge:125,src:'Peterson-KFF Health System Tracker 2021 — average office visit'},
+  {id:'urgent',label:'Urgent care visit',desc:'Urgent care visit',type:'urgent',count:1,charge:220,src:'HCCI 2022 — average urgent care visit'},
+  {id:'er',label:'ER visit (not admitted)',desc:'ER visit (not admitted)',type:'er',count:1,charge:2909,src:'HCCI 2021 — average ER visit including all services'},
+  {id:'mri',label:'MRI',desc:'MRI',type:'imaging',count:1,charge:861,src:'Peterson-KFF Health System Tracker 2018 — lower-back MRI'},
+  {id:'knee',label:'Outpatient knee surgery',desc:'Outpatient knee surgery (arthroscopy)',type:'osurg',count:1,charge:7595,src:'Peterson-KFF Health System Tracker 2018 — outpatient meniscus repair'}]};
+function evPresetOpts(kind,cur){ return '<option value="">Custom</option>'+EV_PRESETS[kind].map(function(p){ return '<option value="'+p.id+'"'+(p.id===cur?' selected':'')+'>'+p.label+'</option>'; }).join(''); }
+function evApplyPreset(kind,id){ var p=EV_PRESETS[kind].filter(function(x){ return x.id===id; })[0]; if(!p) return;
+  if(kind==='major'){ S.big={desc:p.desc,charge:p.charge,disc:0,days:p.days,er:p.er,amb:p.amb,acc:p.acc,dx:p.dx,preset:p.id,src:p.src}; }
+  else { S.reg={desc:p.desc,charge:p.charge,type:p.type,count:p.count,preset:p.id,src:p.src}; }
+  fill(); compute(); autosave(); }
 /* ===== Event gut checks per package (screen + print) ===== */
 var EV_TIERS=[['good','Essential'],['better','Complete'],['best','Comprehensive']];
 function evIncluded(){ var inc=S.include||{}; return EV_TIERS.filter(function(T){ return inc[T[0]]!==false&&tierTotals(T[0]).mo>0; }); }
@@ -3809,7 +3839,7 @@ function evMoneyTxt(v){ return (v<0?'+':'')+fmt2(Math.abs(v)); }
 function evTableHTML(kind){ var tiers=evIncluded(); if(!tiers.length) return '';
   var A=evAnchor(), B=anchorBase(), res=[], bill, head;
   if(kind==='major'){ var b=S.big; bill=Math.max(0,(+b.charge||0)-(+b.disc||0)); if(!(bill>0)) return '';
-    head=fmt2(bill)+' after the network discount · '+(+b.days||0)+' day'+(+b.days===1?'':'s')+' in the hospital'+(b.er?' · through the ER':'')+(b.amb?' · ambulance':'')+(b.acc?' · accident':'')+(b.dx?' · '+b.dx+' diagnosis':'');
+    head=fmt2(bill)+' after the network discount · '+((+b.days||0)>0?(+b.days)+' day'+(+b.days===1?'':'s')+' in the hospital':'no hospital stay')+(b.er?' · through the ER':'')+(b.amb?' · ambulance':'')+(b.acc?' · accident':'')+(b.dx?' · '+b.dx+' diagnosis':'');
     tiers.forEach(function(T){ var o=evTierPack(T[0]); res.push({T:T,o:o,r:evMajor({bal:bill,days:b.days,er:b.er,amb:b.amb,acc:b.acc,dx:b.dx,afc:o.afc,his:o.his,gap:o.gap,accU:o.accU,chas:o.chas,major:o.major,negotPct:negOn()?S.negot.pct:0})}); }); }
   else { var r=S.reg, cnt=Math.max(1,+r.count||1); bill=(+r.charge||0)*cnt; if(!(bill>0)) return '';
     head=({visit:'Doctor visit',urgent:'Urgent care',er:'ER visit',osurg:'Outpatient surgery',imaging:'MRI / CT scan'}[r.type]||'Visit')+' · '+cnt+'× at '+fmt2(+r.charge||0)+' = '+fmt2(bill);
@@ -3826,6 +3856,7 @@ function evTableHTML(kind){ var tiers=evIncluded(); if(!tiers.length) return '';
   if(A&&B){ h+='<div class="c l">This year <small>premium savings + this event</small></div><div class="c anc">—</div>'
     +res.map(function(x){ var sv=anchorSavings(B,tierTotals(x.T[0]).mo)||{actual:0}, v=sv.actual*12+(aOwe-x.r.net); return '<div class="c '+(v>=0?'up':'dn')+'">'+(v>=0?'Ahead ':'Behind ')+fmt(Math.abs(v))+'</div>'; }).join(''); }
   h+='</div>';
+  var src=kind==='major'?(S.big||{}).src:(S.reg||{}).src; if(src) h+='<div class="evsrc">National average (what insurance pays): '+esc(src)+'</div>';
   var parts=res.filter(function(x){ return x.r.parts.length; }).map(function(x){ return '<b>'+x.T[1]+':</b> '+x.r.parts.map(function(p){ return p.lab+' '+fmt2(p.v); }).join(' · '); }).join('<br>');
   if(parts) h+='<details class="evparts hidein-client"><summary>How each package pays</summary>'+parts+'<div>Surgery benefits on Affordable Choice are paid on the policy fee schedule and are not included here — the real payout is higher.</div></details>';
   return h; }

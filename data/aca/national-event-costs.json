@@ -1,0 +1,120 @@
+{
+  "_basis_key": {
+    "cost": "hospital's own cost of care (HCUP converts charges to cost with cost-to-charge ratios); not what anyone pays",
+    "paid": "allowed/paid amount = insurer payment + patient cost-sharing (commercial claims unless noted)",
+    "charged": "billed list price; far above what is actually paid"
+  },
+  "events": {
+    "hospital_stay": {
+      "cost": 16672,
+      "days": 5.18,
+      "cost_per_day": 3220,
+      "basis": "cost",
+      "year": 2022,
+      "source": "AHRQ HCUP Statistical Brief #316 (aggregate cost) + HCUP NIS 2022 Weighted Summary Statistics (mean LOS)",
+      "url": "https://hcup-us.ahrq.gov/reports/statbriefs/sb316-most-expensive-conditions-by-payer-2022.pdf",
+      "url_los": "https://hcup-us.ahrq.gov/db/nation/nis/tools/stats/MaskedStats_NIS_2022_Core_Weighted.PDF",
+      "arithmetic": "SB316: $548.5B aggregate cost / 32.9M stays = $16,672 per stay. NIS 2022 weighted mean LOS = 5.1778 days. $16,672 / 5.18 = $3,220 per day. HCUP does not publish this per-stay mean directly in SB316; it is derived from its two published aggregates.",
+      "charged_equivalent": {"cost": 69847, "basis": "charged", "year": 2022, "source": "HCUP NIS 2022 Weighted Summary Statistics, mean TOTCHG", "url": "https://hcup-us.ahrq.gov/db/nation/nis/tools/stats/MaskedStats_NIS_2022_Core_Weighted.PDF"},
+      "commercial": {"cost": 28038, "basis": "paid", "year": 2022, "source": "HCCI 2022 Health Care Cost and Utilization Report (average price of an inpatient admission, employer-sponsored insurance; facility component)", "url": "https://healthcostinstitute.org/wp-content/uploads/images/pdfs/HCCI_2022_Health_Care_Cost_and_Utilization_Report.pdf", "note": "Facility price only; professional (doctor) fees during the stay are counted separately by HCCI. Average facility out-of-pocket was $1,074."}
+    },
+    "broken_arm_er": {
+      "cost": 2209,
+      "days": null,
+      "basis": "paid",
+      "year": 2016,
+      "year_note": "MarketScan claims 2007-2016; dollar year not stated in abstract",
+      "source": "Shapiro et al., J Hand Microsurg 2023 (IBM MarketScan): utilization cost of nonoperatively treated distal radius fracture, patients 55+, no later malunion surgery; reported as $2,209 +/- $5,940",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/38152674/",
+      "note": "Not ER-specific (covers the nonoperative fracture episode wherever treated) and limited to age 55+. Proxy: HCCI 2021 average commercial price of an ER visit including all services was $2,909 (see er_visit)."
+    },
+    "broken_arm_surgery": {
+      "cost": 6577,
+      "cost_high": 8181,
+      "days": null,
+      "basis": "paid",
+      "year": 2015,
+      "year_note": "Truven MarketScan claims 2009-2015; dollar year not stated in abstract",
+      "source": "Huetteman, Zhong, Chung, J Hand Surg Am 2018 (Truven MarketScan): surgical distal radius fracture episode, 88% open fixation; average $6,577 to $8,181 depending on episode definition",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/29908931/",
+      "note": "Range is as published, not averaged here. Episode = 3 days pre-op to 90 days post-op. 15% of patients were 65+ (Medicare supplemental included). Outpatient vs inpatient not separated in the abstract."
+    },
+    "er_visit": {
+      "cost": 2909,
+      "days": null,
+      "basis": "paid",
+      "year": 2021,
+      "source": "HCCI, Emergency Room Spending, Price, and Use Trends 2012-2021 (average price of an ER visit including all services, commercial)",
+      "url": "https://healthcostinstitute.org/all-hcci-reports/emergency-room-spending-price-and-use-trends-2012-2021/",
+      "note": "E&M (exam) portion alone, facility + professional, was $1,317. Peterson-KFF (MarketScan, large employer, 2019): $2,453 per ED visit excluding any subsequent hospitalization; $646 average out-of-pocket.",
+      "alt": {"cost": 2453, "basis": "paid", "year": 2019, "source": "Peterson-KFF Health System Tracker", "url": "https://www.healthsystemtracker.org/brief/emergency-department-visits-exceed-affordability-thresholds-for-many-consumers-with-private-insurance/"}
+    },
+    "urgent_care": {
+      "cost": 220,
+      "days": null,
+      "basis": "paid",
+      "year": 2022,
+      "source": "HCCI, Urgent Care Spending Increased by 50% over 5 Years (average price per urgent care visit, employer-sponsored insurance)",
+      "url": "https://healthcostinstitute.org/all-hcci-reports/urgent-care-spending-increased-by-50-over-5-years-driven-by-higher-use/"
+    },
+    "office_visit": {
+      "cost": 125,
+      "days": null,
+      "basis": "paid",
+      "year": 2021,
+      "source": "Peterson-KFF Health System Tracker, Outpatient visits billed at increasingly higher levels (average E&M cost in outpatient physician offices, established patients, all levels)",
+      "url": "https://www.healthsystemtracker.org/brief/outpatient-visits-are-increasingly-billed-at-higher-levels-implications-for-health-costs/",
+      "note": "Physician office E&M, not specifically primary care. Older Peterson-KFF figure: level-3 office visit $90 allowed (2018)."
+    },
+    "mri": {
+      "cost": 861,
+      "days": null,
+      "basis": "paid",
+      "year": 2018,
+      "source": "Peterson-KFF Health System Tracker, How costly are common health services (lower-back MRI, average allowed, large employer plans, MarketScan)",
+      "url": "https://www.healthsystemtracker.org/chart-collection/how-costly-are-common-health-services-in-the-united-states/",
+      "note": "Lower-back MRI only; metro range $404 (Las Vegas) to $1,106 (Houston)."
+    },
+    "knee_arthroscopy": {
+      "cost": 7595,
+      "days": null,
+      "basis": "paid",
+      "year": 2018,
+      "source": "Peterson-KFF Health System Tracker, How costly are common health services (outpatient meniscus repair, average allowed, large employer plans, MarketScan)",
+      "url": "https://www.healthsystemtracker.org/chart-collection/how-costly-are-common-health-services-in-the-united-states/",
+      "note": "Meniscus repair is an arthroscopic knee procedure; not a general 'all knee arthroscopy' average. Metro range $4,655 (Detroit) to $11,219 (NYC)."
+    },
+    "heart_attack": {
+      "cost": 47666,
+      "days": 5.0,
+      "basis": "paid",
+      "year": 2018,
+      "source": "Peterson-KFF Health System Tracker, How costly are common health services (heart attack hospitalization, average allowed, large employer plans)",
+      "url": "https://www.healthsystemtracker.org/chart-collection/how-costly-are-common-health-services-in-the-united-states/",
+      "days_source": "Bhat et al., Medicina 2022, HCUP NIS 2000-2017 pooled: mean 5 +/- 5.8 days, median 3 days",
+      "days_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC9780977/",
+      "note": "LOS is a pooled 2000-2017 mean, not a single recent year; recent stays are shorter (a 2019 NIS study reports adjusted LOS 3.95 days for survivors).",
+      "hcup_cost": {"cost": 28062, "basis": "cost", "year": 2022, "source": "HCUP SB316 Table 1: AMI $16,332M aggregate / 582K stays", "arithmetic": "16,332,000,000 / 582,000 = $28,062; private-insurance payer only (Table 4): 4,397M / 153K = $28,739", "url": "https://hcup-us.ahrq.gov/reports/statbriefs/sb316-most-expensive-conditions-by-payer-2022.pdf"},
+      "hcci_circulatory_2022": {"cost": 51393, "basis": "paid", "year": 2022, "source": "HCCI 2022 HCCUR, average price of a circulatory admission (broader than heart attack)", "url": "https://healthcostinstitute.org/wp-content/uploads/images/pdfs/HCCI_2022_Health_Care_Cost_and_Utilization_Report.pdf"}
+    },
+    "cancer_first_year": {
+      "cost": 43600,
+      "days": null,
+      "basis": "paid",
+      "year": 2019,
+      "source": "Mariotto et al., Cancer Epidemiol Biomarkers Prev 2020 (NCI, SEER-Medicare): initial-phase annualized cancer-attributable cost, medical care $41,800 + oral drugs $1,800, 2019 dollars",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/32522832/",
+      "arithmetic": "$41,800 (Medicare Parts A/B) + $1,800 (Part D oral drugs) = $43,600",
+      "note": "Medicare-paid amounts for patients 65+, cancer-attributable (net of matched controls), all sites combined; commercial prices are typically higher. HCCI 2022: average commercial price of one cancer inpatient admission was $64,750."
+    }
+  },
+  "gaps": [
+    "No HCUP Statistical Brief publishes a 2022 all-stays mean cost per stay directly; hospital_stay cost is derived from SB316 aggregates (arithmetic shown).",
+    "No national source found for a broken arm treated specifically in the ER with X-ray + cast; the figure used is a MarketScan nonoperative distal radius fracture episode for patients 55+ (2007-2016).",
+    "Broken arm surgery figure is 2009-2015 claims and does not separate outpatient from inpatient ORIF; no FAIR Health or HCCI figure for outpatient ORIF found.",
+    "No recent (2022+) single-year national mean LOS for heart attack found from HCUP; used 2000-2017 pooled NIS mean.",
+    "MRI and knee arthroscopy figures are 2018 Peterson-KFF (lower-back MRI; meniscus repair) - no newer national commercial average located. FAIR Health charges data is behind its consumer lookup and was not used.",
+    "Office visit figure is all physician-office E&M (2021), not primary care specifically.",
+    "Cancer first-year cost is Medicare 65+ (2019 dollars); no national commercial first-year figure located."
+  ]
+}
