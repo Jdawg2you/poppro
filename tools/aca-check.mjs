@@ -92,8 +92,9 @@ if (mode === 'engine') {
   const A = { prem: 2000, mo: 2450 };
   let sv = ctx.anchorSavings(A, 1800);
   ok(sv.actual === 200 && sv.tru === 650 && sv.tfra === 200 && sv.tfraBasis === 'premium', 'saves on premium: TFRA room = premium saving');
+  ok(ctx.anchorSavings(A, 1800, 1900).tru === 550 && ctx.anchorSavings(A, 1800, 1900).tfra === 200, 'package true cost used for true savings; TFRA still premium-only');
   sv = ctx.anchorSavings(A, 2090);
-  ok(sv.actual === -90 && sv.tru === 360 && sv.tfra === 360 && sv.tfraBasis === 'true', 'costs $90 more on premium but saves on true cost: TFRA room = true-cost saving');
+  ok(sv.actual === -90 && sv.tru === 360 && sv.tfra === 0 && sv.tfraBasis === '', 'costs $90 more on premium: no TFRA room, even though it saves on true cost');
   sv = ctx.anchorSavings(A, 2600);
   ok(sv.actual === -600 && sv.tru === -150 && sv.tfra === 0, 'costs more both ways: no TFRA room');
   ok(ctx.anchorSavings(null, 1800) === null, 'no anchor: no savings');

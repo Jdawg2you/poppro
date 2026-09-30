@@ -331,6 +331,7 @@
   .pbshow{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);padding:0 0 6px}
   .pbcol.excl{opacity:.55}
   .tfrahint{font-size:12px;color:var(--navy);background:#fbf9f2;border:1px solid var(--line);border-top:none;padding:8px 12px;line-height:1.6}
+  .tfrahint .tfractx{font-size:11px;color:var(--muted);margin-top:3px}
   .tfrahint .tfrause{font:inherit;font-size:11.5px;border:1px solid #b0872f;background:#fff;color:#26324a;border-radius:6px;padding:2px 8px;cursor:pointer;margin:2px 2px 0 0}
   .evflags{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;font-size:13px}
   .evhead,#printout .evhead{font-size:12px;color:var(--muted);padding:8px 0 6px}
@@ -1445,11 +1446,12 @@ function acaCostShare(a){ var vis=(+a.visits||0)*(+a.copay||0), medYr=(+a.med||0
   var cs=(a.fullded?Math.max(+a.ded||0,dedMed):dedMed)+(medYr-dedMed)+vis, capped=(+a.oop>0&&cs>+a.oop);
   if(capped) cs=+a.oop; return {cs:cs,visYr:vis,capped:capped}; }
 /* Savings of one package against the anchor. prem = the anchor's monthly premium plus its drug
-   costs; mo = its true cost a month. TFRA room follows the presentation's rule: the premium saving
-   if there is one, otherwise the true-cost saving, otherwise nothing. */
+   costs; mo = its true cost a month. TFRA room is the premium saving only - money that stays in
+   their account every month. True-cost savings exist only in a year they'd have met the deductible,
+   so they are context, never a monthly commitment. */
 function anchorSavings(base,pkMo,pkTrueMo){ if(!base) return null;
   var actual=base.prem-pkMo, tru=base.mo-(pkTrueMo==null?pkMo:pkTrueMo);   // a Cigna/LifeX package has a deductible of its own
-  return {actual:actual, tru:tru, tfra:actual>0?actual:(tru>0?tru:0), tfraBasis:actual>0?'premium':(tru>0?'true':'')}; }
+  return {actual:actual, tru:tru, tfra:actual>0?actual:0, tfraBasis:actual>0?'premium':''}; }
 /* ---- Benefits slide-out: pure pieces (tested by tools/aca-check.mjs benefits) ----
    d = one tool/benefits/<key>.json; cfg = the row's effective config. */
 function benBrochure(d,st){ st=String(st||'').toUpperCase(); var bs=(d&&d.brochures)||[];
@@ -3840,10 +3842,18 @@ function renderEvents(){ var need=['afc','triad'].filter(function(f){ return !BE
 /* TFRA: what each package frees up against the anchor, and a quick "use part of it". */
 function renderTfraHint(){ var el=$('tfraHint'); if(!el) return; var B=anchorBase();
   if(!B){ el.innerHTML='No anchor chosen, so there are no savings to fund a TFRA from. Set one in Budget &amp; Notes.'; return; }
-  var rows=EV_TIERS.map(function(T){ var m0=tierTotals(T[0]).mo, sv=anchorSavings(B,m0,m0+tierTrue(T[0]).extra); return {t:T[0],lab:T[1],room:sv?sv.tfra:0}; });
-  var rec=rows.filter(function(r){ return r.t===S.recommended; })[0]||rows[2];
-  el.innerHTML='Room for a TFRA against '+(B.k==='aca'?'the ACA bronze':'their current plan')+': '+rows.map(function(r){ return r.lab+' <b>'+fmt2(r.room)+'</b>/mo'; }).join(' · ')
-    +'.<br>Fund a portion, not all of it — leave them breathing room. '+(rec.room>0?[25,50,75].map(function(p){ return '<button type="button" class="tfrause" data-amt="'+(Math.round(rec.room*p)/100)+'">Use '+p+'% of '+rec.lab+' ('+fmt2(rec.room*p/100)+')</button>'; }).join(' '):'');
+  var inc=evIncluded(); if(!inc.length){ el.innerHTML='No packages are set to show on the quote.'; return; }
+  var rows=inc.map(function(T){ var m0=tierTotals(T[0]).mo, sv=anchorSavings(B,m0,m0+tierTrue(T[0]).extra); return {t:T[0],lab:T[1],mo:m0,room:sv.tfra,tru:sv.tru}; });
+  /* Size to the most expensive package shown: its saving is the smallest, so the TFRA still fits
+     whichever package they choose - picking a cheaper one only leaves them more room. */
+  var top=rows.slice().sort(function(a,b){ return b.mo-a.mo; })[0], anc=B.k==='aca'?'the ACA bronze':'their current plan';
+  var h='Monthly premium saving against '+anc+' — the money that stays in their account: '+rows.map(function(r){ return r.lab+' <b>'+(r.room>0?fmt2(r.room)+'/mo':'none')+'</b>'; }).join(' · ')+'.';
+  if(top.room>0){ h+='<br>Sized to <b>'+top.lab+'</b>, the most expensive package on the quote, so it fits whichever they choose. Fund a portion, not all of it: '
+      +[25,50,75].map(function(p){ return '<button type="button" class="tfrause" data-amt="'+(Math.round(top.room*p)/100)+'">Use '+p+'% ('+fmt2(top.room*p/100)+')</button>'; }).join(' '); }
+  else h+='<br>'+top.lab+' costs more than '+anc+' on premium, so there is no monthly saving to fund a TFRA from if they choose it.';
+  var ctx=rows.filter(function(r){ return r.tru>r.room&&r.tru>0; });
+  if(ctx.length) h+='<div class="tfractx">Not for funding — in a year with a claim they are also ahead on true cost: '+ctx.map(function(r){ return r.lab+' '+fmt2(r.tru)+'/mo'; }).join(' · ')+'.</div>';
+  el.innerHTML=h;
   el.querySelectorAll('.tfrause').forEach(function(b){ b.onclick=function(){ var inp=$('p_pension'); inp.value=b.dataset.amt; inp.dispatchEvent(new Event('input')); compute(); autosave(); }; }); }
 function renderBuilder(){
   var host=$('sec_builder'); if(!host) return;
@@ -3915,7 +3925,7 @@ function renderBuilder(){
     var tt=tierTrue(t), sv=anchorSavings(anc,sum,sum+tt.extra);
     if(sv){ var line=function(lab,v){ return '<div class="sv"><span>'+lab+'</span><b class="'+(v>=0?'up':'dn')+'">'+(v>=0?'saves ':'costs ')+pbMoney(Math.abs(v))+(v>=0?'':' more')+'</b></div>'; };
       html+='<div class="pbsave">'+line('Premium vs premium',sv.actual)+line('True cost',sv.tru)
-        +'<div class="sv tf"><span>Room for a TFRA</span><b>'+(sv.tfra>0?pbMoney(sv.tfra)+'/mo':'—')+'</b></div>'+(tt.note?'<div class="sv" style="color:#8a6a1f;font-size:11px">'+tt.note+'</div>':'')+'</div>'; }
+        +'<div class="sv tf"><span>Room for a TFRA <i style="font-style:normal;color:var(--muted);font-size:10.5px">(premium saving)</i></span><b>'+(sv.tfra>0?pbMoney(sv.tfra)+'/mo':'—')+'</b></div>'+(tt.note?'<div class="sv" style="color:#8a6a1f;font-size:11px">'+tt.note+'</div>':'')+'</div>'; }
     html+='</div>';
   });
   html+='</div>';
