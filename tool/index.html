@@ -356,6 +356,40 @@
   #printout .po-save .ln{display:flex;justify-content:space-between;gap:6px;font-size:12px}#printout .po-save .ln b.up{color:var(--green)}#printout .po-save .ln b.dn{color:var(--maroon)}
   #printout .po-save .tn{font-size:10px;color:#8a6a1f;margin-top:2px}
   #printout .po-pop{display:flex;justify-content:space-between;align-items:baseline;padding:6px 14px;border-top:1px solid var(--line);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}#printout .po-pop b{font-family:var(--serif);font-size:20px;letter-spacing:0}#printout .po-pop small{text-transform:none;letter-spacing:0;color:#8a6a1f}
+  /* ---- presentation polish (2026-09-29) ---- */
+  #printout .po-cmp{gap:16px;align-items:stretch;margin-top:18px}
+  #printout .po-col{display:flex;flex-direction:column;border:1px solid #e4dccb;border-top:5px solid var(--green);border-radius:12px;box-shadow:0 1px 2px rgba(18,33,59,.05),0 6px 18px rgba(18,33,59,.05)}
+  #printout .po-hd{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;padding:14px 16px 10px}
+  #printout .po-hd h3{padding:0;font-size:19px;letter-spacing:.02em}
+  #printout .popchip{border:1.5px solid;border-radius:10px;padding:3px 9px 4px;text-align:center;line-height:1.05;min-width:58px;background:#fff}
+  #printout .popchip span{display:block;font:700 8.5px -apple-system,sans-serif;letter-spacing:.1em;text-transform:uppercase;opacity:.85}
+  #printout .popchip b{font-family:var(--serif);font-size:22px}
+  #printout .popchip small{display:block;font:500 9px -apple-system,sans-serif;color:#8a6a1f}
+  #printout .po-items{flex:1}
+  #printout .po-li{padding:7px 16px;font-size:12px;line-height:1.35}
+  #printout .po-tot{border-top:2px solid var(--navy);background:#faf7ef;padding:10px 16px 9px}
+  #printout .po-tot .m{display:flex;justify-content:space-between;align-items:baseline;font-family:var(--serif);color:var(--navy)}
+  #printout .po-tot .m span{font-weight:700;font-size:14px}#printout .po-tot .m b{font-size:22px;font-variant-numeric:tabular-nums}
+  #printout .po-tot .a{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);margin-top:2px;font-variant-numeric:tabular-nums}
+  #printout .po-save{background:#eef6ec;color:var(--navy);border-top:1px solid #cfe4cf;text-align:left;padding:10px 16px 12px;font-family:-apple-system,sans-serif;font-weight:400}
+  #printout .po-save .vs{color:#4a6b50;font-weight:700;font-size:9.5px;letter-spacing:.1em;margin-bottom:5px}
+  #printout .po-save .ln{font-size:12.5px;padding:2px 0}#printout .po-save .ln span{color:#2a3346}
+  #printout .po-save .ln b{font-family:var(--serif);font-size:13.5px}#printout .po-save .ln b.up{color:#1f6b3b}#printout .po-save .ln b.dn{color:#a3372e}
+  #printout .po-save .yr{margin-top:7px;padding-top:7px;border-top:1px dashed #b7d3b0;font-family:var(--serif);font-weight:700;font-size:15px;text-align:center}
+  #printout .po-save .yr.up{color:#1f6b3b}#printout .po-save .yr.dn{color:#a3372e}#printout .po-save .yr small{display:block;font:400 10px -apple-system,sans-serif;color:#4a6b50}
+  #printout .po-acabox{display:flex;flex-wrap:wrap;background:#fff}
+  #printout .po-acabox .li{flex:1 1 150px}
+  #printout .po-acabox .t{flex-basis:100%;padding:13px 16px 10px;border-bottom:1px solid var(--line2)}
+  #printout .po-acabox .li{flex-direction:column;justify-content:flex-start;gap:3px;border-top:none;border-left:1px solid var(--line2);padding:11px 16px 12px}
+  #printout .po-acabox .li:nth-child(2){border-left:none}
+  #printout .po-acabox .li .lab{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+  #printout .po-acabox .li .lab small{text-transform:none;letter-spacing:0;font-weight:400}
+  #printout .po-acabox .li .amt{text-align:left;font-size:19px;font-weight:700;color:var(--navy)}
+  #printout .po-acabox .li.tot{background:#f6ecd6}#printout .po-acabox .li.tot .amt{color:var(--maroon)}
+  #printout .po-acabox .estnote{flex-basis:100%;font-size:10.5px;font-style:italic;color:#9a5b00;padding:7px 16px;border-top:1px solid var(--line2)}
+  #printout .po-acabox,#printout .po-event,#printout .po-green,#printout .po-metabox{border-radius:12px;box-shadow:0 1px 2px rgba(18,33,59,.05)}
+  body.client #printout .po-head{border-radius:12px}
+  @media print{#printout .po-col,#printout .po-acabox,#printout .po-event{box-shadow:none}#printout .po-cmp{gap:10px}}
   #printout .po-save .yr{font-family:var(--serif);font-weight:700;color:var(--navy);margin-top:3px}
   /* Client View = the presentation: the printout, on screen. */
   body.client #step-intake,body.client #step-quote,body.client #step-enroll,body.client #stepper,body.client #benDrawer{display:none!important}
@@ -3104,9 +3138,9 @@ function buildPrintout(){
 
   /* ---- header + client meta ---- */
   var html='<div class="po-head"><b>'+esc(agency)+'</b><span>Package of Protection · Personalized Quote</span></div>';
-  var cell=function(k,v){ v=(v!=null&&String(v).trim())?esc(String(v).trim()):'—'; return '<div><span class="k">'+k+'</span><span class="v">'+v+'</span></div>'; };
+  var cell=function(k,v,keep){ var has=v!=null&&String(v).trim(); if(!has&&!keep) return ''; v=has?esc(String(v).trim()):'—'; return '<div><span class="k">'+k+'</span><span class="v">'+v+'</span></div>'; };
   html+='<div class="po-metabox">'
-      +cell('Primary name',c.pname)+cell('Spouse name',c.sname)+cell('Date of birth',c.date)+cell('Agent',c.agent)
+      +cell('Primary name',c.pname,1)+cell('Spouse name',c.sname)+cell('Date of birth',c.date)+cell('Agent',c.agent)
       +cell('State',c.state)+cell('ZIP',c.zip)+cell('Primary age',c.page)+cell('Spouse age',c.sage)
       +'</div>';
 
@@ -3129,7 +3163,7 @@ function buildPrintout(){
       +((+a.ded>0)?li('Annual deductible'+E('ded'),'The subsidy does not reduce this',fmt2(a.ded)):'')
       +li('TRUE COST — Monthly'+E('any'),'Premium + deductible &amp; co-pays spread across the year',fmt2(aca.mo)+' /mo')
       +li('TRUE COST — Annual'+E('any'),'',fmt2(aca.yr)+' /yr','tot')
-      +(ef.any?'<div style="font-size:10.5px;font-style:italic;color:#9a5b00;padding:6px 14px 2px">est. = estimated from 2026 state averages — your exact plan may differ.</div>':'')+'</div>';
+      +(ef.any?'<div class="estnote">est. = estimated from 2026 state averages — your exact plan may differ.</div>':'')+'</div>';
   }
   /* Savings are measured against the ACA when it is shown, otherwise against what they have now. */
   var B=anchorBase(), base=B?{mo:B.mo,yr:B.yr,prem:B.prem,premOnly:B.premOnly,ded:B.ded,k:B.k,lab:B.k==='aca'?'ACA':'your current plan',your:B.your}:null;
@@ -3139,17 +3173,18 @@ function buildPrintout(){
     html+='<div class="po-cmp" style="grid-template-columns:repeat('+tiers.length+',1fr)">';
     tiers.forEach(function(x){
       var lab=labels[x.t];
-      html+='<div class="po-col"><h3>'+lab[0]+'<small>'+esc(lab[1])+'</small></h3>';
+      var pop=S.showPop!==false?computePop(x.t):null, pc=pop?(pop.score>=80?'#2f7d4a':pop.score>=60?'#a57a1c':'#b24b4b'):'';
+      html+='<div class="po-col"><div class="po-hd"><h3>'+lab[0]+'<small>'+esc(lab[1])+'</small></h3>'
+        +(pop?'<div class="popchip" style="border-color:'+pc+';color:'+pc+'"><span>POP Score</span><b>'+pop.score+'</b>'+(pop.s.provisional?'<small>provisional</small>':'')+'</div>':'')+'</div><div class="po-items">';
       (x.pk.products||[]).forEach(function(p){ if(!(+p.monthly)) return;
         html+='<div class="po-li"><span>'+esc(p.name)+'</span><span>'+fmt2(+p.monthly||0)+'</span></div>'; });
       if(+x.pk.lb>0) html+='<div class="po-li"><span>Living Benefits'+(x.pk.lbCarrier?' — '+esc(x.pk.lbCarrier):'')+'</span><span>'+fmt2(+x.pk.lb)+'</span></div>';
       if(+x.pk.med>0) html+='<div class="po-li"><span>Medications (net)</span><span>'+fmt2(+x.pk.med)+'</span></div>';
-      html+='<div class="po-sum"><span>Monthly</span><span>'+fmt2(x.mo)+'</span></div>';
-      if(S.showPop!==false){ var ps=computePop(x.t); html+='<div class="po-pop"><span>POP Score</span><b style="color:'+(ps.score>=80?'#2f9e56':ps.score>=60?'#b0872f':'#c85a5a')+'">'+ps.score+'</b>'+(ps.s.provisional?'<small>provisional</small>':'')+'</div>'; }
-      html+='<div class="po-sum" style="background:#fbf9f2"><span>Annual</span><span>'+fmt2(x.yr)+'</span></div>';
+      html+='</div><div class="po-tot"><div class="m"><span>Monthly</span><b>'+fmt2(x.mo)+'</b></div><div class="a"><span>Annual</span><span>'+fmt2(x.yr)+'</span></div></div>';
       if(base){ var ttx=tierTrue(x.t), sv=anchorSavings(base,x.mo,x.mo+ttx.extra), vs=base.k==='aca'?'your marketplace plan':'your current plan';
         var ln=function(lab,v){ return '<div class="ln"><span>'+lab+'</span><b class="'+(v>=0?'up':'dn')+'">'+(v>=0?'saves ':'costs ')+fmt2(Math.abs(v))+'/mo'+(v>=0?'':' more')+'</b></div>'; };
-        html+='<div class="po-save"><div class="vs">Compared with '+vs+'</div>'+ln('Premium',sv.actual)+ln('True cost',sv.tru)+(ttx.note?'<div class="tn">'+ttx.note+'</div>':'')+'<div class="yr">'+(sv.tru>=0?'That’s '+fmt2(sv.tru*12)+' a year':'That’s '+fmt2(-sv.tru*12)+' a year more')+'</div></div>'; }
+        html+='<div class="po-save"><div class="vs">Compared with '+vs+'</div>'+ln('Premium',sv.actual)+ln('True cost',sv.tru)+(ttx.note?'<div class="tn">'+ttx.note+'</div>':'')
+          +'<div class="yr '+(sv.tru>=0?'up':'dn')+'">'+(sv.tru>=0?'Ahead '+fmt2(sv.tru*12)+' a year':'Behind '+fmt2(-sv.tru*12)+' a year')+'<small>on true cost</small></div></div>'; }
       html+='</div>';
     });
     html+='</div>';
@@ -3249,7 +3284,7 @@ function saveQuote(){
 function loadFile(file){
   var rd=new FileReader();
   rd.onload=function(){
-    try{ var obj=JSON.parse(rd.result); S=deepMerge(blankState(),obj); migrateAca(obj);
+    try{ var obj=JSON.parse(rd.result); S=deepMerge(blankState(),obj); migrateAca(obj); migrateEvents(obj);
       if(!S.packages||!S.packages[S.activeTab]) S.packages=blankState().packages;
       if(!S.aca) S.aca=blankState().aca;
       fill(); compute(); goStep('quote');
@@ -3269,7 +3304,9 @@ function migrateAca(raw){ if(!raw||raw.acaIn) return; var A=acaIn(), a=raw.aca||
   if(+a.copay>0) A.ov.visit=+a.copay;
   if(+a.visits>0){ S.intake=S.intake||{}; S.intake.visits=+a.visits; }
   A.fullded=a.fullded!==false; }
-function restore(){ try{ var s=localStorage.getItem('hf_pop_last'); if(s){ var raw=JSON.parse(s); S=deepMerge(blankState(),raw); migrateAca(raw); if(!S.aca)S.aca=blankState().aca; } }catch(e){} }
+/* Saves from before the scenario presets have no preset/src; don't let the defaults cite a source for them. */
+function migrateEvents(raw){ if(!raw) return; if(raw.big&&!('preset' in raw.big)){ S.big.preset=''; S.big.src=''; } if(raw.reg&&!('preset' in raw.reg)){ S.reg.preset=''; S.reg.src=''; if(!('type' in raw.reg)) S.reg.type='visit'; } }
+function restore(){ try{ var s=localStorage.getItem('hf_pop_last'); if(s){ var raw=JSON.parse(s); S=deepMerge(blankState(),raw); migrateAca(raw); migrateEvents(raw); if(!S.aca)S.aca=blankState().aca; } }catch(e){} }
 
 /* ========== INTAKE + RECOMMENDATION ENGINE ========== */
 function readIntake(){
