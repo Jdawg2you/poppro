@@ -1422,9 +1422,9 @@ function pDVH(R,age,hh,cfg,st){
 }
 /* ===== Sparkle Care Dental (USA Health Plans, administered by Bento) — a second dental option =====
    Flat monthly rates at every age, association fee included; $4,500 per member per year; no waiting
-   periods; no age limit. Source: 1Enrollment product page 48733 via the Health Hub's product file
-   (captured 2026-09-30) — the carrier's Schedule of Benefits governs. Networks: Bento + Cigna, or
-   Bento + DenteMax + Connection Dental (ManhattanLife runs on Careington — check the dentist). */
+   periods; no age limit. An NCBA association group plan (dues included), not an individual policy.
+   Checked 2026-09-30 against Sparkle_Care_Brochure 2025 (pp. 5-6 coverage, p. 9 rates). Network: Bento
+   (Platinum, Gold) and Cigna DPPO SA Plus (ManhattanLife runs on Careington — check the dentist). */
 var SPARKLE={states:'AL AR AZ CA CO CT DC DE FL GA IA ID IL IN KS KY LA MA MI MN MO MS NC NE NH NJ NM NV OH OK PA SC TN TX UT VA WI WV WY', rates:{i:69,s:129,c:159,f:199}, max:4500,
   enroll:'https://www.1enrollment.com/order/checkout.cfm?id=994524&pdid=48733', search:'https://bento.net/sparkle/'};
 function sparkleSold(st){ return SPARKLE.states.split(' ').indexOf((st||'').toUpperCase())>=0; }
@@ -4227,7 +4227,7 @@ function pbSummary(k,c,live){
   if(k==='gap') return m(c.gap.daily)+'/day in hospital · '+m(c.gap.adm)+' admission'+(+c.gap.outp?' · '+m(c.gap.outp)+' outpatient':'')+(c.gap.ea?' · $250 ER':'');
   if(k==='chas') return [c.chas.cancer?'Cancer '+m(c.chas.cancer):'',c.chas.hs?'Heart attack & stroke '+m(c.chas.hs):''].filter(Boolean).join(' · ')+' lump sum';
   if(k==='hhc') return c.hhc+' plan';
-  if(k==='dvh'&&dentalCo()==='sparkle') return '$4,500 per member per year · $50 deductible (basic & major) · no waiting periods · Bento network';
+  if(k==='dvh'&&dentalCo()==='sparkle') return '$4,500 per member per year · $50 deductible · no waiting periods · Bento / Cigna DPPO network';
   if(k==='dvh'&&c.dvh&&dvhIs7016()) return m(dvh7016Max(c.dvh.max))+' annual max · $100 deductible · vision & hearing included (7016 plan)';
   if(k==='dvh'&&c.dvh){ var rr=dvhRiders(c.dvh); return m(c.dvh.max)+' annual max · '+m(c.dvh.ded||0)+' deductible · '+(rr.vis||rr.hear?'+ '+[rr.vis?'vision':'',rr.hear?'hearing':''].filter(Boolean).join(' & ')+' rider'+(rr.vis&&rr.hear?'s':''):'dental only'); }
   if(k==='lbp'||k==='lbs'){ var lc=c.lb[k.slice(2)]; return m(lc.face)+' term life · 20-year · '+((live&&live.name||'').match(/\(([^)]+)\)$/)||[,'Mutual of Omaha'])[1]; }
@@ -4518,7 +4518,7 @@ function renderBuilder(){
   html+='<div class="pbaddon"><div style="min-width:220px"><div style="font-size:11px;font-weight:700;letter-spacing:.06em;color:#8a6a1f;text-transform:uppercase">Add-on</div><div style="font-weight:700">'+(dentalCo(st)==='sparkle'?'Sparkle Care Dental':dvhIs7016(st)?'Dental, Vision &amp; Hearing (7016)':'Dental · Vision · Hearing Select')+'<button type="button" class="pbinfo" data-ben="dvh" data-bt="best" title="Benefits — Dental, Vision & Hearing" aria-label="Benefits for Dental, Vision and Hearing">i</button></div></div>'
     +(mlDentalSold(st)&&sparkleSold(st)?'<select data-act="dentalco" title="Dental plan"><option value="ml"'+(dentalCo(st)==='ml'?' selected':'')+'>ManhattanLife</option><option value="sparkle"'+(dentalCo(st)==='sparkle'?' selected':'')+'>Sparkle Care</option></select>':'')
     +(dentalCo(st)==='sparkle'
-      ? '<span style="font-size:13px;color:var(--muted)">$4,500 per member per year · $50 deductible on basic &amp; major · no waiting periods · <a href="'+SPARKLE.search+'" target="_blank" rel="noopener">find a Bento dentist ↗</a></span>'
+      ? '<span style="font-size:13px;color:var(--muted)">$4,500 per member per year · $50 deductible · no waiting periods · Bento / Cigna DPPO network · <a href="'+SPARKLE.search+'" target="_blank" rel="noopener">find a Bento dentist ↗</a></span>'
       : dvhIs7016(st)
       ? '<select data-act="dvh" data-f="dvh.max">'+pbOpts(pbAmt(dvh7016Maxes(st)),dvh7016Max(cB.dvh.max,st))+'</select>'
         +'<span style="font-size:13px;color:var(--muted)">7016 plan · $100 deductible · vision &amp; hearing included</span>'

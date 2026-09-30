@@ -10,8 +10,8 @@
   },
   "brochures": [
     {
-      "code": "1Enrollment product 48733",
-      "file": "1enrollment.com product page 48733 (INFORMATION + STATES), via the Health Hub product file sparkle-care-dental.json, captured 2026-09-30",
+      "code": "Sparkle_Care_Brochure 2025",
+      "file": "Sparkle_Care_Brochure 2025.pdf (enrollment123.com, public brochure) — checked 2026-09-30",
       "states": [
         "AL",
         "AR",
@@ -53,11 +53,11 @@
         "WV",
         "WY"
       ],
-      "page": "product page",
+      "page": "5-6, 9",
       "notes": [
-        "The carrier's product page calls its figures a generic representation — the Schedule of Benefits governs. Confirm before promising a percentage.",
-        "Dental only — no vision or hearing.",
-        "Rates are flat at every age and include the association fee."
+        "An association group dental plan through the National Combined Benefits Association (NCBA) — membership dues are included in the rate. Not an individual dental insurance policy.",
+        "Dental only — no vision or hearing. No orthodontia; no missing-tooth clause; composites are not downgraded (brochure FAQ).",
+        "Brochure: 'This brochure is a summary' — the Certificate of Coverage governs."
       ],
       "sections": [
         {
@@ -73,14 +73,15 @@
             {
               "label": "Deductible",
               "values": {
-                "*": "$50 on basic and major services; never on preventive"
+                "*": "$50"
               },
-              "key": true
+              "key": true,
+              "note": "The brochure gives $50 without naming the services; the 1Enrollment product page says basic and major only, never preventive."
             },
             {
               "label": "Waiting periods",
               "values": {
-                "*": "None"
+                "*": "None — coverage on basic and major steps up by policy year instead"
               },
               "key": true
             },
@@ -88,19 +89,20 @@
               "label": "Age limit",
               "values": {
                 "*": "None — writes over 65"
-              }
+              },
+              "note": "From the 1Enrollment product page; the brochure does not state an age limit."
             },
             {
               "label": "Network",
               "values": {
-                "*": "Bento + Cigna, or Bento + DenteMax + Connection Dental — a different network from ManhattanLife (Careington). Check which network has their dentist."
+                "*": "Bento Network (Platinum, Gold) and Cigna DPPO SA Plus, or any licensed dentist out of network — a different network from ManhattanLife (Careington). Check which network has their dentist."
               },
               "key": true
             },
             {
               "label": "Monthly rate",
               "values": {
-                "*": "Member $69 · member + spouse $129 · member + children $159 · family $199 (association fee included)"
+                "*": "Member $69 · member + spouse $129 · member + child/children $159 · family $199 (NCBA membership dues included)"
               }
             }
           ]
@@ -113,21 +115,24 @@
               "values": {
                 "*": "Year 1: 100% · Year 2: 100% · Year 3 and after: 100%"
               },
-              "key": true
+              "key": true,
+              "note": "In network and out of network; patient pays charges above the allowable amounts."
             },
             {
               "label": "Basic restorative",
               "values": {
                 "*": "Year 1: 65% · Year 2: 75% · Year 3 and after: 85%"
               },
-              "key": true
+              "key": true,
+              "note": "In network and out of network; patient pays charges above the allowable amounts."
             },
             {
               "label": "Major restorative",
               "values": {
                 "*": "Year 1: 15% · Year 2: 50% · Year 3 and after: 60%"
               },
-              "key": true
+              "key": true,
+              "note": "In network and out of network; patient pays charges above the allowable amounts."
             }
           ]
         }
