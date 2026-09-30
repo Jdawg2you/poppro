@@ -230,30 +230,40 @@ if (mode === 'engine') {
   const afcD = JSON.parse(fs.readFileSync(new URL('../tool/benefits/afc.json', import.meta.url), 'utf8'));
   const triD = JSON.parse(fs.readFileSync(new URL('../tool/benefits/triad.json', import.meta.url), 'utf8'));
   const flat = m => m.key.concat(...m.sections.map(s => s.rows));
-  const afc = L => ctx.afcEventNums(flat(ctx.benModel(afcD, 'TX', L, {})));
-  const tri = flat(ctx.benModel(triD, 'TX', 'Triad Cigna 3500', {}));
-  const tget = re => (tri.find(r => re.test(r.label)) || {}).value;
-  const cigna = { oop: ctx.evMoneyAll(tget(/^Out-of-pocket maximum/i))[0], visit: ctx.evMoney(tget(/^Primary care visit/i)), urgent: ctx.evMoney(tget(/^Urgent care/i)) };
-  ok(cigna.oop > 0, 'Cigna 3500 OOP read from the SBC data (' + cigna.oop + ')');
-  const lb1 = { adults: 1, faces: [25000] };
-  // The three lineups Kyle sells (single adult, 45): Manhattan Essential / Comprehensive, Cigna 3500 pivot, LifeX pivot.
-  const essential = { afcLevel: 'ClassicPlus', afc: afc('ClassicPlus'), his: { ben: 10000, amb: 1 }, gap: { daily: 100, adm: 2500, ea: 0 }, accU: 1 };
-  const comprehensive = { afcLevel: 'ElitePlus', afc: afc('ElitePlus'), his: { ben: 10000, amb: 1 }, gap: { daily: 200, adm: 5000, ea: 1 }, accU: 2, chas: { cancer: 20000, hs: 10000 }, dvhMax: '3000', lb: { adults: 1, faces: [50000] } };
-  const cignaPk = { major: cigna, base: 'triad', his: { ben: 4000, amb: 1 }, lb: lb1 };
-  const lifexPk = { major: { oop: 10600, visit: 0, urgent: 0 }, base: 'lifex', provisional: true, lb: lb1 };
-  const W = major => ctx.popWeightsFrom({ age: 45, major });
-  const score = (x, major) => ctx.popRawFrom(ctx.popStrengthsFrom(x), W(major));
-  const sE = score(essential, false), sC = score(comprehensive, false), sG = score(cignaPk, true), sL = score(lifexPk, true);
-  console.log('   scores: essential ' + sE + ', comprehensive ' + sC + ', cigna ' + sG + ', lifex ' + sL);
-  ok(sG > sC && sC > sE, 'Cigna + HIS + LB > Manhattan Comprehensive > Manhattan Essential');
-  const e = ctx.popStrengthsFrom(essential), c = ctx.popStrengthsFrom(comprehensive), g = ctx.popStrengthsFrom(cignaPk);
-  ok(e.exposure.severe > c.exposure.severe && e.exposure.severe > 10000, 'Classic Plus leaves real exposure on a severe stay (' + e.exposure.severe + ')');
-  ok(g.exposure.severe === cigna.oop - 4000 - 200, 'Cigna severe exposure = OOP - HI Select per stay - HI Select ambulance');
-  ok(g.preventive === 100 && ctx.popStrengthsFrom(lifexPk).preventive === 100, 'preventive 100 on major medical');
-  ok(ctx.popStrengthsFrom(lifexPk).provisional === true, 'LifeX flagged provisional');
-  ok(ctx.popStrengthsFrom({ ...comprehensive, lb: { adults: 2, faces: [50000] } }).life === 50 && c.life === 100, 'living benefits credit per covered adult');
-  // Monotone: removing any single product never raises the score.
-  for (const k of ['his', 'gap', 'accU', 'chas', 'dvhMax', 'lb']) { const x = { ...comprehensive }; delete x[k]; ok(score(x, false) <= sC, 'removing ' + k + ' does not raise the score'); }
+  const afc = (st, L) => ctx.afcEventNums(flat(ctx.benModel(afcD, st, L, {})));
+  const tri = flat(ctx.benModel(triD, 'TX', 'Triad Cigna 3500', {})), tget = re => (tri.find(r => re.test(r.label)) || {}).value;
+  const cigna = { oop: ctx.evMoneyAll(tget(/^Out-of-pocket maximum/i))[0], ded: ctx.evMoney(tget(/^Calendar-year deductible/i)), coins: 20, visit: ctx.evMoney(tget(/^Primary care visit/i)), urgent: ctx.evMoney(tget(/^Urgent care/i)) };
+  const best = st => ({ afcLevel: 'ElitePlus', afc: afc(st, 'ElitePlus'), his: { ben: 10000, amb: 1 }, hisOutp: 1500, gap: { daily: 200, adm: 6350, ea: 1 }, gapOutp: 3000 });
+  const two = f => ({ adults: 2, faces: [f, f] });
+  // Builder defaults (TIERCFG), couple aged 48/45 - Jesse's example.
+  const pkg = (st, o) => Object.assign({ best: best(st), avail: { sdr: true, hhc: st !== 'FL', dvh: true } }, o);
+  const essential = st => pkg(st, { afcLevel: 'ClassicPlus', afc: afc(st, 'ClassicPlus'), his: { ben: 10000, amb: 1 }, hisOutp: 0, gap: { daily: 100, adm: 2500, ea: 0 }, gapOutp: 0, accU: 1, lb: two(0).faces && { adults: 2, faces: [] } });
+  const maxed = st => pkg(st, { afcLevel: 'ElitePlus', afc: afc(st, 'ElitePlus'), his: { ben: 10000, amb: 1 }, hisOutp: 1500, gap: { daily: 200, adm: 6350, ea: 1 }, gapOutp: 3000, accU: 2, chas: { cancer: 20000, hs: 10000 }, dvhMax: '5000', hhc: st !== 'FL' ? 'Deluxe' : null, lb: two(50000) });
+  const W = o => ctx.popWeightsFrom(Object.assign({ age: 48, family: true }, o));
+  const sc = (x, wo) => ctx.popRawFrom(ctx.popStrengthsFrom(x), W(wo || {}));
+  const E = sc(essential('TX')), M = sc(maxed('TX')), MF = sc(maxed('FL'));
+  console.log('   essential ' + E + ' · maxed TX ' + M + ' · maxed FL ' + MF);
+  ok(M >= 94 && M <= 99, 'maxed Manhattan (all but SDR) scores 94-99 (' + M + ')');
+  ok(MF >= 94, 'FL maxed not marked down for Home Health Care it cannot buy (' + MF + ')');
+  ok(E >= 44 && E <= 52, 'Essential default scores 44-52 (' + E + ')');
+  const up = (o, lab) => { const s1 = sc(Object.assign(essential('TX'), o)); ok(s1 > E, lab + ' raises Essential (' + E + ' -> ' + s1 + ')'); };
+  up({ lb: two(25000) }, 'living benefits'); up({ gap: { daily: 200, adm: 5000, ea: 0 } }, 'Out-of-Pocket up a notch'); up({ gapOutp: 1000 }, 'Out-of-Pocket outpatient'); up({ accU: 2 }, 'accident 2 units'); up({ hisOutp: 1000 }, 'HI Select outpatient');
+  ok(sc(Object.assign(maxed('TX'), { lb: two(25000) })) < M, '$50K living benefits beat $25K');
+  const noLB = sc(Object.assign(maxed('TX'), { lb: { adults: 2, faces: [] } }));
+  ok(M - noLB >= 8, 'dropping living benefits costs >= 8 (' + (M - noLB) + ')');
+  const mFH = sc(maxed('TX'), { famheart: true }), noLBfh = sc(Object.assign(maxed('TX'), { lb: { adults: 2, faces: [] } }), { famheart: true });
+  ok(mFH - noLBfh > M - noLB, 'dropping LB costs more with family heart history');
+  const noH = sc(Object.assign(maxed('TX'), { chas: { cancer: 20000, hs: 0 } })), noHfh = sc(Object.assign(maxed('TX'), { chas: { cancer: 20000, hs: 0 } }), { famheart: true });
+  ok(M - noH >= 3 && (mFH - noHfh) > (M - noH) + 3, 'heart & stroke gap: problematic, really problematic with history (' + (M - noH) + ' vs ' + (mFH - noHfh) + ')');
+  const withSdr = sc(Object.assign(maxed('TX'), { sdr: true })), mFC = sc(maxed('TX'), { famcancer: true }), withSdrFC = sc(Object.assign(maxed('TX'), { sdr: true }), { famcancer: true });
+  ok(withSdr - M <= 3, 'missing SDR costs <= 3 under 55 with no history (' + (withSdr - M) + ')');
+  ok(withSdrFC - mFC >= 5, 'missing SDR costs >= 5 with a cancer history (' + (withSdrFC - mFC) + ')');
+  const cigBase = { major: cigna, base: 'triad', his: { ben: 4000, amb: 1 }, chas: { cancer: 20000, hs: 10000 }, lb: two(50000), best: best('TX'), avail: { sdr: true, hhc: true, dvh: true } };
+  const cig = sc(cigBase, { major: true }), cigFull = sc(Object.assign({}, cigBase, { hisOutp: 1500, dvhMax: '3000' }), { major: true });
+  console.log('   cigna + HIS + LB + CHAS ' + cig + ' · fully built ' + cigFull);
+  ok(cig >= 84, 'Cigna + HI Select + LB + CHAS is strong (' + cig + ')');
+  ok(cigFull >= 92 && cigFull > cig, 'fully built Cigna (outpatient rider + dental) reaches the 90s (' + cigFull + ')');
+  for (const k of ['his', 'gap', 'accU', 'chas', 'dvhMax', 'lb', 'hhc']) { const x = maxed('TX'); delete x[k]; ok(sc(x) <= M, 'removing ' + k + ' never raises the score'); }
   if (!fails) console.log('pop score checks passed');
 } else {
   console.log('usage: node tools/aca-check.mjs engine|structure|benefits|events|pop'); process.exit(2);
