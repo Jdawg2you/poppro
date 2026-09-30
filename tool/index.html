@@ -602,7 +602,9 @@ body.client #classicWrap>summary{display:none}
 <body>
 <!-- Local compare label: shows only when served on 127.0.0.1:8766 (version B). Never appears on mypoppro.com. -->
 <div id="verBanner" style="display:none;position:sticky;top:0;z-index:9999;background:#9c3b2f;color:#fff;font:600 13px -apple-system,sans-serif;text-align:center;padding:6px 10px">VERSION B — in progress · compare with A at 127.0.0.1:8765</div>
-<script>if(location.port==='8766'){ document.getElementById('verBanner').style.display='block'; document.title='B · '+document.title; }</script>
+<script>if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.style.display='block'; document.title='B · '+document.title;
+  /* The file's own timestamp: if this doesn't match the latest change, the browser is showing an old copy. */
+  var lm=new Date(document.lastModified); if(!isNaN(lm)) vb.textContent+=' · updated '+lm.toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}); }</script>
 <div class="wrap">
 
   <div class="brandbar">
