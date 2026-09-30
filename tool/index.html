@@ -328,6 +328,17 @@
   .negbar{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;font-size:13px;padding:8px 0}.negbar small{color:#8a6a1f;flex-basis:100%}
   #printout .negtog{margin-left:auto;font:600 12px -apple-system,sans-serif;border:1px solid #fff;background:transparent;color:#fff;border-radius:999px;padding:4px 12px;cursor:pointer}#printout .negtog.on{background:#2f9e56;border-color:#2f9e56}
   @media print{#printout .negtog{display:none!important}}
+  #classicWrap,#sec_save{display:none!important}
+  .pop3col{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .popcol{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:#fff}.popcol.excl{opacity:.55}
+  .popcol .ph{display:flex;align-items:center;gap:12px}.popcol .ring{position:relative;width:84px;height:84px;flex:0 0 84px}
+  .popcol .ring b{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:26px}
+  .popcol .nm{font-family:var(--serif);font-weight:700;color:var(--navy);font-size:17px}.popcol .prov{font-size:11px;color:#8a6a1f}
+  .popcol ul{list-style:none;margin:8px 0 0;padding:0;font-size:12px}.popcol ul.pos li{color:#1f6b3b;padding:2px 0}.popcol li.none{color:var(--muted)}
+  .popcol .sgh{margin-top:10px;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:#8a6a1f;font-weight:700}.popcol .sgh small{text-transform:none;letter-spacing:0;font-weight:400;color:var(--muted)}
+  .popcol ul.sg li.sugg{display:grid;grid-template-columns:1fr auto;gap:0 8px;padding:6px 8px;margin-top:4px;border:1px solid #e7dcc1;border-radius:8px;cursor:pointer;background:#fdfaf2}
+  .popcol ul.sg li.sugg:hover{border-color:#b0872f;background:#fff5dc}.popcol ul.sg li.sugg b{color:#2f7d4a;font-size:12px}.popcol ul.sg li.sugg i{grid-column:2;font-style:normal;color:var(--muted);font-size:11px;text-align:right}
+  @media(max-width:860px){.pop3col{grid-template-columns:1fr}}
   .pbshow{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);padding:0 0 6px}
   .pbcol.excl{opacity:.55}
   .tfrahint{font-size:12px;color:var(--navy);background:#fbf9f2;border:1px solid var(--line);border-top:none;padding:8px 12px;line-height:1.6}
@@ -996,8 +1007,10 @@ body.client #classicWrap>summary{display:none}
       <div class="row"><div class="lab">Description</div><input id="r_desc" style="flex:1;border:1px solid var(--line);border-radius:7px;padding:6px 8px"></div>
       <div class="row"><div class="lab">Kind of visit</div><select id="r_type" class="selfld" style="max-width:260px"><option value="visit">Doctor visit</option><option value="urgent">Urgent care</option><option value="er">ER visit (not admitted)</option><option value="osurg">Outpatient surgery</option><option value="imaging">MRI / CT scan</option></select></div>
       <div class="row"><div class="lab">How many times this year</div><input class="num" id="r_count" type="number" min="1"></div>
+      <div class="row"><div class="lab">What happened</div><div class="evflags"><label><input type="checkbox" id="r_acc"> Caused by an accident</label></div></div>
       <div class="row"><div class="lab">Charge each time (after discount)</div><input class="num" id="r_charge" type="number" step="0.01"></div>
     </div>
+    <div class="negbar hidein-client"><label><input type="checkbox" id="neg_on2"> Medical Bill Saver (care negotiation) on the Manhattan packages</label><small>Same switch as the major event — the reduction is set there.</small></div>
     <div id="evEveryday" class="evwrap"></div>
   </div>
 
@@ -1568,6 +1581,8 @@ function evEveryday(p){ var c=Math.max(1,+p.count||1), ch=Math.max(0,+p.charge||
     else if(p.type==='er') afcPay=a.er*lim(a.erN); else if(p.type==='osurg') afcPay=a.osurg*c; else if(p.type==='imaging') afcPay=a.mri*c;
     if(a.outLimit) afcPay=Math.min(afcPay,a.outLimit); add('Affordable Choice',afcPay); }
   if(p.type==='osurg'){ add('HI Select — outpatient surgery',+p.hisOutp||0); add('Out-of-Pocket — outpatient surgery',+p.gapOutp||0); }
+  if(p.acc&&p.accU) add('24-Hour Accident — medical',Math.min(bill,2000*p.accU));
+  if(p.acc&&p.type==='er'&&p.gapEa) add('Out-of-Pocket — ER accident',250);
   var negotiated=(!p.major&&+p.negotPct>0)?Math.round(bill*(1-(+p.negotPct)/100)*100)/100:null, owe0=negotiated!=null?negotiated:bill;
   if(p.major){ if(p.type==='visit'&&p.major.visit) owe0=Math.min(bill,p.major.visit*c); else if(p.type==='urgent'&&p.major.urgent) owe0=Math.min(bill,p.major.urgent*c); }
   return {pays:pays,parts:parts,owe0:owe0,net:owe0-pays,negotiated:negotiated}; }
@@ -2053,34 +2068,29 @@ function popActions(tier){
   acts.sort(function(a,b){ return b.delta-a.delta; });
   return acts;
 }
+/* POP Score, one column per package. "Smart add": the suggestions that buy the most protection per
+   dollar come first (points per $10/mo); a free improvement (or one that saves money) leads. */
+function popSmart(list){ return list.map(function(x){ var v=x.dCost>0?x.dScore/(x.dCost/10):1e6+x.dScore; return Object.assign({value:v},x); })
+  .sort(function(a,b){ return b.value-a.value; }); }
 function renderPopScore(){
   var host=$('popScoreBody'); if(!host) return;
-  var scores={good:computePop('good').score,better:computePop('better').score,best:computePop('best').score};
-  var at=S.activeTab, pos=popPositives(at), acts=popActions(at), sc=scores[at];
-  var colf=function(v){return v>=80?'#2f9e56':(v>=60?'#d8a23a':'#c85a5a');};
-  var col=colf(sc), C=2*Math.PI*56, dash=(C*sc/100).toFixed(1);
-  var ring='<div class="popgauge"><svg width="132" height="132" viewBox="0 0 132 132" style="transform:rotate(-90deg)"><circle cx="66" cy="66" r="56" fill="none" stroke="#ece4d3" stroke-width="12"/><circle cx="66" cy="66" r="56" fill="none" stroke="'+col+'" stroke-width="12" stroke-linecap="round" stroke-dasharray="'+dash+' '+C.toFixed(1)+'"/></svg><div class="popnum"><b style="color:'+col+'">'+sc+'</b><span>POP Score</span></div></div>';
-  var three='<div class="pop3">'+['good','better','best'].map(function(t){var v=scores[t];return '<div class="t'+(t===at?' on':'')+'" data-tier="'+t+'"><b style="color:'+colf(v)+'">'+v+'</b>'+t.toUpperCase()+'</div>';}).join('')+'</div>';
-  var posli=pos.length?pos.map(function(x){return '<li>✓ '+x+'</li>';}).join(''):'<li style="color:var(--muted)">—</li>';
+  var colf=function(v){return v>=80?'#2f7d4a':(v>=60?'#a57a1c':'#b24b4b');};
   var canPrice=(typeof HF_RATES!=='undefined')&&!!(S.client.state||'').trim()&&!!ratingAge();
-  var sug=(typeof popSuggestions==='function'&&canPrice)?popSuggestions(at):{list:[]};
-  var negli;
-  if(canPrice&&!sug.list.length){
-    negli='<li style="color:#1c6b38">Nothing major missing — well protected</li>';
-  } else if(sug.list.length){
-    negli=sug.list.map(function(s,ix){
-      var cost=s.dCost>=0?('+$'+s.dCost.toFixed(2)+'/mo'):('−$'+Math.abs(s.dCost).toFixed(2)+'/mo');
-      return '<li class="sugg" data-ix="'+ix+'" title="Click to add this to the package">'+s.label
-        +' <b style="color:#2f9e56">+'+s.dScore+' pts</b> <span style="color:var(--muted)">'+cost+'</span></li>';
-    }).join('');
-  } else {
-    negli=acts.length?acts.map(function(a){return '<li>✗ '+a.text+' <b style="color:#2f9e56">(+'+a.delta+')</b></li>';}).join(''):'<li style="color:#1c6b38">Nothing major missing — well protected</li>';
-  }
-  var why='<div class="popwhy"><div class="col pos"><b>What’s lifting it</b><ul>'+posli+'</ul></div><div class="col neg"><b>How to raise it</b><ul>'+negli+'</ul></div></div>';
-  var prov=computePop(at).s.provisional?'<div class="note" style="color:#8a6a1f">Provisional — LifeX’s benefit summary isn’t on file, so this uses the federal out-of-pocket limit ($10,600 per person) as its worst case. It rises once the SBC is added.</div>':'';
-  host.innerHTML='<div class="popwrap"><div style="text-align:center">'+ring+three+'</div>'+why+'</div>'+prov;
-  host.querySelectorAll('.pop3 .t').forEach(function(el){ el.onclick=function(){ read(); S.activeTab=el.dataset.tier; fill(); compute(); }; });
-  host.querySelectorAll('li.sugg').forEach(function(el){ el.onclick=function(){ var s=sug.list[+el.dataset.ix]; if(s) applySuggestion(at,s); }; });
+  var names={good:'Essential',better:'Complete',best:'Comprehensive'}, SG={};
+  var cols=['good','better','best'].map(function(t){
+    var P=computePop(t), sc=P.score, C=2*Math.PI*34, dash=(C*sc/100).toFixed(1), inc=(S.include||{})[t]!==false;
+    var ring='<svg width="84" height="84" viewBox="0 0 84 84" style="transform:rotate(-90deg)"><circle cx="42" cy="42" r="34" fill="none" stroke="#ece4d3" stroke-width="9"/><circle cx="42" cy="42" r="34" fill="none" stroke="'+colf(sc)+'" stroke-width="9" stroke-linecap="round" stroke-dasharray="'+dash+' '+C.toFixed(1)+'"/></svg>';
+    var pos=popPositives(t).slice(0,3);
+    var sug=canPrice?popSmart(popSuggestions(t).list).slice(0,3):[]; SG[t]=sug;
+    var sugli=sug.length?sug.map(function(x,ix){ var cost=x.dCost>=0?'+$'+x.dCost.toFixed(2)+'/mo':'−$'+Math.abs(x.dCost).toFixed(2)+'/mo';
+        return '<li class="sugg" data-t="'+t+'" data-ix="'+ix+'" title="Click to add this to '+names[t]+'"><span>'+x.label+'</span><b>+'+x.dScore+' pts</b><i>'+cost+'</i></li>'; }).join('')
+      :'<li class="none">'+(canPrice?'Nothing major missing':'Add state and age to see suggestions')+'</li>';
+    return '<div class="popcol'+(inc?'':' excl')+'"><div class="ph"><div class="ring">'+ring+'<b style="color:'+colf(sc)+'">'+sc+'</b></div><div><div class="nm">'+names[t]+'</div>'
+      +(P.s.provisional?'<div class="prov">provisional — LifeX SBC not on file</div>':'')+(inc?'':'<div class="prov">not on the quote</div>')+'</div></div>'
+      +'<ul class="pos">'+(pos.length?pos.map(function(x){ return '<li>✓ '+x+'</li>'; }).join(''):'<li class="none">—</li>')+'</ul>'
+      +'<div class="sgh">Smart adds <small>best value first</small></div><ul class="sg">'+sugli+'</ul></div>'; });
+  host.innerHTML='<div class="pop3col">'+cols.join('')+'</div>';
+  host.querySelectorAll('li.sugg').forEach(function(el){ el.onclick=function(){ var s=SG[el.dataset.t][+el.dataset.ix]; if(s) applySuggestion(el.dataset.t,s); }; });
 }
 function updateBMI(who){ var h=+$('in_'+who+'height').value||0, w=+$('in_'+who+'weight').value||0, el=$('in_'+who+'bmi'); if(!el) return; if(h>0&&w>0){ var b=(w/(h*h))*703; el.value=b.toFixed(1)+' ('+bmiCat(b)+')'; } else el.value=''; }
 // ManhattanLife Affordable Choice build chart (AGT-AFC7010). Keyed by height in inches -> [min,max] lbs.
@@ -2161,7 +2171,7 @@ function blankState(){
     pension:{monthly:0,note:'e.g., IUL / tax-free retirement savings for your future',cv10:0,cv20:0,cv30:0,leg1:0,leg25:0},
     big:{desc:'Hospital stay — national average',charge:28038,disc:0,days:5,er:1,amb:0,acc:0,dx:'',preset:'hosp',src:'HCCI 2022 (average commercial payment for an inpatient stay, facility) · HCUP 2022 (5.2-day average stay)'},
     negot:{on:false,pct:null},   // Medical Bill Saver - % stays blank until a ManhattanLife source is on file
-    reg:{desc:'Outpatient knee surgery (arthroscopy)',type:'osurg',count:1,charge:7595,preset:'knee',src:'Peterson-KFF Health System Tracker 2018 — outpatient meniscus repair'},
+    reg:{desc:'Urgent care visit',type:'urgent',count:1,charge:220,acc:0,preset:'urgent',src:'HCCI 2022 — average urgent care visit'},
     intake:{who:{app:true,spouse:false,kids:false},phone:'',email:'',tobaccoP:false,tobaccoS:false,maternityP:false,maternityS:false,maternity:false,dv:false,famcancerP:false,famcancerS:false,famcancer:false,famheartP:false,famheartS:false,famheart:false,mentalP:false,mentalS:false,mental:false,surg2yrP:false,surg2yrS:false,surg2yr:false,majorcond:false,majorcondNote:'',diabetic:false,diabeticNote:'',health:'',income:0,pincome:0,sincome:0,hhManual:false,retage:'',savings:0,invest:0,invprot:false,invsra:false,invnote:'',docs1:'',docs2:'',docs3:'',keepaca:'',keepafc:'',docnote:'',medList:[],budget:0,priority:'coverage',notes:'',carrier:'',plan:'',pheight:'',pweight:'',sheight:'',sweight:'',psex:'',ssex:'',kidsNote:'',routeNote:'',docsNote:'',whyShop:'',effDate:''},
     recommended:'best',
     include:{good:true,better:true,best:true},   // agent toggle — which tiers reach the client view & printout
@@ -2880,7 +2890,7 @@ function fill(){
   $('p_pension').value=(+S.pension.monthly)?fmtMoneyStr(String(S.pension.monthly)):'';$('p_pnote').value=S.pension.note;
   ;['cv10','cv20','cv30','leg1','leg25'].forEach(function(k){ $('pp_'+k).value=(+S.pension[k])?fmtMoneyStr(String(S.pension[k])):''; });
   $('b_desc').value=S.big.desc;$('b_charge').value=S.big.charge;$('b_disc').value=S.big.disc;$('b_preset').innerHTML=evPresetOpts('major',S.big.preset||''); $('b_days').value=S.big.days;$('b_er').checked=!!S.big.er;$('b_amb').checked=!!S.big.amb;$('b_acc').checked=!!S.big.acc;$('b_dx').value=S.big.dx||'';
-  $('r_desc').value=S.reg.desc;$('r_preset').innerHTML=evPresetOpts('everyday',S.reg.preset||''); S.negot=S.negot||{on:false,pct:null}; $('neg_on').checked=!!S.negot.on; $('neg_pct').value=S.negot.pct==null?'':S.negot.pct; $('r_charge').value=S.reg.charge;$('r_type').value=S.reg.type||'visit';$('r_count').value=S.reg.count||1;
+  $('r_desc').value=S.reg.desc;$('r_preset').innerHTML=evPresetOpts('everyday',S.reg.preset||''); S.negot=S.negot||{on:false,pct:null}; $('neg_on').checked=!!S.negot.on; $('neg_pct').value=S.negot.pct==null?'':S.negot.pct; $('r_charge').value=S.reg.charge;$('r_type').value=S.reg.type||'visit'; $('r_acc').checked=!!S.reg.acc;$('r_count').value=S.reg.count||1;
   $('tl_good').textContent=S.tabLabels.good;$('tl_better').textContent=S.tabLabels.better;$('tl_best').textContent=S.tabLabels.best;
   document.querySelectorAll('#tabs button').forEach(function(b){b.classList.toggle('on',b.dataset.tab===S.activeTab);b.classList.toggle('rec',b.dataset.tab===S.recommended);});
   S.include=S.include||{good:true,better:true,best:true};
@@ -2897,7 +2907,7 @@ function read(){
   S.pension={monthly:moneyNum($('p_pension').value),note:$('p_pnote').value,cv10:moneyNum($('pp_cv10').value),cv20:moneyNum($('pp_cv20').value),cv30:moneyNum($('pp_cv30').value),leg1:moneyNum($('pp_leg1').value),leg25:moneyNum($('pp_leg25').value)};
   S.big={desc:$('b_desc').value,charge:+$('b_charge').value||0,disc:+$('b_disc').value||0,days:+$('b_days').value||0,er:$('b_er').checked?1:0,amb:$('b_amb').checked?1:0,acc:$('b_acc').checked?1:0,dx:$('b_dx').value,preset:(S.big||{}).preset||'',src:(S.big||{}).src||''};
   S.negot={on:$('neg_on').checked,pct:$('neg_pct').value===''?null:+$('neg_pct').value};
-  S.reg={desc:$('r_desc').value,charge:+$('r_charge').value||0,type:$('r_type').value,count:+$('r_count').value||1,preset:(S.reg||{}).preset||'',src:(S.reg||{}).src||''};
+  S.reg={desc:$('r_desc').value,charge:+$('r_charge').value||0,type:$('r_type').value,count:+$('r_count').value||1,acc:$('r_acc').checked?1:0,preset:(S.reg||{}).preset||'',src:(S.reg||{}).src||''};
 }
 
 var AFC_PARTNERS=[
@@ -3611,6 +3621,8 @@ function bindInputs(){
   ['r_charge','r_count'].forEach(function(id){ $(id).addEventListener('input',function(){ evCustom('everyday'); }); });
   ['b_er','b_amb','b_acc','b_dx'].forEach(function(id){ $(id).addEventListener('change',function(){ evCustom('major'); }); });
   $('r_type').addEventListener('change',function(){ evCustom('everyday'); });
+  $('r_acc').addEventListener('change',function(){ evCustom('everyday'); });
+  $('neg_on2').addEventListener('change',function(){ $('neg_on').checked=this.checked; compute(); });
   ['in_keepaca','in_keepafc'].forEach(function(id){ $(id).addEventListener('change',function(){ readIntake(); autosave(); }); });
   document.querySelectorAll('#tabs button').forEach(function(b){ b.onclick=function(){ read(); S.activeTab=b.dataset.tab; fill(); compute(); }; });
   ['good','better','best'].forEach(function(t){ var c=$('inc_'+t); if(c) c.onchange=function(){ S.include=S.include||{}; S.include[t]=c.checked; updateTabVisibility(); compute(); autosave(); }; });
@@ -3864,6 +3876,8 @@ var EV_PRESETS={
   {id:'heart',label:'Heart attack',desc:'Heart attack hospitalization',charge:47666,days:5,er:1,amb:1,acc:0,dx:'heart',src:'Peterson-KFF Health System Tracker 2018 (average allowed, large employer plans); 5-day average stay'},
   {id:'cancer',label:'Cancer — first year of treatment',desc:'Cancer — first year of treatment',charge:43600,days:0,er:0,amb:0,acc:0,dx:'cancer',src:'Mariotto et al. 2020 (NCI, SEER-Medicare) — first-year cancer cost, 2019 dollars; commercial costs are typically higher'}],
  everyday:[
+  {id:'armc',label:'Broken arm — cast, no surgery',desc:'Broken arm (cast, no surgery)',type:'er',acc:1,count:1,charge:2209,src:'Shapiro et al., J Hand Microsurg 2023 — non-surgical wrist fracture, whole episode, MarketScan 2007–16'},
+  {id:'arms',label:'Broken arm — needs surgery',desc:'Broken arm with surgery',type:'osurg',acc:1,count:1,charge:6577,src:'Huetteman et al., J Hand Surg Am 2018 — surgical wrist fracture, $6,577–$8,181 published range (low end used), MarketScan 2009–15'},
   {id:'visit',label:'Doctor visit',desc:'Doctor visit',type:'visit',count:1,charge:125,src:'Peterson-KFF Health System Tracker 2021 — average office visit'},
   {id:'urgent',label:'Urgent care visit',desc:'Urgent care visit',type:'urgent',count:1,charge:220,src:'HCCI 2022 — average urgent care visit'},
   {id:'er',label:'ER visit (not admitted)',desc:'ER visit (not admitted)',type:'er',count:1,charge:2909,src:'HCCI 2021 — average ER visit including all services'},
@@ -3872,7 +3886,7 @@ var EV_PRESETS={
 function evPresetOpts(kind,cur){ return '<option value="">Custom</option>'+EV_PRESETS[kind].map(function(p){ return '<option value="'+p.id+'"'+(p.id===cur?' selected':'')+'>'+p.label+'</option>'; }).join(''); }
 function evApplyPreset(kind,id){ var p=EV_PRESETS[kind].filter(function(x){ return x.id===id; })[0]; if(!p) return;
   if(kind==='major'){ S.big={desc:p.desc,charge:p.charge,disc:0,days:p.days,er:p.er,amb:p.amb,acc:p.acc,dx:p.dx,preset:p.id,src:p.src}; }
-  else { S.reg={desc:p.desc,charge:p.charge,type:p.type,count:p.count,preset:p.id,src:p.src}; }
+  else { S.reg={desc:p.desc,charge:p.charge,type:p.type,count:p.count,acc:p.acc||0,preset:p.id,src:p.src}; }
   fill(); compute(); autosave(); }
 /* ===== Event gut checks per package (screen + print) ===== */
 var EV_TIERS=[['good','Essential'],['better','Complete'],['best','Comprehensive']];
@@ -3907,8 +3921,8 @@ function evTableHTML(kind){ var tiers=evIncluded(); if(!tiers.length) return '';
     head=((+b.disc||0)>0?'Billed '+fmt2(+b.charge)+', network price after a '+fmt2(+b.disc)+' discount · ':'Network price — what insurance actually pays · ')+((+b.days||0)>0?(+b.days)+' day'+(+b.days===1?'':'s')+' in the hospital':'no hospital stay')+(b.er?' · through the ER':'')+(b.amb?' · ambulance':'')+(b.acc?' · accident':'')+(b.dx?' · '+b.dx+' diagnosis':'');
     tiers.forEach(function(T){ var o=evTierPack(T[0]); res.push({T:T,o:o,r:evMajor({bal:bill,days:b.days,er:b.er,amb:b.amb,acc:b.acc,dx:b.dx,afc:o.afc,his:o.his,gap:o.gap,accU:o.accU,chas:o.chas,major:o.major,negotPct:negOn()?S.negot.pct:0})}); }); }
   else { var r=S.reg, cnt=Math.max(1,+r.count||1); bill=(+r.charge||0)*cnt; if(!(bill>0)) return '';
-    head=({visit:'Doctor visit',urgent:'Urgent care',er:'ER visit',osurg:'Outpatient surgery',imaging:'MRI / CT scan'}[r.type]||'Visit')+(cnt>1?' · '+cnt+' times at '+fmt2(+r.charge||0):'')+' · network price — what insurance actually pays';
-    tiers.forEach(function(T){ var o=evTierPack(T[0]); res.push({T:T,o:o,r:evEveryday({type:r.type,charge:r.charge,count:cnt,afc:o.afc,hisOutp:o.hisOutp,gapOutp:o.gapOutp,major:o.major,negotPct:negOn()?S.negot.pct:0})}); }); }
+    head=({visit:'Doctor visit',urgent:'Urgent care',er:'ER visit',osurg:'Outpatient surgery',imaging:'MRI / CT scan'}[r.type]||'Visit')+(cnt>1?' · '+cnt+' times at '+fmt2(+r.charge||0):'')+(r.acc?' · accident':'')+' · network price — what insurance actually pays';
+    tiers.forEach(function(T){ var o=evTierPack(T[0]); res.push({T:T,o:o,r:evEveryday({type:r.type,charge:r.charge,count:cnt,afc:o.afc,hisOutp:o.hisOutp,gapOutp:o.gapOutp,acc:r.acc,accU:o.accU,gapEa:o.gap&&o.gap.ea,major:o.major,negotPct:negOn()?S.negot.pct:0})}); }); }
   var aOwe=A?evAnchorOwe(kind,bill,A,S.reg.type,S.reg.count):null;
   var billed=kind==='major'&&(+S.big.disc||0)>0?+S.big.charge:0, negB=negOn()?Math.round(bill*(1-S.negot.pct/100)*100)/100:null;
   var cols=(A?1:0)+res.length, h='<div class="evbill"><span>This event costs</span>'+(billed?'<b class="was">'+fmt2(billed)+'</b><i class="arr">→</i>':'')+'<b>'+fmt2(bill)+'</b>'+(billed?'<em>network price — every plan pays this, not the sticker price</em>':'')+(negB!=null?'<i class="arr">→</i><b class="neg">'+fmt2(negB)+'</b><em>with Medical Bill Saver, Manhattan packages</em>':'')+'<small>'+head+'</small></div>'+(negOn()?'<div class="evneg"><b>Medical Bill Saver is on.</b> On the Manhattan packages, ManhattanLife’s care-negotiation service (CareGuide) works the bill down before you pay it — illustrated here at '+S.negot.pct+'%. The plan still pays its full benefits, so more of that money stays with you.<small>Illustration: assumes a '+S.negot.pct+'% reduction. CareGuide states savings are not guaranteed.</small></div>':'')+'<div class="evtab" style="grid-template-columns:minmax(120px,1.1fr) repeat('+cols+',1fr)">';
@@ -3933,6 +3947,7 @@ function renderEvents(){ var need=['afc','triad'].filter(function(f){ return !BE
   if(need.length&&!renderEvents._loading){ renderEvents._loading=true; Promise.all(need.map(function(f){ return benLoad(f).catch(function(){}); })).then(function(){ renderEvents._loading=false; renderEvents(); if(document.body.classList.contains('client')) buildPrintout(); }); }
   var nn=$('neg_note'); if(nn) nn.textContent=(+(S.negot||{}).pct>0)?'':'Enter the reduction to illustrate — ManhattanLife and CareGuide publish no average (CareGuide: savings not guaranteed), so the figure is yours; the quote labels it an illustration.';
   if($('neg_on')) $('neg_on').disabled=!(+(S.negot||{}).pct>0);
+  if($('neg_on2')){ $('neg_on2').disabled=$('neg_on').disabled; $('neg_on2').checked=$('neg_on').checked; }
   if($('evMajor')) $('evMajor').innerHTML=evTableHTML('major')||'<div class="note">Enter the billed charges to see what each package pays.</div>';
   if($('evEveryday')) $('evEveryday').innerHTML=evTableHTML('everyday')||'<div class="note">Enter the charge to see what each package pays.</div>';
   var bh=$('o_big_desc_h'); if(bh) bh.textContent=S.big.desc||''; var rh=$('o_reg_desc_h'); if(rh) rh.textContent=S.reg.desc||''; }

@@ -220,6 +220,9 @@ if (mode === 'engine') {
   ok(ctx.evAnchorOwe('major', 5000, Aca) === 5000, 'bill under the deductible: they pay all of it');
   ok(ctx.evAnchorOwe('major', 10000, Aca) === 7476 + 0.5 * 2524, 'mid-size bill: deductible + 50% of the rest (' + ctx.evAnchorOwe('major', 10000, Aca) + ')');
   ok(ctx.evAnchorOwe('major', 22913.23, Aca) === 9950, 'large bill: capped at the per-person limit');
+  r = ctx.evEveryday({ type: 'er', charge: 2209, count: 1, afc: n, acc: 1, accU: 1, gapEa: 1 });
+  ok(r.pays === Math.min(n.er, n.outLimit || Infinity) + 2000 + 250, 'everyday broken arm: AFC ER + accident medical (capped $2,000/unit) + Gap ER accident');
+  ok(ctx.evEveryday({ type: 'er', charge: 2209, count: 1, afc: n, acc: 0, accU: 1, gapEa: 1 }).pays === Math.min(n.er, n.outLimit || Infinity), 'no accident: accident plan and Gap ER pay nothing');
   if (!fails) console.log('event checks passed');
 } else if (mode === 'pop') {
   const a = html.indexOf('/* ACA-ENGINE:BEGIN */'), b = html.indexOf('/* ACA-ENGINE:END */');
