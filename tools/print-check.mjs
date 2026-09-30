@@ -11,6 +11,8 @@ import path from 'node:path';
 
 const OUT = path.resolve(process.argv[2] || 'printout.pdf');
 const PORT = process.argv[3] || '8766';
+/* A full URL (https://mypoppro.com) checks the live site; a bare port checks a local preview. */
+const BASE = /^https?:/.test(PORT) ? PORT.replace(/\/$/, '') : `http://127.0.0.1:${PORT}`;
 const HEAVY = process.argv[4] === 'heavy';
 const CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 const DBG = 9300 + Math.floor(Math.random() * 500);
@@ -44,7 +46,7 @@ try {
   await new Promise(r => ws.addEventListener('open', r));
   ws.addEventListener('message', m => { const d = JSON.parse(m.data); if (d.id && pending.has(d.id)) { const p = pending.get(d.id); pending.delete(d.id); d.error ? p.rej(new Error(d.error.message)) : p.res(d.result); } });
   await send('Page.enable'); await send('Runtime.enable');
-  const url = `http://127.0.0.1:${PORT}/tool/`;
+  const url = `${BASE}/tool/`;
   await send('Page.navigate', { url }); await sleep(1500);
   await evalJS(SCENARIO);
   await send('Page.navigate', { url }); await sleep(2500);
