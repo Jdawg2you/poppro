@@ -215,6 +215,11 @@ if (mode === 'engine') {
   r = ctx.evEveryday({ type: 'osurg', charge: 7595, count: 1, afc: n, negotPct: 40 });
   ok(r.negotiated === 4557 && Math.abs(r.net - (4557 - r.pays)) < 0.01, 'everyday: negotiation lowers the Manhattan bill, benefits unchanged');
   ok(ctx.evEveryday({ type: 'visit', charge: 150, count: 2, major: { visit: 45 }, negotPct: 40 }).negotiated === null, 'everyday: no negotiation on major medical');
+  // ACA: per-person deductible, then coinsurance, capped at the out-of-pocket limit.
+  const Aca = { oop: 9950, ded: 7476, coins: 50 };
+  ok(ctx.evAnchorOwe('major', 5000, Aca) === 5000, 'bill under the deductible: they pay all of it');
+  ok(ctx.evAnchorOwe('major', 10000, Aca) === 7476 + 0.5 * 2524, 'mid-size bill: deductible + 50% of the rest (' + ctx.evAnchorOwe('major', 10000, Aca) + ')');
+  ok(ctx.evAnchorOwe('major', 22913.23, Aca) === 9950, 'large bill: capped at the per-person limit');
   if (!fails) console.log('event checks passed');
 } else if (mode === 'pop') {
   const a = html.indexOf('/* ACA-ENGINE:BEGIN */'), b = html.indexOf('/* ACA-ENGINE:END */');
