@@ -2,6 +2,8 @@
 //   node tools/live-check.mjs files   mypoppro.com serves exactly ~/Documents/poppro's page and data
 //   node tools/live-check.mjs nav     script.ffloptimum.com serves exactly ~/script-navigator/index.html
 //   node tools/live-check.mjs push    a real push: live navigator -> live POP Pro, acknowledged, fields land, no page errors
+//   node tools/live-check.mjs dvh [base]  every state: DVH priced only from its own table, else 'not sold'/'not loaded' (base defaults to live)
+//   node tools/live-check.mjs load    live Load Quote of a navigator profile file keeps the agent's details across a refresh; pill present
 // Note: each run is a real page view on both sites' analytics.
 import { spawn } from 'node:child_process';
 import crypto from 'node:crypto';
@@ -65,7 +67,37 @@ const CLIENT = `({first:'Livecheck',last:'Probe',dob:'07/03/1981',age:'45',sex:'
   budget_comfort:'450',budget_max:'600',docs:[{n:'Dr. Lee',prac:'Family',aca:'Yes',keep:'Yes'}]})`;
 
 let code = 1;
-try {
+if (MODE === 'dvh') try {
+  const BASE = (process.argv[3] || POP).replace(/\/$/, '');
+  let l; for (let i = 0; i < 60 && !l; i++) { await sleep(150); l = await list().catch(() => null); }
+  const t = tab(l.find(x => x.type === 'page').webSocketDebuggerUrl); await t.open; await t.send('Runtime.enable'); await t.send('Page.enable');
+  await t.send('Page.navigate', { url: BASE + '/tool/' }); await sleep(4500);
+  const r = await t.ev(`(function(){ var ALL='AL AK AZ AR CA CO CT DE DC FL GA HI ID IL IN IA KS KY LA ME MD MA MI MN MS MO MT NE NV NH NJ NM NY NC ND OH OK OR PA RI SC SD TN TX UT VT VA WA WV WI WY'.split(' ');
+    var sold=ML_OFFERED.dvh.split(' '), bad=[], priced=0, notsold=0;
+    ALL.forEach(function(st){ ['i','s','c','f'].forEach(function(hh){ [['1000','0'],['1500','100'],['3000','0'],['5000','100']].forEach(function(c){ [30,50,70].forEach(function(age){
+      var r=pDVH(HF_RATES,age,hh,{max:c[0],ded:c[1]},st), g=prGroup(301,st);
+      if(sold.indexOf(st)>=0){ var t=g&&g.plans['$'+c[0]+' Benefit - $'+c[1]+' Deductible | $'+c[1]+' Deductible'], a=t&&t[hh.toUpperCase()], want=a?a[1][age-a[0]]:null;
+        if(r.price==null||want==null||r.price!==want) bad.push(st+' '+hh+' '+c+' '+age+' got '+r.price+' want '+want); else priced++; }
+      else { if(r.price!=null||!/not sold in/.test(r.note)) bad.push(st+' should be not sold: '+JSON.stringify(r)); else notsold++; } }); }); }); });
+    return {sold:sold.length, priced:priced, notsold:notsold, bad:bad.slice(0,5), nbad:bad.length}; })()`);
+  console.log(`DVH ${r.nbad ? 'FAILED ' + r.nbad + ': ' + r.bad.join(' ; ') : 'ok'} sold-states=${r.sold} priced=${r.priced} not-sold=${r.notsold}`);
+  code = r.nbad ? 1 : 0; t.close();
+} catch (e) { console.log('DVH FAILED ' + e.message); }
+else if (MODE === 'load') try {
+  let l; for (let i = 0; i < 60 && !l; i++) { await sleep(150); l = await list().catch(() => null); }
+  const t = tab(l.find(x => x.type === 'page').webSocketDebuggerUrl); await t.open; await t.send('Runtime.enable'); await t.send('Log.enable'); await t.send('Page.enable');
+  await t.send('Page.navigate', { url: POP + '/tool/' }); await sleep(3500);
+  await t.ev(`window.confirm=()=>true; window.alert=()=>{}; goStep('intake'); ['in_agency:Probe Agency','in_agent:Agent Probe','in_aphone:5550100111','in_aemail:agent@example.com'].forEach(function(x){ var p=x.split(':'), e=$(p[0]); e.value=p[1]; e.dispatchEvent(new Event('input',{bubbles:true})); }); true`);
+  await t.ev(`loadFile(new File([JSON.stringify(${CLIENT})],'Livecheck Probe Profile - HEALTH.json')); true`); await sleep(1500);
+  await t.send('Page.reload', {}); await sleep(3500);
+  const r = await t.ev(`({client:S.client.pname, agency:S.agency, agent:S.client.agent, phone:S.agentPhone, email:S.agentEmail, kids:(S.intake.kids||[]).length, oop:+(S.cur||{}).oop,
+    pill:(document.querySelector('.goatpill')||{}).href||'', pillShown:getComputedStyle(document.querySelector('.goatpill')).display!=='none'})`);
+  const ok = r.client === 'Livecheck Probe' && r.agency === 'Probe Agency' && r.agent === 'Agent Probe' && !!r.phone && r.email === 'agent@example.com' && r.kids >= 2 && r.oop === 9000
+    && /goatleads\.com\/registration\/new\?affiliate_id=66c4aa379e0123651ad2f0e6/.test(r.pill) && r.pillShown && !t.errs.length;
+  t.errs.forEach(e => console.log('  ' + e));
+  console.log(`LIVE LOAD ${ok ? 'ok' : 'FAILED ' + JSON.stringify(r)}`); code = ok ? 0 : 1; t.close();
+} catch (e) { console.log('LIVE LOAD FAILED ' + e.message); }
+else try {
   let l; for (let i = 0; i < 60 && !l; i++) { await sleep(150); l = await list().catch(() => null); }
   const nav = tab(l.find(t => t.type === 'page').webSocketDebuggerUrl); await nav.open;
   await nav.send('Runtime.enable'); await nav.send('Log.enable'); await nav.send('Page.enable');
