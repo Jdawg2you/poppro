@@ -340,7 +340,14 @@
   .popcol ul.sg li.sugg:hover{border-color:#b0872f;background:#fff5dc}.popcol ul.sg li.sugg b{color:#2f7d4a;font-size:12px}.popcol ul.sg li.sugg i{grid-column:2;font-style:normal;color:var(--muted);font-size:11px;text-align:right}
   @media(max-width:860px){.pop3col{grid-template-columns:1fr}}
   .pbna{font-size:11px;color:var(--muted);padding:4px 2px 0;text-decoration:none}
-  .pbchoose{font:inherit;font-size:12px;font-weight:700;border:1px solid #b0872f;background:#fff;color:#8a6a1f;border-radius:7px;padding:4px 9px;cursor:pointer;margin-right:6px}
+  .pbhd{padding:10px 12px 8px;border-bottom:1px solid #eee6d2;margin-bottom:6px}
+  .pbhd .r1{display:flex;justify-content:space-between;align-items:center}
+  .pbhd .tt{font-size:10.5px;letter-spacing:.12em;font-weight:700;color:var(--muted);text-transform:uppercase}
+  .pbhd .nm{font-family:var(--serif);font-weight:700;color:var(--navy);font-size:22px;line-height:1.15;margin:2px 0 8px}
+  .pbhd .r3{display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .pbhd .pbshow{padding:0;margin:0;font-size:12px}
+  .pbreset{font:inherit;font-size:11.5px;font-weight:600;border:0;background:transparent;color:var(--muted);cursor:pointer;padding:2px 4px;border-radius:6px}.pbreset:hover{background:#f3efe3;color:var(--navy)}
+  .pbchoose{font:inherit;font-size:12px;font-weight:700;border:1px solid #b0872f;background:#fff;color:#8a6a1f;border-radius:7px;padding:5px 12px;cursor:pointer;white-space:nowrap}
   .pbchoose.on{background:#2f7d4a;border-color:#2f7d4a;color:#fff}.pbcol.chosen{box-shadow:0 0 0 3px #2f7d4a inset;border-radius:12px}
   #printout .po-col.chosen{border-color:#2f7d4a;box-shadow:0 0 0 2px #2f7d4a,0 8px 20px rgba(18,33,59,.08);position:relative}
   #printout .po-ribbon{background:#2f7d4a;color:#fff;font:700 11px -apple-system,sans-serif;letter-spacing:.1em;text-transform:uppercase;text-align:center;padding:4px}
@@ -4115,7 +4122,7 @@ function renderBuilder(){
     var byKpk={}; (pk.products||[]).forEach(function(p){ if(p.k) byKpk[p.k]=p; });
     var hdr=(S.lineup==='lx-mh-cg'||S.lineup==='custom')&&c.base&&c.base!=='afc'?[c.base==='lifex'?'Pivot down':'Pivot up',c.base==='lifex'?'LifeX':'Cigna']:(S.lineup==='lx-mh-cg'?['Lead','Manhattan']:[T[1],T[2]]);
     var incT=(S.include||{})[t]!==false;
-    html+='<div class="pbcol'+(S.recommended===t?' rec':'')+(incT?'':' excl')+(chosenTier()===t?' chosen':'')+'" data-t="'+t+'"><label class="pbshow"><input type="checkbox" data-act="inc"'+(incT?' checked':'')+'> Show on quote</label><div class="ph"><span class="tt">'+hdr[0]+'</span><b>'+hdr[1]+'</b><span style="flex:1"></span><button type="button" class="pbchoose'+(chosenTier()===t?' on':'')+'" data-act="choose" title="The package the client is going with - it carries to Client View and Enroll">'+(chosenTier()===t?'✓ Client’s choice':'Choose')+'</button><button type="button" data-act="reset1" title="Put this package back to the recommendation" style="font:inherit;font-size:12px;font-weight:600;border:1px solid #e2ddd1;background:#fff;border-radius:7px;padding:4px 8px;cursor:pointer;color:var(--muted)">↺ Reset</button></div>'
+    html+='<div class="pbcol'+(S.recommended===t?' rec':'')+(incT?'':' excl')+(chosenTier()===t?' chosen':'')+'" data-t="'+t+'"><div class="pbhd"><div class="r1"><span class="tt">'+hdr[0]+'</span><button type="button" class="pbreset" data-act="reset1" title="Put this package back to the recommendation">↺ Reset</button></div><div class="nm">'+hdr[1]+'</div><div class="r3"><label class="pbshow"><input type="checkbox" data-act="inc"'+(incT?' checked':'')+'> Show on quote</label><button type="button" class="pbchoose'+(chosenTier()===t?' on':'')+'" data-act="choose" title="The package the client is going with - it carries to Client View and Enroll">'+(chosenTier()===t?'✓ Client’s choice':'Choose')+'</button></div></div>'
       +((S.lineup==='custom')?'':'<!--')+'<div style="padding:0 12px 4px"><select data-act="base" aria-label="Base plan" style="width:100%;font:inherit;font-size:13px;padding:6px 8px;border:1px solid #d6cdb4;border-radius:7px">'+pbOpts([['afc','Base: Manhattan Affordable Choice'],['lifex','Base: LifeX'],['triad','Base: Cigna (Triad) PPO']],c.base||'afc')+'</select></div>'+((S.lineup==='custom')?'':'-->');
     var sum=0, addable=[], unavail=[];
     PB_SLOTS.forEach(function(sl){
