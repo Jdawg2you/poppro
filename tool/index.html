@@ -21,6 +21,12 @@
   .pad{padding:18px}
   h1,h2,h3{margin:0}
   .brandbar{display:flex;align-items:center;justify-content:space-between;background:var(--navy);color:#fff;border-radius:14px 14px 0 0;padding:16px 20px;gap:12px;flex-wrap:wrap}
+  .brandbar .toolbar{flex-basis:100%}
+  .goatpill{margin-left:auto;background:#d4a843;color:#12213b;border:1px solid #d4a843;font:700 12.5px -apple-system,'Helvetica Neue',Arial,sans-serif;padding:8px 16px;border-radius:999px;display:inline-flex;align-items:center;gap:7px;text-decoration:none;white-space:nowrap;transition:background .12s,color .12s,border-color .12s}
+  .goatpill:hover{background:#2A538F;border-color:#2A538F;color:#fff}
+  .goatpill .gstar{font-size:11px;line-height:1}.goatpill .gshort{display:none}
+  @media(max-width:760px){.goatpill .glong{display:none}.goatpill .gshort{display:inline}}
+  body.client .goatpill{display:none}
   .brand{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;max-width:100%}
   .brand b{font-family:var(--serif);color:var(--gold-brand);font-size:23px;letter-spacing:.3px;font-weight:700;max-width:100%;word-break:break-word;outline:none}
   .brand span{color:#b9c2d4;font-size:11px;letter-spacing:.18em;text-transform:uppercase}
@@ -723,6 +729,8 @@ body.client #classicWrap>summary{display:none}
 
   <div class="brandbar">
     <div class="brand"><b id="brandName">HealthFirst</b><span>Package of Protection · Comparison Tool</span></div>
+    <!-- The suite's agent offer, same link as the navigator, wizard and planning tools. Agent screens only. -->
+    <a class="goatpill noprint" href="https://goatleads.com/registration/new?affiliate_id=66c4aa379e0123651ad2f0e6" target="_blank" rel="noopener"><span class="gstar">&#9733;</span><span class="glong">FREE Agent Website, Digital Business Card &amp; Booking Calendar</span><span class="gshort">FREE Website, Card &amp; Calendar</span></a>
     <div class="toolbar noprint">
       <div class="seg" id="viewseg">
         <button data-view="agent" class="on">Agent Setup</button>
@@ -3563,13 +3571,76 @@ function saveQuote(){
   var a=document.createElement('a'); a.href=url; a.download=fileName(); document.body.appendChild(a); a.click(); a.remove();
   setTimeout(function(){URL.revokeObjectURL(url);},1500);
 }
+/* A Script Navigator profile file (the "… Profile - HEALTH - date.json" the navigator saves) is the
+   navigator's own flat answers, not a POP Pro quote. Turn it into the same client object the navigator's
+   "Push client to MyPOP Pro" button sends, so a saved profile loads exactly like a push.
+   Mirrors popClient() in ~/script-navigator/index.html - tools/nav-push-check.mjs compares the two. */
+function isNavProfile(o){ return !!o && typeof o==='object' && !o.client && !o.intake && !o.packages && ('first' in o || 'last' in o || 'why_note' in o || 'lead' in o); }
+function suiteFromNavProfile(P){
+  var yn=function(v){ var t=String(v||""); return t==="Yes"?true:(t==="No"?false:null); };
+  var bare=function(m){ return String(m||"").replace(/\s*\(.*\)$/,""); };
+  var inches=function(v){ var m=String(v||"").match(/(\d+)\s*'\s*(\d+)?/); return m?(+m[1])*12+(+(m[2]||0)):null; };
+  var docs=(P.docs||[]).filter(function(d){ return d&&(d.n||d.prac); });
+  var kids=(P.deps||[]).filter(function(d){ return d&&(d.n||d.dob); });
+  var partnered=["Married","Partnered"].indexOf(String(P.married||""))>-1;
+  var conds=(P.conds||[]).map(function(n){ return {name:n}; });
+  return {
+    first:P.first||"", last:P.last||"", phone:P.phone||"", email:P.email||"",
+    address:[P.address||"",P.city||""].filter(Boolean).join(", "),
+    dob:P.dob||"", age:P.age||"", state:P.state||"", zip:P.zip||"",
+    height:P.height||"", heightIn:inches(P.height), weight:P.weight||"", sex:P.sex||"", tobacco:yn(P.tobacco),
+    meds:(P.meds_list||[]).map(bare), medSkip:[], conds:conds,
+    spMeds:(P.sp_meds_list||[]).map(bare), spConds:(P.sp_conds||[]).map(function(n){ return {name:n}; }),
+    condLines:(function(){ var o={primary:(P.conds||[]).slice()}; if(partnered) o.spouse=(P.sp_conds||[]).slice(); return o; })(),
+    spouse:{ first:P.sp_name||"", last:P.sp_last||"", dob:P.sp_dob||"", age:P.sp_age||"", height:P.sp_height||"",
+      heightIn:inches(P.sp_height), weight:P.sp_weight||"", sex:P.sp_sex||"", tobacco:yn(P.sp_tobacco) },
+    kids:kids.map(function(d){ return {name:d.n||"", dob:d.dob||"", age:d.age||"", sex:d.sex||""}; }),
+    health:{
+      incomeThis:P.income_this||"", incomeSpouse:P.sp_income||"", incomeHousehold:P.hh_income||"",
+      retireAge:P.i_retire||"", spRetireAge:P.sp_retire||"", liquid:P.i_liquid||"", invest:P.asset_amt||"",
+      protectable:P.asset_prot||"", invnote:P.asset_notes||"", budgetComfort:P.budget_comfort||"", budgetMax:P.budget_max||"",
+      healthNotes:P.health_notes||"", healthOther:P.health_other||"", whyShop:P.why_note||"", effDate:P.start_when||"", lastDay:P.last_day||"",
+      apptWhen:P.appt_when||"", apptWho:P.appt_who||"", apptNotes:P.appt_notes||"", occupation:P.occupation||"", occYears:P.occ_years||"",
+      kidsHealth:P.kids_health||"", wantDental:P.want_dental||"", wantVision:P.want_vision||"", wantHearing:P.want_hearing||"",
+      curCarrier:P.cur_carrier||"", curPlan:P.cur_plan||"", curPrem:P.cur_prem||"", curEmpPrem:P.cur_emp_prem||"", curTotal:P.cur_total||"",
+      curDed:P.cur_ded||"", curVisits:P.cur_visits||"", curCopay:P.cur_copay||"", covGap:P.cov_gap||"",
+      fhCancer:P.fh_cancer||"", fhHeart:P.fh_heart||"", fhStroke:P.fh_stroke||"", mhNeeds:P.mh_needs||"", matNeeds:P.mat_needs||"",
+      spFhCancer:P.sp_fh_cancer||"", spFhHeart:P.sp_fh_heart||"", spFhStroke:P.sp_fh_stroke||"", spMhNeeds:P.sp_mh_needs||"", spMatNeeds:P.sp_mat_needs||"",
+      spSurgery:P.sp_recent_stay||"", spSurgeryWhat:P.sp_recent_what||"", spHospStay:P.sp_hosp_stay||"", spHealthNotes:P.sp_health_notes||"",
+      incomeNext:P.income_next||"", spIncomeNext:P.sp_income_next||"", hhIncomeNext:P.hh_income_next||"",
+      assetWhere:P.asset_where||"", assetEmployer:P.asset_employer||"",
+      surgery:yn(P.recent_stay), surgeryWhat:P.recent_what||"", hospStay:P.stay_what||"",
+      hospStay2:yn(P.hosp_stay), spStayWhat:P.sp_stay_what||"", married:P.married||"", kidsCount:P.kids||"",
+      losing:P.losing||"", nextSame:P.next_same||"",
+      curOop:P.cur_oop||"", curIsAca:P.cur_is_aca||"", curSubsidy:P.cur_subsidy||"", hasHsa:P.has_hsa||"",
+      pregnant:P.pregnant||"", spPregnant:P.sp_pregnant||"", planned:P.planned||"",
+      empOffer:P.emp_offer||"", lifeNow:P.life_now||"", billTomorrow:P.bill_tomorrow||"", bankKind:P.bank_kind||"",
+      apptDate:P.appt_date||"", apptTime:P.appt_time||"", notes:P.notes||"",
+      doctors:docs.map(function(d){ return {name:d.n||"", practice:d.prac||"", keep:d.keep||"", aca:d.aca||""}; })
+    }
+  };
+}
+/* The agent's own details (agency, name, phone, email) belong to whoever is running the tool, not to a
+   file. A loaded file keeps them unless it carries its own - loading a client never wipes the agent. */
+function agentOf(st){ return {agency:st.agency, agent:(st.client||{}).agent, phone:st.agentPhone, email:st.agentEmail}; }
+function keepAgent(ag){
+  if(ag.agency && (!S.agency || S.agency==='HealthFirst')) S.agency=ag.agency;
+  S.client=S.client||{}; if(ag.agent && !S.client.agent) S.client.agent=ag.agent;
+  if(ag.phone && !S.agentPhone) S.agentPhone=ag.phone;
+  if(ag.email && !S.agentEmail) S.agentEmail=ag.email; }
 function loadFile(file){
   var rd=new FileReader();
   rd.onload=function(){
-    try{ var obj=JSON.parse(rd.result); S=deepMerge(blankState(),obj); migrateAca(obj); migrateEvents(obj);
+    try{ var obj=JSON.parse(rd.result), ag=agentOf(S);
+      if(isNavProfile(obj)){
+        /* A fresh case for this client, filled exactly as a push from the navigator would. */
+        S=blankState(); keepAgent(ag); applySuiteClient(suiteFromNavProfile(obj)); fill(); compute(); goStep('intake'); autosave();
+        alert('Script Navigator profile loaded'+(S.client&&S.client.pname?': '+S.client.pname:'')+'. Check the intake, then build the packages.');
+        return; }
+      S=deepMerge(blankState(),obj); keepAgent(ag); migrateAca(obj); migrateEvents(obj);
       if(!S.packages||!S.packages[S.activeTab]) S.packages=blankState().packages;
       if(!S.aca) S.aca=blankState().aca;
-      fill(); compute(); goStep('quote');
+      fill(); compute(); goStep('quote'); autosave();
       alert('Quote loaded'+(S.client&&S.client.pname?': '+S.client.pname:'')+'. Edit and Save again to keep a new version.');
     }catch(e){ alert('Could not read that file — is it a HealthFirst quote (.json)?'); }
   };

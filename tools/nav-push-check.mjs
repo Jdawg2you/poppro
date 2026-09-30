@@ -46,7 +46,7 @@ const BUILD = `(function(){
   /* A field that only shows under another answer gets that answer too (income_next needs next_same=Different). */
   var parent=function(f){ var w=f.showIf; if(!w||typeof w[0]!=='string') return; P[w[0]]=Array.isArray(w[1])?w[1][0]:(w[1]==='*'?'x':w[1]); };
   spec.forEach(function(f){ var s=sample(f); P={first:'Pat',last:'Probe'}; parent(f); s.set();
-    out.push({k:f.k, l:f.l||f.type, v:s.v, client:popClient()}); });
+    out.push({k:f.k, l:f.l||f.type, v:s.v, client:popClient(), raw:JSON.parse(JSON.stringify(P))}); });
   /* Everything at once, for the transport test. */
   P={first:'Pat',last:'Probe'}; spec.forEach(function(f){ sample(f).set(); });
   return {items:out, all:popClient(), base:(P={first:'Pat',last:'Probe'}, popClient())};
@@ -58,9 +58,14 @@ const APPLY = items => `(function(items){
   var flat=function(o,p,acc){ acc=acc||{}; if(o&&typeof o==='object'){ Object.keys(o).forEach(function(k){ flat(o[k],p?p+'.'+k:k,acc); }); } else acc[p]=o; return acc; };
   var run=function(c){ S=blankState(); applySuiteClient(JSON.parse(JSON.stringify(c))); return flat(JSON.parse(JSON.stringify(S)),''); };
   var base=run(items.base);
+  /* The same answers loaded from a saved navigator profile file must land exactly where the push puts them. */
+  var fileDiff=[]; items.items.forEach(function(it){ var a=run(it.client), b=run(suiteFromNavProfile(it.raw));
+    Object.keys(Object.assign({},a,b)).forEach(function(p){ if(/^(intake\.conds\.\d+\.(yr|mo)|intake\.routeNote)$/.test(p)) return;
+      if(JSON.stringify(a[p])!==JSON.stringify(b[p])) fileDiff.push(it.k+':'+p+' push='+String(a[p]).slice(0,30)+' file='+String(b[p]).slice(0,30)); }); });
+  window.__fileDiff=fileDiff;
   return items.items.map(function(it){ var s=run(it.client), ch=[];
     Object.keys(s).forEach(function(p){ if(JSON.stringify(s[p])!==JSON.stringify(base[p]) && !/^step$/.test(p)) ch.push(p+'='+String(s[p]).slice(0,70)); });
-    return {k:it.k,l:it.l,v:it.v,changed:ch}; });
+    return {k:it.k,l:it.l,v:it.v,changed:ch}; }).concat([{fileDiff:window.__fileDiff}]);
 })(${JSON.stringify(items)})`;
 
 try {
@@ -73,7 +78,7 @@ try {
   await go(`http://127.0.0.1:${NAVPORT}/`);
   const built = await ev(BUILD);
   await go(`http://127.0.0.1:${PORT}/tool/`);
-  const res = await ev(APPLY(built));
+  const res0 = await ev(APPLY(built)); const fileDiff = res0.pop().fileDiff; const res = res0;
 
   const NOTES = /^intake\.(notes|routeNote|docnote|kidsNote)$/;
   let field = 0, notes = 0, dropped = 0;
@@ -119,7 +124,17 @@ try {
     const bad = (NOT[k] || []).filter(p => r.changed.some(c => new RegExp(p, 's').test(c)));
     if (miss.length || bad.length) efail.push(k + (miss.length ? ' missing ' + miss.join(',') : '') + (bad.length ? ' must not ' + bad.join(',') : '')); else ep++;
   }
+  console.log(`FILELOAD ${fileDiff.length ? 'DIFFERS ' + fileDiff.length + ': ' + fileDiff.slice(0, 6).join(' ; ') : 'matches push'}`);
   console.log(`EXPECTS pass=${ep}/${Object.keys(EXP).length}${efail.length ? ' FAIL: ' + efail.join(' ; ') : ''}`);
+  /* Round trip: POP Pro's save (after the full push) read back by the navigator's own fromPopPro(). */
+  const saved = await ev(`JSON.stringify(S)`);
+  await go(`http://127.0.0.1:${NAVPORT}/`);
+  const rt = await ev(`(function(o){ curScript='health'; var back=fromPopPro(o), keys=['first','last','dob','age','sex','phone','email','state','zip','sp_name','sp_age','height','weight','sp_height','tobacco',
+    'why_note','start_when','cur_carrier','cur_plan','cur_prem','cur_emp_prem','cur_ded','cur_oop','cur_copay','cur_visits','cur_is_aca','cur_subsidy','fh_cancer','fh_heart','mat_needs',
+    'income_this','sp_income','hh_income','i_retire','i_liquid','asset_amt','budget_comfort','budget_max','want_dental','meds_list','deps','docs','kids','married'];
+    var miss=keys.filter(function(k){ var v=back[k]; return v==null||v===''||(Array.isArray(v)&&!v.length); });
+    return {n:keys.length, miss:miss}; })(${saved})`);
+  console.log(`ROUNDTRIP ${rt.n - rt.miss.length}/${rt.n}${rt.miss.length ? ' missing ' + rt.miss.join(',') : ''}`);
   /* summary first - checkers read the head of the output */
   console.log(`NAVPUSH fields=${rows.length} field=${field} notes=${notes} dropped=${dropped} ack=${seen.ack && seen.ack.ok === true ? 'ok' : 'MISSING'}\n`);
   lines.forEach(l => console.log(l));
