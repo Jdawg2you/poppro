@@ -13,7 +13,7 @@ const LIB = path.join(os.homedir(), 'Library/CloudStorage/GoogleDrive-jessestamm
 // builder key -> carrier-library product folder (null = not a ManhattanLife library product)
 const FOLDER = { afc: 'Affordable Choice', sdr: 'Affordable Choice', his: 'Hospital Indemnity Select', acc: '24-Hour Accident',
   gap: 'Out-of-Pocket Protection (Gap)', chas: 'Cancer Heart Attack and Stroke', hhc: 'Home Health Care Enhanced',
-  dvh: 'Dental Vision Hearing Select', lifex: null, triad: null, lb: null };
+  dvh: 'Dental Vision Hearing Select', dvh7016: null /* offered only where Select is not sold: MD MT VA */, lifex: null, triad: null, lb: null };
 const SPANISH = /spanish|BRSP|SPBR|BRFSP/i;
 const PLACEHOLDER = /\b(TBD|TODO|lorem|xxx|\?\?\?)\b/i;
 

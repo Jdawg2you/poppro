@@ -1302,6 +1302,7 @@ var ML_OFFERED={
  /* Home Health Care Enhanced: states with a brochure in the carrier library or rates in the portal pull (2026-09-29). */
  hhc:'AK AL AR AZ CO DC DE GA HI IA IL LA ME MI MO MS MT NC ND NE NH NV OH OK OR RI SC SD TN TX UT WI WV WY',
  /* DVH Select: the portal pull's states plus MS NV NJ NC PA from their own brochures (rates/dvh-brochure-rates.json). */
+ dvh7016:'MD MT VA',   /* the older Dental, Vision and Hearing plan, served only where DVH Select is not sold */
  dvh:'AL AR AZ CA CO CT DC DE FL GA IA ID IL IN KS KY LA ME MI MN MO MS NC ND NE NJ NM NV OH OK OR PA SC SD TN TX UT WI WV WY'
 };
 /* ===== PORTAL RATES — rates/portal-rates.json =====
@@ -1399,8 +1400,14 @@ function pHIS(R,st,age,hh,cfg){
 function pACC(R,hh,units){ var t=R.acc.t[hh]; return t?{price:t[units-1],note:''}:{price:null,note:'accident rate n/a'}; }
 function pDVH(R,age,hh,cfg,st){
   var pg=st&&prGroup(301,st);
-  /* A state never borrows another table: no rates of its own means no price, with a note that says why. */
-  if(st&&!pg) return {price:null,note:PR?notLoaded('dvh','DVH Select',st):'DVH rates are still loading'};
+  /* A state never borrows another table: no rates of its own means no price, with a note that says why.
+     Where DVH Select is not sold but ManhattanLife's older Dental, Vision and Hearing plan (form 7016) is,
+     that plan is served instead - vision and hearing are built in, the deductible is a fixed $100. */
+  if(st&&!pg){ var g7=PR&&prGroup(150,st);
+    if(g7){ var mx=dvh7016Max(cfg.max,st), v7=prVal(g7.plans,'$'+Number(mx).toLocaleString('en-US')+' Benefit | $'+Number(mx).toLocaleString('en-US')+' Benefit',hh,age);
+      if(v7==null) return {price:null,note:'Dental, Vision and Hearing (7016) not available at age '+age+' in '+st};
+      return {price:v7,note:String(mx)!==String(cfg.max)?'Dental, Vision and Hearing (7016) tops out at $'+Number(mx).toLocaleString('en-US')+' in '+st:'',plan7016:true,max:mx,parts:{dental:v7,vision:0,hearing:0}}; }
+    return {price:null,note:PR?notLoaded('dvh','DVH Select',st):'DVH rates are still loading'}; }
   if(pg){ var v=prVal(pg.plans,'$'+cfg.max+' Benefit - $'+cfg.ded+' Deductible | $'+cfg.ded+' Deductible',hh,age);
     if(v==null) return {price:null,note:'DVH Select level not available at age '+age+' in '+st};
     /* Vision and Hearing are separate riders on the carrier's rate sheet - priced only when switched on. */
@@ -1411,10 +1418,17 @@ function pDVH(R,age,hh,cfg,st){
   var row=m[cfg.ded][bandDVH(age)]; if(!row||row[hh]==null) return {price:null,note:'DVH rate n/a'};
   return {price:row[hh],note:''};
 }
+/* The 7016 plan is the dental offer where DVH Select is not sold (MD, MT, VA). */
+function dvhIs7016(st){ st=(st||(S.client||{}).state||'').toUpperCase(); return !!(st&&PR&&!prGroup(301,st)&&prGroup(150,st)); }
+function dvh7016Maxes(st){ var g=PR&&prGroup(150,(st||(S.client||{}).state||'').toUpperCase()); return g?Object.keys(g.plans).map(function(k){ return k.match(/\$([\d,]+)/)[1].replace(/,/g,''); }):[]; }
+/* The chosen max if this state's 7016 plan offers it, else the nearest one below (VA stops at $1,500). */
+function dvh7016Max(mx,st){ var m=dvh7016Maxes(st).map(Number).sort(function(a,b){ return a-b; }), want=+mx||1500, pick=m[0];
+  m.forEach(function(x){ if(x<=want) pick=x; }); return String(pick); }
 /* Which DVH riders are on: the agent's tick wins; until the agent ticks, the client's own answers decide. */
 function dvhRiders(cfg){ var I=S.intake||{}; cfg=cfg||{}; return {vis:cfg.vis!=null?!!cfg.vis:!!I.wantVis, hear:cfg.hear!=null?!!cfg.hear:!!I.wantHear}; }
 /* What the dental line actually includes, in words: "dental", "dental & vision", "dental, vision & hearing". */
-function dvhPhrase(cfg){ var r=dvhRiders(cfg), x=['dental']; if(r.vis) x.push('vision'); if(r.hear) x.push('hearing');
+function dvhPhrase(cfg){ if(dvhIs7016()) return 'dental, vision & hearing';
+  var r=dvhRiders(cfg), x=['dental']; if(r.vis) x.push('vision'); if(r.hear) x.push('hearing');
   return x.length<3?x.join(' & '):'dental, vision & hearing'; }
 function pGAP(R,st,age,hh,cfg){
   var pg=prGroup(158,st);
@@ -2102,8 +2116,8 @@ function buildTierProducts(c,byKey,extras){
   add('his','Hospital Indemnity — HI Select $10K'+(c.his.outp?' + Outpatient $'+c.his.outp:''), pHIS(R,st,age,hh,c.his));
   add('acc','Accident Cash — 24-Hr Accident ('+c.acc+' Unit)', pACC(R,hh,c.acc));
   add('gap','Out-of-Pocket / Gap — $'+c.gap.daily+'/day · $'+c.gap.adm+' admission', pGAP(R,st,age,hh,c.gap));
-  var dr=dvhRiders(c.dvh);
-  add('dvh','DVH Select — Dental $'+(+c.dvh.max/1000)+'K'+(dr.vis?' + Vision':'')+(dr.hear?' + Hearing':''), pDVH(R,age,hh,c.dvh,st));
+  var dr=dvhRiders(c.dvh), dres=pDVH(R,age,hh,c.dvh,st);
+  add('dvh',dres.plan7016?'Dental, Vision & Hearing (7016) — $'+(+dres.max/1000)+'K':'DVH Select — Dental $'+(+c.dvh.max/1000)+'K'+(dr.vis?' + Vision':'')+(dr.hear?' + Hearing':''), dres);
   if(c.hhc) add('hhc','Home Health Care — HHC '+c.hhc, pHHC(R,st,age,c.hhc));
   if(c.lb){ lbPersons().forEach(function(pp){ var lc=c.lb[pp.k]; if(!lc||!lc.face) return;
     var r=pLB1(pp,lc); add('lb'+pp.k,'Living Benefits — '+pp.tag+' $'+(+lc.face/1000)+'K term life, 20-year ('+(r.carrier||'')+')', r); }); }
@@ -2195,6 +2209,7 @@ function popSuggestions(tier){
   if(inBase('sdr')&&c.sdr){ if(c.sdr.max!=='500000') cand('Raise Specified Disease max to $500,000',function(x){ x.sdr.max='500000'; });
     if(String(c.sdr.ded)!=='25000') cand('Lower Specified Disease deductible to $25,000',function(x){ x.sdr.ded='25000'; }); }
   if(!inBase('dvh')) cand('Add Dental · Vision · Hearing',function(x){ x.dvh=x.dvh||{max:'3000',ded:'0'}; },null,null,['dvh']);
+  else if(c.dvh&&dvhIs7016()){ var t7=String(Math.max.apply(null,dvh7016Maxes().map(Number))); if(dvh7016Max(c.dvh.max)!==t7) cand('Raise Dental, Vision & Hearing to $'+Number(t7).toLocaleString('en-US'),function(x){ x.dvh.max=t7; }); }
   else if(c.dvh&&String(c.dvh.max)!=='5000') cand('Raise Dental · Vision · Hearing to $5,000',function(x){ x.dvh.max='5000'; });
   if(!popIsMajor(tier)) cand(inBase('acc')?'Upgrade Accident to 2-Unit':'Add 24-Hour Accident (2-unit)',function(x){ if(inBase('acc')&&x.acc>=2) return false; x.acc=2; },null,null,['acc']);
   if(!inBase('hhc')) cand('Add Home Health Care (Deluxe)',function(x){ x.hhc='Deluxe'; },null,null,['hhc']);
@@ -2228,14 +2243,16 @@ function popInputsFor(c,prods){ c=c||{}; prods=prods||[];
   if(has('gap')&&c.gap){ x.gap={daily:+c.gap.daily||0,adm:+c.gap.adm||0,ea:+c.gap.ea||0}; x.gapOutp=+c.gap.outp||0; }
   if(has('acc')) x.accU=+c.acc||1;
   if(has('chas')&&c.chas) x.chas={cancer:+c.chas.cancer||0,hs:+c.chas.hs||0};
-  x.sdr=has('sdr'); if(x.sdr&&c.sdr) x.sdrCfg={max:c.sdr.max,ded:c.sdr.ded}; if(has('dvh')&&c.dvh) x.dvhMax=c.dvh.max; if(has('hhc')) x.hhc=c.hhc;
+  x.sdr=has('sdr'); if(x.sdr&&c.sdr) x.sdrCfg={max:c.sdr.max,ded:c.sdr.ded}; if(has('dvh')&&c.dvh){ x.dvhMax=c.dvh.max;
+    /* Graded against the best dental the state sells: in a 7016 state its own top max earns full credit (VA stops at $1,500). */
+    if(dvhIs7016(st)){ var m7=dvh7016Maxes(st).map(Number), top=Math.max.apply(null,m7), mx7=+dvh7016Max(c.dvh.max,st); x.dvhMax=mx7>=top?'5000':String(mx7); } } if(has('hhc')) x.hhc=c.hhc;
   /* The yardstick: the strongest Manhattan build this state sells, and which pieces it sells at all. */
   var sold=function(k){ return (ML_OFFERED[k]||'').split(' ').indexOf(st)>=0; }, age=ratingAge(), R=HF_RATES;
   var hisOK=true; try{ var hr=pHIS(R,st,age,householdKey(),{ben:10000,amb:1,outp:0}); hisOK=!(hr&&hr.price==null&&/not available in|not sold in/.test(hr.note||'')); }catch(e){}
   var bm=BEN_DATA.afc?benModel(BEN_DATA.afc,st,'ElitePlus',{}):null;
   x.best={afcLevel:'ElitePlus',afc:sold('afc')?(bm?afcEventNums(evFlatRows(bm)):POP_AFC_FALLBACK.ElitePlus):null,
     his:hisOK?{ben:10000,amb:1}:null,hisOutp:hisOK?1500:0,gap:sold('gap')?{daily:200,adm:6350,ea:1}:null,gapOutp:sold('gap')?3000:0};
-  x.avail={sdr:sold('sdr'),hhc:sold('hhc'),dvh:true};
+  x.avail={sdr:sold('sdr'),hhc:sold('hhc'),dvh:!st||sold('dvh')||sold('dvh7016')};   /* no ManhattanLife dental in the state: no weight, nobody marked down */
   var ppl=lbPersons(); x.lb={adults:ppl.length,faces:ppl.filter(function(pp){ return has('lb'+pp.k); }).map(function(pp){ return +((c.lb&&c.lb[pp.k]&&c.lb[pp.k].face)||25000); })};
   return x; }
 function popStrengths(tier){ return popStrengthsFrom(popInputsFor(effCfg(tier),(S.packages[tier]||{}).products)); }
@@ -4172,6 +4189,7 @@ function pbControls(k,c){
     return fb+'<div class="two"><div class="f">Coverage<select data-f="lb.'+w+'.face">'+pbOpts([['25000','$25,000'],['50000','$50,000']],lc.face)+'</select></div><div class="f">Carrier<select data-f="lb.'+w+'.carrier">'+pbOpts([['moo','Mutual of Omaha'],['americo','Americo']],lc.carrier||'moo')+'</select></div></div>'
     +'<div style="font-size:11.5px;color:var(--muted)">20-year term with living benefits for this person. $100K and 30-year rates aren’t loaded yet.</div>'; }
   if(k==='hhc') return '<div class="f">Plan<select data-f="hhc">'+pbOpts([['Classic','Classic'],['Premier','Premier'],['Deluxe','Deluxe']],c.hhc)+'</select></div>';
+  if(k==='dvh'&&dvhIs7016()) return '<div class="two"><div class="f">Annual max<select data-f="dvh.max">'+pbOpts(pbAmt(dvh7016Maxes()),dvh7016Max(c.dvh.max))+'</select></div><div class="f">Deductible<div style="padding:6px 0">$100 fixed</div></div></div>';
   if(k==='dvh') return '<div class="two"><div class="f">Annual max<select data-f="dvh.max">'+pbOpts(pbAmt(['1000','1500','3000','5000']),c.dvh.max)+'</select></div><div class="f">Deductible<select data-f="dvh.ded">'+pbOpts([['0','$0'],['100','$100']],c.dvh.ded)+'</select></div></div>';
   return '';
 }
@@ -4186,6 +4204,7 @@ function pbSummary(k,c,live){
   if(k==='gap') return m(c.gap.daily)+'/day in hospital · '+m(c.gap.adm)+' admission'+(+c.gap.outp?' · '+m(c.gap.outp)+' outpatient':'')+(c.gap.ea?' · $250 ER':'');
   if(k==='chas') return [c.chas.cancer?'Cancer '+m(c.chas.cancer):'',c.chas.hs?'Heart attack & stroke '+m(c.chas.hs):''].filter(Boolean).join(' · ')+' lump sum';
   if(k==='hhc') return c.hhc+' plan';
+  if(k==='dvh'&&c.dvh&&dvhIs7016()) return m(dvh7016Max(c.dvh.max))+' annual max · $100 deductible · vision & hearing included (7016 plan)';
   if(k==='dvh'&&c.dvh){ var rr=dvhRiders(c.dvh); return m(c.dvh.max)+' annual max · '+m(c.dvh.ded||0)+' deductible · '+(rr.vis||rr.hear?'+ '+[rr.vis?'vision':'',rr.hear?'hearing':''].filter(Boolean).join(' & ')+' rider'+(rr.vis&&rr.hear?'s':''):'dental only'); }
   if(k==='lbp'||k==='lbs'){ var lc=c.lb[k.slice(2)]; return m(lc.face)+' term life · 20-year · '+((live&&live.name||'').match(/\(([^)]+)\)$/)||[,'Mutual of Omaha'])[1]; }
   return '';
@@ -4204,7 +4223,7 @@ function pbReprice(){ autoPriceTiers(); fill(); compute(); autosave(); }
    Elite?" comparison. A different product replaces it. */
 var BEN_DATA={}, BEN_VIEW=[];
 var BEN_FILE={afc:'afc',sdr:'sdr',his:'his',acc:'acc',gap:'gap',chas:'chas',hhc:'hhc',dvh:'dvh',lbp:'lb',lbs:'lb'};
-function benFileFor(k,c){ if(k==='base') return c.base==='lifex'?'lifex':(c.base==='triad'?'triad':null); return BEN_FILE[k]||null; }
+function benFileFor(k,c){ if(k==='base') return c.base==='lifex'?'lifex':(c.base==='triad'?'triad':null); if(k==='dvh'&&dvhIs7016()) return 'dvh7016'; return BEN_FILE[k]||null; }
 function benCol(k,c){ switch(k){
   case 'afc': return c.afc; case 'acc': return String(c.acc||1); case 'hhc': return c.hhc; case 'dvh': return String((c.dvh&&c.dvh.max)||'');
   case 'lbp': return (c.lb&&c.lb.p&&c.lb.p.carrier)||'moo'; case 'lbs': return (c.lb&&c.lb.s&&c.lb.s.carrier)||'moo';
@@ -4472,11 +4491,14 @@ function renderBuilder(){
   html+='<div class="pborder" style="color:'+(ok?'var(--green)':'var(--maroon)')+'">'+(ok?(ladder?'✓ Prices step up Good → Better → Best.':'Pivot view — LifeX below, Manhattan leads, Cigna above. Not a price ladder.'):'⚠ The packages no longer step up in price (Good $'+totals.good.toFixed(2)+' · Better $'+totals.better.toFixed(2)+' · Best $'+totals.best.toFixed(2)+'). Clients read the middle as the value choice — fix the order before presenting.')+'</div>';
   // Dental add-on
   var cB=effCfg('best'), dv=pDVH(HF_RATES,age,householdKey(),cB.dvh,st), inAll=['good','better','best'].every(function(t){ return (S.packages[t].dropped||[]).indexOf('dvh')<0; });
-  html+='<div class="pbaddon"><div style="min-width:220px"><div style="font-size:11px;font-weight:700;letter-spacing:.06em;color:#8a6a1f;text-transform:uppercase">Add-on</div><div style="font-weight:700">Dental · Vision · Hearing Select<button type="button" class="pbinfo" data-ben="dvh" data-bt="best" title="Benefits — Dental, Vision & Hearing" aria-label="Benefits for Dental, Vision and Hearing">i</button></div></div>'
-    +'<select data-act="dvh" data-f="dvh.max">'+pbOpts(pbAmt(['1000','1500','3000','5000']),cB.dvh.max)+'</select>'
-    +'<select data-act="dvh" data-f="dvh.ded">'+pbOpts([['0','$0 deductible'],['100','$100 deductible']],cB.dvh.ded)+'</select>'
-    +'<label style="display:flex;gap:5px;align-items:center;font-size:13px"><input type="checkbox" data-act="dvhr" data-f="vis"'+(dvhRiders(cB.dvh).vis?' checked':'')+'> Vision rider</label>'
-    +'<label style="display:flex;gap:5px;align-items:center;font-size:13px"><input type="checkbox" data-act="dvhr" data-f="hear"'+(dvhRiders(cB.dvh).hear?' checked':'')+'> Hearing rider</label>'
+  html+='<div class="pbaddon"><div style="min-width:220px"><div style="font-size:11px;font-weight:700;letter-spacing:.06em;color:#8a6a1f;text-transform:uppercase">Add-on</div><div style="font-weight:700">'+(dvhIs7016(st)?'Dental, Vision &amp; Hearing (7016)':'Dental · Vision · Hearing Select')+'<button type="button" class="pbinfo" data-ben="dvh" data-bt="best" title="Benefits — Dental, Vision & Hearing" aria-label="Benefits for Dental, Vision and Hearing">i</button></div></div>'
+    +(dvhIs7016(st)
+      ? '<select data-act="dvh" data-f="dvh.max">'+pbOpts(pbAmt(dvh7016Maxes(st)),dvh7016Max(cB.dvh.max,st))+'</select>'
+        +'<span style="font-size:13px;color:var(--muted)">7016 plan · $100 deductible · vision &amp; hearing included</span>'
+      : '<select data-act="dvh" data-f="dvh.max">'+pbOpts(pbAmt(['1000','1500','3000','5000']),cB.dvh.max)+'</select>'
+        +'<select data-act="dvh" data-f="dvh.ded">'+pbOpts([['0','$0 deductible'],['100','$100 deductible']],cB.dvh.ded)+'</select>'
+        +'<label style="display:flex;gap:5px;align-items:center;font-size:13px"><input type="checkbox" data-act="dvhr" data-f="vis"'+(dvhRiders(cB.dvh).vis?' checked':'')+'> Vision rider</label>'
+        +'<label style="display:flex;gap:5px;align-items:center;font-size:13px"><input type="checkbox" data-act="dvhr" data-f="hear"'+(dvhRiders(cB.dvh).hear?' checked':'')+'> Hearing rider</label>')
     +'<span style="flex:1"></span><b>'+(dv.price!=null?pbMoney(dv.price)+'/mo':'<span style="color:var(--muted);font-weight:500">'+(dv.note||'not available')+'</span>')+'</b>'
     +'<label style="display:flex;gap:6px;align-items:center;font-size:13px"><input type="checkbox" data-act="dvhinc"'+(inAll?' checked':'')+'> Add to all three packages</label></div>';
   host.innerHTML=html;
