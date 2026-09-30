@@ -341,6 +341,8 @@
   .evparts{font-size:11.5px;color:var(--muted);padding:6px 2px;line-height:1.5}.evparts summary{cursor:pointer;color:#8a6a1f}
   #printout .po-save .vs{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
   #printout .po-save .ln{display:flex;justify-content:space-between;gap:6px;font-size:12px}#printout .po-save .ln b.up{color:var(--green)}#printout .po-save .ln b.dn{color:var(--maroon)}
+  #printout .po-save .tn{font-size:10px;color:#8a6a1f;margin-top:2px}
+  #printout .po-pop{display:flex;justify-content:space-between;align-items:baseline;padding:6px 14px;border-top:1px solid var(--line);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}#printout .po-pop b{font-family:var(--serif);font-size:20px;letter-spacing:0}#printout .po-pop small{text-transform:none;letter-spacing:0;color:#8a6a1f}
   #printout .po-save .yr{font-family:var(--serif);font-weight:700;color:var(--navy);margin-top:3px}
   /* Client View = the presentation: the printout, on screen. */
   body.client #step-intake,body.client #step-quote,body.client #step-enroll,body.client #stepper,body.client #benDrawer{display:none!important}
@@ -1439,8 +1441,8 @@ function acaCostShare(a){ var vis=(+a.visits||0)*(+a.copay||0), medYr=(+a.med||0
 /* Savings of one package against the anchor. prem = the anchor's monthly premium plus its drug
    costs; mo = its true cost a month. TFRA room follows the presentation's rule: the premium saving
    if there is one, otherwise the true-cost saving, otherwise nothing. */
-function anchorSavings(base,pkMo){ if(!base) return null;
-  var actual=base.prem-pkMo, tru=base.mo-pkMo;
+function anchorSavings(base,pkMo,pkTrueMo){ if(!base) return null;
+  var actual=base.prem-pkMo, tru=base.mo-(pkTrueMo==null?pkMo:pkTrueMo);   // a Cigna/LifeX package has a deductible of its own
   return {actual:actual, tru:tru, tfra:actual>0?actual:(tru>0?tru:0), tfraBasis:actual>0?'premium':(tru>0?'true':'')}; }
 /* ---- Benefits slide-out: pure pieces (tested by tools/aca-check.mjs benefits) ----
    d = one tool/benefits/<key>.json; cfg = the row's effective config. */
@@ -1518,6 +1520,46 @@ function evEveryday(p){ var c=Math.max(1,+p.count||1), ch=Math.max(0,+p.charge||
 function evAnchorOwe(kind,bill,A,type,count){ if(!A) return null; var cap=A.oop>0?A.oop:bill;
   if(kind==='everyday'&&type==='visit'&&A.visit>0) return Math.min(bill,A.visit*Math.max(1,+count||1),cap);
   return Math.min(bill,cap); }
+/* ---- POP Score: protection, measured from what the package pays (tested by aca-check pop) ----
+   Standard scenarios run through the event engine, so a major-medical base (Cigna, LifeX) is
+   credited for capping the bill and an indemnity stack (Manhattan) for the cash it pays. */
+var POP_SCN={moderate:{bal:20000,days:3,er:1,amb:0},severe:{bal:120000,days:10,er:1,amb:1},absorb:10000,visitCharge:150,urgentCharge:250};
+var POP_KEYS=['everyday','preventive','cat','accident','critical','dvh','life','homecare'];
+var POP_PREV={ElitePlus:100,Elite:90,ClassicPlus:76,Classic:62};
+function popStrengthsFrom(x){ x=x||{}; var major=!!x.major, pk={afc:x.afc,his:x.his,gap:x.gap,accU:0,chas:null,major:x.major};
+  /* Smooth: $0 exposure = 100, $10,000 = 50, $40,000 = 20 - a bigger hole always scores worse. */
+  var sc=function(e){ e=Math.max(0,e); return 100*POP_SCN.absorb/(POP_SCN.absorb+e); };
+  var mod=evMajor(Object.assign({},POP_SCN.moderate,pk)), sev=evMajor(Object.assign({},POP_SCN.severe,pk));
+  var cat=Math.round(0.3*sc(mod.net)+0.7*sc(sev.net));   // the tail is what insurance is for
+  var v=Math.max(1,+x.visits||4), bill=v*POP_SCN.visitCharge+POP_SCN.urgentCharge;
+  var e1=evEveryday({type:'visit',charge:POP_SCN.visitCharge,count:v,afc:x.afc,major:x.major}), e2=evEveryday({type:'urgent',charge:POP_SCN.urgentCharge,count:1,afc:x.afc,major:x.major});
+  var everyday=(x.afc||major)?Math.round(100*Math.max(0,1-(Math.max(0,e1.net)+Math.max(0,e2.net))/bill)):0;
+  var preventive=major?100:(x.afc?(POP_PREV[x.afcLevel]||62):0);
+  var ch=x.chas||{}, lump=Math.min(1,(+ch.cancer||0)/20000)*60+Math.min(1,(+ch.hs||0)/10000)*40;
+  /* Major medical already pays cancer / heart / accident bills; a lump sum on top replaces income. */
+  var critical=major?Math.min(100,Math.round(60+lump*0.4)):Math.min(100,Math.round(lump+(x.sdr?30:0)));
+  var accident=(+x.accU>=2)?100:(+x.accU===1?70:(major?80:0));
+  var dvh=({'1000':60,'1500':75,'3000':95,'5000':100})[String(x.dvhMax||'')]||0;
+  var lb=x.lb||{}, life=(lb.adults>0)?Math.round(100*Math.min(1,(lb.faces||[]).reduce(function(s,f){ return s+((+f>=50000)?1:0.8); },0)/lb.adults)):0;
+  var homecare=({Classic:70,Premier:85,Deluxe:100})[x.hhc]||(major?60:0);
+  return {everyday:everyday,preventive:preventive,cat:cat,accident:accident,critical:critical,dvh:dvh,life:life,homecare:homecare,
+    exposure:{moderate:Math.max(0,mod.net),severe:Math.max(0,sev.net)},provisional:!!x.provisional}; }
+/* p: {age,bmi,overBuild,famcancer,famheart,diabetic,majorcond,surg2yr,tobacco,family,major} */
+function popWeightsFrom(p){ p=p||{}; var age=+p.age||0, band=age?(age<30?0:age<40?1:age<50?2:3):2;
+  /* Core medical protection (everyday, preventive, catastrophic) carries ~60%; the add-ons the rest. */
+  var w={everyday:14,preventive:7,cat:46,accident:6,critical:10,dvh:4,life:9,homecare:3};
+  if(band===0){w.cat-=7;w.critical-=6;w.accident+=3;} else if(band===1){w.cat-=3;w.critical-=3;w.accident+=3;}
+  else if(band===2){w.cat+=5;w.critical+=4;w.homecare+=3;} else {w.cat+=12;w.critical+=9;w.everyday+=3;w.homecare+=11;}
+  var bmi=+p.bmi||0; if(bmi>0){ if(bmi<18.5){w.cat+=3;} else if(bmi<25){w.cat-=5;w.critical-=3;} else if(bmi<30){} else if(bmi<35){w.cat+=6;w.critical+=2;} else {w.cat+=10;w.critical+=5;} }
+  if(p.overBuild){w.cat+=6;w.critical+=2;}
+  if(p.famcancer){w.critical+=20;} if(p.famheart){w.critical+=10;w.cat+=8;}
+  if(p.diabetic){w.cat+=8;w.everyday+=5;} if(p.majorcond){w.cat+=8;w.everyday+=4;} if(p.surg2yr){w.cat+=7;}
+  if(p.tobacco){w.critical+=6;w.cat+=5;} if(p.family){w.life+=12;}
+  /* On major medical the bills are already covered: a lump sum still replaces income, accident cash less so. */
+  if(p.major){ w.critical=Math.round(w.critical*0.75); w.accident=Math.round(w.accident*0.6); }
+  POP_KEYS.forEach(function(k){ if(w[k]<3) w[k]=3; }); return w; }
+function popRawFrom(s,w){ var num=0,den=0; POP_KEYS.forEach(function(k){ num+=w[k]*s[k]; den+=w[k]; }); var raw=den?num/den:0;
+  return Math.max(0,Math.min(100,Math.round(100*Math.pow(raw/100,0.75)))); }
 /* ACA-ENGINE:END */
 
 function householdIncome(){
@@ -1820,26 +1862,30 @@ function autoPriceTiers(){
   });
 }
 function pkgCost(prods,lb){ return prods.reduce(function(s,p){return s+(+p.monthly||0);},0)+(+lb||0); }
-function scorePkg(prods,lb){ return popRaw(popStrengthsPk({products:prods,lb:lb}),popWeights()); }
+function scorePkg(prods,lb,c,tier){ return popRaw(popStrengthsFrom(popInputsFor(c,prods)),popWeights(tier)); }
 /* Ranked, priced upgrade suggestions for a tier */
 function popSuggestions(tier){
   if(typeof HF_RATES==='undefined') return {base:0,list:[]};
   var c=effCfg(tier), pk=S.packages[tier]||{products:[],lb:0};
   var extras=manualExtras(pk.products);
-  var baseP=buildTierProducts(c,null,extras), baseC=pkgCost(baseP,pk.lb), baseS=scorePkg(baseP,pk.lb);
+  /* Score what is really in the package: a product the lineup dropped is not there, even if its
+     settings still are. A suggestion that brings one back says so (undrop) and restores it. */
+  var dropped=pk.dropped||[], live=function(pr,undrop){ return pr.filter(function(p){ return !p.k||dropped.indexOf(p.k)<0||(undrop||[]).indexOf(p.k)>=0; }); };
+  var baseP=live(buildTierProducts(c,null,extras)), baseC=pkgCost(baseP,pk.lb), baseS=scorePkg(baseP,pk.lb,c,tier);
+  var inBase=function(k){ return baseP.some(function(p){ return p.k===k||(k==='lb'&&/^lb/.test(p.k||'')); }); };
   var list=[];
-  function cand(label,mut,addProd,newLb){
+  function cand(label,mut,addProd,newLb,undrop){
     var c2=cfgClone(c); if(mut&&mut(c2)===false) return;
     var ex=extras.slice(); if(addProd) ex.push(addProd);
     var lb=(newLb!=null)?newLb:pk.lb;
-    var pr=buildTierProducts(c2,null,ex);
-    var dS=scorePkg(pr,lb)-baseS, dC=pkgCost(pr,lb)-baseC;
-    if(dS>=1) list.push({label:label,dScore:dS,dCost:dC,cfg:c2,add:addProd,lb:(newLb!=null?newLb:null)});
+    var pr=live(buildTierProducts(c2,null,ex),undrop);
+    var dS=scorePkg(pr,lb,c2,tier)-baseS, dC=pkgCost(pr,lb)-baseC;
+    if(dS>=1) list.push({label:label,dScore:dS,dCost:dC,cfg:c2,add:addProd,lb:(newLb!=null?newLb:null),undrop:undrop||[]});
   }
   var hasName=function(re){ return extras.some(function(p){ return re.test((p.name||'').toLowerCase()); }); };
-  cand('Add Cancer lump sum ($20K, CHAS)',function(x){ if(x.chas&&x.chas.cancer) return false; x.chas={cancer:20000,hs:(x.chas&&x.chas.hs)||0}; });
-  cand('Add Heart Attack & Stroke ($10K, CHAS)',function(x){ if(x.chas&&x.chas.hs) return false; x.chas={cancer:(x.chas&&x.chas.cancer)||0,hs:10000}; });
-  if(!(+pk.lb>0)&&!(pk.products||[]).some(function(p){ return /^lb/.test(p.k||''); })) cand('Add Living Benefits',function(x){ if(x.lb&&(x.lb.p||x.lb.s)) return false; x.lb={}; lbPersons().forEach(function(pp){ x.lb[pp.k]={face:'25000',carrier:'moo'}; }); });
+  cand('Add Cancer lump sum ($20K, CHAS)',function(x){ if(inBase('chas')&&x.chas&&x.chas.cancer) return false; x.chas={cancer:20000,hs:(inBase('chas')&&x.chas&&x.chas.hs)||0}; },null,null,['chas']);
+  cand('Add Heart Attack & Stroke ($10K, CHAS)',function(x){ if(inBase('chas')&&x.chas&&x.chas.hs) return false; x.chas={cancer:(inBase('chas')&&x.chas&&x.chas.cancer)||0,hs:10000}; },null,null,['chas']);
+  if(!(+pk.lb>0)&&!inBase('lb')) cand('Add Living Benefits',function(x){ x.lb=x.lb||{}; lbPersons().forEach(function(pp){ if(!(x.lb[pp.k]&&x.lb[pp.k].face)) x.lb[pp.k]={face:'25000',carrier:'moo'}; }); },null,null,['lbp','lbs']);
   cand('Upgrade AFC to Elite Plus',function(x){ if(x.afc==='ElitePlus') return false; x.afc='ElitePlus'; });
   cand('Raise Specified Disease max to $500K',function(x){ if(!x.sdr||x.sdr.max==='500000') return false; x.sdr.max='500000'; });
   cand('Lower Specified Disease deductible one step',function(x){ if(!x.sdr) return false; var n=DEDSTEP[x.sdr.ded]; if(!n||n===x.sdr.ded) return false; x.sdr.ded=n; });
@@ -1848,82 +1894,67 @@ function popSuggestions(tier){
   cand('Raise Gap admission to $5,000',function(x){ if(x.gap.adm==='5000') return false; x.gap.adm='5000'; });
   cand('Add Gap outpatient surgery $1,000',function(x){ if(x.gap.outp) return false; x.gap.outp='1000'; });
   cand('Raise DVH to $3K',function(x){ if(x.dvh.max==='3000') return false; x.dvh.max='3000'; });
-  cand('Upgrade Accident to 2-Unit',function(x){ if(x.acc>=2) return false; x.acc=2; });
-  cand('Add Home Health Care (Deluxe)',function(x){ if(x.hhc) return false; x.hhc='Deluxe'; });
+  if(!popIsMajor(tier)) cand('Upgrade Accident to 2-Unit',function(x){ if(inBase('acc')&&x.acc>=2) return false; x.acc=2; },null,null,['acc']);
+  cand('Add Home Health Care (Deluxe)',function(x){ if(inBase('hhc')&&x.hhc) return false; x.hhc='Deluxe'; },null,null,['hhc']);
   list.sort(function(a,b){ return b.dScore-a.dScore; });
   return {base:baseS,list:list};
 }
 function applySuggestion(tier,s){
   S.cfg=S.cfg||{}; S.cfg[tier]=s.cfg;
   var pk=S.packages[tier];
+  if(pk&&s.undrop&&s.undrop.length) pk.dropped=(pk.dropped||[]).filter(function(k){ return s.undrop.indexOf(k)<0; });
   if(s.add&&pk) pk.products=(pk.products||[]).concat([{name:s.add.name,monthly:s.add.monthly,manual:true}]);
   if(s.lb!=null&&pk) pk.lb=s.lb;
   autoPriceTiers(); fill(); compute();
 }
 /* ========== POP SCORE — coverage completeness, risk-weighted (excludes savings/TFRA) ========== */
-function popStrengths(tier){ return popStrengthsPk(S.packages[tier]); }
-function popStrengthsPk(pk){
-  pk=pk||{products:[],lb:0};
-  var names=(pk.products||[]).map(function(p){return (p.name||'').toLowerCase();});
-  var has=function(kw){ return names.some(function(n){return n.indexOf(kw)>=0;}); };
-  var afcName=(pk.products||[]).map(function(p){return p.name||'';}).filter(function(n){return /\bafc\b|core health|affordable choice/i.test(n);})[0]||'';
-  var afcPresent=!!afcName; var lvl=afcLevelIdx(afcName); if(lvl<0) lvl=1;
-  var everyday   = afcPresent ? [100,88,74,60][lvl] : 0;
-  var preventive = afcPresent ? [100,90,76,62][lvl] : 0;
-  var cat=0;
-  if(afcPresent) cat+=[40,34,27,20][lvl];
-  if(has('hospital indemnity')||has('hi select')) cat+=32;
-  if(has('gap')||has('omni flex')||has('omniflex')||has('out-of-pocket')||has('out of pocket')) cat+=28;
-  cat=Math.min(100,cat);
-  var homecare=(has('home health')||has('hhc'))?100:0;
-  var accident = has('2 unit')?100:(has('1 unit')?70:(has('accident')?80:0));
-  var cancer=has('cancer'), hstroke=(has('heart attack')||has('stroke')||has('heart &'));
-  var critical=Math.min(100,(cancer?60:0)+(hstroke?40:0));
-  var dvh = (has('dvh')||has('dental')||has('vision')) ? ((has('$3k')||has('3k'))?100:((has('1.5k')||has('$1.5'))?78:85)) : 0;
-  var life = (pk.lb>0)?100:((has('living benefit')||has('final expense')||has(' life'))?70:0);
-  return {everyday:everyday,preventive:preventive,cat:cat,accident:accident,critical:critical,dvh:dvh,life:life,homecare:homecare};
-}
+/* Texas Affordable Choice numbers (AFC7010-BR_0424), used only until tool/benefits/afc.json has loaded. */
+var POP_AFC_FALLBACK={"Classic":{"visit":75,"visitN":6,"urgent":250,"urgentN":2,"er":250,"erN":1,"daily":2000,"adm":1000,"amb":150,"osurg":1000,"mri":300,"outLimit":4000},"ClassicPlus":{"visit":125,"visitN":8,"urgent":250,"urgentN":2,"er":250,"erN":1,"daily":3000,"adm":1000,"amb":150,"osurg":2000,"mri":500,"outLimit":4000},"Elite":{"visit":175,"visitN":10,"urgent":300,"urgentN":4,"er":300,"erN":2,"daily":4000,"adm":2000,"amb":150,"osurg":2500,"mri":600,"outLimit":6000},"ElitePlus":{"visit":200,"visitN":10,"urgent":300,"urgentN":4,"er":300,"erN":2,"daily":6000,"adm":3000,"amb":150,"osurg":3000,"mri":700,"outLimit":8000}};
+/* The 2026 federal out-of-pocket limit binds LifeX's group plan too; used until its SBC is on file. */
+var LIFEX_OOP_BOUND={self:10600,family:21200};
+/* What the score needs, read from the package's config and its priced products (not their names). */
+function popInputsFor(c,prods){ c=c||{}; prods=prods||[];
+  var has=function(k){ return prods.some(function(p){ return p.k===k&&(+p.monthly||0)>0; }); };
+  var st=(S.client.state||'').toUpperCase(), fam=acaPeople().length>1, x={visits:+((S.intake||{}).visits)||0};
+  if(has('afc')){ x.afcLevel=c.afc; var m=BEN_DATA.afc?benModel(BEN_DATA.afc,st,c.afc,c):null; x.afc=m?afcEventNums(evFlatRows(m)):POP_AFC_FALLBACK[c.afc]; }
+  if(has('base')&&c.base==='triad'){ var tm=BEN_DATA.triad?benModel(BEN_DATA.triad,st,'Triad Cigna '+(c.triadPlan||'3500'),c):null, rows=evFlatRows(tm);
+    var get=function(re){ var r=rows.filter(function(q){ return re.test(q.label); })[0]; return r?r.value:''; }, oo=evMoneyAll(get(/^Out-of-pocket maximum/i));
+    x.major={oop:(fam&&oo[1])?oo[1]:(oo[0]||(fam?14700:7350)),visit:evMoney(get(/^Primary care visit/i)),urgent:evMoney(get(/^Urgent care/i))}; x.base='triad'; }
+  if(has('base')&&c.base==='lifex'){ x.major={oop:fam?LIFEX_OOP_BOUND.family:LIFEX_OOP_BOUND.self,visit:0,urgent:0}; x.base='lifex'; x.provisional=true; }
+  if(has('his')&&c.his) x.his={ben:+c.his.ben||0,amb:+c.his.amb||0};
+  if(has('gap')&&c.gap) x.gap={daily:+c.gap.daily||0,adm:+c.gap.adm||0,ea:+c.gap.ea||0};
+  if(has('acc')) x.accU=+c.acc||1;
+  if(has('chas')&&c.chas) x.chas={cancer:+c.chas.cancer||0,hs:+c.chas.hs||0};
+  x.sdr=has('sdr'); if(has('dvh')&&c.dvh) x.dvhMax=c.dvh.max; if(has('hhc')) x.hhc=c.hhc;
+  var ppl=lbPersons(); x.lb={adults:ppl.length,faces:ppl.filter(function(pp){ return has('lb'+pp.k); }).map(function(pp){ return +((c.lb&&c.lb[pp.k]&&c.lb[pp.k].face)||25000); })};
+  return x; }
+function popStrengths(tier){ return popStrengthsFrom(popInputsFor(effCfg(tier),(S.packages[tier]||{}).products)); }
+/* A package's own true cost. Manhattan pays fixed benefits (no deductible), so it is the premium.
+   A Cigna package has a deductible and copays like the ACA does, counted the same way (same
+   "meets the deductible" switch, capped at its out-of-pocket max). LifeX's deductible isn't on file. */
+function tierTrue(t){ var pm=tierTotals(t).mo, r={mo:pm,note:'',extra:0};
+  if(!popIsMajor(t)) return r; var c=effCfg(t), fam=acaPeople().length>1;
+  if(c.base==='lifex'){ r.note='LifeX’s deductible isn’t on file yet — its true cost is shown as premium only.'; return r; }
+  var plan=(TRI&&TRI.plans&&TRI.plans['Triad Cigna '+(c.triadPlan||'3500')])||{}, ded=(+plan.deductible||0)*(fam?2:1);
+  var x=popInputsFor(c,(S.packages[t]||{}).products), cop=(x.major&&x.major.visit)||0, vis=(+((S.intake||{}).visits)||0)*cop;
+  var yr=(acaIn().fullded!==false?ded:0)+vis; if(x.major&&x.major.oop) yr=Math.min(yr,x.major.oop);
+  r.extra=yr/12; r.mo=pm+r.extra; r.note='True cost includes its $'+ded.toLocaleString('en-US')+' deductible'+(vis?' and visit copays':'')+'.'; return r; }
+function popIsMajor(tier){ var c=effCfg(tier); return (c.base==='triad'||c.base==='lifex')&&((S.packages[tier]||{}).products||[]).some(function(p){ return p.k==='base'; }); }
 function overBuild(){
   var I=S.intake||{}, sx=I.psex, h=+I.pheight||0, wt=+I.pweight||0;
   if(!sx||!h||!wt) return false;
   var row=(typeof BUILD_CHART!=='undefined')&&BUILD_CHART[sx]&&BUILD_CHART[sx][h];
   return !!(row && wt>row[1]);
 }
-function popWeights(){
-  var I=S.intake||{}, age=+S.client.page||0, band=age?(age<30?0:age<40?1:age<50?2:3):2;
-  var w={everyday:12,preventive:7,cat:24,accident:9,critical:12,dvh:7,life:9,homecare:2};
-  // Age gradient — younger = less weight on the big-ticket risks (gaps hurt less); older = more
-  // Home health care barely matters when young, matters a lot at 50+
-  if(band===0){w.cat-=7;w.critical-=6;}
-  else if(band===1){w.cat-=3;w.critical-=3;}
-  else if(band===2){w.cat+=5;w.critical+=4;w.homecare+=3;}
-  else {w.cat+=12;w.critical+=9;w.everyday+=3;w.homecare+=11;}
-  // BMI graded — healthy rewarded (less weight), heavier penalized (more)
-  var hi=+I.pheight||0,wt=+I.pweight||0,bmi=(hi&&wt)?(wt/(hi*hi))*703:0;
-  if(bmi>0){
-    if(bmi<18.5){w.cat+=3;}
-    else if(bmi<25){w.cat-=5;w.critical-=3;}
-    else if(bmi<30){}
-    else if(bmi<35){w.cat+=6;w.critical+=2;}
-    else {w.cat+=10;w.critical+=5;}
-  }
-  // ManhattanLife build chart — over-max is a real underwriting signal
-  if(overBuild()){w.cat+=6;w.critical+=2;}
-  // Health & family history
-  if(I.famcancer){w.critical+=20;}
-  if(I.famheart){w.critical+=10;w.cat+=8;}
-  if(I.diabetic){w.cat+=8;w.everyday+=5;}
-  if(I.majorcond){w.cat+=8;w.everyday+=4;}
-  if(I.surg2yr){w.cat+=7;}
-  if(I.tobaccoP||I.tobaccoS){w.critical+=6;w.cat+=5;}
-  if(I.who&&(I.who.spouse||I.who.kids)){w.life+=12;}
-  Object.keys(w).forEach(function(k){ if(w[k]<3) w[k]=3; }); // floor so nothing zeroes out
-  return w;
-}
-function popRaw(s,w){ var keys=['everyday','preventive','cat','accident','critical','dvh','life','homecare'],num=0,den=0; keys.forEach(function(k){ num+=w[k]*s[k]; den+=w[k]; }); var raw=den?num/den:0; return Math.max(0,Math.min(100,Math.round(100*Math.pow(raw/100,0.75)))); }
-function computePop(tier){ var s=popStrengths(tier), w=popWeights(); return {score:popRaw(s,w), s:s, w:w}; }
+function popWeights(tier){ var I=S.intake||{}, hi=+I.pheight||0, wt=+I.pweight||0;
+  return popWeightsFrom({age:+S.client.page||0,bmi:(hi&&wt)?(wt/(hi*hi))*703:0,overBuild:overBuild(),famcancer:I.famcancer,famheart:I.famheart,diabetic:I.diabetic,
+    majorcond:I.majorcond,surg2yr:I.surg2yr,tobacco:I.tobaccoP||I.tobaccoS,family:!!(I.who&&(I.who.spouse||I.who.kids)),major:tier?popIsMajor(tier):false}); }
+function popRaw(s,w){ return popRawFrom(s,w); }
+function computePop(tier){ var s=popStrengths(tier), w=popWeights(tier); return {score:popRaw(s,w), s:s, w:w}; }
 function popPositives(tier){
   var s=computePop(tier).s, pos=[];
+  if(popIsMajor(tier)&&!s.provisional) pos.push('Major medical — a big hospital bill stops at about '+fmt(s.exposure.severe)+' out of pocket');
+  if(s.preventive>=100&&popIsMajor(tier)) pos.push('Preventive care covered in full');
   if(s.cat>=75) pos.push('Strong hospitalization &amp; catastrophic protection');
   if(s.critical>=90) pos.push('Cancer + heart/stroke lump sum in place');
   else if(s.critical>=40) pos.push('Partial critical-illness lump sum');
@@ -1982,7 +2013,8 @@ function renderPopScore(){
     negli=acts.length?acts.map(function(a){return '<li>✗ '+a.text+' <b style="color:#2f9e56">(+'+a.delta+')</b></li>';}).join(''):'<li style="color:#1c6b38">Nothing major missing — well protected</li>';
   }
   var why='<div class="popwhy"><div class="col pos"><b>What’s lifting it</b><ul>'+posli+'</ul></div><div class="col neg"><b>How to raise it</b><ul>'+negli+'</ul></div></div>';
-  host.innerHTML='<div class="popwrap"><div style="text-align:center">'+ring+three+'</div>'+why+'</div>';
+  var prov=computePop(at).s.provisional?'<div class="note" style="color:#8a6a1f">Provisional — LifeX’s benefit summary isn’t on file, so this uses the federal out-of-pocket limit ($10,600 per person) as its worst case. It rises once the SBC is added.</div>':'';
+  host.innerHTML='<div class="popwrap"><div style="text-align:center">'+ring+three+'</div>'+why+'</div>'+prov;
   host.querySelectorAll('.pop3 .t').forEach(function(el){ el.onclick=function(){ read(); S.activeTab=el.dataset.tier; fill(); compute(); }; });
   host.querySelectorAll('li.sugg').forEach(function(el){ el.onclick=function(){ var s=sug.list[+el.dataset.ix]; if(s) applySuggestion(at,s); }; });
 }
@@ -2892,7 +2924,7 @@ function compute(){
   var bPrem=B?B.premOnly:0, bMo=B?B.mo:0, bYr=B?B.yr:0;
   if($('o_sav_head')) $('o_sav_head').textContent='YOUR SAVINGS vs '+(B?B.short.toUpperCase():'—');
   if($('o_tot_net_lab')) $('o_tot_net_lab').textContent='Still ahead vs '+(B?B.short:'—');
-  var sv=anchorSavings(B,pMo)||{actual:0,tru:0};
+  var sv=anchorSavings(B,pMo,pMo+tierTrue(S.activeTab).extra)||{actual:0,tru:0};
   var aMo=sv.actual, aYr=aMo*12;
   var tMo=sv.tru, tYr=tMo*12;
   $('o_sav_amo').textContent=saves(aMo,'/mo');$('o_sav_ayr').textContent=saves(aYr,'/yr');
@@ -3080,10 +3112,11 @@ function buildPrintout(){
       if(+x.pk.lb>0) html+='<div class="po-li"><span>Living Benefits'+(x.pk.lbCarrier?' — '+esc(x.pk.lbCarrier):'')+'</span><span>'+fmt2(+x.pk.lb)+'</span></div>';
       if(+x.pk.med>0) html+='<div class="po-li"><span>Medications (net)</span><span>'+fmt2(+x.pk.med)+'</span></div>';
       html+='<div class="po-sum"><span>Monthly</span><span>'+fmt2(x.mo)+'</span></div>';
+      if(S.showPop!==false){ var ps=computePop(x.t); html+='<div class="po-pop"><span>POP Score</span><b style="color:'+(ps.score>=80?'#2f9e56':ps.score>=60?'#b0872f':'#c85a5a')+'">'+ps.score+'</b>'+(ps.s.provisional?'<small>provisional</small>':'')+'</div>'; }
       html+='<div class="po-sum" style="background:#fbf9f2"><span>Annual</span><span>'+fmt2(x.yr)+'</span></div>';
-      if(base){ var sv=anchorSavings(base,x.mo), vs=base.k==='aca'?'your marketplace plan':'your current plan';
+      if(base){ var ttx=tierTrue(x.t), sv=anchorSavings(base,x.mo,x.mo+ttx.extra), vs=base.k==='aca'?'your marketplace plan':'your current plan';
         var ln=function(lab,v){ return '<div class="ln"><span>'+lab+'</span><b class="'+(v>=0?'up':'dn')+'">'+(v>=0?'saves ':'costs ')+fmt2(Math.abs(v))+'/mo'+(v>=0?'':' more')+'</b></div>'; };
-        html+='<div class="po-save"><div class="vs">Compared with '+vs+'</div>'+ln('Premium',sv.actual)+ln('True cost',sv.tru)+'<div class="yr">'+(sv.tru>=0?'That’s '+fmt2(sv.tru*12)+' a year':'That’s '+fmt2(-sv.tru*12)+' a year more')+'</div></div>'; }
+        html+='<div class="po-save"><div class="vs">Compared with '+vs+'</div>'+ln('Premium',sv.actual)+ln('True cost',sv.tru)+(ttx.note?'<div class="tn">'+ttx.note+'</div>':'')+'<div class="yr">'+(sv.tru>=0?'That’s '+fmt2(sv.tru*12)+' a year':'That’s '+fmt2(-sv.tru*12)+' a year more')+'</div></div>'; }
       html+='</div>';
     });
     html+='</div>';
@@ -3788,7 +3821,7 @@ function renderEvents(){ var need=['afc','triad'].filter(function(f){ return !BE
 /* TFRA: what each package frees up against the anchor, and a quick "use part of it". */
 function renderTfraHint(){ var el=$('tfraHint'); if(!el) return; var B=anchorBase();
   if(!B){ el.innerHTML='No anchor chosen, so there are no savings to fund a TFRA from. Set one in Budget &amp; Notes.'; return; }
-  var rows=EV_TIERS.map(function(T){ var sv=anchorSavings(B,tierTotals(T[0]).mo); return {t:T[0],lab:T[1],room:sv?sv.tfra:0}; });
+  var rows=EV_TIERS.map(function(T){ var m0=tierTotals(T[0]).mo, sv=anchorSavings(B,m0,m0+tierTrue(T[0]).extra); return {t:T[0],lab:T[1],room:sv?sv.tfra:0}; });
   var rec=rows.filter(function(r){ return r.t===S.recommended; })[0]||rows[2];
   el.innerHTML='Room for a TFRA against '+(B.k==='aca'?'the ACA bronze':'their current plan')+': '+rows.map(function(r){ return r.lab+' <b>'+fmt2(r.room)+'</b>/mo'; }).join(' · ')
     +'.<br>Fund a portion, not all of it — leave them breathing room. '+(rec.room>0?[25,50,75].map(function(p){ return '<button type="button" class="tfrause" data-amt="'+(Math.round(rec.room*p)/100)+'">Use '+p+'% of '+rec.lab+' ('+fmt2(rec.room*p/100)+')</button>'; }).join(' '):'');
@@ -3860,10 +3893,10 @@ function renderBuilder(){
     if(addable.length) html+='<div class="pbadd"><select data-act="add" aria-label="Add a product"><option value="">＋ Add product</option>'+addable.map(function(sl){ return '<option value="'+sl.k+'">'+sl.name+'</option>'; }).join('')+'</select></div>';
     totals[t]=sum;
     html+='<div class="pbtot"><b>Monthly</b><span>'+pbMoney(sum)+'</span></div>';
-    var sv=anchorSavings(anc,sum);
+    var tt=tierTrue(t), sv=anchorSavings(anc,sum,sum+tt.extra);
     if(sv){ var line=function(lab,v){ return '<div class="sv"><span>'+lab+'</span><b class="'+(v>=0?'up':'dn')+'">'+(v>=0?'saves ':'costs ')+pbMoney(Math.abs(v))+(v>=0?'':' more')+'</b></div>'; };
       html+='<div class="pbsave">'+line('Premium vs premium',sv.actual)+line('True cost',sv.tru)
-        +'<div class="sv tf"><span>Room for a TFRA</span><b>'+(sv.tfra>0?pbMoney(sv.tfra)+'/mo':'—')+'</b></div></div>'; }
+        +'<div class="sv tf"><span>Room for a TFRA</span><b>'+(sv.tfra>0?pbMoney(sv.tfra)+'/mo':'—')+'</b></div>'+(tt.note?'<div class="sv" style="color:#8a6a1f;font-size:11px">'+tt.note+'</div>':'')+'</div>'; }
     html+='</div>';
   });
   html+='</div>';

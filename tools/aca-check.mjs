@@ -207,7 +207,38 @@ if (mode === 'engine') {
   ok(ctx.evAnchorOwe('major', 20000, { oop: 9950 }) === 9950, 'ACA: capped at its out-of-pocket max');
   ok(ctx.evAnchorOwe('everyday', 600, { oop: 9950, visit: 50 }, 'visit', 3) === 150 && ctx.evAnchorOwe('everyday', 6000, { oop: 9950, visit: 50 }, 'osurg', 1) === 6000, 'ACA everyday: visit copay vs full charge before the deductible');
   if (!fails) console.log('event checks passed');
+} else if (mode === 'pop') {
+  const a = html.indexOf('/* ACA-ENGINE:BEGIN */'), b = html.indexOf('/* ACA-ENGINE:END */');
+  const ctx = {}; vm.createContext(ctx); vm.runInContext(html.slice(a, b), ctx);
+  const afcD = JSON.parse(fs.readFileSync(new URL('../tool/benefits/afc.json', import.meta.url), 'utf8'));
+  const triD = JSON.parse(fs.readFileSync(new URL('../tool/benefits/triad.json', import.meta.url), 'utf8'));
+  const flat = m => m.key.concat(...m.sections.map(s => s.rows));
+  const afc = L => ctx.afcEventNums(flat(ctx.benModel(afcD, 'TX', L, {})));
+  const tri = flat(ctx.benModel(triD, 'TX', 'Triad Cigna 3500', {}));
+  const tget = re => (tri.find(r => re.test(r.label)) || {}).value;
+  const cigna = { oop: ctx.evMoneyAll(tget(/^Out-of-pocket maximum/i))[0], visit: ctx.evMoney(tget(/^Primary care visit/i)), urgent: ctx.evMoney(tget(/^Urgent care/i)) };
+  ok(cigna.oop > 0, 'Cigna 3500 OOP read from the SBC data (' + cigna.oop + ')');
+  const lb1 = { adults: 1, faces: [25000] };
+  // The three lineups Kyle sells (single adult, 45): Manhattan Essential / Comprehensive, Cigna 3500 pivot, LifeX pivot.
+  const essential = { afcLevel: 'ClassicPlus', afc: afc('ClassicPlus'), his: { ben: 10000, amb: 1 }, gap: { daily: 100, adm: 2500, ea: 0 }, accU: 1 };
+  const comprehensive = { afcLevel: 'ElitePlus', afc: afc('ElitePlus'), his: { ben: 10000, amb: 1 }, gap: { daily: 200, adm: 5000, ea: 1 }, accU: 2, chas: { cancer: 20000, hs: 10000 }, dvhMax: '3000', lb: { adults: 1, faces: [50000] } };
+  const cignaPk = { major: cigna, base: 'triad', his: { ben: 4000, amb: 1 }, lb: lb1 };
+  const lifexPk = { major: { oop: 10600, visit: 0, urgent: 0 }, base: 'lifex', provisional: true, lb: lb1 };
+  const W = major => ctx.popWeightsFrom({ age: 45, major });
+  const score = (x, major) => ctx.popRawFrom(ctx.popStrengthsFrom(x), W(major));
+  const sE = score(essential, false), sC = score(comprehensive, false), sG = score(cignaPk, true), sL = score(lifexPk, true);
+  console.log('   scores: essential ' + sE + ', comprehensive ' + sC + ', cigna ' + sG + ', lifex ' + sL);
+  ok(sG > sC && sC > sE, 'Cigna + HIS + LB > Manhattan Comprehensive > Manhattan Essential');
+  const e = ctx.popStrengthsFrom(essential), c = ctx.popStrengthsFrom(comprehensive), g = ctx.popStrengthsFrom(cignaPk);
+  ok(e.exposure.severe > c.exposure.severe && e.exposure.severe > 10000, 'Classic Plus leaves real exposure on a severe stay (' + e.exposure.severe + ')');
+  ok(g.exposure.severe === cigna.oop - 4000 - 200, 'Cigna severe exposure = OOP - HI Select per stay - HI Select ambulance');
+  ok(g.preventive === 100 && ctx.popStrengthsFrom(lifexPk).preventive === 100, 'preventive 100 on major medical');
+  ok(ctx.popStrengthsFrom(lifexPk).provisional === true, 'LifeX flagged provisional');
+  ok(ctx.popStrengthsFrom({ ...comprehensive, lb: { adults: 2, faces: [50000] } }).life === 50 && c.life === 100, 'living benefits credit per covered adult');
+  // Monotone: removing any single product never raises the score.
+  for (const k of ['his', 'gap', 'accU', 'chas', 'dvhMax', 'lb']) { const x = { ...comprehensive }; delete x[k]; ok(score(x, false) <= sC, 'removing ' + k + ' does not raise the score'); }
+  if (!fails) console.log('pop score checks passed');
 } else {
-  console.log('usage: node tools/aca-check.mjs engine|structure|benefits|events'); process.exit(2);
+  console.log('usage: node tools/aca-check.mjs engine|structure|benefits|events|pop'); process.exit(2);
 }
 process.exit(fails ? 1 : 0);
