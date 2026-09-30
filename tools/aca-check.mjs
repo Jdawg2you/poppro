@@ -259,6 +259,9 @@ if (mode === 'engine') {
   const up = (o, lab) => { const s1 = ex(Object.assign(essential('TX'), o)); ok(s1 > eE, lab + ' raises Essential (' + eE.toFixed(2) + ' -> ' + s1.toFixed(2) + ')'); };
   up({ lb: two(25000) }, 'living benefits'); up({ gap: { daily: 200, adm: 5000, ea: 0 } }, 'Out-of-Pocket up a notch'); up({ gapOutp: 1000 }, 'Out-of-Pocket outpatient'); up({ accU: 2 }, 'accident 2 units'); up({ hisOutp: 1000 }, 'HI Select outpatient');
   ok(sc(Object.assign(maxed('TX'), { lb: two(25000) })) < M, '$50K living benefits beat $25K');
+  const tE = ex(top('TX')), dHIS = tE - ex(Object.assign(top('TX'), { his: null, hisOutp: 0 })), dLB1 = ex(top('TX'), {}) - ex(Object.assign(top('TX'), { lb: { adults: 2, faces: [50000] } }));
+  ok(dHIS >= 10, 'removing HI Select from the top build costs 10+ points (' + dHIS.toFixed(1) + ')');
+  ok(dHIS >= dLB1, 'HI Select weighs at least as much as one adult\'s living benefits (' + dHIS.toFixed(1) + ' vs ' + dLB1.toFixed(1) + ')');
   const noLB = sc(Object.assign(maxed('TX'), { lb: { adults: 2, faces: [] } }));
   ok(M - noLB >= 8, 'dropping living benefits costs >= 8 (' + (M - noLB) + ')');
   const mFH = sc(maxed('TX'), { famheart: true });
