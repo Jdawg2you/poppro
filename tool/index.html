@@ -325,6 +325,27 @@
   .bdsrc{padding:10px 16px 0;font-size:11px;color:var(--muted)}.bdsrc a{color:#8a6a1f}.bdtip{padding:4px 16px 0;font-size:11px;color:#8a6a1f}
   .bdempty{padding:18px 16px;font-size:13px;color:var(--muted)}
   @media(max-width:640px){.bendrawer.wide{width:100vw}.bdrow.cmp,.bdcmphead{grid-template-columns:1fr 1fr 1fr}}
+  .pbshow{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);padding:0 0 6px}
+  .pbcol.excl{opacity:.55}
+  .tfrahint{font-size:12px;color:var(--navy);background:#fbf9f2;border:1px solid var(--line);border-top:none;padding:8px 12px;line-height:1.6}
+  .tfrahint .tfrause{font:inherit;font-size:11.5px;border:1px solid #b0872f;background:#fff;color:#26324a;border-radius:6px;padding:2px 8px;cursor:pointer;margin:2px 2px 0 0}
+  .evflags{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;font-size:13px}
+  .evhead,#printout .evhead{font-size:12px;color:var(--muted);padding:8px 0 6px}
+  .evtab,#printout .evtab{display:grid;gap:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff}
+  .evtab .c,#printout .evtab .c{padding:8px 10px;border-top:1px solid #f1ede2;font-size:13px;text-align:center}
+  .evtab .c.l,#printout .evtab .c.l{text-align:left;color:var(--navy);font-weight:600}.evtab .c small,#printout .evtab .c small{display:block;font-size:10.5px;color:var(--muted);font-weight:400}
+  .evtab .c.h,#printout .evtab .c.h{border-top:none;background:var(--navy);color:#fff;font-weight:700;font-family:var(--serif)}
+  .evtab .c.h.anc,#printout .evtab .c.h.anc{background:var(--maroon)}.evtab .c.anc,#printout .evtab .c.anc{background:#fbf3f1}
+  .evtab .c.big,#printout .evtab .c.big{font-family:var(--serif);font-weight:700;font-size:15px}
+  .evtab .up,#printout .evtab .up{color:var(--green)}.evtab .dn,#printout .evtab .dn{color:var(--maroon)}
+  .evparts{font-size:11.5px;color:var(--muted);padding:6px 2px;line-height:1.5}.evparts summary{cursor:pointer;color:#8a6a1f}
+  #printout .po-save .vs{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+  #printout .po-save .ln{display:flex;justify-content:space-between;gap:6px;font-size:12px}#printout .po-save .ln b.up{color:var(--green)}#printout .po-save .ln b.dn{color:var(--maroon)}
+  #printout .po-save .yr{font-family:var(--serif);font-weight:700;color:var(--navy);margin-top:3px}
+  /* Client View = the presentation: the printout, on screen. */
+  body.client #step-intake,body.client #step-quote,body.client #step-enroll,body.client #stepper,body.client #benDrawer{display:none!important}
+  body.client .discl{display:none!important}
+  body.client #printout{display:block;max-width:1000px;margin:12px auto 60px;padding:0 16px;box-sizing:border-box}
   .pbanchor{font-size:12.5px;color:var(--navy);background:#fbf9f2;border:1px solid var(--line);border-radius:8px;padding:7px 12px;margin:0 0 10px}
   .pbanchor a.jump{color:#9a5b00;text-decoration:none;border-bottom:1px dotted #d9b36a;margin-left:6px}
   .pbsave{border-top:1px dashed var(--line);margin-top:6px;padding:6px 10px 8px;font-size:12px}
@@ -859,6 +880,7 @@ body.client #classicWrap>summary{display:none}
       <div class="lab">TFRA — monthly contribution<small>Set 0 to hide it from the comparison.</small></div>
       <input class="num money-in" id="p_pension" type="text" inputmode="decimal"><span class="money-disp" data-for="p_pension"></span>
     </div>
+    <div class="tfrahint hidein-client" id="tfraHint"></div>
     <div class="row" id="tfraNoteRow" style="border:1px solid var(--line);border-top:none;border-radius:0 0 8px 8px"><div class="lab">TFRA — note</div><input id="p_pnote" style="flex:1;border:1px solid var(--line);border-radius:7px;padding:6px 8px;font:inherit;background:#fff" placeholder="e.g., IUL / tax-free retirement savings for your future"></div>
     <div class="pdetail" id="pensionDetail">
       <div class="pcol">
@@ -900,40 +922,29 @@ body.client #classicWrap>summary{display:none}
 
   <div class="card pad">
     <div class="plainband">If a major event happens <span class="desc" id="o_big_desc_h"></span></div>
-    <div class="claim">
-      <div class="row hidein-client"><div class="lab">Description</div><input id="b_desc" style="flex:1;border:1px solid var(--line);border-radius:7px;padding:6px 8px;font:inherit;background:#fff"></div>
-      <div class="row hidein-client"><div class="lab">Total billed charges</div><input class="num" id="b_charge" type="number" step="0.01"></div>
-      <div class="row hidein-client"><div class="lab">Network discount / adjustment</div><input class="num" id="b_disc" type="number" step="0.01"></div>
-      <div class="row hi sum"><div class="lab">Balance after discount</div><div class="val" id="o_b_bal">—</div></div>
-      <div class="row hidein-client"><div class="lab">Hospital days</div><input class="num" id="b_days" type="number"></div>
-      <div class="row hidein-client"><div class="lab">— AFC daily inpatient benefit × days</div><input class="num" id="b_daily" type="number"></div>
-      <div class="row hidein-client"><div class="lab">— AFC hospital admission benefit (one-time)</div><input class="num" id="b_adm" type="number"></div>
-      <div class="row hidein-client"><div class="lab">— HI Select payout</div><input class="num" id="b_his" type="number"></div>
-      <div class="row hidein-client"><div class="lab">— Other rider payouts (cancer / accident / etc.)</div><input class="num" id="b_other" type="number"></div>
-      <div class="row hi sum"><div class="lab">Manhattan total paid to client</div><div class="val" id="o_b_cash">—</div></div>
-      <div class="moneypair">
-        <div class="mp"><div class="cap">Money you don't pay</div><div class="big" id="o_b_aca">—</div><div class="sub">ACA out-of-pocket the Package covers instead</div></div>
-        <div class="mp"><div class="cap">Money paid directly to you</div><div class="big" id="o_b_net">—</div><div class="sub">Cash beyond the bill, from Manhattan</div></div>
-      </div>
+    <div class="claim hidein-client">
+      <div class="row"><div class="lab">Description</div><input id="b_desc" style="flex:1;border:1px solid var(--line);border-radius:7px;padding:6px 8px"></div>
+      <div class="row"><div class="lab">Total billed charges</div><input class="num" id="b_charge" type="number" step="0.01"></div>
+      <div class="row"><div class="lab">Network discount / adjustment</div><input class="num" id="b_disc" type="number" step="0.01"></div>
+      <div class="row"><div class="lab">Days in the hospital</div><input class="num" id="b_days" type="number" min="0"></div>
+      <div class="row"><div class="lab">What happened</div><div class="evflags">
+        <label><input type="checkbox" id="b_er"> Came in through the ER</label>
+        <label><input type="checkbox" id="b_amb"> Ambulance</label>
+        <label><input type="checkbox" id="b_acc"> Caused by an accident</label>
+        <select id="b_dx" class="selfld" style="max-width:220px"><option value="">No cancer / heart / stroke diagnosis</option><option value="cancer">Cancer diagnosis</option><option value="heart">Heart attack</option><option value="stroke">Stroke</option></select></div></div>
     </div>
-    <div class="bottomline">BOTTOM LINE if a MAJOR event happens this year: <b id="o_b_bottom">—</b></div>
-    <div class="note" id="o_b_cap" style="text-align:center"></div>
+    <div id="evMajor" class="evwrap"></div>
   </div>
 
   <div class="card pad">
     <div class="plainband">On an everyday event <span class="desc" id="o_reg_desc_h"></span></div>
-    <div class="claim">
-      <div class="row hidein-client"><div class="lab">Description</div><input id="r_desc" style="flex:1;border:1px solid var(--line);border-radius:7px;padding:6px 8px;font:inherit;background:#fff"></div>
-      <div class="row hidein-client"><div class="lab">Billed charge (after discount)</div><input class="num" id="r_charge" type="number" step="0.01"></div>
-      <div class="row hidein-client"><div class="lab">Manhattan pays (sum of benefits)<small>e.g., $600 preventive + $3,000 ambulatory</small></div><input class="num" id="r_pay" type="number" step="0.01"></div>
-      <div class="row hidein-client"><div class="lab">What the client would've owed on ACA</div><input class="num" id="r_aca" type="number" step="0.01"></div>
-      <div class="moneypair">
-        <div class="mp"><div class="cap">Money you don't pay</div><div class="big" id="o_r_aca">—</div><div class="sub">What the client would've owed on ACA</div></div>
-        <div class="mp"><div class="cap">Money paid directly to you</div><div class="big" id="o_r_net">—</div><div class="sub">Cash beyond the charge</div></div>
-      </div>
+    <div class="claim hidein-client">
+      <div class="row"><div class="lab">Description</div><input id="r_desc" style="flex:1;border:1px solid var(--line);border-radius:7px;padding:6px 8px"></div>
+      <div class="row"><div class="lab">Kind of visit</div><select id="r_type" class="selfld" style="max-width:260px"><option value="visit">Doctor visit</option><option value="urgent">Urgent care</option><option value="er">ER visit (not admitted)</option><option value="osurg">Outpatient surgery</option><option value="imaging">MRI / CT scan</option></select></div>
+      <div class="row"><div class="lab">How many times this year</div><input class="num" id="r_count" type="number" min="1"></div>
+      <div class="row"><div class="lab">Charge each time (after discount)</div><input class="num" id="r_charge" type="number" step="0.01"></div>
     </div>
-    <div class="bottomline">BOTTOM LINE in a ROUTINE year: <b id="o_r_bottom">—</b></div>
-    <div class="note" id="o_r_cap" style="text-align:center"></div>
+    <div id="evEveryday" class="evwrap"></div>
   </div>
 
     <div id="afcPartners"></div>
@@ -1459,6 +1470,54 @@ function benCompare(a,b){ var rows=[], idx={};
   all(a).forEach(function(x){ idx[x.r.label]=rows.length; rows.push({label:x.r.label,key:x.key,sec:x.r.sec,a:x.r.value,b:null}); });
   all(b).forEach(function(x){ var i=idx[x.r.label]; if(i==null){ idx[x.r.label]=rows.length; rows.push({label:x.r.label,key:x.key,sec:x.r.sec,a:null,b:x.r.value}); } else { rows[i].b=x.r.value; if(x.key) rows[i].key=true; } });
   rows.forEach(function(r){ r.diff=(r.a||'')!==(r.b||''); }); return rows; }
+/* ---- Event gut checks: pure (tested by tools/aca-check.mjs events) ----
+   What each package pays on a major event / an everyday event, from its options and the state's
+   brochure numbers. Indemnity plans pay fixed amounts whatever the bill; a major-medical base
+   (Cigna) caps the client's share at its out-of-pocket max. */
+function evMoney(s){ var m=String(s||'').replace(/,/g,'').match(/\$\s*(\d+(?:\.\d+)?)/); return m?+m[1]:0; }
+function evMoneyAll(s){ return (String(s||'').replace(/,/g,'').match(/\$\s*\d+(?:\.\d+)?/g)||[]).map(function(x){ return +x.replace(/[^\d.]/g,''); }); }
+function evCount(s){ var m=String(s||'').match(/\/\s*(\d+)\s*(?:days|CY|visits)/i); return m?+m[1]:null; }
+/* rows: [{label,value}] from one AFC level's brochure schedule */
+function afcEventNums(rows){ var n={visit:0,visitN:null,urgent:0,urgentN:null,er:0,erN:null,daily:0,adm:0,amb:0,osurg:0,mri:0,outLimit:0};
+  (rows||[]).forEach(function(r){ var l=r.label, v=r.value;
+    if(/^Doctor's Office Visit/i.test(l)){ n.visit=evMoney(v); n.visitN=evCount(v); }
+    else if(/^Emergency Room or Urgent Care/i.test(l)){ n.er=n.urgent=evMoney(v); n.erN=n.urgentN=1; }
+    else if(/^Emergency Room/i.test(l)){ n.er=evMoney(v); n.erN=evCount(v); }
+    else if(/^Urgent Care/i.test(l)){ n.urgent=evMoney(v); n.urgentN=evCount(v); }
+    else if(/^Inpatient Hospital Confinement \(per/i.test(l)){ n.daily=evMoney(v); }
+    else if(/^Hospital Admission/i.test(l)){ n.adm=evMoney(v); }
+    else if(/Ambulance/i.test(l)&&!n.amb){ n.amb=evMoney(v); }
+    else if(/^Ambulatory Surgical/i.test(l)){ n.osurg=evMoney(v); }
+    else if(/^Radiology/i.test(l)){ n.mri=evMoney(v); }
+    else if(/^Calendar year limit for all Outpatient/i.test(l)){ n.outLimit=evMoney(v); } });
+  return n; }
+/* p: {bal, days, er, amb, acc, dx, afc, his:{ben,amb}, gap:{daily,adm,ea}, accU, chas:{cancer,hs}, major:{oop}} */
+function evMajor(p){ var parts=[], pays=0, days=+p.days||0, bal=Math.max(0,+p.bal||0);
+  var add=function(lab,v){ v=Math.round((+v||0)*100)/100; if(v>0){ parts.push({lab:lab,v:v}); pays+=v; } };
+  if(p.afc){ add('Affordable Choice — hospital days',p.afc.daily*days); add('Affordable Choice — admission',days>0?p.afc.adm:0);
+    if(p.er) add('Affordable Choice — emergency room',p.afc.er); if(p.amb) add('Affordable Choice — ambulance',p.afc.amb); }
+  if(p.his&&days>0){ add('Hospital Indemnity Select',p.his.ben); if(p.amb&&p.his.amb) add('HI Select — ambulance',200); }
+  if(p.gap&&days>0){ add('Out-of-Pocket — admission',p.gap.adm); add('Out-of-Pocket — hospital days',p.gap.daily*Math.min(days,10)); }
+  if(p.gap&&p.er&&p.acc&&p.gap.ea) add('Out-of-Pocket — ER accident',250);
+  if(p.accU&&p.acc){ add('24-Hour Accident — medical',Math.min(bal,2000*p.accU)); add('24-Hour Accident — hospital days',150*p.accU*Math.min(days,30)); }
+  if(p.chas&&p.dx==='cancer') add('Cancer lump sum',p.chas.cancer); if(p.chas&&(p.dx==='heart'||p.dx==='stroke')) add('Heart attack & stroke lump sum',p.chas.hs);
+  var owe0=p.major?Math.min(bal,+p.major.oop||bal):bal;
+  return {pays:pays,parts:parts,owe0:owe0,net:owe0-pays}; }
+/* p: {type:'visit'|'urgent'|'er'|'osurg'|'imaging', charge (each), count, afc, hisOutp, gapOutp, major:{visit,urgent}} */
+function evEveryday(p){ var c=Math.max(1,+p.count||1), ch=Math.max(0,+p.charge||0), bill=ch*c, parts=[], pays=0;
+  var add=function(lab,v){ v=Math.round((+v||0)*100)/100; if(v>0){ parts.push({lab:lab,v:v}); pays+=v; } };
+  if(p.afc){ var a=p.afc, lim=function(n){ return n==null?c:Math.min(c,n); }, afcPay=0;
+    if(p.type==='visit') afcPay=a.visit*lim(a.visitN); else if(p.type==='urgent') afcPay=a.urgent*lim(a.urgentN);
+    else if(p.type==='er') afcPay=a.er*lim(a.erN); else if(p.type==='osurg') afcPay=a.osurg*c; else if(p.type==='imaging') afcPay=a.mri*c;
+    if(a.outLimit) afcPay=Math.min(afcPay,a.outLimit); add('Affordable Choice',afcPay); }
+  if(p.type==='osurg'){ add('HI Select — outpatient surgery',+p.hisOutp||0); add('Out-of-Pocket — outpatient surgery',+p.gapOutp||0); }
+  var owe0=bill;
+  if(p.major){ if(p.type==='visit'&&p.major.visit) owe0=Math.min(bill,p.major.visit*c); else if(p.type==='urgent'&&p.major.urgent) owe0=Math.min(bill,p.major.urgent*c); }
+  return {pays:pays,parts:parts,owe0:owe0,net:owe0-pays}; }
+/* The anchor's share: what the client pays on the ACA / their current plan. */
+function evAnchorOwe(kind,bill,A,type,count){ if(!A) return null; var cap=A.oop>0?A.oop:bill;
+  if(kind==='everyday'&&type==='visit'&&A.visit>0) return Math.min(bill,A.visit*Math.max(1,+count||1),cap);
+  return Math.min(bill,cap); }
 /* ACA-ENGINE:END */
 
 function householdIncome(){
@@ -2004,8 +2063,8 @@ function blankState(){
       best:{products:defProducts('best'),dropped:[],lb:45,lbCarrier:'',lbCov:'',med:0,rxBenefit:0}
     },
     pension:{monthly:0,note:'e.g., IUL / tax-free retirement savings for your future',cv10:0,cv20:0,cv30:0,leg1:0,leg25:0},
-    big:{desc:'Hospital stay – 7 days',charge:41660.41,disc:18747.18,days:7,daily:4000,adm:2000,his:10000,other:0},
-    reg:{desc:'Colonoscopy w/ anesthesia',charge:2800,pay:3600,aca:2800},
+    big:{desc:'Hospital stay – 7 days',charge:41660.41,disc:18747.18,days:7,er:1,amb:0,acc:0,dx:''},
+    reg:{desc:'Outpatient knee surgery',type:'osurg',count:1,charge:6000},
     intake:{who:{app:true,spouse:false,kids:false},phone:'',email:'',tobaccoP:false,tobaccoS:false,maternityP:false,maternityS:false,maternity:false,dv:false,famcancerP:false,famcancerS:false,famcancer:false,famheartP:false,famheartS:false,famheart:false,mentalP:false,mentalS:false,mental:false,surg2yrP:false,surg2yrS:false,surg2yr:false,majorcond:false,majorcondNote:'',diabetic:false,diabeticNote:'',health:'',income:0,pincome:0,sincome:0,hhManual:false,retage:'',savings:0,invest:0,invprot:false,invsra:false,invnote:'',docs1:'',docs2:'',docs3:'',keepaca:'',keepafc:'',docnote:'',medList:[],budget:0,priority:'coverage',notes:'',carrier:'',plan:'',pheight:'',pweight:'',sheight:'',sweight:'',psex:'',ssex:'',kidsNote:'',routeNote:'',docsNote:'',whyShop:'',effDate:''},
     recommended:'best',
     include:{good:true,better:true,best:true},   // agent toggle — which tiers reach the client view & printout
@@ -2723,8 +2782,8 @@ function fill(){
   $('p_lb').value=pk.lb;$('p_rxben').value=pk.rxBenefit||'';$('p_lb_carrier').value=pk.lbCarrier||'';$('p_lb_cov').value=pk.lbCov||'';
   $('p_pension').value=(+S.pension.monthly)?fmtMoneyStr(String(S.pension.monthly)):'';$('p_pnote').value=S.pension.note;
   ;['cv10','cv20','cv30','leg1','leg25'].forEach(function(k){ $('pp_'+k).value=(+S.pension[k])?fmtMoneyStr(String(S.pension[k])):''; });
-  $('b_desc').value=S.big.desc;$('b_charge').value=S.big.charge;$('b_disc').value=S.big.disc;$('b_days').value=S.big.days;$('b_daily').value=S.big.daily;$('b_adm').value=S.big.adm;$('b_his').value=S.big.his;$('b_other').value=S.big.other;
-  $('r_desc').value=S.reg.desc;$('r_charge').value=S.reg.charge;$('r_pay').value=S.reg.pay;$('r_aca').value=S.reg.aca;
+  $('b_desc').value=S.big.desc;$('b_charge').value=S.big.charge;$('b_disc').value=S.big.disc;$('b_days').value=S.big.days;$('b_er').checked=!!S.big.er;$('b_amb').checked=!!S.big.amb;$('b_acc').checked=!!S.big.acc;$('b_dx').value=S.big.dx||'';
+  $('r_desc').value=S.reg.desc;$('r_charge').value=S.reg.charge;$('r_type').value=S.reg.type||'visit';$('r_count').value=S.reg.count||1;
   $('tl_good').textContent=S.tabLabels.good;$('tl_better').textContent=S.tabLabels.better;$('tl_best').textContent=S.tabLabels.best;
   document.querySelectorAll('#tabs button').forEach(function(b){b.classList.toggle('on',b.dataset.tab===S.activeTab);b.classList.toggle('rec',b.dataset.tab===S.recommended);});
   S.include=S.include||{good:true,better:true,best:true};
@@ -2738,8 +2797,8 @@ function read(){
   S.aca={subsidy:+S.aca.subsidy||0,prem:+$('a_prem').value||0,ded:+$('a_ded').value||0,oop:+$('a_oop').value||0,med:+$('a_med').value||0,visits:+$('a_visits').value||0,copay:+$('a_copay').value||0,fullded:$('a_fullded').checked};
   var pk=S.packages[S.activeTab]; pk.lb=+$('p_lb').value||0; pk.rxBenefit=+$('p_rxben').value||0; pk.lbCarrier=$('p_lb_carrier').value; pk.lbCov=$('p_lb_cov').value;
   S.pension={monthly:moneyNum($('p_pension').value),note:$('p_pnote').value,cv10:moneyNum($('pp_cv10').value),cv20:moneyNum($('pp_cv20').value),cv30:moneyNum($('pp_cv30').value),leg1:moneyNum($('pp_leg1').value),leg25:moneyNum($('pp_leg25').value)};
-  S.big={desc:$('b_desc').value,charge:+$('b_charge').value||0,disc:+$('b_disc').value||0,days:+$('b_days').value||0,daily:+$('b_daily').value||0,adm:+$('b_adm').value||0,his:+$('b_his').value||0,other:+$('b_other').value||0};
-  S.reg={desc:$('r_desc').value,charge:+$('r_charge').value||0,pay:+$('r_pay').value||0,aca:+$('r_aca').value||0};
+  S.big={desc:$('b_desc').value,charge:+$('b_charge').value||0,disc:+$('b_disc').value||0,days:+$('b_days').value||0,er:$('b_er').checked?1:0,amb:$('b_amb').checked?1:0,acc:$('b_acc').checked?1:0,dx:$('b_dx').value};
+  S.reg={desc:$('r_desc').value,charge:+$('r_charge').value||0,type:$('r_type').value,count:+$('r_count').value||1};
 }
 
 var AFC_PARTNERS=[
@@ -2820,7 +2879,7 @@ function compute(){
 
   /* Presentation choices: the ACA column and the current plan each show only when ticked on
      the intake. Savings are measured against the ACA if shown, else against what they have now. */
-  var A=acaIn(), Cu=curIn(), showAca=A.show!==false, showCur=!!Cu.show&&((+Cu.prem>0)||(+Cu.ded>0)), ct=curTrue();
+  var A=acaIn(), Cu=curIn(), ank=(S.intake&&S.intake.anchor)||'aca', showAca=A.show!==false||(ank==='aca'&&+S.aca.prem>0), showCur=(!!Cu.show||ank==='cur')&&((+Cu.prem>0)||(+Cu.ded>0)), ct=curTrue();   /* the anchor always shows */
   document.body.classList.toggle('noaca',!showAca);
   var B=anchorBase();   // savings baseline = the anchor chosen in Budget & Notes
   document.body.classList.toggle('nobase',!B);
@@ -2883,29 +2942,9 @@ function compute(){
     }
   }
 
-  var b=S.big;
-  var bal=b.charge-b.disc;
-  var acaOwe=Math.min(bal,a.oop);
-  var afcPays=b.days*b.daily+b.adm;
-  var mTot=afcPays+b.his+b.other;
-  var netGain=mTot-bal;
-  $('o_b_bal').textContent=fmt2(bal);
-  $('o_b_cash').textContent=fmt2(mTot);
-  $('o_b_aca').textContent=fmt2(acaOwe);
-  $('o_b_net').textContent=fmt2(netGain);
-  $('o_big_desc_h').textContent=b.desc;
-  var bigBottom=aYr+acaOwe+netGain;
-  $('o_b_bottom').textContent=fmt(bigBottom);
-  $('o_b_cap').textContent='= '+fmt(aYr)+' premium savings  +  '+fmt(acaOwe)+" you don't pay  +  "+fmt(netGain)+' cash to you';
-
-  var r=S.reg;
-  var rNet=r.pay-r.charge;
-  $('o_r_aca').textContent=fmt2(r.aca);
-  $('o_r_net').textContent=fmt2(rNet);
-  $('o_reg_desc_h').textContent=r.desc;
-  var regBottom=aYr+r.aca+rNet;
-  $('o_r_bottom').textContent=fmt(regBottom);
-  $('o_r_cap').textContent='= '+fmt(aYr)+' premium savings  +  '+fmt(r.aca)+" you don't pay  +  "+fmt(rNet)+' cash to you';
+  renderEvents();
+  renderTfraHint();
+  if(document.body.classList.contains('client')) buildPrintout();   // Client View is the presentation
 
   refreshClientDisp();
   applyClientZeroHide();
@@ -3007,7 +3046,7 @@ function buildPrintout(){
       +'</div>';
 
   /* ---- what they have now, and the ACA — each only when the agent chose to show it ---- */
-  var A=acaIn(), Cu=curIn(), showAca=A.show!==false, showCur=!!Cu.show&&((+Cu.prem>0)||(+Cu.ded>0)), ct=curTrue();
+  var A=acaIn(), Cu=curIn(), ank=(S.intake&&S.intake.anchor)||'aca', showAca=A.show!==false||(ank==='aca'&&+S.aca.prem>0), showCur=(!!Cu.show||ank==='cur')&&((+Cu.prem>0)||(+Cu.ded>0)), ct=curTrue();   /* the anchor always shows */
   var li=function(lab,sub,amt,cls){ return '<div class="li'+(cls?' '+cls:'')+'"><div class="lab">'+lab+(sub?'<small>'+sub+'</small>':'')+'</div><div class="amt">'+amt+'</div></div>'; };
   if(showCur){
     html+='<div class="po-acabox"><div class="t">What you have now<small>'+esc([S.intake.carrier,S.intake.plan].filter(Boolean).join(' · ')||'Your current coverage')+'</small></div>'
@@ -3042,9 +3081,9 @@ function buildPrintout(){
       if(+x.pk.med>0) html+='<div class="po-li"><span>Medications (net)</span><span>'+fmt2(+x.pk.med)+'</span></div>';
       html+='<div class="po-sum"><span>Monthly</span><span>'+fmt2(x.mo)+'</span></div>';
       html+='<div class="po-sum" style="background:#fbf9f2"><span>Annual</span><span>'+fmt2(x.yr)+'</span></div>';
-      if(base){ var sMo=base.mo-x.mo, sYr=base.yr-x.yr;
-      html+='<div class="po-save">'+(sMo>=0?'You save vs '+base.your:'Costs more than '+base.your)
-          +'<br><b>'+fmt2(Math.abs(sMo))+'/mo · '+fmt2(Math.abs(sYr))+'/yr</b></div>'; }
+      if(base){ var sv=anchorSavings(base,x.mo), vs=base.k==='aca'?'your marketplace plan':'your current plan';
+        var ln=function(lab,v){ return '<div class="ln"><span>'+lab+'</span><b class="'+(v>=0?'up':'dn')+'">'+(v>=0?'saves ':'costs ')+fmt2(Math.abs(v))+'/mo'+(v>=0?'':' more')+'</b></div>'; };
+        html+='<div class="po-save"><div class="vs">Compared with '+vs+'</div>'+ln('Premium',sv.actual)+ln('True cost',sv.tru)+'<div class="yr">'+(sv.tru>=0?'That’s '+fmt2(sv.tru*12)+' a year':'That’s '+fmt2(-sv.tru*12)+' a year more')+'</div></div>'; }
       html+='</div>';
     });
     html+='</div>';
@@ -3056,10 +3095,7 @@ function buildPrintout(){
   var bp=base?base.premOnly:0, aMo=base?base.prem-pMo:0, aYr=aMo*12;
   var tMo=base?base.mo-pMo:0, tYr=base?base.yr-pYr:0;
 
-  if(base) html+='<div class="po-navy"><div class="cap">Your savings vs '+base.lab+'<small>Based on your '+atLab+' package</small></div>'
-      +'<div class="g"><div class="h l">&nbsp;</div><div class="h">Monthly</div><div class="h">Annual</div>'
-      +'<div class="c l">ACTUAL — premium vs premium</div><div class="c a">'+saves(aMo,'/mo')+'</div><div class="c a">'+saves(aYr,'/yr')+'</div>'
-      +'<div class="c l tt">TRUE COST — with '+(base&&base.k==='aca'?'ACA ':'')+'deductible included</div><div class="c t">'+saves(tMo,'/mo')+'</div><div class="c t">'+saves(tYr,'/yr')+'</div></div></div>';
+  /* The navy 'Your savings vs' box is gone - each plan carries its own savings line. */
 
   /* ---- additional programs (pension / TFRA) — omitted when the agent unchecks "Show on quote" ---- */
   var pen=+S.pension.monthly||0;
@@ -3109,27 +3145,10 @@ function buildPrintout(){
   }
   } /* end Show-on-quote gate for TFRA */
 
-  /* ---- event illustrations ---- */
-  var showEvents=false;
-  var b=S.big;
-  if((+b.charge||0)>0){
-    showEvents=true;
-    var bal=b.charge-b.disc, acaOwe=Math.min(bal,a.oop), mTot=(b.days*b.daily+b.adm)+b.his+b.other, netGain=mTot-bal;
-    var bigBottom=aYr+acaOwe+netGain;
-    html+='<div class="po-event"><div class="band">If a major event happens'+(b.desc?' <span class="d">'+esc(b.desc)+'</span>':'')+'</div>'
-        +'<div class="pair"><div class="mp"><div class="cap">Money you don\'t pay</div><div class="big">'+fmt2(acaOwe)+'</div><div class="sub">ACA out-of-pocket the Package covers instead</div></div>'
-        +'<div class="mp"><div class="cap">Money paid directly to you</div><div class="big">'+fmt2(netGain)+'</div><div class="sub">Cash beyond the bill, from Manhattan</div></div></div>'
-        +'<div class="bottom">BOTTOM LINE if a major event happens this year: <b>'+fmt(bigBottom)+'</b></div></div>';
-  }
-  var r=S.reg;
-  if((+r.charge||0)>0 || (+r.pay||0)>0){
-    showEvents=true;
-    var rNet=r.pay-r.charge, regBottom=aYr+r.aca+rNet;
-    html+='<div class="po-event"><div class="band">On an everyday event'+(r.desc?' <span class="d">'+esc(r.desc)+'</span>':'')+'</div>'
-        +'<div class="pair"><div class="mp"><div class="cap">Money you don\'t pay</div><div class="big">'+fmt2(r.aca)+'</div><div class="sub">What you would\'ve owed on ACA</div></div>'
-        +'<div class="mp"><div class="cap">Money paid directly to you</div><div class="big">'+fmt2(rNet)+'</div><div class="sub">Cash beyond the charge</div></div></div>'
-        +'<div class="bottom">BOTTOM LINE in a routine year: <b>'+fmt(regBottom)+'</b></div></div>';
-  }
+  /* ---- event illustrations: every package side by side against the anchor ---- */
+  var showEvents=false, evM=evTableHTML('major'), evE=evTableHTML('everyday');
+  if(evM){ showEvents=true; html+='<div class="po-event"><div class="band">If a major event happens'+(S.big.desc?' <span class="d">'+esc(S.big.desc)+'</span>':'')+'</div>'+evM+'</div>'; }
+  if(evE){ showEvents=true; html+='<div class="po-event"><div class="band">On an everyday event'+(S.reg.desc?' <span class="d">'+esc(S.reg.desc)+'</span>':'')+'</div>'+evE+'</div>'; }
   if(showEvents) html+='<div class="po-illus">The examples above are for illustrative purposes only, shown to demonstrate how the coverage responds. The actual event, length of stay, and benefits paid vary by person and policy.</div>';
 
   html+=renderAfcPartnersHTML(true);
@@ -3472,9 +3491,10 @@ function zipFillsState(){
 }
 function bindInputs(){
   ['c_pname','c_sname','c_agent','c_state','c_zip','c_page','c_sage','a_prem','a_ded','a_oop','a_med','a_visits','a_copay','p_lb','p_lb_carrier','p_lb_cov','p_rxben','p_pension','p_pnote','pp_cv10','pp_cv20','pp_cv30','pp_leg1','pp_leg25',
-   'b_desc','b_charge','b_disc','b_days','b_daily','b_adm','b_his','b_other','r_desc','r_charge','r_pay','r_aca']
+   'b_desc','b_charge','b_disc','b_days','r_desc','r_charge','r_count']
    .forEach(function(id){ $(id).addEventListener('input',compute); });
   $('a_fullded').addEventListener('change',compute);
+  ['b_er','b_amb','b_acc','b_dx','r_type'].forEach(function(id){ $(id).addEventListener('change',compute); });
   ['in_keepaca','in_keepafc'].forEach(function(id){ $(id).addEventListener('change',function(){ readIntake(); autosave(); }); });
   document.querySelectorAll('#tabs button').forEach(function(b){ b.onclick=function(){ read(); S.activeTab=b.dataset.tab; fill(); compute(); }; });
   ['good','better','best'].forEach(function(t){ var c=$('inc_'+t); if(c) c.onchange=function(){ S.include=S.include||{}; S.include[t]=c.checked; updateTabVisibility(); compute(); autosave(); }; });
@@ -3718,6 +3738,61 @@ function benRefresh(){ if(!BEN_VIEW.length) return; var views=BEN_VIEW.slice();
   Promise.all(views.map(function(v){ return v.missing?Promise.resolve(v):benLoad(v.f).then(function(d){ return benView(d,v.f,v.t,v.k); }); }))
     .then(function(vs){ BEN_VIEW=vs; benRender(); },function(){}); }
 document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&BEN_VIEW.length){ BEN_VIEW=[]; benRender(); } });
+/* ===== Event gut checks per package (screen + print) ===== */
+var EV_TIERS=[['good','Essential'],['better','Complete'],['best','Comprehensive']];
+function evIncluded(){ var inc=S.include||{}; return EV_TIERS.filter(function(T){ return inc[T[0]]!==false&&tierTotals(T[0]).mo>0; }); }
+function evFlatRows(m){ return m?m.key.concat([].concat.apply([],m.sections.map(function(s){ return s.rows; }))):[]; }
+function evHas(t,k){ var pk=S.packages[t]||{}; return (pk.products||[]).some(function(p){ return p.k===k&&(+p.monthly||0)>0; }); }
+/* Everything the pure engine needs for one package. */
+function evTierPack(t){ var c=effCfg(t), st=(S.client.state||'').toUpperCase(), o={unknown:''};
+  if(evHas(t,'afc')&&BEN_DATA.afc){ var m=benModel(BEN_DATA.afc,st,c.afc,c); if(m) o.afc=afcEventNums(evFlatRows(m)); else o.unknown='No Affordable Choice brochure for '+st; }
+  if(evHas(t,'his')&&c.his) o.his={ben:+c.his.ben||0,amb:+c.his.amb||0}, o.hisOutp=+c.his.outp||0;
+  if(evHas(t,'gap')&&c.gap) o.gap={daily:+c.gap.daily||0,adm:+c.gap.adm||0,ea:+c.gap.ea||0}, o.gapOutp=+c.gap.outp||0;
+  if(evHas(t,'acc')) o.accU=+c.acc||1;
+  if(evHas(t,'chas')&&c.chas) o.chas={cancer:+c.chas.cancer||0,hs:+c.chas.hs||0};
+  if(evHas(t,'base')&&c.base==='triad'&&BEN_DATA.triad){ var tm=benModel(BEN_DATA.triad,st,'Triad Cigna '+(c.triadPlan||'3500'),c), rows=evFlatRows(tm), fam=acaPeople().length>1;
+    var get=function(re){ var r=rows.filter(function(x){ return re.test(x.label); })[0]; return r?r.value:''; };
+    var oo=evMoneyAll(get(/^Out-of-pocket maximum/i)); o.major={oop:(fam&&oo[1])?oo[1]:(oo[0]||0),visit:evMoney(get(/^Primary care visit/i)),urgent:evMoney(get(/^Urgent care/i))}; }
+  if(evHas(t,'base')&&c.base==='lifex') o.unknown='LifeX benefit summary not on file';
+  return o; }
+function evAnchor(){ var B=anchorBase(); if(!B) return null;
+  if(B.k==='aca') return {lab:'Your ACA plan',oop:+S.aca.oop||0,visit:+S.aca.copay||0};
+  var C=curIn(); return {lab:'Your current plan',oop:+C.oop>0?+C.oop:(+C.ded||0),visit:+C.copay||0,note:+C.oop>0?'':'out-of-pocket max not entered — using their deductible'}; }
+function evMoneyTxt(v){ return (v<0?'+':'')+fmt2(Math.abs(v)); }
+function evTableHTML(kind){ var tiers=evIncluded(); if(!tiers.length) return '';
+  var A=evAnchor(), B=anchorBase(), res=[], bill, head;
+  if(kind==='major'){ var b=S.big; bill=Math.max(0,(+b.charge||0)-(+b.disc||0)); if(!(bill>0)) return '';
+    head=fmt2(bill)+' after the network discount · '+(+b.days||0)+' day'+(+b.days===1?'':'s')+' in the hospital'+(b.er?' · through the ER':'')+(b.amb?' · ambulance':'')+(b.acc?' · accident':'')+(b.dx?' · '+b.dx+' diagnosis':'');
+    tiers.forEach(function(T){ var o=evTierPack(T[0]); res.push({T:T,o:o,r:evMajor({bal:bill,days:b.days,er:b.er,amb:b.amb,acc:b.acc,dx:b.dx,afc:o.afc,his:o.his,gap:o.gap,accU:o.accU,chas:o.chas,major:o.major})}); }); }
+  else { var r=S.reg, cnt=Math.max(1,+r.count||1); bill=(+r.charge||0)*cnt; if(!(bill>0)) return '';
+    head=({visit:'Doctor visit',urgent:'Urgent care',er:'ER visit',osurg:'Outpatient surgery',imaging:'MRI / CT scan'}[r.type]||'Visit')+' · '+cnt+'× at '+fmt2(+r.charge||0)+' = '+fmt2(bill);
+    tiers.forEach(function(T){ var o=evTierPack(T[0]); res.push({T:T,o:o,r:evEveryday({type:r.type,charge:r.charge,count:cnt,afc:o.afc,hisOutp:o.hisOutp,gapOutp:o.gapOutp,major:o.major})}); }); }
+  var aOwe=A?evAnchorOwe(kind,bill,A,S.reg.type,S.reg.count):null;
+  var cols=(A?1:0)+res.length, h='<div class="evhead">'+head+'</div><div class="evtab" style="grid-template-columns:minmax(120px,1.1fr) repeat('+cols+',1fr)">';
+  h+='<div class="c l"></div>'+(A?'<div class="c h anc">'+A.lab+'</div>':'')+res.map(function(x){ return '<div class="c h">'+x.T[1]+'</div>'; }).join('');
+  h+='<div class="c l">Your plan pays</div>'+(A?'<div class="c anc">'+fmt2(Math.max(0,bill-aOwe))+'<small>toward the bill</small></div>':'')
+    +res.map(function(x){ return '<div class="c">'+(x.o.unknown&&!x.r.pays?'—':fmt2(x.r.pays+(x.o.major?Math.max(0,bill-x.r.owe0):0)))+'<small>'+(x.o.major?'plan + cash benefits':'paid to you')+'</small></div>'; }).join('');
+  h+='<div class="c l">You pay <small>(or receive)</small></div>'+(A?'<div class="c anc big">'+fmt2(aOwe)+(A.note?'<small>'+A.note+'</small>':'')+'</div>':'')
+    +res.map(function(x){ var n=x.r.net; return '<div class="c big '+(n<=0?'up':'dn')+'">'+(x.o.unknown&&!x.r.pays?'<small>'+x.o.unknown+'</small>':(n<=0?'You receive '+fmt2(-n):'You pay '+fmt2(n)))+'</div>'; }).join('');
+  if(A&&B){ h+='<div class="c l">This year <small>premium savings + this event</small></div><div class="c anc">—</div>'
+    +res.map(function(x){ var sv=anchorSavings(B,tierTotals(x.T[0]).mo)||{actual:0}, v=sv.actual*12+(aOwe-x.r.net); return '<div class="c '+(v>=0?'up':'dn')+'">'+(v>=0?'Ahead ':'Behind ')+fmt(Math.abs(v))+'</div>'; }).join(''); }
+  h+='</div>';
+  var parts=res.filter(function(x){ return x.r.parts.length; }).map(function(x){ return '<b>'+x.T[1]+':</b> '+x.r.parts.map(function(p){ return p.lab+' '+fmt2(p.v); }).join(' · '); }).join('<br>');
+  if(parts) h+='<details class="evparts hidein-client"><summary>How each package pays</summary>'+parts+'<div>Surgery benefits on Affordable Choice are paid on the policy fee schedule and are not included here — the real payout is higher.</div></details>';
+  return h; }
+function renderEvents(){ var need=['afc','triad'].filter(function(f){ return !BEN_DATA[f]; });
+  if(need.length&&!renderEvents._loading){ renderEvents._loading=true; Promise.all(need.map(function(f){ return benLoad(f).catch(function(){}); })).then(function(){ renderEvents._loading=false; renderEvents(); if(document.body.classList.contains('client')) buildPrintout(); }); }
+  if($('evMajor')) $('evMajor').innerHTML=evTableHTML('major')||'<div class="note">Enter the billed charges to see what each package pays.</div>';
+  if($('evEveryday')) $('evEveryday').innerHTML=evTableHTML('everyday')||'<div class="note">Enter the charge to see what each package pays.</div>';
+  var bh=$('o_big_desc_h'); if(bh) bh.textContent=S.big.desc||''; var rh=$('o_reg_desc_h'); if(rh) rh.textContent=S.reg.desc||''; }
+/* TFRA: what each package frees up against the anchor, and a quick "use part of it". */
+function renderTfraHint(){ var el=$('tfraHint'); if(!el) return; var B=anchorBase();
+  if(!B){ el.innerHTML='No anchor chosen, so there are no savings to fund a TFRA from. Set one in Budget &amp; Notes.'; return; }
+  var rows=EV_TIERS.map(function(T){ var sv=anchorSavings(B,tierTotals(T[0]).mo); return {t:T[0],lab:T[1],room:sv?sv.tfra:0}; });
+  var rec=rows.filter(function(r){ return r.t===S.recommended; })[0]||rows[2];
+  el.innerHTML='Room for a TFRA against '+(B.k==='aca'?'the ACA bronze':'their current plan')+': '+rows.map(function(r){ return r.lab+' <b>'+fmt2(r.room)+'</b>/mo'; }).join(' · ')
+    +'.<br>Fund a portion, not all of it — leave them breathing room. '+(rec.room>0?[25,50,75].map(function(p){ return '<button type="button" class="tfrause" data-amt="'+(Math.round(rec.room*p)/100)+'">Use '+p+'% of '+rec.lab+' ('+fmt2(rec.room*p/100)+')</button>'; }).join(' '):'');
+  el.querySelectorAll('.tfrause').forEach(function(b){ b.onclick=function(){ var inp=$('p_pension'); inp.value=b.dataset.amt; inp.dispatchEvent(new Event('input')); compute(); autosave(); }; }); }
 function renderBuilder(){
   var host=$('sec_builder'); if(!host) return;
   var st=(S.client.state||'').toUpperCase(), age=ratingAge();
@@ -3742,7 +3817,8 @@ function renderBuilder(){
     var built=buildTierProducts(c,null,[]), byK={}; built.forEach(function(p){ byK[p.k]=p; });
     var byKpk={}; (pk.products||[]).forEach(function(p){ if(p.k) byKpk[p.k]=p; });
     var hdr=(S.lineup==='lx-mh-cg'||S.lineup==='custom')&&c.base&&c.base!=='afc'?[c.base==='lifex'?'Pivot down':'Pivot up',c.base==='lifex'?'LifeX':'Cigna']:(S.lineup==='lx-mh-cg'?['Lead','Manhattan']:[T[1],T[2]]);
-    html+='<div class="pbcol'+(S.recommended===t?' rec':'')+'" data-t="'+t+'"><div class="ph"><span class="tt">'+hdr[0]+'</span><b>'+hdr[1]+'</b><span style="flex:1"></span><button type="button" data-act="reset1" title="Put this package back to the recommendation" style="font:inherit;font-size:12px;font-weight:600;border:1px solid #e2ddd1;background:#fff;border-radius:7px;padding:4px 8px;cursor:pointer;color:var(--muted)">↺ Reset</button></div>'
+    var incT=(S.include||{})[t]!==false;
+    html+='<div class="pbcol'+(S.recommended===t?' rec':'')+(incT?'':' excl')+'" data-t="'+t+'"><label class="pbshow"><input type="checkbox" data-act="inc"'+(incT?' checked':'')+'> Show on quote</label><div class="ph"><span class="tt">'+hdr[0]+'</span><b>'+hdr[1]+'</b><span style="flex:1"></span><button type="button" data-act="reset1" title="Put this package back to the recommendation" style="font:inherit;font-size:12px;font-weight:600;border:1px solid #e2ddd1;background:#fff;border-radius:7px;padding:4px 8px;cursor:pointer;color:var(--muted)">↺ Reset</button></div>'
       +((S.lineup==='custom')?'':'<!--')+'<div style="padding:0 12px 4px"><select data-act="base" aria-label="Base plan" style="width:100%;font:inherit;font-size:13px;padding:6px 8px;border:1px solid #d6cdb4;border-radius:7px">'+pbOpts([['afc','Base: Manhattan Affordable Choice'],['lifex','Base: LifeX'],['triad','Base: Cigna (Triad) PPO']],c.base||'afc')+'</select></div>'+((S.lineup==='custom')?'':'-->');
     var sum=0, addable=[];
     PB_SLOTS.forEach(function(sl){
@@ -3807,6 +3883,7 @@ function renderBuilder(){
   benRefresh();
   host.querySelectorAll('.pbcol').forEach(function(col){
     var t=col.dataset.t;
+    col.querySelectorAll('[data-act="inc"]').forEach(function(x){ x.onchange=function(){ S.include=S.include||{}; S.include[t]=x.checked; var cl=$('inc_'+t); if(cl) cl.checked=x.checked; compute(); autosave(); }; });
     col.querySelectorAll('[data-act="tog"]').forEach(function(b){ b.onclick=function(){ var key=t+'|'+b.dataset.k; PB_OPEN[key]=!PB_OPEN[key]; renderBuilder(); }; });
     col.querySelectorAll('[data-act="rm"]').forEach(function(b){ b.onclick=function(){ var pk=S.packages[t]; pk.dropped=pk.dropped||[]; if(pk.dropped.indexOf(b.dataset.k)<0) pk.dropped.push(b.dataset.k); pbReprice(); }; });
     col.querySelectorAll('[data-act="rmx"]').forEach(function(b){ b.onclick=function(){ S.packages[t].products.splice(+b.dataset.i,1); pbReprice(); }; });

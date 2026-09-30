@@ -136,6 +136,13 @@ if (mode === 'engine') {
   ok(html.includes("'No savings figures — the quote just compares the Good, Better and Best packages with each other.'"), 'no-anchor explanation present');
   ok(html.includes('class="pbsave"') && html.includes('Room for a TFRA'), 'builder savings row per column');
   ok(html.includes("S.intake.anchor=$('in_anchor').value||'aca'"), 'anchor defaults to ACA when unset');
+  ok(html.includes('data-act="inc"') && /S\.include\[t\]=x\.checked/.test(html), 'builder Show-on-quote tick wired to S.include');
+  ok(!html.includes('<div class="po-navy">'), 'printout no longer builds the navy savings box');
+  ok(html.includes("'your marketplace plan':'your current plan'"), 'per-plan savings name the anchor');
+  ok(html.includes('id="tfraHint"') && html.includes('Fund a portion, not all of it'), 'TFRA hint');
+  for (const id of ['b_er', 'b_amb', 'b_acc', 'b_dx', 'r_type', 'r_count', 'evMajor', 'evEveryday']) ok(html.includes('id="' + id + '"'), 'event input/output ' + id);
+  for (const gone of ['id="b_daily"', 'id="b_adm"', 'id="b_his"', 'id="b_other"', 'id="r_pay"', 'id="r_aca"']) ok(!html.includes(gone), 'hand-typed field removed: ' + gone);
+  ok(/body\.client #printout\{display:block/.test(html), 'Client View shows the presentation');
   if (!fails) console.log('intake structure checks passed');
 } else if (mode === 'benefits') {
   const a = html.indexOf('/* ACA-ENGINE:BEGIN */'), b = html.indexOf('/* ACA-ENGINE:END */');
@@ -164,7 +171,43 @@ if (mode === 'engine') {
   // Positive control on the real page: every builder row that should have an ⓘ maps to a data file name.
   ok(/BEN_FILE=\{afc:'afc',sdr:'sdr',his:'his',acc:'acc',gap:'gap',chas:'chas',hhc:'hhc',dvh:'dvh',lbp:'lb',lbs:'lb'\}/.test(html), 'row -> data file map covers every product row');
   if (!fails) console.log('benefit drawer checks passed');
+} else if (mode === 'events') {
+  const a = html.indexOf('/* ACA-ENGINE:BEGIN */'), b = html.indexOf('/* ACA-ENGINE:END */');
+  const ctx = {}; vm.createContext(ctx); vm.runInContext(html.slice(a, b), ctx);
+  // Real TX Classic Plus rows (AFC7010-BR_0424), read from the benefit data, not typed here.
+  const afcD = JSON.parse(fs.readFileSync(new URL('../tool/benefits/afc.json', import.meta.url), 'utf8'));
+  const m = ctx.benModel(afcD, 'TX', 'ClassicPlus', {});
+  const rows = m.key.concat(...m.sections.map(s => s.rows));
+  const n = ctx.afcEventNums(rows);
+  const find = re => ctx.evMoney((rows.find(r => re.test(r.label)) || {}).value);
+  ok(n.daily === find(/^Inpatient Hospital Confinement \(per/) && n.daily > 0, 'AFC daily parsed from the TX brochure (' + n.daily + ')');
+  ok(n.adm === find(/^Hospital Admission/) && n.er === find(/^Emergency Room/) && n.visit > 0 && n.visitN > 0, 'AFC admission / ER / visit parsed');
+  // Major: 3 days through the ER, $20,000 after discount.
+  let r = ctx.evMajor({ bal: 20000, days: 3, er: 1, afc: n, his: { ben: 5000, amb: 1 }, gap: { daily: 100, adm: 2500, ea: 1 } });
+  const want = n.daily * 3 + n.adm + n.er + 5000 + 2500 + 100 * 3;
+  ok(Math.abs(r.pays - want) < 0.01 && Math.abs(r.net - (20000 - want)) < 0.01, 'major: AFC days+admission+ER, HIS once, Gap admission+days (' + r.pays + ' vs ' + want + ')');
+  r = ctx.evMajor({ bal: 20000, days: 14, gap: { daily: 200, adm: 5000, ea: 0 } });
+  ok(r.pays === 5000 + 200 * 10, 'Gap daily capped at 10 days');
+  r = ctx.evMajor({ bal: 20000, days: 2, accU: 2, acc: 0 });
+  ok(r.pays === 0, 'accident plan pays nothing when the event is not an accident');
+  r = ctx.evMajor({ bal: 20000, days: 2, accU: 2, acc: 1 });
+  ok(r.pays === 4000 + 300 * 2, 'accident: medical up to $2,000/unit + $150/unit/day');
+  r = ctx.evMajor({ bal: 20000, days: 0, chas: { cancer: 20000, hs: 10000 }, dx: 'stroke' });
+  ok(r.pays === 10000, 'CHAS pays the heart & stroke amount for a stroke');
+  r = ctx.evMajor({ bal: 20000, days: 3, major: { oop: 7350 }, his: { ben: 4000, amb: 0 } });
+  ok(r.owe0 === 7350 && r.net === 3350, 'Cigna base: client share capped at its OOP, HI Select offsets it');
+  // Everyday
+  r = ctx.evEveryday({ type: 'visit', charge: 200, count: 12, afc: n });
+  ok(r.pays === n.visit * Math.min(12, n.visitN), 'doctor visits limited to the plan\'s days per year');
+  r = ctx.evEveryday({ type: 'osurg', charge: 6000, count: 1, afc: n, hisOutp: 1000, gapOutp: 2000 });
+  ok(r.pays === Math.min(n.osurg, n.outLimit || Infinity) + 1000 + 2000, 'outpatient surgery: AFC ambulatory + HIS outpatient + Gap outpatient');
+  r = ctx.evEveryday({ type: 'visit', charge: 200, count: 3, major: { visit: 45 } });
+  ok(r.owe0 === 135, 'Cigna visit copays');
+  // Anchor
+  ok(ctx.evAnchorOwe('major', 20000, { oop: 9950 }) === 9950, 'ACA: capped at its out-of-pocket max');
+  ok(ctx.evAnchorOwe('everyday', 600, { oop: 9950, visit: 50 }, 'visit', 3) === 150 && ctx.evAnchorOwe('everyday', 6000, { oop: 9950, visit: 50 }, 'osurg', 1) === 6000, 'ACA everyday: visit copay vs full charge before the deductible');
+  if (!fails) console.log('event checks passed');
 } else {
-  console.log('usage: node tools/aca-check.mjs engine|structure|benefits'); process.exit(2);
+  console.log('usage: node tools/aca-check.mjs engine|structure|benefits|events'); process.exit(2);
 }
 process.exit(fails ? 1 : 0);
