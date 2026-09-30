@@ -241,18 +241,29 @@ if (mode === 'engine') {
   const maxed = st => pkg(st, { afcLevel: 'ElitePlus', afc: afc(st, 'ElitePlus'), his: { ben: 10000, amb: 1 }, hisOutp: 1500, gap: { daily: 200, adm: 6350, ea: 1 }, gapOutp: 3000, accU: 2, chas: { cancer: 20000, hs: 10000 }, dvhMax: '5000', hhc: st !== 'FL' ? 'Deluxe' : null, lb: two(50000) });
   const W = o => ctx.popWeightsFrom(Object.assign({ age: 48, family: true }, o));
   const sc = (x, wo) => ctx.popRawFrom(ctx.popStrengthsFrom(x), W(wo || {}));
-  const E = sc(essential('TX')), M = sc(maxed('TX')), MF = sc(maxed('FL'));
-  console.log('   essential ' + E + ' · maxed TX ' + M + ' · maxed FL ' + MF);
-  ok(M >= 94 && M <= 99, 'maxed Manhattan (all but SDR) scores 94-99 (' + M + ')');
-  ok(MF >= 94, 'FL maxed not marked down for Home Health Care it cannot buy (' + MF + ')');
+  const top = st => pkg(st, { afcLevel: 'ElitePlus', afc: afc(st, 'ElitePlus'), his: { ben: 10000, amb: 1 }, hisOutp: 1500, gap: { daily: 200, adm: 6350, ea: 1 }, gapOutp: 3000, accU: 2, chas: { cancer: 75000, hs: 75000 }, sdr: st === 'FL', sdrCfg: st === 'FL' ? { max: '500000', ded: '25000' } : null, dvhMax: '5000', hhc: st !== 'FL' ? 'Deluxe' : null, lb: two(50000), avail: { sdr: st === 'FL', hhc: st !== 'FL', dvh: true } });
+  const comp = st => pkg(st, { afcLevel: 'ElitePlus', afc: afc(st, 'ElitePlus'), his: { ben: 10000, amb: 1 }, hisOutp: 1000, gap: { daily: 200, adm: 5000, ea: 1 }, gapOutp: 1000, accU: 2, chas: { cancer: 20000, hs: 10000 }, lb: two(50000), avail: { sdr: false, hhc: true, dvh: true } });
+  const ex = (x, wo) => ctx.popExact(ctx.popStrengthsFrom(x), W(wo || {}));
+  const T = sc(top('TX')), TF = sc(top('FL')), C = sc(comp('TX')), E = sc(essential('TX')), M = sc(maxed('TX')), MF = sc(maxed('FL'));
+  console.log('   essential ' + E + ' · comprehensive default ' + C + ' · top build TX ' + T + ' / FL ' + TF);
+  ok(T === 100 && TF === 100, 'every product at its top level = 100 (TX ' + T + ', FL ' + TF + ')');
+  ok(C >= 88 && C <= 94, 'Comprehensive default ~90 before dental (' + C + ')');
+  const CD = sc(Object.assign(comp('TX'), { dvhMax: '3000' }));
+  ok(CD - C >= 5, 'adding dental is worth 5+ points (' + C + ' -> ' + CD + ')');
+  ok(M < 100, 'anything short of the top build stays under 100 (' + M + ')');
+  const c0 = ex(comp('TX')), c1 = ex(Object.assign(comp('TX'), { hisOutp: 1500 })), c2 = ex(Object.assign(comp('TX'), { hisOutp: 1500, gapOutp: 3000 })), c3 = ex(Object.assign(comp('TX'), { hisOutp: 1500, gapOutp: 3000, gap: { daily: 200, adm: 6350, ea: 1 } }));
+  ok(c1 > c0 && c2 > c1 && c3 > c2, 'HIS outpatient 1,500, Gap outpatient 3,000, admission 6,350 each raise it (' + [c0, c1, c2, c3].map(v => v.toFixed(2)).join(' -> ') + ')');
+  ok(MF >= 94, 'FL near-top build not marked down for Home Health Care it cannot buy (' + MF + ')');
   ok(E >= 44 && E <= 52, 'Essential default scores 44-52 (' + E + ')');
-  const up = (o, lab) => { const s1 = sc(Object.assign(essential('TX'), o)); ok(s1 > E, lab + ' raises Essential (' + E + ' -> ' + s1 + ')'); };
+  const eE = ex(essential('TX'));
+  const up = (o, lab) => { const s1 = ex(Object.assign(essential('TX'), o)); ok(s1 > eE, lab + ' raises Essential (' + eE.toFixed(2) + ' -> ' + s1.toFixed(2) + ')'); };
   up({ lb: two(25000) }, 'living benefits'); up({ gap: { daily: 200, adm: 5000, ea: 0 } }, 'Out-of-Pocket up a notch'); up({ gapOutp: 1000 }, 'Out-of-Pocket outpatient'); up({ accU: 2 }, 'accident 2 units'); up({ hisOutp: 1000 }, 'HI Select outpatient');
   ok(sc(Object.assign(maxed('TX'), { lb: two(25000) })) < M, '$50K living benefits beat $25K');
   const noLB = sc(Object.assign(maxed('TX'), { lb: { adults: 2, faces: [] } }));
   ok(M - noLB >= 8, 'dropping living benefits costs >= 8 (' + (M - noLB) + ')');
-  const mFH = sc(maxed('TX'), { famheart: true }), noLBfh = sc(Object.assign(maxed('TX'), { lb: { adults: 2, faces: [] } }), { famheart: true });
-  ok(mFH - noLBfh > M - noLB, 'dropping LB costs more with family heart history');
+  const mFH = sc(maxed('TX'), { famheart: true });
+  const dLB = ex(maxed('TX')) - ex(Object.assign(maxed('TX'), { lb: { adults: 2, faces: [] } })), dLBfh = ex(maxed('TX'), { famheart: true }) - ex(Object.assign(maxed('TX'), { lb: { adults: 2, faces: [] } }), { famheart: true });
+  ok(dLBfh > dLB, 'dropping LB costs more with family heart history (' + dLB.toFixed(1) + ' vs ' + dLBfh.toFixed(1) + ')');
   const noH = sc(Object.assign(maxed('TX'), { chas: { cancer: 20000, hs: 0 } })), noHfh = sc(Object.assign(maxed('TX'), { chas: { cancer: 20000, hs: 0 } }), { famheart: true });
   ok(M - noH >= 3 && (mFH - noHfh) > (M - noH) + 3, 'heart & stroke gap: problematic, really problematic with history (' + (M - noH) + ' vs ' + (mFH - noHfh) + ')');
   const withSdr = sc(Object.assign(maxed('TX'), { sdr: true })), mFC = sc(maxed('TX'), { famcancer: true }), withSdrFC = sc(Object.assign(maxed('TX'), { sdr: true }), { famcancer: true });
@@ -262,7 +273,7 @@ if (mode === 'engine') {
   const cig = sc(cigBase, { major: true }), cigFull = sc(Object.assign({}, cigBase, { hisOutp: 1500, dvhMax: '3000' }), { major: true });
   console.log('   cigna + HIS + LB + CHAS ' + cig + ' · fully built ' + cigFull);
   ok(cig >= 84, 'Cigna + HI Select + LB + CHAS is strong (' + cig + ')');
-  ok(cigFull >= 92 && cigFull > cig, 'fully built Cigna (outpatient rider + dental) reaches the 90s (' + cigFull + ')');
+  ok(cigFull >= 88 && cigFull > cig, 'Cigna with outpatient rider + dental scores high (' + cigFull + ')');
   for (const k of ['his', 'gap', 'accU', 'chas', 'dvhMax', 'lb', 'hhc']) { const x = maxed('TX'); delete x[k]; ok(sc(x) <= M, 'removing ' + k + ' never raises the score'); }
   if (!fails) console.log('pop score checks passed');
 } else {
