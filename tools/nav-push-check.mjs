@@ -113,7 +113,7 @@ try {
     hosp_stay: ['^intake\\.surg2yrP=true'], stay_what: ['notes=.*Hospital stay'], recent_stay: ['notes=.*last 5 yrs'],
     sp_hosp_stay: ['^intake\\.surg2yrS=true'], sp_stay_what: ['notes=.*Spouse hospital stay'],
     appt_date: ['notes=.*PRESENTATION BOOKED'], appt_time: ['notes=.*PRESENTATION BOOKED'], appt_who: ['notes=.*PRESENTATION BOOKED'],
-    want_dental: ['^intake\\.dv=true'], want_vision: ['^intake\\.dv=true'], docs: ['^intake\\.keepaca=yes'],
+    want_dental: ['^intake\\.dv=true'], want_vision: ['^intake\\.dv=true', '^intake\\.wantVis=true'], want_hearing: ['^intake\\.wantHear=true'], docs: ['^intake\\.keepaca=yes'],
     married: ['^intake\\.who\\.spouse=true'], kids: ['^intake\\.who\\.kids=true', '^intake\\.kids\\.0\\.n='],
   };
   const NOT = { recent_stay: ['^intake\\.surg2yrP=true'] };

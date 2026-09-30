@@ -1402,11 +1402,20 @@ function pDVH(R,age,hh,cfg,st){
   /* A state never borrows another table: no rates of its own means no price, with a note that says why. */
   if(st&&!pg) return {price:null,note:PR?notLoaded('dvh','DVH Select',st):'DVH rates are still loading'};
   if(pg){ var v=prVal(pg.plans,'$'+cfg.max+' Benefit - $'+cfg.ded+' Deductible | $'+cfg.ded+' Deductible',hh,age);
-    return v==null?{price:null,note:'DVH Select level not available at age '+age+' in '+st}:{price:v,note:''}; }
+    if(v==null) return {price:null,note:'DVH Select level not available at age '+age+' in '+st};
+    /* Vision and Hearing are separate riders on the carrier's rate sheet - priced only when switched on. */
+    var rd=dvhRiders(cfg), rv=rd.vis?prVal(pg.riders,'Vision Rider | Lenses/Frames $200',hh,age):0, rh=rd.hear?prVal(pg.riders,'Hearing Rider | $1,000',hh,age):0;
+    if(rv==null||rh==null) return {price:null,note:(rv==null?'Vision':'Hearing')+' rider not available at age '+age+' in '+st};
+    return {price:Math.round((v+rv+rh)*100)/100,note:'',parts:{dental:v,vision:rv,hearing:rh}}; }
   var m=R.dvh.m[cfg.max]; if(!m||!m[cfg.ded]) return {price:null,note:'DVH level n/a'};
   var row=m[cfg.ded][bandDVH(age)]; if(!row||row[hh]==null) return {price:null,note:'DVH rate n/a'};
   return {price:row[hh],note:''};
 }
+/* Which DVH riders are on: the agent's tick wins; until the agent ticks, the client's own answers decide. */
+function dvhRiders(cfg){ var I=S.intake||{}; cfg=cfg||{}; return {vis:cfg.vis!=null?!!cfg.vis:!!I.wantVis, hear:cfg.hear!=null?!!cfg.hear:!!I.wantHear}; }
+/* What the dental line actually includes, in words: "dental", "dental & vision", "dental, vision & hearing". */
+function dvhPhrase(cfg){ var r=dvhRiders(cfg), x=['dental']; if(r.vis) x.push('vision'); if(r.hear) x.push('hearing');
+  return x.length<3?x.join(' & '):'dental, vision & hearing'; }
 function pGAP(R,st,age,hh,cfg){
   var pg=prGroup(158,st);
   if(pg){
@@ -2093,7 +2102,8 @@ function buildTierProducts(c,byKey,extras){
   add('his','Hospital Indemnity — HI Select $10K'+(c.his.outp?' + Outpatient $'+c.his.outp:''), pHIS(R,st,age,hh,c.his));
   add('acc','Accident Cash — 24-Hr Accident ('+c.acc+' Unit)', pACC(R,hh,c.acc));
   add('gap','Out-of-Pocket / Gap — $'+c.gap.daily+'/day · $'+c.gap.adm+' admission', pGAP(R,st,age,hh,c.gap));
-  add('dvh','Dental • Vision • Hearing — DVH Select $'+(+c.dvh.max/1000)+'K', pDVH(R,age,hh,c.dvh,st));
+  var dr=dvhRiders(c.dvh);
+  add('dvh','DVH Select — Dental $'+(+c.dvh.max/1000)+'K'+(dr.vis?' + Vision':'')+(dr.hear?' + Hearing':''), pDVH(R,age,hh,c.dvh,st));
   if(c.hhc) add('hhc','Home Health Care — HHC '+c.hhc, pHHC(R,st,age,c.hhc));
   if(c.lb){ lbPersons().forEach(function(pp){ var lc=c.lb[pp.k]; if(!lc||!lc.face) return;
     var r=pLB1(pp,lc); add('lb'+pp.k,'Living Benefits — '+pp.tag+' $'+(+lc.face/1000)+'K term life, 20-year ('+(r.carrier||'')+')', r); }); }
@@ -2263,7 +2273,7 @@ function popPositives(tier){
   if(s.life>=80) pos.push('Living benefits protect your family’s income');
   if(s.everyday>=80) pos.push('Everyday doctor visits &amp; Rx stay first-dollar');
   if(s.accident>=90) pos.push('Full accident cash coverage');
-  if(s.dvh>=90) pos.push('Dental, vision &amp; hearing covered');
+  if(s.dvh>=90) pos.push('Strong dental coverage');
   if(s.homecare>=100) pos.push('Home health care covered — matters most after 50');
   return pos;
 }
@@ -3012,6 +3022,8 @@ function applySuiteClient(c){
   if(h.wantHearing==="Yes") want.push("hearing");
   if(want.length) extra.push("Also wants: "+want.join(", "));
   if(h.wantDental==="Yes"||h.wantVision==="Yes") I.dv=true;
+  if(h.wantVision==="Yes") I.wantVis=true;
+  if(h.wantHearing==="Yes") I.wantHear=true;
   if(h.fhStroke==="Yes")   extra.push("Family history of stroke (applicant)");
   if(h.spFhStroke==="Yes") extra.push("Family history of stroke (spouse)");
   /* The real cost only when the script captured one that isn't simply they-pay + employer. */
@@ -3473,9 +3485,10 @@ function buildPrintout(){
           +'<div class="yr '+(sv.tru>=0?'up':'dn')+'">'+(sv.tru>=0?'Ahead '+fmt2(sv.tru*12)+' a year':'Behind '+fmt2(-sv.tru*12)+' a year')+'<small>on true cost</small></div></div>'; }
       var dp=dentalPrice(x.t), hasD=tierHasDental(x.t);
       html+='<div class="po-choose'+(isCh?' on':'')+'" data-choose="'+x.t+'" role="button" tabindex="0"><span class="box">'+(isCh?'☑':'☐')+'</span> This is my plan</div>';
-      if(isCh) html+='<div class="po-dental"><div class="q">Add dental, vision &amp; hearing?</div>'
+      var dph=dvhPhrase(effCfg(x.t).dvh).replace(/&/g,'&amp;');
+      if(isCh) html+='<div class="po-dental"><div class="q">Add '+dph+'?</div>'
         +'<button type="button" class="noprint'+(hasD?'':' on')+'" data-dental="0" data-t="'+x.t+'">Base plan</button><button type="button" class="noprint'+(hasD?' on':'')+'" data-dental="1" data-t="'+x.t+'">Base plan + dental'+(dp!=null&&!hasD?' (+'+fmt2(dp)+'/mo)':'')+'</button>'
-        +'<div class="printonly">'+(hasD?'Dental, vision &amp; hearing: included':'Dental, vision &amp; hearing: not included')+'</div></div>';
+        +'<div class="printonly">'+(hasD?dph.charAt(0).toUpperCase()+dph.slice(1)+': included':'Dental: not included')+'</div></div>';
       html+='</div>';
     });
     html+='</div>';
@@ -3881,7 +3894,8 @@ function renderEnroll(){
     +'<div class="en-tot"><span>Monthly</span><b>'+fmt2(total)+'</b></div></div>';
   order.forEach(function(g){ h+='<div class="en-grp"><div class="en-car">'+esc(g)+'</div>'
     +groups[g].map(function(p){ return '<div class="en-row"><span class="nm">'+esc(sname(p))+'</span><span class="lv">'+esc(pbSummary(p.k,c,p)||'')+'</span><b>'+fmt2(+p.monthly||0)+'</b></div>'; }).join('')+'</div>'; });
-  h+='<div class="en-dental">Dental, vision &amp; hearing: <b>'+(tierHasDental(t)?'included':'not included')+'</b></div></div>';
+  var eph=dvhPhrase(effCfg(t).dvh).replace(/&/g,'&amp;');
+  h+='<div class="en-dental">'+(tierHasDental(t)?eph.charAt(0).toUpperCase()+eph.slice(1)+': <b>included</b>':'Dental: <b>not included</b>')+'</div></div>';
   $('enrollSummary').innerHTML=h;
   $('lnkManhattan').href=MANHATTAN_URL;
   $('lnkMutual').href=MUTUAL_URL;
@@ -4152,7 +4166,7 @@ function pbSummary(k,c,live){
   if(k==='gap') return m(c.gap.daily)+'/day in hospital · '+m(c.gap.adm)+' admission'+(+c.gap.outp?' · '+m(c.gap.outp)+' outpatient':'')+(c.gap.ea?' · $250 ER':'');
   if(k==='chas') return [c.chas.cancer?'Cancer '+m(c.chas.cancer):'',c.chas.hs?'Heart attack & stroke '+m(c.chas.hs):''].filter(Boolean).join(' · ')+' lump sum';
   if(k==='hhc') return c.hhc+' plan';
-  if(k==='dvh'&&c.dvh) return m(c.dvh.max)+' annual max · '+m(c.dvh.ded||0)+' deductible · vision & hearing riders';
+  if(k==='dvh'&&c.dvh){ var rr=dvhRiders(c.dvh); return m(c.dvh.max)+' annual max · '+m(c.dvh.ded||0)+' deductible · '+(rr.vis||rr.hear?'+ '+[rr.vis?'vision':'',rr.hear?'hearing':''].filter(Boolean).join(' & ')+' rider'+(rr.vis&&rr.hear?'s':''):'dental only'); }
   if(k==='lbp'||k==='lbs'){ var lc=c.lb[k.slice(2)]; return m(lc.face)+' term life · 20-year · '+((live&&live.name||'').match(/\(([^)]+)\)$/)||[,'Mutual of Omaha'])[1]; }
   return '';
 }
@@ -4441,6 +4455,8 @@ function renderBuilder(){
   html+='<div class="pbaddon"><div style="min-width:220px"><div style="font-size:11px;font-weight:700;letter-spacing:.06em;color:#8a6a1f;text-transform:uppercase">Add-on</div><div style="font-weight:700">Dental · Vision · Hearing Select<button type="button" class="pbinfo" data-ben="dvh" data-bt="best" title="Benefits — Dental, Vision & Hearing" aria-label="Benefits for Dental, Vision and Hearing">i</button></div></div>'
     +'<select data-act="dvh" data-f="dvh.max">'+pbOpts(pbAmt(['1000','1500','3000','5000']),cB.dvh.max)+'</select>'
     +'<select data-act="dvh" data-f="dvh.ded">'+pbOpts([['0','$0 deductible'],['100','$100 deductible']],cB.dvh.ded)+'</select>'
+    +'<label style="display:flex;gap:5px;align-items:center;font-size:13px"><input type="checkbox" data-act="dvhr" data-f="vis"'+(dvhRiders(cB.dvh).vis?' checked':'')+'> Vision rider</label>'
+    +'<label style="display:flex;gap:5px;align-items:center;font-size:13px"><input type="checkbox" data-act="dvhr" data-f="hear"'+(dvhRiders(cB.dvh).hear?' checked':'')+'> Hearing rider</label>'
     +'<span style="flex:1"></span><b>'+(dv.price!=null?pbMoney(dv.price)+'/mo':'<span style="color:var(--muted);font-weight:500">'+(dv.note||'not available')+'</span>')+'</b>'
     +'<label style="display:flex;gap:6px;align-items:center;font-size:13px"><input type="checkbox" data-act="dvhinc"'+(inAll?' checked':'')+'> Add to all three packages</label></div>';
   host.innerHTML=html;
@@ -4476,6 +4492,7 @@ function renderBuilder(){
   var rl=host.querySelector('[data-act="reload"]'); if(rl) rl.onclick=function(){ ['good','better','best'].forEach(pbResetTier); pbReprice(); };
   host.querySelectorAll('[data-act="reset1"]').forEach(function(b){ b.onclick=function(){ pbResetTier(b.closest('.pbcol').dataset.t); pbReprice(); }; });
   host.querySelectorAll('[data-lineup]').forEach(function(b){ b.onclick=function(){ pbApplyLineup(b.dataset.lineup); }; });
+  host.querySelectorAll('[data-act="dvhr"]').forEach(function(el){ el.onchange=function(){ ['good','better','best'].forEach(function(t){ var c=effCfg(t); c.dvh=c.dvh||{max:'1500',ded:'0'}; c.dvh[el.dataset.f]=el.checked; }); pbReprice(); }; });
   host.querySelectorAll('[data-act="dvh"]').forEach(function(el){ el.onchange=function(){ ['good','better','best'].forEach(function(t){ pbSet(effCfg(t),el.dataset.f,el.value); }); pbReprice(); }; });
   var inc=host.querySelector('[data-act="dvhinc"]'); if(inc) inc.onchange=function(){ S.dvhChoice=inc.checked?'included':'addon'; ['good','better','best'].forEach(function(t){ var pk=S.packages[t]; pk.dropped=(pk.dropped||[]).filter(function(x){ return x!=='dvh'; }); if(!inc.checked) pk.dropped.push('dvh'); }); pbReprice(); };
 }
