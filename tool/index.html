@@ -339,6 +339,7 @@
   .popcol ul.sg li.sugg{display:grid;grid-template-columns:1fr auto;gap:0 8px;padding:6px 8px;margin-top:4px;border:1px solid #e7dcc1;border-radius:8px;cursor:pointer;background:#fdfaf2}
   .popcol ul.sg li.sugg:hover{border-color:#b0872f;background:#fff5dc}.popcol ul.sg li.sugg b{color:#2f7d4a;font-size:12px}.popcol ul.sg li.sugg i{grid-column:2;font-style:normal;color:var(--muted);font-size:11px;text-align:right}
   @media(max-width:860px){.pop3col{grid-template-columns:1fr}}
+  .pbna{font-size:11px;color:var(--muted);padding:4px 2px 0;text-decoration:none}
   .pbshow{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);padding:0 0 6px}
   .pbcol.excl{opacity:.55}
   .tfrahint{font-size:12px;color:var(--navy);background:#fbf9f2;border:1px solid var(--line);border-top:none;padding:8px 12px;line-height:1.6}
@@ -1172,7 +1173,9 @@ var ML_OFFERED={
  sdr:'AL AR AZ DE FL GA HI IA IL KY LA ME MI MN MO MS MT NC NE NV OH OK RI SC SD TN WI WV WY',
  gap:'AK AL AR AZ CA FL GA HI IA IL IN KY LA MD ME MI MN MO MS MT NC ND NE NM NV OH OK PA SC SD TN TX WA WI WV WY',
  chas:'AK AL AR AZ CA CO CT DC FL GA HI IA ID IL IN KS KY LA MD ME MI MN MO MS MT NC ND NE NH NV OH OK OR PA RI SC SD TN TX UT VT WA WI WV',
- afc:'AK AL AR AZ CA DE FL GA HI IA IL IN KY LA MD ME MI MN MO MS MT NC ND NE NM NV OH OK OR PA RI SC SD TN TX UT VA WI WV WY'
+ afc:'AK AL AR AZ CA DE FL GA HI IA IL IN KY LA MD ME MI MN MO MS MT NC ND NE NM NV OH OK OR PA RI SC SD TN TX UT VA WI WV WY',
+ /* Home Health Care Enhanced: states with a brochure in the carrier library or rates in the portal pull (2026-09-29). */
+ hhc:'AK AL AR AZ CO DC DE GA HI IA IL LA ME MI MO MS MT NC ND NE NH NV OH OK OR RI SC SD TN TX UT WI WV WY'
 };
 /* ===== PORTAL RATES — rates/portal-rates.json =====
    Every age / household / option, pulled from the ManhattanLife agent portal and grouped by
@@ -1326,6 +1329,7 @@ function pCHAS(st,age,hh,cfg){
   return {price:Math.round(sum*100)/100,note:''};
 }
 function pHHC(R,st,age,col){
+  if(st&&(ML_OFFERED.hhc||'').split(' ').indexOf(st)<0) return {price:null,note:notLoaded('hhc','Home Health Care',st)};
   if(!col) return {price:null,note:''};
   var pg=prGroup(306,st);
   if(pg){ var v=prVal(pg.plans,col+' | UNITS','i',age);
@@ -1953,8 +1957,11 @@ function popSuggestions(tier){
   var baseP=live(buildTierProducts(c,null,extras)), baseC=pkgCost(baseP,pk.lb), baseS=scorePkg(baseP,pk.lb,c,tier);
   var inBase=function(k){ return baseP.some(function(p){ return p.k===k||(k==='lb'&&/^lb/.test(p.k||'')); }); };
   var list=[];
+  var stS=(S.client.state||'').toUpperCase(), ageS=ratingAge();
   function cand(label,mut,addProd,newLb,undrop){
     var c2=cfgClone(c); if(mut&&mut(c2)===false) return;
+    /* A product the state doesn't sell is never suggested (Home Health Care in FL, for one). */
+    if((undrop||[]).some(function(k){ return /not sold in|not available in [A-Z]{2}$/.test(pbWhyNot(k,c2,stS,ageS)); })) return;
     var ex=extras.slice(); if(addProd) ex.push(addProd);
     var lb=(newLb!=null)?newLb:pk.lb;
     var pr=live(buildTierProducts(c2,null,ex),undrop);
@@ -3994,7 +4001,7 @@ function renderBuilder(){
     var incT=(S.include||{})[t]!==false;
     html+='<div class="pbcol'+(S.recommended===t?' rec':'')+(incT?'':' excl')+'" data-t="'+t+'"><label class="pbshow"><input type="checkbox" data-act="inc"'+(incT?' checked':'')+'> Show on quote</label><div class="ph"><span class="tt">'+hdr[0]+'</span><b>'+hdr[1]+'</b><span style="flex:1"></span><button type="button" data-act="reset1" title="Put this package back to the recommendation" style="font:inherit;font-size:12px;font-weight:600;border:1px solid #e2ddd1;background:#fff;border-radius:7px;padding:4px 8px;cursor:pointer;color:var(--muted)">↺ Reset</button></div>'
       +((S.lineup==='custom')?'':'<!--')+'<div style="padding:0 12px 4px"><select data-act="base" aria-label="Base plan" style="width:100%;font:inherit;font-size:13px;padding:6px 8px;border:1px solid #d6cdb4;border-radius:7px">'+pbOpts([['afc','Base: Manhattan Affordable Choice'],['lifex','Base: LifeX'],['triad','Base: Cigna (Triad) PPO']],c.base||'afc')+'</select></div>'+((S.lineup==='custom')?'':'-->');
-    var sum=0, addable=[];
+    var sum=0, addable=[], unavail=[];
     PB_SLOTS.forEach(function(sl){
       var k=sl.k; if(k==='lbs'&&!pbHasSpouse()) return;
       var lbk=(k==='lbp'||k==='lbs')?k.slice(2):null;
@@ -4003,7 +4010,7 @@ function renderBuilder(){
       if(k==='base'&&isMH) return; if((k==='afc'||k==='sdr')&&!isMH) return;
       if(k==='base') sl={k:'base',name:c.base==='lifex'?'LifeX health plan':'Cigna (Triad) PPO'};
       if(k==='dvh'){ if(dropped.indexOf('dvh')<0&&byK.dvh) sum+=+byK.dvh.monthly||0; return; }   // Dental: add-on bar below
-      var why=pbWhyNot(k,c,st,age); if(/not sold in|not available in [A-Z]{2}$/.test(why)) return;   // never offer what the state doesn't sell
+      var why=pbWhyNot(k,c,st,age); if(/not sold in|not available in [A-Z]{2}$/.test(why)){ if(k!=='base'&&k!=='lbs'&&k!=='lbp') unavail.push(sl.name); return; }   // never offer what the state doesn't sell - but say so
       if(!inCfg||dropped.indexOf(k)>=0){ addable.push(sl); return; }
       var live=byKpk[k]||byK[k], price=live?live.monthly:null;
       if(price==null){
@@ -4031,7 +4038,9 @@ function renderBuilder(){
     var lbMissing=addable.filter(function(sl){ return sl.k==='lbp'||sl.k==='lbs'; });
     var lbAll=lbMissing.length===(pbHasSpouse()?2:1);
     if(lbAll&&lbMissing.length>1){ addable=addable.filter(function(sl){ return sl.k!=='lbp'&&sl.k!=='lbs'; }); addable.push({k:'lb*',name:'Living benefits (each covered adult)'}); }
-    if(addable.length) html+='<div class="pbadd"><select data-act="add" aria-label="Add a product"><option value="">＋ Add product</option>'+addable.map(function(sl){ return '<option value="'+sl.k+'">'+sl.name+'</option>'; }).join('')+'</select></div>';
+    if(addable.length||unavail.length) html+='<div class="pbadd"><select data-act="add" aria-label="Add a product"><option value="">＋ Add product</option>'+addable.map(function(sl){ return '<option value="'+sl.k+'">'+sl.name+'</option>'; }).join('')
+      +unavail.map(function(n){ return '<option disabled>'+n+' — not sold in '+st+'</option>'; }).join('')+'</select>'
+      +(unavail.length?'<div class="pbna">Not sold in '+st+': '+unavail.join(', ')+'</div>':'')+'</div>';
     totals[t]=sum;
     html+='<div class="pbtot"><b>Monthly</b><span>'+pbMoney(sum)+'</span></div>';
     var tt=tierTrue(t), sv=anchorSavings(anc,sum,sum+tt.extra);
