@@ -445,8 +445,8 @@
   #printout .po-recap .t small,#printout .po-glance .t small{display:block;font-family:-apple-system,sans-serif;font-weight:400;color:var(--muted);font-size:11px;margin-top:1px}
   #printout .po-recap .g{display:grid;grid-template-columns:1fr 1fr}
   #printout .po-recap .r{padding:9px 16px;border-top:1px solid var(--line2)}
-  #printout .po-recap .r:nth-child(-n+2){border-top:none}
-  #printout .po-recap .r:nth-child(even){border-left:1px solid var(--line2)}
+  #printout .po-recap .r.wide{grid-column:1/-1;border-left:none;border-top:none;background:#faf7ef}
+  #printout .po-recap .r.wide .v{font-family:var(--serif);font-size:14px;color:var(--navy)}
   #printout .po-recap .k{display:block;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
   #printout .po-recap .v{font-size:13px;color:#20293a;line-height:1.4}
   #printout .po-glance table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
@@ -1905,6 +1905,7 @@ function renderAca(){
   if(e.ok&&e.flags.indexOf('cliff')>=0) fl.push('<div>No subsidy — income is over 400% of the poverty level (the 2026 cliff). The full bronze price is the anchor.</div>');
   if(e.ok&&e.subsidy>0&&r.subsidy.src==='est') fl.push('<div>Likely subsidy of about '+fmt(e.subsidy)+'/mo (benchmark silver '+fmt(e.silver)+' − expected contribution '+fmt(e.contrib)+'). Confirm on HealthSherpa.</div>');
   if(A.status==='outside') fl.push('<div class="warn">Outside enrollment — still calculated, left off the presentation unless you tick it back on.</div>');
+  if(/offered through work/.test((S.intake||{}).notes||'')) fl.push('<div class="warn">Health coverage is offered through work — if it is affordable, the marketplace subsidy may not apply.</div>');
   if(A.status==='onaca'&&!curIn().isAca) fl.push('<div class="warn">Marked “already on ACA” — tick “This is an ACA plan” under Current Insurance so its deductible and copay are used.</div>');
   $('acaFlags').innerHTML=fl.join('');
   var t=acaTrueParts();
@@ -2852,6 +2853,11 @@ function applySuiteClient(c){
   if(h.curDed)     Cu.ded=suiteNum(h.curDed);
   if(h.curCopay)   Cu.copay=suiteNum(h.curCopay);
   if(h.curVisits && suiteNum(h.curVisits)>0) I.visits=suiteNum(h.curVisits);
+  if(h.curOop)     Cu.oop=suiteNum(h.curOop);
+  /* A marketplace plan today makes it the ACA baseline: its deductible and copay are used, and the
+     subsidy they get now is typed in as the actual figure rather than estimated. */
+  if(h.curIsAca==="Yes"){ Cu.isAca=true; var Ai=acaIn(); Ai.status='onaca'; if(suiteNum(h.curSubsidy)>0) Ai.ov.subsidy=suiteNum(h.curSubsidy); }
+  else if(h.curIsAca==="No") Cu.isAca=false;
 
   /* Family history and the general needs, per person. */
   var yn=function(v){ return String(v||"")==="Yes"; };
@@ -2864,8 +2870,13 @@ function applySuiteClient(c){
   if(h.matNeeds!=null)   I.maternityP=yn(h.matNeeds);
   if(h.spMatNeeds!=null) I.maternityS=yn(h.spMatNeeds);
   if(h.spSurgery!=null)  I.surg2yrS=yn(h.spSurgery);
+  /* The box reads "Surgeries / hospitalizations (past 2 yrs)", so a 2-year hospital stay ticks it too. */
+  if(h.spHospStay==="Yes") I.surg2yrS=true;
+  if(h.pregnant==="Yes")   I.maternityP=true;
+  if(h.spPregnant==="Yes") I.maternityS=true;
 
-  I.who={app:true, spouse:!!(sname||sp.dob), kids:kids.length>0};
+  var partnered=["Married","Partnered"].indexOf(String(h.married||""))>-1, nKids=parseInt(h.kidsCount,10)||0;
+  I.who={app:true, spouse:!!(sname||sp.dob)||partnered, kids:kids.length>0||nKids>0};
   var ph=suiteInches(c.heightIn,c.height);  if(ph) I.pheight=ph;
   if(c.weight) I.pweight=String(c.weight);
   var px=suiteSex(c.sex);                   if(px) I.psex=px;
@@ -2884,6 +2895,8 @@ function applySuiteClient(c){
   if(h.kidsHealth) kidbits.push("Health: "+h.kidsHealth);
   if(kidbits.length) I.kidsNote=kidbits.join(" \u2014 ");
   if(kids.length){ I.kids=kids.map(function(k){ return {n:k.name||'',dob:k.dob||'',age:k.age?String(k.age):'',sex:/^f/i.test(k.sex||'')?'Female':/^m/i.test(k.sex||'')?'Male':''}; }); }
+  /* "Children: 2" with no details typed still gives two rows to fill in. */
+  if(nKids>0){ I.kids=I.kids||[]; while(I.kids.length<nKids) I.kids.push({n:'',dob:'',age:'',sex:''}); }
   if(h.kidsHealth) I.kidsHealth=h.kidsHealth;
 
   /* Money. The discovery call asks these in the agent's words; they land here as the
@@ -2944,7 +2957,8 @@ function applySuiteClient(c){
   if(/diabet/.test(names)) I.diabetic=true;
   if(/anxiety|depress|ptsd|bipolar|schizo/.test(names)) I.mentalP=true;
   if(/cancer/.test(names)) I.majorcond=true;
-  if(h.surgery!=null) I.surg2yrP=!!h.surgery;
+  /* The script asks surgery or an overnight stay over FIVE years; this box is two. It goes to the notes. */
+  if(h.hospStay2===true) I.surg2yrP=true;
 
   /* Not I.health - that box is a rating the agent picks (Excellent / Good / Average /
      Complicated) and writing a sentence into it selects nothing. What the client actually
@@ -2959,6 +2973,8 @@ function applySuiteClient(c){
     if(docs[0]) I.docs1=docs[0].name||I.docs1||'';
     if(docs[1]) I.docs2=docs[1].name||I.docs2||'';
     if(docs[2]) I.docs3=docs[2].name||I.docs3||'';
+    if(docs.some(function(d){ return d.aca==="Yes"; })) I.keepaca='yes';
+    else if(docs.some(function(d){ return d.aca==="No"; })) I.keepaca='no';
     I.docnote=docs.map(function(d){
       return [d.name, d.practice, d.keep?("must keep: "+d.keep):"", d.aca?("on ACA plan: "+d.aca):""]
         .filter(Boolean).join(" — ");
@@ -2977,6 +2993,7 @@ function applySuiteClient(c){
   if(h.wantVision==="Yes")  want.push("vision");
   if(h.wantHearing==="Yes") want.push("hearing");
   if(want.length) extra.push("Also wants: "+want.join(", "));
+  if(h.wantDental==="Yes"||h.wantVision==="Yes") I.dv=true;
   if(h.fhStroke==="Yes")   extra.push("Family history of stroke (applicant)");
   if(h.spFhStroke==="Yes") extra.push("Family history of stroke (spouse)");
   /* The real cost only when the script captured one that isn't simply they-pay + employer. */
@@ -2985,18 +3002,30 @@ function applySuiteClient(c){
   if(h.covGap)     extra.push("On their old cover: "+h.covGap);
   if(h.spHealthNotes) extra.push("Spouse health: "+h.spHealthNotes);
   if(h.spSurgeryWhat) extra.push("Spouse surgery (2 yrs): "+h.spSurgeryWhat);
-  if(h.spHospStay==="Yes") extra.push("Spouse had a hospital stay in the last 2 yrs");
-  if(h.apptWhen)    extra.push("PRESENTATION BOOKED: "+h.apptWhen+
-                      (h.apptWho?" ("+h.apptWho+")":""));
+  if(h.spHospStay==="Yes"||h.spStayWhat) extra.push("Spouse hospital stay (last 2 yrs)"+(h.spStayWhat?": "+h.spStayWhat:""));
+  var appt=[h.apptWhen,h.apptDate,h.apptTime].filter(Boolean).join(" ");
+  if(appt||h.apptWho) extra.push("PRESENTATION BOOKED: "+(appt||"(no time set)")+(h.apptWho?" (with "+h.apptWho+")":""));
   if(h.apptNotes)   extra.push(h.apptNotes);
+  if(h.losing==="Yes")      extra.push("Losing current coverage: done deal");
+  else if(h.losing==="No") extra.push("Losing current coverage: not final yet");
   if(h.lastDay)     extra.push("Current cover ends: "+h.lastDay);
-  if(h.occupation)  extra.push("Work: "+h.occupation);
+  if(h.hasHsa==="Yes")     extra.push("Already has an HSA");
+  if(h.empOffer==="Yes")   extra.push("Health coverage offered through work — check affordability; it can remove the marketplace subsidy");
+  if(h.pregnant==="Yes")   extra.push("PREGNANT NOW (applicant)");
+  if(h.spPregnant==="Yes") extra.push("PREGNANT NOW (spouse)");
+  if(h.planned)     extra.push("Planned in the next 12 months: "+h.planned);
+  if(h.billTomorrow) extra.push("Could pay a bill of "+h.billTomorrow+" tomorrow without stress");
+  if(h.lifeNow)     extra.push("Life insurance now: "+h.lifeNow);
+  if(h.bankKind)    extra.push("Premium drafts from: "+h.bankKind);
+  if(h.occupation||h.occYears) extra.push("Work: "+(h.occupation||"")+(h.occYears?" ("+h.occYears+")":""));
   if(h.healthOther) extra.push("Also mentioned: "+h.healthOther);
-  if(h.incomeNext)  extra.push("Income next year: "+h.incomeNext+
-      (h.hhIncomeNext?" (household "+h.hhIncomeNext+")":""));
+  /* Only when the script flagged next year as different. */
+  if(h.nextSame==="Different"||(!h.nextSame&&(h.incomeNext||h.hhIncomeNext))){
+    var nx=[h.incomeNext?"theirs "+h.incomeNext:"", h.spIncomeNext?"spouse "+h.spIncomeNext:"", h.hhIncomeNext?"household "+h.hhIncomeNext:""].filter(Boolean);
+    if(nx.length) extra.push("Income next year is different: "+nx.join(", ")); }
   if(h.healthNotes) extra.push("Health: "+h.healthNotes);
-  if(h.hospStay)  extra.push("Hospital stay (2 yrs): "+h.hospStay);
-  if(h.surgeryWhat) extra.push("Surgery (2 yrs): "+h.surgeryWhat);
+  if(h.hospStay2===true||h.hospStay) extra.push("Hospital stay (last 2 yrs)"+(h.hospStay?": "+h.hospStay:""));
+  if(h.surgery===true||h.surgeryWhat) extra.push("Surgery or overnight stay (last 5 yrs)"+(h.surgeryWhat?": "+h.surgeryWhat:""));
   if(h.notes)     extra.push(h.notes);
   /* Pushed twice, this line is replaced rather than stacked - the agent may well press the
      button again after correcting something on the call, and two nearly-identical
@@ -3324,15 +3353,16 @@ function poRecapHTML(showCur,showAca){
   var ppl=[(c.pname?esc(c.pname):'You')+(c.page?' ('+esc(c.page)+')':'')];
   if(w.spouse) ppl.push((c.sname?esc(c.sname):'Spouse')+(c.sage?' ('+esc(c.sage)+')':''));
   var nk=w.kids?kidsList().length:0; if(w.kids) ppl.push(nk>1?nk+' children':nk===1?'1 child':'children');
+  /* Their own reason leads - in their words, full width. */
+  if(I.whyShop&&String(I.whyShop).trim()) rows.push(['Why you are looking',esc(String(I.whyShop).trim()),'wide']);
   rows.push(['Who we are covering',ppl.join(' · ')+(c.state?' — '+esc(c.state):'')]);
-  if(I.whyShop&&String(I.whyShop).trim()) rows.push(['Why you are looking',esc(String(I.whyShop).trim())]);
+
   /* What they have today - only what we actually know; nothing is said about a plan we have no details on. */
   var curName=[I.carrier,I.plan].filter(function(x){ return x&&String(x).trim(); }).join(' · ');
   if(!showCur&&curName) rows.push(['Coverage today',(curName?esc(curName):'Your current plan')+(+Cu.prem>0?' — '+fmt2(+Cu.prem)+'/mo'+(+Cu.ded>0?', '+fmt2(+Cu.ded)+' deductible':''):'')]);
   else if(A.status==='onaca') rows.push(['Coverage today','A marketplace (ACA) plan']);
   var hh=householdIncome?(+householdIncome()||0):0;
   if(showAca&&hh>0) rows.push(['Household income',fmt(hh)+' a year'+(+S.aca.subsidy>0?' — qualifies for a '+fmt2(+S.aca.subsidy)+'/mo marketplace subsidy':' — above the marketplace subsidy limit')]);
-  rows.push(['What matters most',I.priority==='price'?'Keeping the monthly cost down':'Strong coverage and peace of mind']);
   var bc=+I.budgetComfort||0, bm=+I.budget||0;
   if(bc||bm) rows.push(['Your monthly budget',(bc?'Comfortable at '+fmt2(bc):'')+(bc&&bm?' · ':'')+(bm?'no more than '+fmt2(bm):'')]);
   var v=+I.visits||0; if(v) rows.push(['Doctor visits a year','About '+v]);
@@ -3342,7 +3372,7 @@ function poRecapHTML(showCur,showAca){
   if(docs.length){ var net=I.keepafc==='yes'?' — in the First Health network with Affordable Choice':I.keepafc==='no'?' — not in the First Health network; we will talk through your options':'';
     rows.push(['Your doctors',esc(docs.join(' · '))+net]); }
   return '<div class="po-recap"><div class="t">Where you are today<small>What you told us, and what we built your options around</small></div><div class="g">'
-    +rows.map(function(r){ return '<div class="r"><span class="k">'+r[0]+'</span><span class="v">'+r[1]+'</span></div>'; }).join('')+'</div></div>';
+    +rows.map(function(r){ return '<div class="r'+(r[2]?' '+r[2]:'')+'"><span class="k">'+r[0]+'</span><span class="v">'+r[1]+'</span></div>'; }).join('')+'</div></div>';
 }
 /* Printout page 1: every option in one table against the anchor, so the page ends on the answer. */
 function poGlanceHTML(tiers,labels,B){

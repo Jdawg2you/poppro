@@ -43,7 +43,9 @@ const BUILD = `(function(){
     else v='M_'+f.k;
     return {set:function(){ P[f.k]=v; }, v:v};
   };
-  spec.forEach(function(f){ var s=sample(f); P={first:'Pat',last:'Probe'}; s.set();
+  /* A field that only shows under another answer gets that answer too (income_next needs next_same=Different). */
+  var parent=function(f){ var w=f.showIf; if(!w||typeof w[0]!=='string') return; P[w[0]]=Array.isArray(w[1])?w[1][0]:(w[1]==='*'?'x':w[1]); };
+  spec.forEach(function(f){ var s=sample(f); P={first:'Pat',last:'Probe'}; parent(f); s.set();
     out.push({k:f.k, l:f.l||f.type, v:s.v, client:popClient()}); });
   /* Everything at once, for the transport test. */
   P={first:'Pat',last:'Probe'}; spec.forEach(function(f){ sample(f).set(); });
@@ -96,6 +98,28 @@ try {
       meds:(S.intake.medList||[]).map(function(m){return m.name+(m.forS?'(S)':'(P)');}), kids:S.intake.kids, agency:S.agency, agent:S.client.agent,
       priority:S.intake.priority, notesLen:(S.intake.notes||'').length, routeNote:S.intake.routeNote};
   })(${JSON.stringify(built.all)})`);
+  /* Where each answer must land (Jesse's rulings, 2026-09-29). Each pattern must match the field's changes. */
+  const EXP = {
+    cur_oop: ['^cur\\.oop=10'], cur_is_aca: ['^cur\\.isAca=true', '^acaIn\\.status=onaca'], cur_subsidy: ['^acaIn\\.ov\\.subsidy=10'],
+    has_hsa: ['notes=.*HSA'], pregnant: ['^intake\\.maternityP=true', 'notes=.*PREGNANT'], sp_pregnant: ['^intake\\.maternityS=true'],
+    emp_offer: ['notes=.*offered through work'], planned: ['notes=.*Planned in the next 12'], life_now: ['notes=.*Life insurance now'],
+    bill_tomorrow: ['notes=.*tomorrow'], bank_kind: ['notes=.*Premium drafts from'], losing: ['notes=.*Losing current coverage'],
+    income_next: ['notes=.*Income next year is different'], sp_income_next: ['notes=.*Income next year is different'], hh_income_next: ['notes=.*Income next year is different'],
+    hosp_stay: ['^intake\\.surg2yrP=true'], stay_what: ['notes=.*Hospital stay'], recent_stay: ['notes=.*last 5 yrs'],
+    sp_hosp_stay: ['^intake\\.surg2yrS=true'], sp_stay_what: ['notes=.*Spouse hospital stay'],
+    appt_date: ['notes=.*PRESENTATION BOOKED'], appt_time: ['notes=.*PRESENTATION BOOKED'], appt_who: ['notes=.*PRESENTATION BOOKED'],
+    want_dental: ['^intake\\.dv=true'], want_vision: ['^intake\\.dv=true'], docs: ['^intake\\.keepaca=yes'],
+    married: ['^intake\\.who\\.spouse=true'], kids: ['^intake\\.who\\.kids=true', '^intake\\.kids\\.0\\.n='],
+  };
+  const NOT = { recent_stay: ['^intake\\.surg2yrP=true'] };
+  let ep = 0; const efail = [];
+  for (const [k, pats] of Object.entries(EXP)) {
+    const r = rows.find(x => x.k === k); if (!r) { efail.push(k + ' (not on the profile)'); continue; }
+    const miss = pats.filter(p => !r.changed.some(c => new RegExp(p, 's').test(c)));
+    const bad = (NOT[k] || []).filter(p => r.changed.some(c => new RegExp(p, 's').test(c)));
+    if (miss.length || bad.length) efail.push(k + (miss.length ? ' missing ' + miss.join(',') : '') + (bad.length ? ' must not ' + bad.join(',') : '')); else ep++;
+  }
+  console.log(`EXPECTS pass=${ep}/${Object.keys(EXP).length}${efail.length ? ' FAIL: ' + efail.join(' ; ') : ''}`);
   /* summary first - checkers read the head of the output */
   console.log(`NAVPUSH fields=${rows.length} field=${field} notes=${notes} dropped=${dropped} ack=${seen.ack && seen.ack.ok === true ? 'ok' : 'MISSING'}\n`);
   lines.forEach(l => console.log(l));
