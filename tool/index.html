@@ -1156,6 +1156,7 @@ body.client #classicWrap>summary{display:none}
         <a class="portalbtn green" id="lnkMutual" href="#" target="_blank" rel="noopener">Living Benefits — Mutual of Omaha &#8599;</a>
         <a class="portalbtn maroon" id="lnkAmerico" href="#" target="_blank" rel="noopener">Living Benefits — Americo &#8599;</a>
         <a class="portalbtn cigna" id="lnkCigna" href="#" target="_blank" rel="noopener">Cigna PPO (USA Health / Triad) — 1Enrollment &#8599;</a>
+        <a class="portalbtn cigna" id="lnkSparkle" href="#" target="_blank" rel="noopener" style="display:none">Sparkle Care Dental — 1Enrollment &#8599;</a>
         <a class="portalbtn lifex" id="lnkLifex" href="#" target="_blank" rel="noopener" style="display:none">LifeX — E123 enrollment site &#8599;</a>
       </div>
       <div style="margin-top:4px">
@@ -1302,6 +1303,7 @@ var ML_OFFERED={
  /* Home Health Care Enhanced: states with a brochure in the carrier library or rates in the portal pull (2026-09-29). */
  hhc:'AK AL AR AZ CO DC DE GA HI IA IL LA ME MI MO MS MT NC ND NE NH NV OH OK OR RI SC SD TN TX UT WI WV WY',
  /* DVH Select: the portal pull's states plus MS NV NJ NC PA from their own brochures (rates/dvh-brochure-rates.json). */
+ dvh7016:'MD MT VA',   /* the older Dental, Vision and Hearing plan, served only where DVH Select is not sold */
  dvh:'AL AR AZ CA CO CT DC DE FL GA IA ID IL IN KS KY LA ME MI MN MO MS NC ND NE NJ NM NV OH OK OR PA SC SD TN TX UT WI WV WY'
 };
 /* ===== PORTAL RATES — rates/portal-rates.json =====
@@ -1398,9 +1400,16 @@ function pHIS(R,st,age,hh,cfg){
 }
 function pACC(R,hh,units){ var t=R.acc.t[hh]; return t?{price:t[units-1],note:''}:{price:null,note:'accident rate n/a'}; }
 function pDVH(R,age,hh,cfg,st){
+  if(st&&dentalCo(st)==='sparkle') return pSPARKLE(hh,st);
   var pg=st&&prGroup(301,st);
-  /* A state never borrows another table: no rates of its own means no price, with a note that says why. */
-  if(st&&!pg) return {price:null,note:PR?notLoaded('dvh','DVH Select',st):'DVH rates are still loading'};
+  /* A state never borrows another table: no rates of its own means no price, with a note that says why.
+     Where DVH Select is not sold but ManhattanLife's older Dental, Vision and Hearing plan (form 7016) is,
+     that plan is served instead - vision and hearing are built in, the deductible is a fixed $100. */
+  if(st&&!pg){ var g7=PR&&prGroup(150,st);
+    if(g7){ var mx=dvh7016Max(cfg.max,st), v7=prVal(g7.plans,'$'+Number(mx).toLocaleString('en-US')+' Benefit | $'+Number(mx).toLocaleString('en-US')+' Benefit',hh,age);
+      if(v7==null) return {price:null,note:'Dental, Vision and Hearing (7016) not available at age '+age+' in '+st};
+      return {price:v7,note:String(mx)!==String(cfg.max)?'Dental, Vision and Hearing (7016) tops out at $'+Number(mx).toLocaleString('en-US')+' in '+st:'',plan7016:true,max:mx,parts:{dental:v7,vision:0,hearing:0}}; }
+    return {price:null,note:PR?notLoaded('dvh','DVH Select',st):'DVH rates are still loading'}; }
   if(pg){ var v=prVal(pg.plans,'$'+cfg.max+' Benefit - $'+cfg.ded+' Deductible | $'+cfg.ded+' Deductible',hh,age);
     if(v==null) return {price:null,note:'DVH Select level not available at age '+age+' in '+st};
     /* Vision and Hearing are separate riders on the carrier's rate sheet - priced only when switched on. */
@@ -1411,10 +1420,33 @@ function pDVH(R,age,hh,cfg,st){
   var row=m[cfg.ded][bandDVH(age)]; if(!row||row[hh]==null) return {price:null,note:'DVH rate n/a'};
   return {price:row[hh],note:''};
 }
+/* ===== Sparkle Care Dental (USA Health Plans, administered by Bento) — a second dental option =====
+   Flat monthly rates at every age, association fee included; $4,500 per member per year; no waiting
+   periods; no age limit. An NCBA association group plan (dues included), not an individual policy.
+   Checked 2026-09-30 against Sparkle_Care_Brochure 2025 (pp. 5-6 coverage, p. 9 rates). Network: Bento
+   (Platinum, Gold) and Cigna DPPO SA Plus (ManhattanLife runs on Careington — check the dentist). */
+var SPARKLE={states:'AL AR AZ CA CO CT DC DE FL GA IA ID IL IN KS KY LA MA MI MN MO MS NC NE NH NJ NM NV OH OK PA SC TN TX UT VA WI WV WY', rates:{i:69,s:129,c:159,f:199}, max:4500,
+  enroll:'https://www.1enrollment.com/order/checkout.cfm?id=994524&pdid=48733', search:'https://bento.net/sparkle/'};
+function sparkleSold(st){ return SPARKLE.states.split(' ').indexOf((st||'').toUpperCase())>=0; }
+function mlDentalSold(st){ st=(st||'').toUpperCase(); return (ML_OFFERED.dvh||'').split(' ').indexOf(st)>=0||(ML_OFFERED.dvh7016||'').split(' ').indexOf(st)>=0; }
+/* Which dental plan the packages use: the agent's pick when the state sells it; otherwise ManhattanLife where
+   it is sold, Sparkle where only Sparkle is (MA, NH). */
+function dentalCo(st){ st=(st||(S.client||{}).state||'').toUpperCase(); var ch=S.dentalCo;
+  if(ch==='sparkle'&&sparkleSold(st)) return 'sparkle'; if(ch==='ml'&&mlDentalSold(st)) return 'ml';
+  return mlDentalSold(st)?'ml':(sparkleSold(st)?'sparkle':'ml'); }
+function pSPARKLE(hh,st){ if(!sparkleSold(st)) return {price:null,note:'Sparkle Care Dental is not sold in '+st};
+  var v=SPARKLE.rates[hh||'i']; return v==null?{price:null,note:'Sparkle Care Dental: no rate for this household'}:{price:v,note:'',sparkle:true,parts:{dental:v,vision:0,hearing:0}}; }
+/* The 7016 plan is the dental offer where DVH Select is not sold (MD, MT, VA). */
+function dvhIs7016(st){ st=(st||(S.client||{}).state||'').toUpperCase(); return !!(st&&dentalCo(st)==='ml'&&PR&&!prGroup(301,st)&&prGroup(150,st)); }
+function dvh7016Maxes(st){ var g=PR&&prGroup(150,(st||(S.client||{}).state||'').toUpperCase()); return g?Object.keys(g.plans).map(function(k){ return k.match(/\$([\d,]+)/)[1].replace(/,/g,''); }):[]; }
+/* The chosen max if this state's 7016 plan offers it, else the nearest one below (VA stops at $1,500). */
+function dvh7016Max(mx,st){ var m=dvh7016Maxes(st).map(Number).sort(function(a,b){ return a-b; }), want=+mx||1500, pick=m[0];
+  m.forEach(function(x){ if(x<=want) pick=x; }); return String(pick); }
 /* Which DVH riders are on: the agent's tick wins; until the agent ticks, the client's own answers decide. */
 function dvhRiders(cfg){ var I=S.intake||{}; cfg=cfg||{}; return {vis:cfg.vis!=null?!!cfg.vis:!!I.wantVis, hear:cfg.hear!=null?!!cfg.hear:!!I.wantHear}; }
 /* What the dental line actually includes, in words: "dental", "dental & vision", "dental, vision & hearing". */
-function dvhPhrase(cfg){ var r=dvhRiders(cfg), x=['dental']; if(r.vis) x.push('vision'); if(r.hear) x.push('hearing');
+function dvhPhrase(cfg){ if(dentalCo()==='sparkle') return 'dental'; if(dvhIs7016()) return 'dental, vision & hearing';
+  var r=dvhRiders(cfg), x=['dental']; if(r.vis) x.push('vision'); if(r.hear) x.push('hearing');
   return x.length<3?x.join(' & '):'dental, vision & hearing'; }
 function pGAP(R,st,age,hh,cfg){
   var pg=prGroup(158,st);
@@ -1783,7 +1815,7 @@ function popStrengthsFrom(x){ x=x||{}; var major=!!x.major, av=x.avail||{};
      deductible it is sized to). */
   var hcash=x.his?Math.round(100*Math.min(1,(+x.his.ben||0)/(major&&x.major&&x.major.ded?Math.min(10000,x.major.ded):10000))):0;
   var accident=(+x.accU>=2)?100:(+x.accU===1?60:(major?80:0));
-  var dvh=({'1000':60,'1500':75,'3000':95,'5000':100})[String(x.dvhMax||'')]||0;
+  var dvh=({'1000':60,'1500':75,'3000':95,'4500':98,'5000':100})[String(x.dvhMax||'')]||0;
   var lb=x.lb||{}, life=(lb.adults>0)?Math.round(100*Math.min(1,(lb.faces||[]).reduce(function(s,f){ return s+((+f>=50000)?1:0.75); },0)/lb.adults)):0;
   var homecare=({Classic:70,Premier:85,Deluxe:100})[x.hhc]||(major?60:0);
   /* Levels: how close each product the state sells is to its top option - so every notch up counts,
@@ -1795,7 +1827,7 @@ function popStrengthsFrom(x){ x=x||{}; var major=!!x.major, av=x.avail||{};
   if(!major) f((+x.accU||0)/2);
   f(((Math.min(75000,+ch.cancer||0))+(Math.min(75000,+ch.hs||0)))/150000);
   if(av.sdr!==false&&!major&&bs.afc){ var sc=x.sdrCfg||null; f(sc?0.5*((+sc.max||0)>=500000?1:0.5)+0.5*(({'100000':0,'75000':1/3,'50000':2/3,'25000':1})[String(sc.ded)]||0):0); }
-  f(({'1000':0.25,'1500':0.4,'3000':0.7,'5000':1})[String(x.dvhMax||'')]||0);
+  f(({'1000':0.25,'1500':0.4,'3000':0.7,'4500':0.9,'5000':1})[String(x.dvhMax||'')]||0);
   if(av.hhc!==false) f(({Classic:0.6,Premier:0.8,Deluxe:1})[x.hhc]||0);
   f(lb.adults>0?(lb.faces||[]).reduce(function(s,v){ return s+Math.min(1,(+v||0)/50000); },0)/lb.adults:0);
   var lvl=Math.round(100*L.reduce(function(a,b){ return a+b; },0)/Math.max(1,L.length));
@@ -2102,8 +2134,8 @@ function buildTierProducts(c,byKey,extras){
   add('his','Hospital Indemnity — HI Select $10K'+(c.his.outp?' + Outpatient $'+c.his.outp:''), pHIS(R,st,age,hh,c.his));
   add('acc','Accident Cash — 24-Hr Accident ('+c.acc+' Unit)', pACC(R,hh,c.acc));
   add('gap','Out-of-Pocket / Gap — $'+c.gap.daily+'/day · $'+c.gap.adm+' admission', pGAP(R,st,age,hh,c.gap));
-  var dr=dvhRiders(c.dvh);
-  add('dvh','DVH Select — Dental $'+(+c.dvh.max/1000)+'K'+(dr.vis?' + Vision':'')+(dr.hear?' + Hearing':''), pDVH(R,age,hh,c.dvh,st));
+  var dr=dvhRiders(c.dvh), dres=pDVH(R,age,hh,c.dvh,st);
+  add('dvh',dres.sparkle?'Sparkle Care Dental — $4,500 per member per year':dres.plan7016?'Dental, Vision & Hearing (7016) — $'+(+dres.max/1000)+'K':'DVH Select — Dental $'+(+c.dvh.max/1000)+'K'+(dr.vis?' + Vision':'')+(dr.hear?' + Hearing':''), dres);
   if(c.hhc) add('hhc','Home Health Care — HHC '+c.hhc, pHHC(R,st,age,c.hhc));
   if(c.lb){ lbPersons().forEach(function(pp){ var lc=c.lb[pp.k]; if(!lc||!lc.face) return;
     var r=pLB1(pp,lc); add('lb'+pp.k,'Living Benefits — '+pp.tag+' $'+(+lc.face/1000)+'K term life, 20-year ('+(r.carrier||'')+')', r); }); }
@@ -2195,6 +2227,8 @@ function popSuggestions(tier){
   if(inBase('sdr')&&c.sdr){ if(c.sdr.max!=='500000') cand('Raise Specified Disease max to $500,000',function(x){ x.sdr.max='500000'; });
     if(String(c.sdr.ded)!=='25000') cand('Lower Specified Disease deductible to $25,000',function(x){ x.sdr.ded='25000'; }); }
   if(!inBase('dvh')) cand('Add Dental · Vision · Hearing',function(x){ x.dvh=x.dvh||{max:'3000',ded:'0'}; },null,null,['dvh']);
+  else if(dentalCo()==='sparkle'){}
+  else if(c.dvh&&dvhIs7016()){ var t7=String(Math.max.apply(null,dvh7016Maxes().map(Number))); if(dvh7016Max(c.dvh.max)!==t7) cand('Raise Dental, Vision & Hearing to $'+Number(t7).toLocaleString('en-US'),function(x){ x.dvh.max=t7; }); }
   else if(c.dvh&&String(c.dvh.max)!=='5000') cand('Raise Dental · Vision · Hearing to $5,000',function(x){ x.dvh.max='5000'; });
   if(!popIsMajor(tier)) cand(inBase('acc')?'Upgrade Accident to 2-Unit':'Add 24-Hour Accident (2-unit)',function(x){ if(inBase('acc')&&x.acc>=2) return false; x.acc=2; },null,null,['acc']);
   if(!inBase('hhc')) cand('Add Home Health Care (Deluxe)',function(x){ x.hhc='Deluxe'; },null,null,['hhc']);
@@ -2228,14 +2262,17 @@ function popInputsFor(c,prods){ c=c||{}; prods=prods||[];
   if(has('gap')&&c.gap){ x.gap={daily:+c.gap.daily||0,adm:+c.gap.adm||0,ea:+c.gap.ea||0}; x.gapOutp=+c.gap.outp||0; }
   if(has('acc')) x.accU=+c.acc||1;
   if(has('chas')&&c.chas) x.chas={cancer:+c.chas.cancer||0,hs:+c.chas.hs||0};
-  x.sdr=has('sdr'); if(x.sdr&&c.sdr) x.sdrCfg={max:c.sdr.max,ded:c.sdr.ded}; if(has('dvh')&&c.dvh) x.dvhMax=c.dvh.max; if(has('hhc')) x.hhc=c.hhc;
+  x.sdr=has('sdr'); if(x.sdr&&c.sdr) x.sdrCfg={max:c.sdr.max,ded:c.sdr.ded}; if(has('dvh')&&c.dvh){ x.dvhMax=c.dvh.max;
+    /* Graded against the best dental the state sells: in a 7016 state its own top max earns full credit (VA stops at $1,500). */
+    if(dentalCo(st)==='sparkle') x.dvhMax='4500';
+    else if(dvhIs7016(st)){ var m7=dvh7016Maxes(st).map(Number), top=Math.max.apply(null,m7), mx7=+dvh7016Max(c.dvh.max,st); x.dvhMax=mx7>=top?'5000':String(mx7); } } if(has('hhc')) x.hhc=c.hhc;
   /* The yardstick: the strongest Manhattan build this state sells, and which pieces it sells at all. */
   var sold=function(k){ return (ML_OFFERED[k]||'').split(' ').indexOf(st)>=0; }, age=ratingAge(), R=HF_RATES;
   var hisOK=true; try{ var hr=pHIS(R,st,age,householdKey(),{ben:10000,amb:1,outp:0}); hisOK=!(hr&&hr.price==null&&/not available in|not sold in/.test(hr.note||'')); }catch(e){}
   var bm=BEN_DATA.afc?benModel(BEN_DATA.afc,st,'ElitePlus',{}):null;
   x.best={afcLevel:'ElitePlus',afc:sold('afc')?(bm?afcEventNums(evFlatRows(bm)):POP_AFC_FALLBACK.ElitePlus):null,
     his:hisOK?{ben:10000,amb:1}:null,hisOutp:hisOK?1500:0,gap:sold('gap')?{daily:200,adm:6350,ea:1}:null,gapOutp:sold('gap')?3000:0};
-  x.avail={sdr:sold('sdr'),hhc:sold('hhc'),dvh:true};
+  x.avail={sdr:sold('sdr'),hhc:sold('hhc'),dvh:!st||sold('dvh')||sold('dvh7016')||sparkleSold(st)};   /* no ManhattanLife dental in the state: no weight, nobody marked down */
   var ppl=lbPersons(); x.lb={adults:ppl.length,faces:ppl.filter(function(pp){ return has('lb'+pp.k); }).map(function(pp){ return +((c.lb&&c.lb[pp.k]&&c.lb[pp.k].face)||25000); })};
   return x; }
 function popStrengths(tier){ return popStrengthsFrom(popInputsFor(effCfg(tier),(S.packages[tier]||{}).products)); }
@@ -2721,6 +2758,26 @@ function medLabel(n){ const hit=MED_INDEX.filter(m=>m.n.toLowerCase()===String(n
    "metphormin" resolves to itself and MED_FOR misses it entirely - which is the whole
    point of having fuzzy matching. The dropdown stores the resolved label, but a typed
    or legacy value has to be resolved here too. */
+/* An option reads back the word the agent typed, with the other names after it. Typing PRIL and
+   being offered "Omeprazole" makes them think they typed something wrong. Same rule as the wizard
+   and the navigator. The VALUE picked is still the canonical row[0] - popMedResolve and MED_FOR
+   are keyed on it - so only the label changes. Jesse, 2026-09-30. */
+var MED_ALIASES=(function(){ var m={}; MEDS.forEach(function(r){ if(r.length>1) m[r[0]]=r.slice(1); }); return m; })();
+function medRow(label){ return [label].concat(MED_ALIASES[label]||[]); }
+function medTypedName(label,q){
+  var t=String(q||'').trim().toLowerCase(); if(!t) return label;
+  var best=label, bs=9;
+  medRow(label).forEach(function(n){
+    var ln=n.toLowerCase();
+    var s = ln===t ? 0 : ln.indexOf(t)===0 ? 1 : ln.indexOf(t)>0 ? 2 : 9;
+    if(s<bs){ bs=s; best=n; }
+  });
+  return best;
+}
+function medOption(label,q){
+  var lead=medTypedName(label,q), rest=medRow(label).filter(function(n){ return n!==lead; });
+  return rest.length ? lead+' ('+rest.join(', ')+')' : lead;
+}
 function popMedResolve(n){
   n=String(n||'').trim(); if(!n) return '';
   var exact=medLabel(n);
@@ -3884,7 +3941,8 @@ function renderEnroll(){
   var name=S.client.pname||'Client'; if(S.client.sname) name+=' & '+S.client.sname;
   var carrierOf=function(p){ if(p.k==='base') return c.base==='lifex'?'LifeX (E123 site)':'Cigna — USA Health / Triad (1Enrollment)';
     if(p.k==='lbp'||p.k==='lbs'){ var nm=String(p.name||''); if(/americo/i.test(nm)) return 'Americo'; if(/mutual|omaha/i.test(nm)) return 'Mutual of Omaha';   // the policy actually priced
-      var lc=(c.lb||{})[p.k.slice(2)]||{}; return lc.carrier==='americo'?'Americo':'Mutual of Omaha'; } return 'ManhattanLife'; };
+      var lc=(c.lb||{})[p.k.slice(2)]||{}; return lc.carrier==='americo'?'Americo':'Mutual of Omaha'; }
+    if(p.k==='dvh'&&/Sparkle/.test(String(p.name||''))) return 'Sparkle Care Dental — USA Health Plans (1Enrollment)'; return 'ManhattanLife'; };
   var rows=(pk.products||[]).filter(function(p){ return (+p.monthly||0)>0; }), groups={}, order=[];
   rows.forEach(function(p){ var g=carrierOf(p); if(!groups[g]){ groups[g]=[]; order.push(g); } groups[g].push(p); });
   var total=rows.reduce(function(s2,p){ return s2+(+p.monthly||0); },0);
@@ -3901,6 +3959,7 @@ function renderEnroll(){
   $('lnkMutual').href=MUTUAL_URL;
   $('lnkAmerico').href=AMERICO_URL;
   $('lnkCigna').href=CIGNA_URL;
+  if($('lnkSparkle')){ $('lnkSparkle').href=SPARKLE.enroll; $('lnkSparkle').style.display=rows.some(function(p){ return p.k==='dvh'&&/Sparkle/.test(String(p.name||'')); })?'':'none'; }
   if(LIFEX_URL){ $('lnkLifex').href=LIFEX_URL; $('lnkLifex').style.display=''; }
 }
 function estTierMonthly(tier,bandIdx,state){
@@ -4152,6 +4211,8 @@ function pbControls(k,c){
     return fb+'<div class="two"><div class="f">Coverage<select data-f="lb.'+w+'.face">'+pbOpts([['25000','$25,000'],['50000','$50,000']],lc.face)+'</select></div><div class="f">Carrier<select data-f="lb.'+w+'.carrier">'+pbOpts([['moo','Mutual of Omaha'],['americo','Americo']],lc.carrier||'moo')+'</select></div></div>'
     +'<div style="font-size:11.5px;color:var(--muted)">20-year term with living benefits for this person. $100K and 30-year rates aren’t loaded yet.</div>'; }
   if(k==='hhc') return '<div class="f">Plan<select data-f="hhc">'+pbOpts([['Classic','Classic'],['Premier','Premier'],['Deluxe','Deluxe']],c.hhc)+'</select></div>';
+  if(k==='dvh'&&dentalCo()==='sparkle') return '<div class="two"><div class="f">Sparkle Care Dental<div style="padding:6px 0">$4,500 / member / yr · $50 deductible</div></div></div>';
+  if(k==='dvh'&&dvhIs7016()) return '<div class="two"><div class="f">Annual max<select data-f="dvh.max">'+pbOpts(pbAmt(dvh7016Maxes()),dvh7016Max(c.dvh.max))+'</select></div><div class="f">Deductible<div style="padding:6px 0">$100 fixed</div></div></div>';
   if(k==='dvh') return '<div class="two"><div class="f">Annual max<select data-f="dvh.max">'+pbOpts(pbAmt(['1000','1500','3000','5000']),c.dvh.max)+'</select></div><div class="f">Deductible<select data-f="dvh.ded">'+pbOpts([['0','$0'],['100','$100']],c.dvh.ded)+'</select></div></div>';
   return '';
 }
@@ -4166,6 +4227,8 @@ function pbSummary(k,c,live){
   if(k==='gap') return m(c.gap.daily)+'/day in hospital · '+m(c.gap.adm)+' admission'+(+c.gap.outp?' · '+m(c.gap.outp)+' outpatient':'')+(c.gap.ea?' · $250 ER':'');
   if(k==='chas') return [c.chas.cancer?'Cancer '+m(c.chas.cancer):'',c.chas.hs?'Heart attack & stroke '+m(c.chas.hs):''].filter(Boolean).join(' · ')+' lump sum';
   if(k==='hhc') return c.hhc+' plan';
+  if(k==='dvh'&&dentalCo()==='sparkle') return '$4,500 per member per year · $50 deductible · no waiting periods · Bento / Cigna DPPO network';
+  if(k==='dvh'&&c.dvh&&dvhIs7016()) return m(dvh7016Max(c.dvh.max))+' annual max · $100 deductible · vision & hearing included (7016 plan)';
   if(k==='dvh'&&c.dvh){ var rr=dvhRiders(c.dvh); return m(c.dvh.max)+' annual max · '+m(c.dvh.ded||0)+' deductible · '+(rr.vis||rr.hear?'+ '+[rr.vis?'vision':'',rr.hear?'hearing':''].filter(Boolean).join(' & ')+' rider'+(rr.vis&&rr.hear?'s':''):'dental only'); }
   if(k==='lbp'||k==='lbs'){ var lc=c.lb[k.slice(2)]; return m(lc.face)+' term life · 20-year · '+((live&&live.name||'').match(/\(([^)]+)\)$/)||[,'Mutual of Omaha'])[1]; }
   return '';
@@ -4184,7 +4247,7 @@ function pbReprice(){ autoPriceTiers(); fill(); compute(); autosave(); }
    Elite?" comparison. A different product replaces it. */
 var BEN_DATA={}, BEN_VIEW=[];
 var BEN_FILE={afc:'afc',sdr:'sdr',his:'his',acc:'acc',gap:'gap',chas:'chas',hhc:'hhc',dvh:'dvh',lbp:'lb',lbs:'lb'};
-function benFileFor(k,c){ if(k==='base') return c.base==='lifex'?'lifex':(c.base==='triad'?'triad':null); return BEN_FILE[k]||null; }
+function benFileFor(k,c){ if(k==='base') return c.base==='lifex'?'lifex':(c.base==='triad'?'triad':null); if(k==='dvh'&&dentalCo()==='sparkle') return 'sparkle'; if(k==='dvh'&&dvhIs7016()) return 'dvh7016'; return BEN_FILE[k]||null; }
 function benCol(k,c){ switch(k){
   case 'afc': return c.afc; case 'acc': return String(c.acc||1); case 'hhc': return c.hhc; case 'dvh': return String((c.dvh&&c.dvh.max)||'');
   case 'lbp': return (c.lb&&c.lb.p&&c.lb.p.carrier)||'moo'; case 'lbs': return (c.lb&&c.lb.s&&c.lb.s.carrier)||'moo';
@@ -4452,11 +4515,17 @@ function renderBuilder(){
   html+='<div class="pborder" style="color:'+(ok?'var(--green)':'var(--maroon)')+'">'+(ok?(ladder?'✓ Prices step up Good → Better → Best.':'Pivot view — LifeX below, Manhattan leads, Cigna above. Not a price ladder.'):'⚠ The packages no longer step up in price (Good $'+totals.good.toFixed(2)+' · Better $'+totals.better.toFixed(2)+' · Best $'+totals.best.toFixed(2)+'). Clients read the middle as the value choice — fix the order before presenting.')+'</div>';
   // Dental add-on
   var cB=effCfg('best'), dv=pDVH(HF_RATES,age,householdKey(),cB.dvh,st), inAll=['good','better','best'].every(function(t){ return (S.packages[t].dropped||[]).indexOf('dvh')<0; });
-  html+='<div class="pbaddon"><div style="min-width:220px"><div style="font-size:11px;font-weight:700;letter-spacing:.06em;color:#8a6a1f;text-transform:uppercase">Add-on</div><div style="font-weight:700">Dental · Vision · Hearing Select<button type="button" class="pbinfo" data-ben="dvh" data-bt="best" title="Benefits — Dental, Vision & Hearing" aria-label="Benefits for Dental, Vision and Hearing">i</button></div></div>'
-    +'<select data-act="dvh" data-f="dvh.max">'+pbOpts(pbAmt(['1000','1500','3000','5000']),cB.dvh.max)+'</select>'
-    +'<select data-act="dvh" data-f="dvh.ded">'+pbOpts([['0','$0 deductible'],['100','$100 deductible']],cB.dvh.ded)+'</select>'
-    +'<label style="display:flex;gap:5px;align-items:center;font-size:13px"><input type="checkbox" data-act="dvhr" data-f="vis"'+(dvhRiders(cB.dvh).vis?' checked':'')+'> Vision rider</label>'
-    +'<label style="display:flex;gap:5px;align-items:center;font-size:13px"><input type="checkbox" data-act="dvhr" data-f="hear"'+(dvhRiders(cB.dvh).hear?' checked':'')+'> Hearing rider</label>'
+  html+='<div class="pbaddon"><div style="min-width:220px"><div style="font-size:11px;font-weight:700;letter-spacing:.06em;color:#8a6a1f;text-transform:uppercase">Add-on</div><div style="font-weight:700">'+(dentalCo(st)==='sparkle'?'Sparkle Care Dental':dvhIs7016(st)?'Dental, Vision &amp; Hearing (7016)':'Dental · Vision · Hearing Select')+'<button type="button" class="pbinfo" data-ben="dvh" data-bt="best" title="Benefits — Dental, Vision & Hearing" aria-label="Benefits for Dental, Vision and Hearing">i</button></div></div>'
+    +(mlDentalSold(st)&&sparkleSold(st)?'<select data-act="dentalco" title="Dental plan"><option value="ml"'+(dentalCo(st)==='ml'?' selected':'')+'>ManhattanLife</option><option value="sparkle"'+(dentalCo(st)==='sparkle'?' selected':'')+'>Sparkle Care</option></select>':'')
+    +(dentalCo(st)==='sparkle'
+      ? '<span style="font-size:13px;color:var(--muted)">$4,500 per member per year · $50 deductible · no waiting periods · Bento / Cigna DPPO network · <a href="'+SPARKLE.search+'" target="_blank" rel="noopener">find a Bento dentist ↗</a></span>'
+      : dvhIs7016(st)
+      ? '<select data-act="dvh" data-f="dvh.max">'+pbOpts(pbAmt(dvh7016Maxes(st)),dvh7016Max(cB.dvh.max,st))+'</select>'
+        +'<span style="font-size:13px;color:var(--muted)">7016 plan · $100 deductible · vision &amp; hearing included</span>'
+      : '<select data-act="dvh" data-f="dvh.max">'+pbOpts(pbAmt(['1000','1500','3000','5000']),cB.dvh.max)+'</select>'
+        +'<select data-act="dvh" data-f="dvh.ded">'+pbOpts([['0','$0 deductible'],['100','$100 deductible']],cB.dvh.ded)+'</select>'
+        +'<label style="display:flex;gap:5px;align-items:center;font-size:13px"><input type="checkbox" data-act="dvhr" data-f="vis"'+(dvhRiders(cB.dvh).vis?' checked':'')+'> Vision rider</label>'
+        +'<label style="display:flex;gap:5px;align-items:center;font-size:13px"><input type="checkbox" data-act="dvhr" data-f="hear"'+(dvhRiders(cB.dvh).hear?' checked':'')+'> Hearing rider</label>')
     +'<span style="flex:1"></span><b>'+(dv.price!=null?pbMoney(dv.price)+'/mo':'<span style="color:var(--muted);font-weight:500">'+(dv.note||'not available')+'</span>')+'</b>'
     +'<label style="display:flex;gap:6px;align-items:center;font-size:13px"><input type="checkbox" data-act="dvhinc"'+(inAll?' checked':'')+'> Add to all three packages</label></div>';
   host.innerHTML=html;
@@ -4492,6 +4561,7 @@ function renderBuilder(){
   var rl=host.querySelector('[data-act="reload"]'); if(rl) rl.onclick=function(){ ['good','better','best'].forEach(pbResetTier); pbReprice(); };
   host.querySelectorAll('[data-act="reset1"]').forEach(function(b){ b.onclick=function(){ pbResetTier(b.closest('.pbcol').dataset.t); pbReprice(); }; });
   host.querySelectorAll('[data-lineup]').forEach(function(b){ b.onclick=function(){ pbApplyLineup(b.dataset.lineup); }; });
+  var dco=host.querySelector('[data-act="dentalco"]'); if(dco) dco.onchange=function(){ S.dentalCo=dco.value; pbReprice(); autosave(); };
   host.querySelectorAll('[data-act="dvhr"]').forEach(function(el){ el.onchange=function(){ ['good','better','best'].forEach(function(t){ var c=effCfg(t); c.dvh=c.dvh||{max:'1500',ded:'0'}; c.dvh[el.dataset.f]=el.checked; }); pbReprice(); }; });
   host.querySelectorAll('[data-act="dvh"]').forEach(function(el){ el.onchange=function(){ ['good','better','best'].forEach(function(t){ pbSet(effCfg(t),el.dataset.f,el.value); }); pbReprice(); }; });
   var inc=host.querySelector('[data-act="dvhinc"]'); if(inc) inc.onchange=function(){ S.dvhChoice=inc.checked?'included':'addon'; ['good','better','best'].forEach(function(t){ var pk=S.packages[t]; pk.dropped=(pk.dropped||[]).filter(function(x){ return x!=='dvh'; }); if(!inc.checked) pk.dropped.push('dvh'); }); pbReprice(); };
@@ -4567,9 +4637,10 @@ function kidsShowCount(){ var on=$('in_who_kids')&&$('in_who_kids').checked, w=$
 function medTypeahead(inp,onPick){ var box=document.createElement('div'); box.className='medsug'; inp.parentNode.insertBefore(box,inp.nextSibling);
   var hide=function(){ setTimeout(function(){ box.style.display='none'; },150); };
   inp.addEventListener('input',function(){ var q=inp.value.trim(); var hits=q.length>=2?medSuggest(q,8):[];
-    box.innerHTML=hits.map(function(h,j){ return '<button type="button"'+(j?'':' class="hl"')+'>'+h+'</button>'; }).join(''); box.style.display=hits.length?'block':'none';
-    box.querySelectorAll('button').forEach(function(b){ b.onmousedown=function(e){ e.preventDefault(); inp.value=b.textContent; box.style.display='none'; onPick(b.textContent); }; }); });
-  inp.addEventListener('keydown',function(e){ if(e.key==='Enter'){ var f=box.querySelector('button'); if(f&&box.style.display==='block'){ e.preventDefault(); inp.value=f.textContent; box.style.display='none'; onPick(f.textContent); } } });
+    box.innerHTML=hits.map(function(h,j){ return '<button type="button" data-med="'+String(h).replace(/"/g,'&quot;')+'"'+(j?'':' class="hl"')+'>'+medOption(h,q)+'</button>'; }).join(''); box.style.display=hits.length?'block':'none';
+    /* the label shows both names; the value picked is the canonical one */
+    box.querySelectorAll('button').forEach(function(b){ b.onmousedown=function(e){ e.preventDefault(); var pick=b.getAttribute('data-med'); inp.value=pick; box.style.display='none'; onPick(pick); }; }); });
+  inp.addEventListener('keydown',function(e){ if(e.key==='Enter'){ var f=box.querySelector('button'); if(f&&box.style.display==='block'){ e.preventDefault(); var pick=f.getAttribute('data-med'); inp.value=pick; box.style.display='none'; onPick(pick); } } });
   inp.addEventListener('blur',hide); }
 function renderMedFlags(){ var host=$('medFlags'); if(!host) return; var fl=popMedFlags();
   host.innerHTML=fl.map(function(f,i){ return '<div class="mflag"><span><b>'+f.m+'</b> is usually for <b>'+f.c+'</b> — is that why?</span><button type="button" class="yes" data-i="'+i+'">Yes, add it</button><button type="button" data-no="'+i+'">No</button></div>'; }).join('');

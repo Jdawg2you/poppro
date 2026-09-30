@@ -73,14 +73,18 @@ if (MODE === 'dvh') try {
   const t = tab(l.find(x => x.type === 'page').webSocketDebuggerUrl); await t.open; await t.send('Runtime.enable'); await t.send('Page.enable');
   await t.send('Page.navigate', { url: BASE + '/tool/' }); await sleep(4500);
   const r = await t.ev(`(function(){ var ALL='AL AK AZ AR CA CO CT DE DC FL GA HI ID IL IN IA KS KY LA ME MD MA MI MN MS MO MT NE NV NH NJ NM NY NC ND OH OK OR PA RI SC SD TN TX UT VT VA WA WV WI WY'.split(' ');
-    var sold=ML_OFFERED.dvh.split(' '), bad=[], priced=0, notsold=0;
+    S.dentalCo=undefined; var sold=ML_OFFERED.dvh.split(' '), bad=[], priced=0, notsold=0, p7=0, sp=0;
     ALL.forEach(function(st){ ['i','s','c','f'].forEach(function(hh){ [['1000','0'],['1500','100'],['3000','0'],['5000','100']].forEach(function(c){ [30,50,70].forEach(function(age){
       var r=pDVH(HF_RATES,age,hh,{max:c[0],ded:c[1]},st), g=prGroup(301,st);
       if(sold.indexOf(st)>=0){ var t=g&&g.plans['$'+c[0]+' Benefit - $'+c[1]+' Deductible | $'+c[1]+' Deductible'], a=t&&t[hh.toUpperCase()], want=a?a[1][age-a[0]]:null;
         if(r.price==null||want==null||r.price!==want) bad.push(st+' '+hh+' '+c+' '+age+' got '+r.price+' want '+want); else priced++; }
+      else if(typeof dvhIs7016==='function'&&prGroup(150,st)){ var mx=dvh7016Max(c[0],st), k7='$'+Number(mx).toLocaleString('en-US')+' Benefit | $'+Number(mx).toLocaleString('en-US')+' Benefit', a7=prGroup(150,st).plans[k7][hh.toUpperCase()], w7=a7?a7[1][age-a7[0]]:null;
+        w7=w7===undefined?null:w7;
+        if(r.price!==w7||!(w7==null||r.plan7016)) bad.push(st+' 7016 '+hh+' '+c+' '+age+' got '+r.price+' want '+w7); else p7++; }
+      else if(typeof sparkleSold==='function'&&sparkleSold(st)){ if(r.price!==SPARKLE.rates[hh]||!r.sparkle) bad.push(st+' sparkle '+hh+' got '+r.price); else sp++; }
       else { if(r.price!=null||!/not sold in/.test(r.note)) bad.push(st+' should be not sold: '+JSON.stringify(r)); else notsold++; } }); }); }); });
-    return {sold:sold.length, priced:priced, notsold:notsold, bad:bad.slice(0,5), nbad:bad.length}; })()`);
-  console.log(`DVH ${r.nbad ? 'FAILED ' + r.nbad + ': ' + r.bad.join(' ; ') : 'ok'} sold-states=${r.sold} priced=${r.priced} not-sold=${r.notsold}`);
+    return {sold:sold.length, priced:priced, p7:p7, s7:(ML_OFFERED.dvh7016||'').split(' ').filter(Boolean).length, sp:sp, notsold:notsold, bad:bad.slice(0,5), nbad:bad.length}; })()`);
+  console.log(`DVH ${r.nbad ? 'FAILED ' + r.nbad + ': ' + r.bad.join(' ; ') : 'ok'} sold-states=${r.sold} priced=${r.priced} plan7016-states=${r.s7} plan7016=${r.p7} sparkle-only=${r.sp} not-sold=${r.notsold}`);
   code = r.nbad ? 1 : 0; t.close();
 } catch (e) { console.log('DVH FAILED ' + e.message); }
 else if (MODE === 'load') try {

@@ -1,0 +1,397 @@
+{
+  "product": "dvh7016",
+  "name": "Dental, Vision and Hearing (7016)",
+  "carrier": "ManhattanLife",
+  "columns": {
+    "by": "max",
+    "values": [
+      "1000",
+      "1500",
+      "3000",
+      "5000"
+    ]
+  },
+  "brochures": [
+    {
+      "code": "DVH7016-MDBR_0525",
+      "file": "DVH7016-MDBR_0525 (MD Dental Vision Hearing (7016) - Dental, Vision & Hearing 7016 Brochure).pdf",
+      "states": [
+        "MD"
+      ],
+      "page": "1-2",
+      "notes": [
+        "Limited benefit insurance policy for dental, vision and hearing expenses (form AK7016). POP Pro offers it only where DVH Select is not sold.",
+        "Family rates include up to three children; additional children are charged the age 3-17 rate per person. Rate uses the age of the oldest applicant.",
+        "Brochure: 'This is not a complete disclosure of plan qualifications and limitations' — full list at disclosure.manhattanlife.com."
+      ],
+      "sections": [
+        {
+          "title": "Plan basics",
+          "rows": [
+            {
+              "label": "Policy year maximum benefit",
+              "values": {
+                "*": "$1,000, $1,500, $3,000 or $5,000 per policy year (choose one)"
+              },
+              "key": true
+            },
+            {
+              "label": "Policy year deductible",
+              "values": {
+                "*": "$100 per person"
+              },
+              "key": true
+            },
+            {
+              "label": "Vision and hearing",
+              "values": {
+                "*": "Included in the policy — no separate riders"
+              },
+              "key": true
+            },
+            {
+              "label": "Issue age",
+              "values": {
+                "*": "Ages 18 - 85"
+              }
+            },
+            {
+              "label": "Dentist choice",
+              "values": {
+                "*": "Any dentist; the Careington Maximum Care PPO network is optional"
+              }
+            },
+            {
+              "label": "Issue and renewal",
+              "values": {
+                "*": "Guaranteed issue; guaranteed renewable (premiums subject to change)"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Dental coverage",
+          "rows": [
+            {
+              "label": "Preventive — semi-annual exams, cleaning and X-rays",
+              "values": {
+                "*": "Year 1: 60% · Year 2: 70% · Year 3 and thereafter: 80%"
+              },
+              "key": true
+            },
+            {
+              "label": "Basic — X-rays, fillings and extractions (other than full mouth)",
+              "values": {
+                "*": "Year 1: 60% · Year 2: 70% · Year 3 and thereafter: 80%"
+              },
+              "key": true
+            },
+            {
+              "label": "Major — bridges, crowns, dentures or partials, full-mouth extractions, root canals",
+              "values": {
+                "*": "Year 1: 0% · Year 2: 70% · Year 3 and thereafter: 80%"
+              },
+              "key": true
+            },
+            {
+              "label": "Waiting periods",
+              "values": {
+                "*": "None for preventive and basic; 12 months for major services"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Vision coverage",
+          "rows": [
+            {
+              "label": "Eye exam, refraction, eyeglasses or contact lenses",
+              "values": {
+                "*": "Year 1: 60% · Year 2: 70% · Year 3 and thereafter: 80%"
+              },
+              "key": true
+            },
+            {
+              "label": "Waiting period",
+              "values": {
+                "*": "6 months on eyeglasses and contact lenses"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Hearing coverage",
+          "rows": [
+            {
+              "label": "Exam, hearing aid and necessary repairs or supplies",
+              "values": {
+                "*": "Year 1: 60% · Year 2: 70% · Year 3 and thereafter: 80%"
+              },
+              "key": true
+            },
+            {
+              "label": "Waiting period",
+              "values": {
+                "*": "12 months on new hearing aids and existing hearing aid repairs"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "code": "DVH7016-ILKSMTBR_1125",
+      "file": "DVH7016-ILKSMTBR_1125 (MT Dental Vision Hearing (7016) - Dental, Vision & Hearing Brochure).pdf",
+      "states": [
+        "MT"
+      ],
+      "page": "1-2",
+      "notes": [
+        "Limited benefit insurance policy for dental, vision and hearing expenses (form AK7016). POP Pro offers it only where DVH Select is not sold.",
+        "Family rates include up to three children; additional children are charged the age 3-17 rate per person. Rate uses the age of the oldest applicant.",
+        "Brochure: 'This is not a complete disclosure of plan qualifications and limitations' — full list at disclosure.manhattanlife.com."
+      ],
+      "sections": [
+        {
+          "title": "Plan basics",
+          "rows": [
+            {
+              "label": "Policy year maximum benefit",
+              "values": {
+                "*": "$1,000, $1,500, $3,000 or $5,000 per policy year (choose one)"
+              },
+              "key": true
+            },
+            {
+              "label": "Policy year deductible",
+              "values": {
+                "*": "$100 per person"
+              },
+              "key": true
+            },
+            {
+              "label": "Vision and hearing",
+              "values": {
+                "*": "Included in the policy — no separate riders"
+              },
+              "key": true
+            },
+            {
+              "label": "Issue age",
+              "values": {
+                "*": "Ages 18 - 85"
+              }
+            },
+            {
+              "label": "Dentist choice",
+              "values": {
+                "*": "Any dentist; the Careington Maximum Care PPO network is optional"
+              }
+            },
+            {
+              "label": "Issue and renewal",
+              "values": {
+                "*": "Guaranteed issue; guaranteed renewable (premiums subject to change)"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Dental coverage",
+          "rows": [
+            {
+              "label": "Preventive — semi-annual exams, cleaning and X-rays",
+              "values": {
+                "*": "Year 1: 60% · Year 2: 70% · Year 3 and thereafter: 80%"
+              },
+              "key": true
+            },
+            {
+              "label": "Basic — X-rays, fillings and extractions (other than full mouth)",
+              "values": {
+                "*": "Year 1: 60% · Year 2: 70% · Year 3 and thereafter: 80%"
+              },
+              "key": true
+            },
+            {
+              "label": "Major — bridges, crowns, dentures or partials, full-mouth extractions, root canals",
+              "values": {
+                "*": "Year 1: 0% · Year 2: 70% · Year 3 and thereafter: 80%"
+              },
+              "key": true
+            },
+            {
+              "label": "Waiting periods",
+              "values": {
+                "*": "None for preventive and basic; 12 months for major services"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Vision coverage",
+          "rows": [
+            {
+              "label": "Eye exam, refraction, eyeglasses or contact lenses",
+              "values": {
+                "*": "Year 1: 60% · Year 2: 70% · Year 3 and thereafter: 80%"
+              },
+              "key": true
+            },
+            {
+              "label": "Waiting period",
+              "values": {
+                "*": "6 months on eyeglasses and contact lenses"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Hearing coverage",
+          "rows": [
+            {
+              "label": "Exam, hearing aid and necessary repairs or supplies",
+              "values": {
+                "*": "Year 1: 60% · Year 2: 70% · Year 3 and thereafter: 80%"
+              },
+              "key": true
+            },
+            {
+              "label": "Waiting period",
+              "values": {
+                "*": "12 months on new hearing aids and existing hearing aid repairs"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "code": "DVH-VABR_1025",
+      "file": "DVH-VABR_1025 (VA Dental Vision Hearing (7016) - Dental, Vision & Hearing Brochure).pdf",
+      "states": [
+        "VA"
+      ],
+      "page": "1-2",
+      "notes": [
+        "Limited benefit insurance policy for dental, vision and hearing expenses (form AK7016). POP Pro offers it only where DVH Select is not sold.",
+        "Family rates include up to three children; additional children are charged the age 3-17 rate per person. Rate uses the age of the oldest applicant.",
+        "Brochure: 'This is not a complete disclosure of plan qualifications and limitations' — full list at disclosure.manhattanlife.com."
+      ],
+      "sections": [
+        {
+          "title": "Plan basics",
+          "rows": [
+            {
+              "label": "Policy year maximum benefit",
+              "values": {
+                "*": "$1,000 or $1,500 per policy year (choose one)"
+              },
+              "key": true
+            },
+            {
+              "label": "Policy year deductible",
+              "values": {
+                "*": "$100 per person"
+              },
+              "key": true
+            },
+            {
+              "label": "Vision and hearing",
+              "values": {
+                "*": "Included in the policy — no separate riders"
+              },
+              "key": true
+            },
+            {
+              "label": "Issue age",
+              "values": {
+                "*": "Ages 18 - 75; guaranteed renewable to age 80"
+              }
+            },
+            {
+              "label": "Dentist choice",
+              "values": {
+                "*": "Any dentist; the Careington Maximum Care PPO network is optional"
+              }
+            },
+            {
+              "label": "Issue and renewal",
+              "values": {
+                "*": "Guaranteed issue; guaranteed renewable (premiums subject to change)"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Dental coverage",
+          "rows": [
+            {
+              "label": "Preventive — semi-annual exams, cleaning and X-rays",
+              "values": {
+                "*": "Year 1: 60% · Year 2: 70% · Year 3 and thereafter: 80%"
+              },
+              "key": true
+            },
+            {
+              "label": "Basic — X-rays, fillings and extractions (other than full mouth)",
+              "values": {
+                "*": "Year 1: 60% · Year 2: 70% · Year 3 and thereafter: 80%"
+              },
+              "key": true
+            },
+            {
+              "label": "Major — bridges, crowns, dentures or partials, full-mouth extractions, root canals",
+              "values": {
+                "*": "Year 1: 0% · Year 2: 70% · Year 3 and thereafter: 80%"
+              },
+              "key": true
+            },
+            {
+              "label": "Waiting periods",
+              "values": {
+                "*": "None for preventive and basic; 12 months for major services"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Vision coverage",
+          "rows": [
+            {
+              "label": "Eye exam, refraction, eyeglasses or contact lenses",
+              "values": {
+                "*": "Year 1: 60% · Year 2: 70% · Year 3 and thereafter: 80%"
+              },
+              "key": true
+            },
+            {
+              "label": "Waiting period",
+              "values": {
+                "*": "6 months on eyeglasses and contact lenses"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Hearing coverage",
+          "rows": [
+            {
+              "label": "Exam, hearing aid and necessary repairs or supplies",
+              "values": {
+                "*": "Year 1: 60% · Year 2: 70% · Year 3 and thereafter: 80%"
+              },
+              "key": true
+            },
+            {
+              "label": "Waiting period",
+              "values": {
+                "*": "12 months on new hearing aids and existing hearing aid repairs"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,919 +1,933 @@
 {
- "product": "dvh",
- "name": "Dental Vision Hearing Select",
- "carrier": "ManhattanLife",
- "columns": {
-  "by": "max",
-  "values": [
-   "1000",
-   "1500",
-   "3000",
-   "5000"
+  "product": "dvh",
+  "name": "Dental Vision Hearing Select",
+  "carrier": "ManhattanLife",
+  "columns": {
+    "by": "max",
+    "values": [
+      "1000",
+      "1500",
+      "3000",
+      "5000"
+    ]
+  },
+  "tokens": {
+    "{dvh.ded}": "the policy year deductible chosen on the row (0 or 100)"
+  },
+  "brochures": [
+    {
+      "code": "DVHS-BR_0926",
+      "file": "DVHS-BR_0926 (AL Dental Vision Hearing Select - Dental, Vision and Hearing Select).pdf",
+      "states": [
+        "AL",
+        "AR",
+        "AZ",
+        "CO",
+        "CT",
+        "DC",
+        "IA",
+        "ID",
+        "IL",
+        "LA",
+        "ME",
+        "NE",
+        "OK",
+        "OR",
+        "TN",
+        "WI",
+        "WY"
+      ],
+      "page": "2-3",
+      "sections": [
+        {
+          "title": "Plan basics",
+          "rows": [
+            {
+              "label": "Policy year maximum benefit",
+              "values": {
+                "1000": "$1,000 per policy year",
+                "1500": "$1,500 per policy year",
+                "3000": "$3,000 per policy year",
+                "5000": "$5,000 per policy year"
+              },
+              "key": true
+            },
+            {
+              "label": "Policy year deductible",
+              "values": {
+                "*": "{dvh.ded} per person (does not apply to Preventive Services)"
+              },
+              "key": true
+            },
+            {
+              "label": "Issue age",
+              "values": {
+                "*": "Ages 18 - 99"
+              }
+            },
+            {
+              "label": "Dentist choice",
+              "values": {
+                "*": "In-network (Careington Maximum Care PPO Dental Network) or out-of-network; use of the network is optional"
+              },
+              "note": "Out-of-network is paid on Usual, Customary and Reasonable (UCR) charges; network discounts may help extend the policy year maximum."
+            }
+          ]
+        },
+        {
+          "title": "Waiting periods",
+          "rows": [
+            {
+              "label": "Waiting periods",
+              "values": {
+                "*": "None for preventive, basic, major or other dental services; 12 months for orthodontia; 6 months for eyeglass frames (Vision Rider); 12 months for hearing aids and repairs/supplies (Hearing Rider)"
+              },
+              "key": true
+            }
+          ]
+        },
+        {
+          "title": "Preventive services",
+          "rows": [
+            {
+              "label": "Exams, X-rays, cleanings, fluoride",
+              "values": {
+                "*": "In-network: 100% of contracted rate. Out-of-network: 80% of UCR"
+              },
+              "note": "Dental exams, 2 per year; bitewing X-rays, 2 per year; cleanings, 2 per year; fluoride treatment for age 16 and under, 2 visits per year",
+              "key": true
+            },
+            {
+              "label": "Waiting period",
+              "values": {
+                "*": "None"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Basic services",
+          "rows": [
+            {
+              "label": "Fillings, simple extractions, basic oral surgery and other basic services",
+              "values": {
+                "*": "In-network: 65% of contracted rate 1st yr., 80% thereafter. Out-of-network: 65% of UCR 1st yr., 80% thereafter"
+              },
+              "note": "Limited oral evaluation, diagnostic consultation, emergency palliative treatment, panoramic X-ray, periapical X-ray, periodontal non-surgical service, basic restorative service, filling, basic oral surgery, periodontal service, non-surgical extraction",
+              "key": true
+            },
+            {
+              "label": "Waiting period",
+              "values": {
+                "*": "None"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Major services",
+          "rows": [
+            {
+              "label": "Crowns, root canals, dentures/bridges, implants and other major services",
+              "values": {
+                "*": "In-network: 20% of contracted rate 1st yr., 50% thereafter. Out-of-network: 20% of UCR 1st yr., 50% thereafter"
+              },
+              "note": "Major restorative service, inlay/onlay/crown, endodontic service, periodontal service, prosthodontic service, implants",
+              "key": true
+            },
+            {
+              "label": "Implants lifetime maximum",
+              "values": {
+                "*": "$1,500"
+              }
+            },
+            {
+              "label": "Waiting period",
+              "values": {
+                "*": "None"
+              }
+            }
+          ]
+        },
+        {
+          "title": "All other medically necessary services",
+          "rows": [
+            {
+              "label": "Services not listed above",
+              "values": {
+                "*": "In-network: 20% of contracted rate 1st yr., 50% thereafter. Out-of-network: 20% of UCR 1st yr., 50% thereafter"
+              }
+            },
+            {
+              "label": "Waiting period",
+              "values": {
+                "*": "None"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Orthodontia",
+          "rows": [
+            {
+              "label": "Straightening of teeth (for all ages)",
+              "values": {
+                "*": "In-network: Year 1 - N/A; Year 2+ - 50%. Out-of-network: N/A"
+              }
+            },
+            {
+              "label": "Orthodontia lifetime maximum",
+              "values": {
+                "*": "$1,500"
+              }
+            },
+            {
+              "label": "Waiting period",
+              "values": {
+                "*": "12 months"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Vision Rider (optional, added cost)",
+          "rows": [
+            {
+              "label": "Eye exam, refraction and lenses (single, bifocal, trifocal, progressive)",
+              "values": {
+                "*": "1st year: 60% of UCR; 2nd year: 70% of UCR; thereafter: 80% of UCR; 1 per year"
+              },
+              "key": true
+            },
+            {
+              "label": "Eyeglass frame or contact lenses",
+              "values": {
+                "*": "$200 maximum per year"
+              }
+            },
+            {
+              "label": "Anti-reflective lenses",
+              "values": {
+                "*": "$45; 1 per year"
+              }
+            },
+            {
+              "label": "Polycarbonate lenses",
+              "values": {
+                "*": "$40; 1 per year"
+              }
+            },
+            {
+              "label": "Contact lens fitting fee",
+              "values": {
+                "*": "$15; 1 per year"
+              }
+            },
+            {
+              "label": "Waiting period",
+              "values": {
+                "*": "6 months on eyeglass frames"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Hearing Rider (optional, added cost)",
+          "rows": [
+            {
+              "label": "Hearing exam, hearing aid and necessary repairs or supplies",
+              "values": {
+                "*": "$750 maximum (per ear, per year)"
+              },
+              "key": true
+            },
+            {
+              "label": "Waiting period",
+              "values": {
+                "*": "12 months for hearing aid and necessary repairs or supplies"
+              }
+            }
+          ]
+        }
+      ],
+      "notes": [
+        "Limited benefit insurance policy for dental, vision and hearing expenses; guaranteed issue; guaranteed renewable for life (premiums subject to change).",
+        "Sold as Dental only, Dental + Vision, Dental + Hearing, or Dental + Vision + Hearing: vision and hearing are riders with their own premium. POP Pro prices each rider only when it is ticked in the dental add-on.",
+        "Family rates include up to 3 children.",
+        "Brochure: 'This is not a complete disclosure of plan qualifications and limitations' — full list at disclosure.manhattanlife.com.",
+        "Brochure highlight: 'No waiting periods for Dental Services (except Orthodontia)'."
+      ]
+    },
+    {
+      "code": "DVHS-BR_0223",
+      "file": "DVHS-BR_0223 (OH Dental Vision Hearing Select - Dental, Hearing & Vision Select Brochure).pdf",
+      "states": [
+        "OH",
+        "SD",
+        "UT",
+        "WV"
+      ],
+      "page": "3",
+      "sameAs": "DVHS-BR_0926",
+      "notes": []
+    },
+    {
+      "code": "DVHS-CAKSTXBR_1225",
+      "file": "DVHS-CAKSTXBR_1225 (CA Dental Vision Hearing Select - Dental, Vision & Hearing Select Brochure).pdf",
+      "states": [
+        "CA",
+        "KS",
+        "TX"
+      ],
+      "page": "3",
+      "sameAs": "DVHS-BR_0926",
+      "notes": []
+    },
+    {
+      "code": "DVHS-DE-BR_0825",
+      "file": "DVHS-DE-BR_0825 (DE Dental Vision Hearing Select - Dental, Vision & Hearing Select Brochure).pdf",
+      "states": [
+        "DE"
+      ],
+      "page": "3",
+      "sameAs": "DVHS-BR_0926",
+      "notes": []
+    },
+    {
+      "code": "DVHS-FLBR_0326",
+      "file": "DVHS-FLBR_0326 (FL Dental Vision Hearing Select - Dental, Vision & Hearing Select Brochure).pdf",
+      "states": [
+        "FL"
+      ],
+      "page": "3",
+      "sameAs": "DVHS-BR_0926",
+      "notes": []
+    },
+    {
+      "code": "DVHS-GABR_1125",
+      "file": "DVHS-GABR_1125 (GA Dental Vision Hearing Select - Dental, Vision & Hearing Select Brochure).pdf",
+      "states": [
+        "GA"
+      ],
+      "page": "3",
+      "sameAs": "DVHS-BR_0926",
+      "notes": []
+    },
+    {
+      "code": "DVHS-INBR_0326",
+      "file": "DVHS-INBR_0326 (IN Dental Vision Hearing Select - Dental, Vision & Hearing Select Brochure).pdf",
+      "states": [
+        "IN"
+      ],
+      "page": "3",
+      "sameAs": "DVHS-BR_0926",
+      "notes": []
+    },
+    {
+      "code": "DVHS-KYBR_0525",
+      "file": "DVHS-KYBR_0525 (KY Dental Vision Hearing Select - Dental, Vision and Hearing Select Brochure).pdf",
+      "states": [
+        "KY"
+      ],
+      "page": "3",
+      "sameAs": "DVHS-BR_0926",
+      "notes": []
+    },
+    {
+      "code": "DVHS-MIBR_1125",
+      "file": "DVHS-MIBR_1125 (MI Dental Vision Hearing Select - Dental, Vision & Hearing Select Brochure).pdf",
+      "states": [
+        "MI"
+      ],
+      "page": "3",
+      "sameAs": "DVHS-BR_0926",
+      "notes": []
+    },
+    {
+      "code": "DVHS-MSBR_0525",
+      "file": "DVHS-MSBR_0525 (MS Dental Vision Hearing Select - Dental, Vision and Hearing Select Brochure).pdf",
+      "states": [
+        "MS"
+      ],
+      "page": "3",
+      "sameAs": "DVHS-BR_0926",
+      "notes": []
+    },
+    {
+      "code": "DVHS-NCBR_1125",
+      "file": "DVHS-NCBR_1125 (NC Dental Vision Hearing Select - Dental, Vision & Hearing Select Brochure).pdf",
+      "states": [
+        "NC"
+      ],
+      "page": "3",
+      "sameAs": "DVHS-BR_0926",
+      "notes": []
+    },
+    {
+      "code": "DVHS-NDBR_0825",
+      "file": "DVHS-NDBR_0825 (ND Dental Vision Hearing Select - Dental, Vision & Hearing Brochure).pdf",
+      "states": [
+        "ND"
+      ],
+      "page": "3",
+      "sameAs": "DVHS-BR_0926",
+      "notes": []
+    },
+    {
+      "code": "DVHS-NVBR_0525",
+      "file": "DVHS-NVBR_0525 (NV Dental Vision Hearing Select - Dental, Vision and Hearing Select Brochure).pdf",
+      "states": [
+        "NV"
+      ],
+      "page": "3",
+      "sameAs": "DVHS-BR_0926",
+      "notes": []
+    },
+    {
+      "code": "DVHS-PABR_0525",
+      "file": "DVHS-PABR_0525 (PA Dental Vision Hearing Select - Dental, Vision and Hearing Select Brochure).pdf",
+      "states": [
+        "PA"
+      ],
+      "page": "3",
+      "sameAs": "DVHS-BR_0926",
+      "notes": []
+    },
+    {
+      "code": "DVHS-SCBR_1125",
+      "file": "DVHS-SCBR_1125 (SC Dental Vision Hearing Select - Dental, Vision & Hearing Select Brochure).pdf",
+      "states": [
+        "SC"
+      ],
+      "page": "3",
+      "sameAs": "DVHS-BR_0926",
+      "notes": []
+    },
+    {
+      "code": "DVHS-NJBR_0525",
+      "file": "DVHS-NJBR_0525 (NJ Dental Vision Hearing Select - Dental, Vision and Hearing Select Brochure).pdf",
+      "states": [
+        "NJ"
+      ],
+      "page": "2-3",
+      "sections": [
+        {
+          "title": "Plan basics",
+          "rows": [
+            {
+              "label": "Policy year maximum benefit",
+              "values": {
+                "1000": "$1,000 per policy year",
+                "1500": "$1,500 per policy year",
+                "3000": "$3,000 per policy year",
+                "5000": "$5,000 per policy year"
+              },
+              "key": true
+            },
+            {
+              "label": "Policy year deductible",
+              "values": {
+                "*": "{dvh.ded} per person (does not apply to Preventive Services)"
+              },
+              "key": true
+            },
+            {
+              "label": "Eligibility",
+              "values": {
+                "*": "Ages 18 - 99"
+              }
+            },
+            {
+              "label": "Dentist choice",
+              "values": {
+                "*": "In-network (Careington Maximum Care PPO Dental Network) or out-of-network; use of the network is optional"
+              },
+              "note": "Out-of-network is paid on Usual, Customary and Reasonable (UCR) charges; network discounts may help extend the policy year maximum."
+            }
+          ]
+        },
+        {
+          "title": "Waiting periods",
+          "rows": [
+            {
+              "label": "Waiting periods",
+              "values": {
+                "*": "None for preventive, basic or major services; 12 months for orthodontia; 6 months for eyeglass frames (Vision Rider); 12 months for hearing aids and repairs/supplies (Hearing Rider)"
+              },
+              "key": true
+            }
+          ]
+        },
+        {
+          "title": "Preventive services",
+          "rows": [
+            {
+              "label": "Exams, X-rays, cleanings, fluoride",
+              "values": {
+                "*": "In-network: 100% of contracted rate. Out-of-network: 80% of UCR"
+              },
+              "note": "Dental exams, 2 per year; bitewing X-rays, 2 per year; cleanings, 2 per year; fluoride treatment for age 16 and under, 2 visits per year",
+              "key": true
+            }
+          ]
+        },
+        {
+          "title": "Basic services",
+          "rows": [
+            {
+              "label": "Fillings, simple extractions, basic oral surgery and other basic services",
+              "values": {
+                "*": "In-network: 65% of contracted rate 1st yr., 80% thereafter. Out-of-network: 65% of UCR 1st yr., 80% thereafter"
+              },
+              "note": "Limited oral evaluation, diagnostic consultation, emergency palliative treatment, panoramic X-ray, periapical X-ray, periodontal non-surgical service, basic restorative service, filling, basic oral surgery, periodontal service, non-surgical extraction",
+              "key": true
+            }
+          ]
+        },
+        {
+          "title": "Major services",
+          "rows": [
+            {
+              "label": "Crowns, root canals, dentures/bridges, implants and other major services",
+              "values": {
+                "*": "In-network: 20% of contracted rate 1st yr., 50% thereafter. Out-of-network: 20% of UCR 1st yr., 50% thereafter"
+              },
+              "note": "Major restorative service, inlay/onlay/crown, endodontic service, periodontal service, prosthodontic service, implants",
+              "key": true
+            },
+            {
+              "label": "Implants lifetime maximum",
+              "values": {
+                "*": "$1,500"
+              }
+            }
+          ]
+        },
+        {
+          "title": "All other medically necessary services",
+          "rows": [
+            {
+              "label": "Services not listed above",
+              "values": {
+                "*": "In-network: Paid as UCR. Out-of-network: Paid as UCR"
+              },
+              "note": "NJ brochure says only 'Paid as UCR' here (other states: 20% 1st yr., 50% thereafter). It does not state a percentage — confirm with ManhattanLife before quoting a figure."
+            }
+          ]
+        },
+        {
+          "title": "Orthodontia",
+          "rows": [
+            {
+              "label": "Straightening of teeth (for all ages)",
+              "values": {
+                "*": "In-network: Year 1 - N/A; Year 2+ - 50%. Out-of-network: N/A"
+              }
+            },
+            {
+              "label": "Orthodontia lifetime maximum",
+              "values": {
+                "*": "$1,500"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Vision Rider (optional, added cost)",
+          "rows": [
+            {
+              "label": "Eye exam, refraction and lenses (single, bifocal, trifocal, progressive)",
+              "values": {
+                "*": "1st year: 60% of UCR; 2nd year: 70% of UCR; thereafter: 80% of UCR; 1 per year"
+              },
+              "key": true
+            },
+            {
+              "label": "Eyeglass frame or contact lenses",
+              "values": {
+                "*": "$200 maximum per year"
+              }
+            },
+            {
+              "label": "Anti-reflective lenses",
+              "values": {
+                "*": "$45; 1 per year"
+              }
+            },
+            {
+              "label": "Polycarbonate lenses",
+              "values": {
+                "*": "$40; 1 per year"
+              }
+            },
+            {
+              "label": "Contact lens fitting fee",
+              "values": {
+                "*": "$15; 1 per year"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Hearing Rider (optional, added cost)",
+          "rows": [
+            {
+              "label": "Hearing exam, hearing aid and necessary repairs or supplies",
+              "values": {
+                "*": "$750 maximum (per ear, per year)"
+              },
+              "key": true
+            }
+          ]
+        }
+      ],
+      "notes": [
+        "Limited benefit insurance policy for dental, vision and hearing expenses; guaranteed issue; guaranteed renewable for life (premiums subject to change).",
+        "Sold as Dental only, Dental + Vision, Dental + Hearing, or Dental + Vision + Hearing: vision and hearing are riders with their own premium. POP Pro prices each rider only when it is ticked in the dental add-on.",
+        "Family rates include up to 3 children.",
+        "Brochure: 'This is not a complete disclosure of plan qualifications and limitations' — full list at disclosure.manhattanlife.com.",
+        "Waiting periods are shown as brochure footnotes: 12 months on orthodontia and on hearing aids/repairs/supplies; 6 months on eyeglass frames."
+      ]
+    },
+    {
+      "code": "DVHS-MNBR_0525",
+      "file": "DVHS-MNBR_0525 (MN Dental Vision Hearing Select - Dental, Vision and Hearing Select Brochure).pdf",
+      "states": [
+        "MN"
+      ],
+      "page": "2-3",
+      "sections": [
+        {
+          "title": "Plan basics",
+          "rows": [
+            {
+              "label": "Policy year maximum benefit",
+              "values": {
+                "1000": "$1,000 per policy year",
+                "1500": "$1,500 per policy year",
+                "3000": "$3,000 per policy year",
+                "5000": "$5,000 per policy year"
+              },
+              "key": true
+            },
+            {
+              "label": "Policy year deductible",
+              "values": {
+                "*": "{dvh.ded} per person (does not apply to Preventive Services)"
+              },
+              "key": true
+            },
+            {
+              "label": "Eligibility",
+              "values": {
+                "*": "Ages 18 - 99"
+              }
+            },
+            {
+              "label": "Dentist choice",
+              "values": {
+                "*": "In-network (Careington Maximum Care PPO Dental Network) or out-of-network; use of the network is optional"
+              },
+              "note": "Out-of-network is paid on Usual, Customary and Reasonable (UCR) charges; network discounts may help extend the policy year maximum."
+            }
+          ]
+        },
+        {
+          "title": "Waiting periods",
+          "rows": [
+            {
+              "label": "Waiting periods",
+              "values": {
+                "*": "None shown in the MN brochure — including orthodontia, eyeglass frames and hearing aids"
+              },
+              "note": "MN highlight: 'No waiting periods for Dental Services' (other states add '(except Orthodontia)'). The MN brochure shows no vision or hearing waiting period either; confirm in the policy before promising day-one hearing aids.",
+              "key": true
+            }
+          ]
+        },
+        {
+          "title": "Preventive services",
+          "rows": [
+            {
+              "label": "Exams, X-rays, cleanings, fluoride",
+              "values": {
+                "*": "In-network: 100% of contracted rate. Out-of-network: 80% of UCR"
+              },
+              "note": "Dental exams, 2 per year; bitewing X-rays, 2 per year; cleanings, 2 per year; fluoride treatment for age 16 and under, 2 visits per year",
+              "key": true
+            }
+          ]
+        },
+        {
+          "title": "Basic services",
+          "rows": [
+            {
+              "label": "Fillings, simple extractions, basic oral surgery and other basic services",
+              "values": {
+                "*": "In-network: 65% of contracted rate 1st yr., 80% thereafter. Out-of-network: 65% of UCR 1st yr., 80% thereafter"
+              },
+              "note": "Limited oral evaluation, diagnostic consultation, emergency palliative treatment, panoramic X-ray, periapical X-ray, periodontal non-surgical service, basic restorative service, filling, basic oral surgery, periodontal service, non-surgical extraction",
+              "key": true
+            }
+          ]
+        },
+        {
+          "title": "Major services",
+          "rows": [
+            {
+              "label": "Crowns, root canals, dentures/bridges, implants and other major services",
+              "values": {
+                "*": "In-network: 20% of contracted rate 1st yr., 50% thereafter. Out-of-network: 20% of UCR 1st yr., 50% thereafter"
+              },
+              "note": "Major restorative service, inlay/onlay/crown, endodontic service, periodontal service, prosthodontic service, implants",
+              "key": true
+            },
+            {
+              "label": "Implants lifetime maximum",
+              "values": {
+                "*": "$1,500"
+              }
+            }
+          ]
+        },
+        {
+          "title": "All other medically necessary services",
+          "rows": [
+            {
+              "label": "Services not listed above",
+              "values": {
+                "*": "In-network: 20% of contracted rate 1st yr., 50% thereafter. Out-of-network: 20% of UCR 1st yr., 50% thereafter"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Orthodontia",
+          "rows": [
+            {
+              "label": "Straightening of teeth (for all ages)",
+              "values": {
+                "*": "In-network: 50% of contracted rate. Out-of-network: N/A"
+              }
+            },
+            {
+              "label": "Orthodontia lifetime maximum",
+              "values": {
+                "*": "$1,500"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Vision Rider (optional, added cost)",
+          "rows": [
+            {
+              "label": "Eye exam, refraction and lenses (single, bifocal, trifocal, progressive)",
+              "values": {
+                "*": "1st year: 60% of UCR; 2nd year: 70% of UCR; thereafter: 80% of UCR; 1 per year"
+              },
+              "key": true
+            },
+            {
+              "label": "Eyeglass frame or contact lenses",
+              "values": {
+                "*": "$200 maximum per year"
+              }
+            },
+            {
+              "label": "Anti-reflective lenses",
+              "values": {
+                "*": "$45; 1 per year"
+              }
+            },
+            {
+              "label": "Polycarbonate lenses",
+              "values": {
+                "*": "$40; 1 per year"
+              }
+            },
+            {
+              "label": "Contact lens fitting fee",
+              "values": {
+                "*": "$15; 1 per year"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Hearing Rider (optional, added cost)",
+          "rows": [
+            {
+              "label": "Hearing exam, hearing aid and necessary repairs or supplies",
+              "values": {
+                "*": "$750 maximum (per ear, per year)"
+              },
+              "key": true
+            }
+          ]
+        }
+      ],
+      "notes": [
+        "Limited benefit insurance policy for dental, vision and hearing expenses; guaranteed issue; guaranteed renewable for life (premiums subject to change).",
+        "Sold as Dental only, Dental + Vision, Dental + Hearing, or Dental + Vision + Hearing: vision and hearing are riders with their own premium. POP Pro prices each rider only when it is ticked in the dental add-on.",
+        "Family rates include up to 3 children.",
+        "Brochure: 'This is not a complete disclosure of plan qualifications and limitations' — full list at disclosure.manhattanlife.com.",
+        "MN orthodontia is 50% of contracted rate in-network with no year-1 exclusion shown (other states: N/A in year 1)."
+      ]
+    },
+    {
+      "code": "DVHS-NM-BR_0525",
+      "file": "DVHS-NM-BR_0525 (NM Dental Vision Hearing Select - Dental,Vision and Hearing Select Brochure).pdf",
+      "states": [
+        "NM"
+      ],
+      "page": "2",
+      "sections": [
+        {
+          "title": "Plan basics",
+          "rows": [
+            {
+              "label": "Policy year maximum benefit",
+              "values": {
+                "1000": "$1,000 per policy year",
+                "1500": "$1,500 per policy year",
+                "3000": "$3,000 per policy year",
+                "5000": "$5,000 per policy year — see note"
+              },
+              "note": "NM brochure's benefit summary lists only $1,000, $1,500 or $3,000, but its rate table also prints $5,000 rates. Confirm $5,000 is available in NM before selling it.",
+              "key": true
+            },
+            {
+              "label": "Policy year deductible",
+              "values": {
+                "*": "{dvh.ded} per person (does not apply to Preventive Services)"
+              },
+              "key": true
+            },
+            {
+              "label": "Eligibility",
+              "values": {
+                "*": "Ages 18 - 99"
+              }
+            },
+            {
+              "label": "Dentist choice",
+              "values": {
+                "*": "In-network (Careington Maximum Care PPO Dental Network) or out-of-network; use of the network is optional"
+              },
+              "note": "Out-of-network is paid on Usual, Customary and Reasonable (UCR) charges; network discounts may help extend the policy year maximum."
+            }
+          ]
+        },
+        {
+          "title": "Waiting periods",
+          "rows": [
+            {
+              "label": "Waiting periods",
+              "values": {
+                "*": "None for preventive, basic or major services; 12 months for orthodontia"
+              },
+              "key": true
+            }
+          ]
+        },
+        {
+          "title": "Preventive services",
+          "rows": [
+            {
+              "label": "Exams, X-rays, cleanings, fluoride",
+              "values": {
+                "*": "In-network: 100% of contracted rate. Out-of-network: 80% of UCR"
+              },
+              "note": "Dental exams, 2 per year; bitewing X-rays, 2 per year; cleanings, 2 per year; fluoride treatment for age 16 and under, 2 visits per year",
+              "key": true
+            }
+          ]
+        },
+        {
+          "title": "Basic services",
+          "rows": [
+            {
+              "label": "Fillings, simple extractions, basic oral surgery and other basic services",
+              "values": {
+                "*": "In-network: 65% of contracted rate 1st yr., 80% thereafter. Out-of-network: 65% of UCR 1st yr., 80% thereafter"
+              },
+              "note": "Limited oral evaluation, diagnostic consultation, emergency palliative treatment, panoramic X-ray, periapical X-ray, periodontal non-surgical service, basic restorative service, filling, basic oral surgery, periodontal service, non-surgical extraction",
+              "key": true
+            }
+          ]
+        },
+        {
+          "title": "Major services",
+          "rows": [
+            {
+              "label": "Crowns, root canals, dentures/bridges, implants and other major services",
+              "values": {
+                "*": "In-network: 20% of contracted rate 1st yr., 50% thereafter. Out-of-network: 20% of UCR 1st yr., 50% thereafter"
+              },
+              "note": "Major restorative service, inlay/onlay/crown, endodontic service, periodontal service, prosthodontic service, implants",
+              "key": true
+            },
+            {
+              "label": "Implants lifetime maximum",
+              "values": {
+                "*": "$1,500"
+              }
+            }
+          ]
+        },
+        {
+          "title": "All other medically necessary services",
+          "rows": [
+            {
+              "label": "Services not listed above",
+              "values": {
+                "*": "In-network: 20% of contracted rate 1st yr., 50% thereafter. Out-of-network: 20% of UCR 1st yr., 50% thereafter"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Orthodontia",
+          "rows": [
+            {
+              "label": "Straightening of teeth (for all ages)",
+              "values": {
+                "*": "In-network: Year 1 - N/A; Year 2+ - 50%. Out-of-network: N/A"
+              }
+            },
+            {
+              "label": "Orthodontia lifetime maximum",
+              "values": {
+                "*": "$1,500"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Vision and hearing",
+          "rows": [
+            {
+              "label": "Vision Rider",
+              "values": {
+                "*": "Not included"
+              }
+            },
+            {
+              "label": "Hearing Rider",
+              "values": {
+                "*": "Not included"
+              }
+            }
+          ]
+        }
+      ],
+      "notes": [
+        "NM sells this as 'Dental Select' — a limited benefit policy for dental expenses only. The NM brochure has no Vision or Hearing Rider.",
+        "Waiting periods and the $1,500 lifetime maximums (implants, orthodontia) are brochure footnotes.",
+        "Guaranteed issue; guaranteed renewable for life (premiums subject to change). Family rates include up to 3 children.",
+        "Brochure: 'This is not a complete disclosure of plan qualifications and limitations' — full list at disclosure.manhattanlife.com."
+      ]
+    }
   ]
- },
- "tokens": {
-  "{dvh.ded}": "the policy year deductible chosen on the row (0 or 100)"
- },
- "brochures": [
-  {
-   "code": "DVHS-BR_0926",
-   "file": "DVHS-BR_0926 (AL Dental Vision Hearing Select - Dental, Vision and Hearing Select).pdf",
-   "states": [
-    "AL",
-    "AR",
-    "AZ",
-    "CO",
-    "CT",
-    "DC",
-    "IA",
-    "ID",
-    "IL",
-    "LA",
-    "ME",
-    "NE",
-    "OK",
-    "OR",
-    "TN",
-    "WI",
-    "WY"
-   ],
-   "page": "2-3",
-   "sections": [
-    {
-     "title": "Plan basics",
-     "rows": [
-      {
-       "label": "Policy year maximum benefit",
-       "values": {
-        "1000": "$1,000 per policy year",
-        "1500": "$1,500 per policy year",
-        "3000": "$3,000 per policy year",
-        "5000": "$5,000 per policy year"
-       },
-       "key": true
-      },
-      {
-       "label": "Policy year deductible",
-       "values": {
-        "*": "{dvh.ded} per person (does not apply to Preventive Services)"
-       },
-       "key": true
-      },
-      {
-       "label": "Issue age",
-       "values": {
-        "*": "Ages 18 - 99"
-       }
-      },
-      {
-       "label": "Dentist choice",
-       "values": {
-        "*": "In-network (Careington Maximum Care PPO Dental Network) or out-of-network; use of the network is optional"
-       },
-       "note": "Out-of-network is paid on Usual, Customary and Reasonable (UCR) charges; network discounts may help extend the policy year maximum."
-      }
-     ]
-    },
-    {
-     "title": "Waiting periods",
-     "rows": [
-      {
-       "label": "Waiting periods",
-       "values": {
-        "*": "None for preventive, basic, major or other dental services; 12 months for orthodontia; 6 months for eyeglass frames (Vision Rider); 12 months for hearing aids and repairs/supplies (Hearing Rider)"
-       },
-       "key": true
-      }
-     ]
-    },
-    {
-     "title": "Preventive services",
-     "rows": [
-      {
-       "label": "Exams, X-rays, cleanings, fluoride",
-       "values": {
-        "*": "In-network: 100% of contracted rate. Out-of-network: 80% of UCR"
-       },
-       "note": "Dental exams, 2 per year; bitewing X-rays, 2 per year; cleanings, 2 per year; fluoride treatment for age 16 and under, 2 visits per year",
-       "key": true
-      },
-      {
-       "label": "Waiting period",
-       "values": {
-        "*": "None"
-       }
-      }
-     ]
-    },
-    {
-     "title": "Basic services",
-     "rows": [
-      {
-       "label": "Fillings, simple extractions, basic oral surgery and other basic services",
-       "values": {
-        "*": "In-network: 65% of contracted rate 1st yr., 80% thereafter. Out-of-network: 65% of UCR 1st yr., 80% thereafter"
-       },
-       "note": "Limited oral evaluation, diagnostic consultation, emergency palliative treatment, panoramic X-ray, periapical X-ray, periodontal non-surgical service, basic restorative service, filling, basic oral surgery, periodontal service, non-surgical extraction",
-       "key": true
-      },
-      {
-       "label": "Waiting period",
-       "values": {
-        "*": "None"
-       }
-      }
-     ]
-    },
-    {
-     "title": "Major services",
-     "rows": [
-      {
-       "label": "Crowns, root canals, dentures/bridges, implants and other major services",
-       "values": {
-        "*": "In-network: 20% of contracted rate 1st yr., 50% thereafter. Out-of-network: 20% of UCR 1st yr., 50% thereafter"
-       },
-       "note": "Major restorative service, inlay/onlay/crown, endodontic service, periodontal service, prosthodontic service, implants",
-       "key": true
-      },
-      {
-       "label": "Implants lifetime maximum",
-       "values": {
-        "*": "$1,500"
-       }
-      },
-      {
-       "label": "Waiting period",
-       "values": {
-        "*": "None"
-       }
-      }
-     ]
-    },
-    {
-     "title": "All other medically necessary services",
-     "rows": [
-      {
-       "label": "Services not listed above",
-       "values": {
-        "*": "In-network: 20% of contracted rate 1st yr., 50% thereafter. Out-of-network: 20% of UCR 1st yr., 50% thereafter"
-       }
-      },
-      {
-       "label": "Waiting period",
-       "values": {
-        "*": "None"
-       }
-      }
-     ]
-    },
-    {
-     "title": "Orthodontia",
-     "rows": [
-      {
-       "label": "Straightening of teeth (for all ages)",
-       "values": {
-        "*": "In-network: Year 1 - N/A; Year 2+ - 50%. Out-of-network: N/A"
-       }
-      },
-      {
-       "label": "Orthodontia lifetime maximum",
-       "values": {
-        "*": "$1,500"
-       }
-      },
-      {
-       "label": "Waiting period",
-       "values": {
-        "*": "12 months"
-       }
-      }
-     ]
-    },
-    {
-     "title": "Vision Rider (optional, added cost)",
-     "rows": [
-      {
-       "label": "Eye exam, refraction and lenses (single, bifocal, trifocal, progressive)",
-       "values": {
-        "*": "1st year: 60% of UCR; 2nd year: 70% of UCR; thereafter: 80% of UCR; 1 per year"
-       },
-       "key": true
-      },
-      {
-       "label": "Eyeglass frame or contact lenses",
-       "values": {
-        "*": "$200 maximum per year"
-       }
-      },
-      {
-       "label": "Anti-reflective lenses",
-       "values": {
-        "*": "$45; 1 per year"
-       }
-      },
-      {
-       "label": "Polycarbonate lenses",
-       "values": {
-        "*": "$40; 1 per year"
-       }
-      },
-      {
-       "label": "Contact lens fitting fee",
-       "values": {
-        "*": "$15; 1 per year"
-       }
-      },
-      {
-       "label": "Waiting period",
-       "values": {
-        "*": "6 months on eyeglass frames"
-       }
-      }
-     ]
-    },
-    {
-     "title": "Hearing Rider (optional, added cost)",
-     "rows": [
-      {
-       "label": "Hearing exam, hearing aid and necessary repairs or supplies",
-       "values": {
-        "*": "$750 maximum (per ear, per year)"
-       },
-       "key": true
-      },
-      {
-       "label": "Waiting period",
-       "values": {
-        "*": "12 months for hearing aid and necessary repairs or supplies"
-       }
-      }
-     ]
-    }
-   ],
-   "notes": [
-    "Limited benefit insurance policy for dental, vision and hearing expenses; guaranteed issue; guaranteed renewable for life (premiums subject to change).",
-    "Sold as Dental only, Dental + Vision, Dental + Hearing, or Dental + Vision + Hearing: vision and hearing are riders with their own premium. POP Pro prices the dental policy only; confirm whether the client adds a rider.",
-    "Family rates include up to 3 children.",
-    "Brochure: 'This is not a complete disclosure of plan qualifications and limitations' — full list at disclosure.manhattanlife.com.",
-    "Brochure highlight: 'No waiting periods for Dental Services (except Orthodontia)'."
-   ]
-  },
-  {
-   "code": "DVHS-BR_0223",
-   "file": "DVHS-BR_0223 (OH Dental Vision Hearing Select - Dental, Hearing & Vision Select Brochure).pdf",
-   "states": [
-    "OH",
-    "SD",
-    "UT",
-    "WV"
-   ],
-   "page": "3",
-   "sameAs": "DVHS-BR_0926"
-  },
-  {
-   "code": "DVHS-CAKSTXBR_1225",
-   "file": "DVHS-CAKSTXBR_1225 (CA Dental Vision Hearing Select - Dental, Vision & Hearing Select Brochure).pdf",
-   "states": [
-    "CA",
-    "KS",
-    "TX"
-   ],
-   "page": "3",
-   "sameAs": "DVHS-BR_0926"
-  },
-  {
-   "code": "DVHS-DE-BR_0825",
-   "file": "DVHS-DE-BR_0825 (DE Dental Vision Hearing Select - Dental, Vision & Hearing Select Brochure).pdf",
-   "states": [
-    "DE"
-   ],
-   "page": "3",
-   "sameAs": "DVHS-BR_0926"
-  },
-  {
-   "code": "DVHS-FLBR_0326",
-   "file": "DVHS-FLBR_0326 (FL Dental Vision Hearing Select - Dental, Vision & Hearing Select Brochure).pdf",
-   "states": [
-    "FL"
-   ],
-   "page": "3",
-   "sameAs": "DVHS-BR_0926"
-  },
-  {
-   "code": "DVHS-GABR_1125",
-   "file": "DVHS-GABR_1125 (GA Dental Vision Hearing Select - Dental, Vision & Hearing Select Brochure).pdf",
-   "states": [
-    "GA"
-   ],
-   "page": "3",
-   "sameAs": "DVHS-BR_0926"
-  },
-  {
-   "code": "DVHS-INBR_0326",
-   "file": "DVHS-INBR_0326 (IN Dental Vision Hearing Select - Dental, Vision & Hearing Select Brochure).pdf",
-   "states": [
-    "IN"
-   ],
-   "page": "3",
-   "sameAs": "DVHS-BR_0926"
-  },
-  {
-   "code": "DVHS-KYBR_0525",
-   "file": "DVHS-KYBR_0525 (KY Dental Vision Hearing Select - Dental, Vision and Hearing Select Brochure).pdf",
-   "states": [
-    "KY"
-   ],
-   "page": "3",
-   "sameAs": "DVHS-BR_0926"
-  },
-  {
-   "code": "DVHS-MIBR_1125",
-   "file": "DVHS-MIBR_1125 (MI Dental Vision Hearing Select - Dental, Vision & Hearing Select Brochure).pdf",
-   "states": [
-    "MI"
-   ],
-   "page": "3",
-   "sameAs": "DVHS-BR_0926"
-  },
-  {
-   "code": "DVHS-MSBR_0525",
-   "file": "DVHS-MSBR_0525 (MS Dental Vision Hearing Select - Dental, Vision and Hearing Select Brochure).pdf",
-   "states": [
-    "MS"
-   ],
-   "page": "3",
-   "sameAs": "DVHS-BR_0926"
-  },
-  {
-   "code": "DVHS-NCBR_1125",
-   "file": "DVHS-NCBR_1125 (NC Dental Vision Hearing Select - Dental, Vision & Hearing Select Brochure).pdf",
-   "states": [
-    "NC"
-   ],
-   "page": "3",
-   "sameAs": "DVHS-BR_0926"
-  },
-  {
-   "code": "DVHS-NDBR_0825",
-   "file": "DVHS-NDBR_0825 (ND Dental Vision Hearing Select - Dental, Vision & Hearing Brochure).pdf",
-   "states": [
-    "ND"
-   ],
-   "page": "3",
-   "sameAs": "DVHS-BR_0926"
-  },
-  {
-   "code": "DVHS-NVBR_0525",
-   "file": "DVHS-NVBR_0525 (NV Dental Vision Hearing Select - Dental, Vision and Hearing Select Brochure).pdf",
-   "states": [
-    "NV"
-   ],
-   "page": "3",
-   "sameAs": "DVHS-BR_0926"
-  },
-  {
-   "code": "DVHS-PABR_0525",
-   "file": "DVHS-PABR_0525 (PA Dental Vision Hearing Select - Dental, Vision and Hearing Select Brochure).pdf",
-   "states": [
-    "PA"
-   ],
-   "page": "3",
-   "sameAs": "DVHS-BR_0926"
-  },
-  {
-   "code": "DVHS-SCBR_1125",
-   "file": "DVHS-SCBR_1125 (SC Dental Vision Hearing Select - Dental, Vision & Hearing Select Brochure).pdf",
-   "states": [
-    "SC"
-   ],
-   "page": "3",
-   "sameAs": "DVHS-BR_0926"
-  },
-  {
-   "code": "DVHS-NJBR_0525",
-   "file": "DVHS-NJBR_0525 (NJ Dental Vision Hearing Select - Dental, Vision and Hearing Select Brochure).pdf",
-   "states": [
-    "NJ"
-   ],
-   "page": "2-3",
-   "sections": [
-    {
-     "title": "Plan basics",
-     "rows": [
-      {
-       "label": "Policy year maximum benefit",
-       "values": {
-        "1000": "$1,000 per policy year",
-        "1500": "$1,500 per policy year",
-        "3000": "$3,000 per policy year",
-        "5000": "$5,000 per policy year"
-       },
-       "key": true
-      },
-      {
-       "label": "Policy year deductible",
-       "values": {
-        "*": "{dvh.ded} per person (does not apply to Preventive Services)"
-       },
-       "key": true
-      },
-      {
-       "label": "Eligibility",
-       "values": {
-        "*": "Ages 18 - 99"
-       }
-      },
-      {
-       "label": "Dentist choice",
-       "values": {
-        "*": "In-network (Careington Maximum Care PPO Dental Network) or out-of-network; use of the network is optional"
-       },
-       "note": "Out-of-network is paid on Usual, Customary and Reasonable (UCR) charges; network discounts may help extend the policy year maximum."
-      }
-     ]
-    },
-    {
-     "title": "Waiting periods",
-     "rows": [
-      {
-       "label": "Waiting periods",
-       "values": {
-        "*": "None for preventive, basic or major services; 12 months for orthodontia; 6 months for eyeglass frames (Vision Rider); 12 months for hearing aids and repairs/supplies (Hearing Rider)"
-       },
-       "key": true
-      }
-     ]
-    },
-    {
-     "title": "Preventive services",
-     "rows": [
-      {
-       "label": "Exams, X-rays, cleanings, fluoride",
-       "values": {
-        "*": "In-network: 100% of contracted rate. Out-of-network: 80% of UCR"
-       },
-       "note": "Dental exams, 2 per year; bitewing X-rays, 2 per year; cleanings, 2 per year; fluoride treatment for age 16 and under, 2 visits per year",
-       "key": true
-      }
-     ]
-    },
-    {
-     "title": "Basic services",
-     "rows": [
-      {
-       "label": "Fillings, simple extractions, basic oral surgery and other basic services",
-       "values": {
-        "*": "In-network: 65% of contracted rate 1st yr., 80% thereafter. Out-of-network: 65% of UCR 1st yr., 80% thereafter"
-       },
-       "note": "Limited oral evaluation, diagnostic consultation, emergency palliative treatment, panoramic X-ray, periapical X-ray, periodontal non-surgical service, basic restorative service, filling, basic oral surgery, periodontal service, non-surgical extraction",
-       "key": true
-      }
-     ]
-    },
-    {
-     "title": "Major services",
-     "rows": [
-      {
-       "label": "Crowns, root canals, dentures/bridges, implants and other major services",
-       "values": {
-        "*": "In-network: 20% of contracted rate 1st yr., 50% thereafter. Out-of-network: 20% of UCR 1st yr., 50% thereafter"
-       },
-       "note": "Major restorative service, inlay/onlay/crown, endodontic service, periodontal service, prosthodontic service, implants",
-       "key": true
-      },
-      {
-       "label": "Implants lifetime maximum",
-       "values": {
-        "*": "$1,500"
-       }
-      }
-     ]
-    },
-    {
-     "title": "All other medically necessary services",
-     "rows": [
-      {
-       "label": "Services not listed above",
-       "values": {
-        "*": "In-network: Paid as UCR. Out-of-network: Paid as UCR"
-       },
-       "note": "NJ brochure says only 'Paid as UCR' here (other states: 20% 1st yr., 50% thereafter). It does not state a percentage — confirm with ManhattanLife before quoting a figure."
-      }
-     ]
-    },
-    {
-     "title": "Orthodontia",
-     "rows": [
-      {
-       "label": "Straightening of teeth (for all ages)",
-       "values": {
-        "*": "In-network: Year 1 - N/A; Year 2+ - 50%. Out-of-network: N/A"
-       }
-      },
-      {
-       "label": "Orthodontia lifetime maximum",
-       "values": {
-        "*": "$1,500"
-       }
-      }
-     ]
-    },
-    {
-     "title": "Vision Rider (optional, added cost)",
-     "rows": [
-      {
-       "label": "Eye exam, refraction and lenses (single, bifocal, trifocal, progressive)",
-       "values": {
-        "*": "1st year: 60% of UCR; 2nd year: 70% of UCR; thereafter: 80% of UCR; 1 per year"
-       },
-       "key": true
-      },
-      {
-       "label": "Eyeglass frame or contact lenses",
-       "values": {
-        "*": "$200 maximum per year"
-       }
-      },
-      {
-       "label": "Anti-reflective lenses",
-       "values": {
-        "*": "$45; 1 per year"
-       }
-      },
-      {
-       "label": "Polycarbonate lenses",
-       "values": {
-        "*": "$40; 1 per year"
-       }
-      },
-      {
-       "label": "Contact lens fitting fee",
-       "values": {
-        "*": "$15; 1 per year"
-       }
-      }
-     ]
-    },
-    {
-     "title": "Hearing Rider (optional, added cost)",
-     "rows": [
-      {
-       "label": "Hearing exam, hearing aid and necessary repairs or supplies",
-       "values": {
-        "*": "$750 maximum (per ear, per year)"
-       },
-       "key": true
-      }
-     ]
-    }
-   ],
-   "notes": [
-    "Limited benefit insurance policy for dental, vision and hearing expenses; guaranteed issue; guaranteed renewable for life (premiums subject to change).",
-    "Sold as Dental only, Dental + Vision, Dental + Hearing, or Dental + Vision + Hearing: vision and hearing are riders with their own premium. POP Pro prices the dental policy only; confirm whether the client adds a rider.",
-    "Family rates include up to 3 children.",
-    "Brochure: 'This is not a complete disclosure of plan qualifications and limitations' — full list at disclosure.manhattanlife.com.",
-    "Waiting periods are shown as brochure footnotes: 12 months on orthodontia and on hearing aids/repairs/supplies; 6 months on eyeglass frames."
-   ]
-  },
-  {
-   "code": "DVHS-MNBR_0525",
-   "file": "DVHS-MNBR_0525 (MN Dental Vision Hearing Select - Dental, Vision and Hearing Select Brochure).pdf",
-   "states": [
-    "MN"
-   ],
-   "page": "2-3",
-   "sections": [
-    {
-     "title": "Plan basics",
-     "rows": [
-      {
-       "label": "Policy year maximum benefit",
-       "values": {
-        "1000": "$1,000 per policy year",
-        "1500": "$1,500 per policy year",
-        "3000": "$3,000 per policy year",
-        "5000": "$5,000 per policy year"
-       },
-       "key": true
-      },
-      {
-       "label": "Policy year deductible",
-       "values": {
-        "*": "{dvh.ded} per person (does not apply to Preventive Services)"
-       },
-       "key": true
-      },
-      {
-       "label": "Eligibility",
-       "values": {
-        "*": "Ages 18 - 99"
-       }
-      },
-      {
-       "label": "Dentist choice",
-       "values": {
-        "*": "In-network (Careington Maximum Care PPO Dental Network) or out-of-network; use of the network is optional"
-       },
-       "note": "Out-of-network is paid on Usual, Customary and Reasonable (UCR) charges; network discounts may help extend the policy year maximum."
-      }
-     ]
-    },
-    {
-     "title": "Waiting periods",
-     "rows": [
-      {
-       "label": "Waiting periods",
-       "values": {
-        "*": "None shown in the MN brochure — including orthodontia, eyeglass frames and hearing aids"
-       },
-       "note": "MN highlight: 'No waiting periods for Dental Services' (other states add '(except Orthodontia)'). The MN brochure shows no vision or hearing waiting period either; confirm in the policy before promising day-one hearing aids.",
-       "key": true
-      }
-     ]
-    },
-    {
-     "title": "Preventive services",
-     "rows": [
-      {
-       "label": "Exams, X-rays, cleanings, fluoride",
-       "values": {
-        "*": "In-network: 100% of contracted rate. Out-of-network: 80% of UCR"
-       },
-       "note": "Dental exams, 2 per year; bitewing X-rays, 2 per year; cleanings, 2 per year; fluoride treatment for age 16 and under, 2 visits per year",
-       "key": true
-      }
-     ]
-    },
-    {
-     "title": "Basic services",
-     "rows": [
-      {
-       "label": "Fillings, simple extractions, basic oral surgery and other basic services",
-       "values": {
-        "*": "In-network: 65% of contracted rate 1st yr., 80% thereafter. Out-of-network: 65% of UCR 1st yr., 80% thereafter"
-       },
-       "note": "Limited oral evaluation, diagnostic consultation, emergency palliative treatment, panoramic X-ray, periapical X-ray, periodontal non-surgical service, basic restorative service, filling, basic oral surgery, periodontal service, non-surgical extraction",
-       "key": true
-      }
-     ]
-    },
-    {
-     "title": "Major services",
-     "rows": [
-      {
-       "label": "Crowns, root canals, dentures/bridges, implants and other major services",
-       "values": {
-        "*": "In-network: 20% of contracted rate 1st yr., 50% thereafter. Out-of-network: 20% of UCR 1st yr., 50% thereafter"
-       },
-       "note": "Major restorative service, inlay/onlay/crown, endodontic service, periodontal service, prosthodontic service, implants",
-       "key": true
-      },
-      {
-       "label": "Implants lifetime maximum",
-       "values": {
-        "*": "$1,500"
-       }
-      }
-     ]
-    },
-    {
-     "title": "All other medically necessary services",
-     "rows": [
-      {
-       "label": "Services not listed above",
-       "values": {
-        "*": "In-network: 20% of contracted rate 1st yr., 50% thereafter. Out-of-network: 20% of UCR 1st yr., 50% thereafter"
-       }
-      }
-     ]
-    },
-    {
-     "title": "Orthodontia",
-     "rows": [
-      {
-       "label": "Straightening of teeth (for all ages)",
-       "values": {
-        "*": "In-network: 50% of contracted rate. Out-of-network: N/A"
-       }
-      },
-      {
-       "label": "Orthodontia lifetime maximum",
-       "values": {
-        "*": "$1,500"
-       }
-      }
-     ]
-    },
-    {
-     "title": "Vision Rider (optional, added cost)",
-     "rows": [
-      {
-       "label": "Eye exam, refraction and lenses (single, bifocal, trifocal, progressive)",
-       "values": {
-        "*": "1st year: 60% of UCR; 2nd year: 70% of UCR; thereafter: 80% of UCR; 1 per year"
-       },
-       "key": true
-      },
-      {
-       "label": "Eyeglass frame or contact lenses",
-       "values": {
-        "*": "$200 maximum per year"
-       }
-      },
-      {
-       "label": "Anti-reflective lenses",
-       "values": {
-        "*": "$45; 1 per year"
-       }
-      },
-      {
-       "label": "Polycarbonate lenses",
-       "values": {
-        "*": "$40; 1 per year"
-       }
-      },
-      {
-       "label": "Contact lens fitting fee",
-       "values": {
-        "*": "$15; 1 per year"
-       }
-      }
-     ]
-    },
-    {
-     "title": "Hearing Rider (optional, added cost)",
-     "rows": [
-      {
-       "label": "Hearing exam, hearing aid and necessary repairs or supplies",
-       "values": {
-        "*": "$750 maximum (per ear, per year)"
-       },
-       "key": true
-      }
-     ]
-    }
-   ],
-   "notes": [
-    "Limited benefit insurance policy for dental, vision and hearing expenses; guaranteed issue; guaranteed renewable for life (premiums subject to change).",
-    "Sold as Dental only, Dental + Vision, Dental + Hearing, or Dental + Vision + Hearing: vision and hearing are riders with their own premium. POP Pro prices the dental policy only; confirm whether the client adds a rider.",
-    "Family rates include up to 3 children.",
-    "Brochure: 'This is not a complete disclosure of plan qualifications and limitations' — full list at disclosure.manhattanlife.com.",
-    "MN orthodontia is 50% of contracted rate in-network with no year-1 exclusion shown (other states: N/A in year 1)."
-   ]
-  },
-  {
-   "code": "DVHS-NM-BR_0525",
-   "file": "DVHS-NM-BR_0525 (NM Dental Vision Hearing Select - Dental,Vision and Hearing Select Brochure).pdf",
-   "states": [
-    "NM"
-   ],
-   "page": "2",
-   "sections": [
-    {
-     "title": "Plan basics",
-     "rows": [
-      {
-       "label": "Policy year maximum benefit",
-       "values": {
-        "1000": "$1,000 per policy year",
-        "1500": "$1,500 per policy year",
-        "3000": "$3,000 per policy year",
-        "5000": "$5,000 per policy year — see note"
-       },
-       "note": "NM brochure's benefit summary lists only $1,000, $1,500 or $3,000, but its rate table also prints $5,000 rates. Confirm $5,000 is available in NM before selling it.",
-       "key": true
-      },
-      {
-       "label": "Policy year deductible",
-       "values": {
-        "*": "{dvh.ded} per person (does not apply to Preventive Services)"
-       },
-       "key": true
-      },
-      {
-       "label": "Eligibility",
-       "values": {
-        "*": "Ages 18 - 99"
-       }
-      },
-      {
-       "label": "Dentist choice",
-       "values": {
-        "*": "In-network (Careington Maximum Care PPO Dental Network) or out-of-network; use of the network is optional"
-       },
-       "note": "Out-of-network is paid on Usual, Customary and Reasonable (UCR) charges; network discounts may help extend the policy year maximum."
-      }
-     ]
-    },
-    {
-     "title": "Waiting periods",
-     "rows": [
-      {
-       "label": "Waiting periods",
-       "values": {
-        "*": "None for preventive, basic or major services; 12 months for orthodontia"
-       },
-       "key": true
-      }
-     ]
-    },
-    {
-     "title": "Preventive services",
-     "rows": [
-      {
-       "label": "Exams, X-rays, cleanings, fluoride",
-       "values": {
-        "*": "In-network: 100% of contracted rate. Out-of-network: 80% of UCR"
-       },
-       "note": "Dental exams, 2 per year; bitewing X-rays, 2 per year; cleanings, 2 per year; fluoride treatment for age 16 and under, 2 visits per year",
-       "key": true
-      }
-     ]
-    },
-    {
-     "title": "Basic services",
-     "rows": [
-      {
-       "label": "Fillings, simple extractions, basic oral surgery and other basic services",
-       "values": {
-        "*": "In-network: 65% of contracted rate 1st yr., 80% thereafter. Out-of-network: 65% of UCR 1st yr., 80% thereafter"
-       },
-       "note": "Limited oral evaluation, diagnostic consultation, emergency palliative treatment, panoramic X-ray, periapical X-ray, periodontal non-surgical service, basic restorative service, filling, basic oral surgery, periodontal service, non-surgical extraction",
-       "key": true
-      }
-     ]
-    },
-    {
-     "title": "Major services",
-     "rows": [
-      {
-       "label": "Crowns, root canals, dentures/bridges, implants and other major services",
-       "values": {
-        "*": "In-network: 20% of contracted rate 1st yr., 50% thereafter. Out-of-network: 20% of UCR 1st yr., 50% thereafter"
-       },
-       "note": "Major restorative service, inlay/onlay/crown, endodontic service, periodontal service, prosthodontic service, implants",
-       "key": true
-      },
-      {
-       "label": "Implants lifetime maximum",
-       "values": {
-        "*": "$1,500"
-       }
-      }
-     ]
-    },
-    {
-     "title": "All other medically necessary services",
-     "rows": [
-      {
-       "label": "Services not listed above",
-       "values": {
-        "*": "In-network: 20% of contracted rate 1st yr., 50% thereafter. Out-of-network: 20% of UCR 1st yr., 50% thereafter"
-       }
-      }
-     ]
-    },
-    {
-     "title": "Orthodontia",
-     "rows": [
-      {
-       "label": "Straightening of teeth (for all ages)",
-       "values": {
-        "*": "In-network: Year 1 - N/A; Year 2+ - 50%. Out-of-network: N/A"
-       }
-      },
-      {
-       "label": "Orthodontia lifetime maximum",
-       "values": {
-        "*": "$1,500"
-       }
-      }
-     ]
-    },
-    {
-     "title": "Vision and hearing",
-     "rows": [
-      {
-       "label": "Vision Rider",
-       "values": {
-        "*": "Not included"
-       }
-      },
-      {
-       "label": "Hearing Rider",
-       "values": {
-        "*": "Not included"
-       }
-      }
-     ]
-    }
-   ],
-   "notes": [
-    "NM sells this as 'Dental Select' — a limited benefit policy for dental expenses only. The NM brochure has no Vision or Hearing Rider.",
-    "Waiting periods and the $1,500 lifetime maximums (implants, orthodontia) are brochure footnotes.",
-    "Guaranteed issue; guaranteed renewable for life (premiums subject to change). Family rates include up to 3 children.",
-    "Brochure: 'This is not a complete disclosure of plan qualifications and limitations' — full list at disclosure.manhattanlife.com."
-   ]
-  }
- ]
 }
