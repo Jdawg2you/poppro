@@ -2721,6 +2721,26 @@ function medLabel(n){ const hit=MED_INDEX.filter(m=>m.n.toLowerCase()===String(n
    "metphormin" resolves to itself and MED_FOR misses it entirely - which is the whole
    point of having fuzzy matching. The dropdown stores the resolved label, but a typed
    or legacy value has to be resolved here too. */
+/* An option reads back the word the agent typed, with the other names after it. Typing PRIL and
+   being offered "Omeprazole" makes them think they typed something wrong. Same rule as the wizard
+   and the navigator. The VALUE picked is still the canonical row[0] - popMedResolve and MED_FOR
+   are keyed on it - so only the label changes. Jesse, 2026-09-30. */
+var MED_ALIASES=(function(){ var m={}; MEDS.forEach(function(r){ if(r.length>1) m[r[0]]=r.slice(1); }); return m; })();
+function medRow(label){ return [label].concat(MED_ALIASES[label]||[]); }
+function medTypedName(label,q){
+  var t=String(q||'').trim().toLowerCase(); if(!t) return label;
+  var best=label, bs=9;
+  medRow(label).forEach(function(n){
+    var ln=n.toLowerCase();
+    var s = ln===t ? 0 : ln.indexOf(t)===0 ? 1 : ln.indexOf(t)>0 ? 2 : 9;
+    if(s<bs){ bs=s; best=n; }
+  });
+  return best;
+}
+function medOption(label,q){
+  var lead=medTypedName(label,q), rest=medRow(label).filter(function(n){ return n!==lead; });
+  return rest.length ? lead+' ('+rest.join(', ')+')' : lead;
+}
 function popMedResolve(n){
   n=String(n||'').trim(); if(!n) return '';
   var exact=medLabel(n);
@@ -4567,9 +4587,10 @@ function kidsShowCount(){ var on=$('in_who_kids')&&$('in_who_kids').checked, w=$
 function medTypeahead(inp,onPick){ var box=document.createElement('div'); box.className='medsug'; inp.parentNode.insertBefore(box,inp.nextSibling);
   var hide=function(){ setTimeout(function(){ box.style.display='none'; },150); };
   inp.addEventListener('input',function(){ var q=inp.value.trim(); var hits=q.length>=2?medSuggest(q,8):[];
-    box.innerHTML=hits.map(function(h,j){ return '<button type="button"'+(j?'':' class="hl"')+'>'+h+'</button>'; }).join(''); box.style.display=hits.length?'block':'none';
-    box.querySelectorAll('button').forEach(function(b){ b.onmousedown=function(e){ e.preventDefault(); inp.value=b.textContent; box.style.display='none'; onPick(b.textContent); }; }); });
-  inp.addEventListener('keydown',function(e){ if(e.key==='Enter'){ var f=box.querySelector('button'); if(f&&box.style.display==='block'){ e.preventDefault(); inp.value=f.textContent; box.style.display='none'; onPick(f.textContent); } } });
+    box.innerHTML=hits.map(function(h,j){ return '<button type="button" data-med="'+String(h).replace(/"/g,'&quot;')+'"'+(j?'':' class="hl"')+'>'+medOption(h,q)+'</button>'; }).join(''); box.style.display=hits.length?'block':'none';
+    /* the label shows both names; the value picked is the canonical one */
+    box.querySelectorAll('button').forEach(function(b){ b.onmousedown=function(e){ e.preventDefault(); var pick=b.getAttribute('data-med'); inp.value=pick; box.style.display='none'; onPick(pick); }; }); });
+  inp.addEventListener('keydown',function(e){ if(e.key==='Enter'){ var f=box.querySelector('button'); if(f&&box.style.display==='block'){ e.preventDefault(); var pick=f.getAttribute('data-med'); inp.value=pick; box.style.display='none'; onPick(pick); } } });
   inp.addEventListener('blur',hide); }
 function renderMedFlags(){ var host=$('medFlags'); if(!host) return; var fl=popMedFlags();
   host.innerHTML=fl.map(function(f,i){ return '<div class="mflag"><span><b>'+f.m+'</b> is usually for <b>'+f.c+'</b> — is that why?</span><button type="button" class="yes" data-i="'+i+'">Yes, add it</button><button type="button" data-no="'+i+'">No</button></div>'; }).join('');
