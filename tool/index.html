@@ -1652,7 +1652,9 @@ function benModel(d,st,col,cfg){ var b=benBrochure(d,st); if(!b) return null;
     (s.rows||[]).forEach(function(r){ if(!benWhen(r.when,cfg)) return; var val=benValue(r,String(col),cfg); if(val==null) return;
       var row={label:r.label,value:val,note:r.note||'',sec:s.title}; (r.key?key:rows).push(row); });
     if(rows.length) sections.push({title:s.title,rows:rows}); });
-  return {code:b.code,file:b.file,page:b.page,key:key,sections:sections,notes:b.notes||[]}; }
+  /* One brochure entry can carry two carriers (Living Benefits: MoO and Americo) - each is credited to its own document. */
+  var src=(b.sources&&b.sources[String(col)])||b;
+  return {code:src.code,file:src.file,page:src.page,key:key,sections:sections,notes:src.notes||b.notes||[]}; }
 /* Two plans side by side: every label from either, in A's order then B's extras; diff where the values differ. */
 function benCompare(a,b){ var rows=[], idx={};
   var all=function(m){ return m.key.map(function(r){ return {r:r,key:true}; }).concat([].concat.apply([],m.sections.map(function(s){ return s.rows.map(function(r){ return {r:r,key:false}; }); }))); };

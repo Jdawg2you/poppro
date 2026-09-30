@@ -1,118 +1,150 @@
 {
- "product": "lb",
- "name": "Term life with living benefits",
- "carrier": "Mutual of Omaha (United of Omaha) / Americo",
- "columns": {
-  "by": "carrier",
-  "values": [
-   "moo"
-  ]
- },
- "brochures": [
-  {
-   "code": "283976_0426",
-   "file": "moo term life express.pdf (~/Downloads)",
-   "states": [
-    "*"
-   ],
-   "page": "2-4",
-   "sections": [
+  "product": "lb",
+  "name": "Term life with living benefits",
+  "carrier": "Mutual of Omaha (United of Omaha) / Americo",
+  "columns": {
+    "by": "carrier",
+    "values": [
+      "moo",
+      "americo"
+    ]
+  },
+  "brochures": [
     {
-     "title": "Coverage",
-     "rows": [
-      {
-       "label": "Term length",
-       "values": {
-        "moo": "Level death benefit for 10, 15, 20 or 30 years"
-       },
-       "key": true
-      },
-      {
-       "label": "Face amount",
-       "values": {
-        "moo": "$25,000–$550,000; maximum varies by age: ages 18-50 $550,000, ages 51-60 $450,000, ages 61-75 $350,000"
-       },
-       "key": true
-      },
-      {
-       "label": "Underwriting",
-       "values": {
-        "moo": "Simplified underwriting that doesn't require a lengthy health inquiry"
-       }
+      "code": "283976_0426",
+      "file": "moo term life express.pdf (~/Downloads)",
+      "states": [
+        "*"
+      ],
+      "page": "2-4",
+      "sections": [
+        {
+          "title": "Coverage",
+          "rows": [
+            {
+              "label": "Term length",
+              "values": {
+                "moo": "Level death benefit for 10, 15, 20 or 30 years",
+                "americo": "Level death benefit for 15, 20, 25 or 30 years"
+              },
+              "key": true
+            },
+            {
+              "label": "Face amount",
+              "values": {
+                "moo": "$25,000–$550,000; maximum varies by age: ages 18-50 $550,000, ages 51-60 $450,000, ages 61-75 $350,000",
+                "americo": "$25,000–$450,000, non-medical"
+              },
+              "key": true
+            },
+            {
+              "label": "Underwriting",
+              "values": {
+                "moo": "Simplified underwriting that doesn't require a lengthy health inquiry",
+                "americo": "No medical exam — a few medical questions on an instant-decision eApplication"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Living benefits (accelerated death benefit riders)",
+          "rows": [
+            {
+              "label": "How much can be accelerated",
+              "values": {
+                "moo": "Requested benefit amount may not exceed 80 percent of the policy's face amount as of the policy issue date (each rider)",
+                "americo": "Up to the full face, paid at a discount: about 79% of face when life expectancy is around 3 years, less the longer the life expectancy (Americo example: $100,000 → $79,206 at 3 years, $31,754 at 15, $5,762 at 25), after a $250 administrative charge"
+              },
+              "key": true
+            },
+            {
+              "label": "Terminal illness",
+              "values": {
+                "moo": "Included at no additional cost — life expectancy of 12 months or less",
+                "americo": "Included at no additional cost — a terminal illness expected to result in death within 12 months"
+              },
+              "key": true
+            },
+            {
+              "label": "Chronic illness",
+              "values": {
+                "moo": "Included at no additional cost — certified by a physician within the last 12 months as unable to perform two of six Activities of Daily Living for 90 consecutive days, or requiring substantial supervision due to severe cognitive impairment",
+                "americo": "Included at no additional cost — unable to perform two activities of daily living for a 90-day period, or needing substantial supervision due to severe cognitive impairment"
+              },
+              "key": true
+            },
+            {
+              "label": "Critical illness",
+              "values": {
+                "moo": "Included at no additional cost — certified by a physician within the last 12 months with: ALS, kidney failure, life-threatening cancer, major organ failure, heart attack, stroke, dementia (including Alzheimer's), major burns, AIDS or aortic aneurysm surgery",
+                "americo": "Included at no additional cost — diagnosed in the last 12 months with: ALS, end-stage renal (kidney) failure, invasive cancer, major organ failure, heart attack or stroke"
+              },
+              "key": true,
+              "note": "Definitions of chronic or critical illness may vary by state."
+            }
+          ]
+        },
+        {
+          "title": "Other included features",
+          "rows": [
+            {
+              "label": "Accidental death benefit",
+              "values": {
+                "americo": "Included on Term 125 — an extra 25% of the base death benefit for accidental death, plus another 25% if the accident happens as a fare-paying passenger on a common carrier"
+              }
+            },
+            {
+              "label": "Residential Damage Waiver of Premium",
+              "values": {
+                "moo": "If the primary residence sustains $25,000 or more of damage, premiums are waived for one six-month period"
+              }
+            },
+            {
+              "label": "Waiver of Premium for Unemployment",
+              "values": {
+                "moo": "Premiums waived for one six-month period on qualifying unemployment"
+              }
+            },
+            {
+              "label": "Common Carrier Death Benefit",
+              "values": {
+                "moo": "Additional death benefit equal to 100 percent of the original face amount or $250,000, whichever is less"
+              }
+            },
+            {
+              "label": "Optional riders (extra cost)",
+              "values": {
+                "moo": "Disability Income, Disability Waiver of Premium, Accidental Death Benefit, Dependent Children's Coverage",
+                "americo": "Disability Income (up to $2,000/month for up to 2 years), Additional Insured (spouse, up to the base face), Children's Term (up to $15,000 per child, to age 25), Waiver of Premium for Disability (adds Involuntary Unemployment Waiver, up to 6 months), Income Term Rider"
+              }
+            }
+          ]
+        }
+      ],
+      "notes": [
+        "Accelerated death benefits are not expected to receive the same favorable tax treatment as other types of accelerated death benefits; see a tax advisor.",
+        "Suicide exclusion: two years from issue (one year in CO, MO and ND); premiums paid are returned instead."
+      ],
+      "sources": {
+        "moo": {
+          "code": "283976_0426",
+          "file": "moo term life express.pdf (~/Downloads)",
+          "page": "2-4",
+          "notes": [
+            "Accelerated death benefits are not expected to receive the same favorable tax treatment as other types of accelerated death benefits; see a tax advisor.",
+            "Suicide exclusion: two years from issue (one year in CO, MO and ND); premiums paid are returned instead."
+          ]
+        },
+        "americo": {
+          "code": "23-011-27 (02/24)",
+          "file": "Term-CBOBrochure.pdf (~/Downloads) — Americo CBO 100 & 50 / Term 100 & Term 125 client brochure",
+          "page": "2-3",
+          "notes": [
+            "Americo is authorized in DC and all states except NY; products and riders may vary by state.",
+            "Accelerated amounts are reduced by an administrative charge and an actuarial discount based on life expectancy at the time of the request; the calculated benefit may be $0."
+          ]
+        }
       }
-     ]
-    },
-    {
-     "title": "Living benefits (accelerated death benefit riders)",
-     "rows": [
-      {
-       "label": "How much can be accelerated",
-       "values": {
-        "moo": "Requested benefit amount may not exceed 80 percent of the policy's face amount as of the policy issue date (each rider)"
-       },
-       "key": true
-      },
-      {
-       "label": "Terminal illness",
-       "values": {
-        "moo": "Included at no additional cost — life expectancy of 12 months or less"
-       },
-       "key": true
-      },
-      {
-       "label": "Chronic illness",
-       "values": {
-        "moo": "Included at no additional cost — certified by a physician within the last 12 months as unable to perform two of six Activities of Daily Living for 90 consecutive days, or requiring substantial supervision due to severe cognitive impairment"
-       },
-       "key": true
-      },
-      {
-       "label": "Critical illness",
-       "values": {
-        "moo": "Included at no additional cost — certified by a physician within the last 12 months with: ALS, kidney failure, life-threatening cancer, major organ failure, heart attack, stroke, dementia (including Alzheimer's), major burns, AIDS or aortic aneurysm surgery"
-       },
-       "key": true,
-       "note": "Definitions of chronic or critical illness may vary by state."
-      }
-     ]
-    },
-    {
-     "title": "Other included features",
-     "rows": [
-      {
-       "label": "Residential Damage Waiver of Premium",
-       "values": {
-        "moo": "If the primary residence sustains $25,000 or more of damage, premiums are waived for one six-month period"
-       }
-      },
-      {
-       "label": "Waiver of Premium for Unemployment",
-       "values": {
-        "moo": "Premiums waived for one six-month period on qualifying unemployment"
-       }
-      },
-      {
-       "label": "Common Carrier Death Benefit",
-       "values": {
-        "moo": "Additional death benefit equal to 100 percent of the original face amount or $250,000, whichever is less"
-       }
-      },
-      {
-       "label": "Optional riders (extra cost)",
-       "values": {
-        "moo": "Disability Income, Disability Waiver of Premium, Accidental Death Benefit, Dependent Children's Coverage"
-       }
-      }
-     ]
     }
-   ],
-   "notes": [
-    "Accelerated death benefits are not expected to receive the same favorable tax treatment as other types of accelerated death benefits; see a tax advisor.",
-    "Suicide exclusion: two years from issue (one year in CO, MO and ND); premiums paid are returned instead."
-   ]
-  }
- ],
- "missing": {
-  "americo": "Americo Term 125 client brochure not on file — only agent-use material exists, which stays out of the tool."
- }
+  ]
 }

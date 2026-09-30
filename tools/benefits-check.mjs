@@ -51,12 +51,21 @@ for (const k of keys) {
         const v = r.values || {};
         const vk = Object.keys(v);
         ok(vk.length, `${id}: "${r.label}" has no values`);
-        if (!('*' in v)) for (const c of cols) ok(c in v, `${id}: "${r.label}" missing column ${c}`);
+        // A multi-carrier brochure (sources per column) may leave a row to one carrier; checked per column below.
+        if (!('*' in v) && !b.sources) for (const c of cols) ok(c in v, `${id}: "${r.label}" missing column ${c}`);
+        for (const c of vk) ok(c === '*' || cols.includes(c), `${id}: "${r.label}" has unknown column ${c}`);
         for (const x of Object.values(v)) ok(typeof x === 'string' && x.trim() && !PLACEHOLDER.test(x), `${id}: "${r.label}" empty/placeholder value`);
         for (const x of Object.values(v)) ok(!/\$\s*\{/.test(String(x)), `${id}: "${r.label}" has a $ before a {token} (the slide-out adds the $)`);
       }
     }
     ok(rows >= 3, id + ': fewer than 3 benefit rows');
+    if (b.sources) for (const c of cols) {
+      const src = b.sources[c];
+      ok(src && src.code && src.file && src.page != null, `${id}: sources.${c} needs code, file and page`);
+      const cr = (secs || []).flatMap(s => s.rows || []).filter(r => r.values && (c in r.values || '*' in r.values));
+      ok(cr.length >= 3, `${id}: column ${c} has ${cr.length} rows (want 3+)`);
+      ok(cr.filter(r => r.key === true).length >= 3, `${id}: column ${c} has fewer than 3 key rows`);
+    }
     const keyRows = (secs || []).reduce((n, s) => n + (s.rows || []).filter(r => r.key === true).length, 0);
     ok(keyRows >= 3 && keyRows <= 10, `${id}: ${keyRows} key rows (want 3-10 so the slide-out opens short)`);
     ok(typeof b.page === 'string' || typeof b.page === 'number' || b.sameAs, id + ': page reference');
