@@ -227,6 +227,7 @@
   #printout .po-acabox{margin-top:14px;border:1px solid var(--line);border-top:4px solid var(--maroon);border-radius:10px;overflow:hidden;break-inside:avoid}
   #printout .po-acabox .t{font-family:var(--serif);font-weight:700;color:var(--maroon);font-size:16px;padding:11px 15px 2px}
   #printout .po-acabox .t small{display:block;font-family:-apple-system,sans-serif;font-weight:400;color:var(--muted);font-size:11px;margin-top:1px}
+  #printout .po-acabox .t .pn{display:block;font-family:-apple-system,sans-serif;font-weight:600;font-size:12px;color:var(--navy);margin-top:1px}
   #printout .po-acabox .li{display:flex;justify-content:space-between;gap:10px;padding:8px 15px;border-top:1px solid var(--line2);font-size:12.5px}
   #printout .po-acabox .li .lab small{display:block;color:var(--muted);font-size:10.5px}
   #printout .po-acabox .li .amt{font-variant-numeric:tabular-nums;font-family:var(--serif);text-align:right;white-space:nowrap}
@@ -1993,8 +1994,11 @@ function renderAca(){
       +'<button type="button" data-clr="'+k+'" title="Clear — use the estimate"'+(typed?'':' style="visibility:hidden"')+'>↺</button></div>'; };
   var calc=function(lab,sub,val){ return '<div class="acarow"><div class="lab">'+lab+(sub?'<small>'+sub+'</small>':'')+'</div><div class="calc">'+val+'</div><span></span></div>'; };
   var net=Math.max(0,(+S.aca.prem||0)-(+S.aca.subsidy||0));
-  host.innerHTML=
-     row('prem','Monthly premium','lowest-cost bronze, before any subsidy',r.prem,e.ok?e.bronze:null)
+  /* The plan they would buy (or have), by name - typed from HealthSherpa / HealthCare.gov. */
+  var nameRow='<div class="acarow"><div class="lab">Name of the plan<small>from HealthSherpa / HealthCare.gov</small></div><div class="est"></div>'
+    +'<input data-acaname="1" class="'+(A.plan?'typed':'')+'" value="'+esc(A.plan||'')+'" placeholder="e.g. Oscar Bronze Classic Standard"><span></span></div>';
+  host.innerHTML=nameRow
+    +row('prem','Monthly premium','lowest-cost bronze, before any subsidy',r.prem,e.ok?e.bronze:null)
     +row('subsidy','Monthly subsidy (APTC)',(e.ok&&e.fpl==null&&r.subsidy.src!=='typed')?'<a class="jump" data-jump="in_pincome">fill out income to see the potential subsidy ↓</a>':'applied to the premium, never the deductible',r.subsidy,e.ok?e.subsidy:null)
     +calc('Net monthly premium','premium − subsidy',fmt2(net))
     +row('ded','Annual deductible',e.ok&&e.size>1?'family':'individual',r.ded,e.ok?e.ded:null)
@@ -2019,6 +2023,7 @@ function renderAca(){
   var t=acaTrueParts();
   $('acaTrueMo').textContent=fmt2(t.mo); $('acaTrueYr').textContent=fmt2(t.yr);
   $('acaTrueHow').textContent='Annual = net premium × 12 + '+(S.aca.fullded?'deductible (brand drugs count toward it)':'brand drugs')+' + other medications × 12 + visits × cost per visit'+(t.capped?' — capped at the out-of-pocket max.':', never more than the out-of-pocket max.');
+  var nm=host.querySelector('[data-acaname]'); if(nm) nm.oninput=function(){ A.plan=nm.value.trim(); nm.classList.toggle('typed',!!A.plan); autosave(); };
   host.querySelectorAll('[data-ov]').forEach(function(inp){ inp.oninput=function(){ var v=inp.value.replace(/[^0-9.]/g,''); A.ov[inp.dataset.ov]=v===''?null:+v; acaSync(); autosave(); renderAcaTotalsOnly(); };
     inp.onchange=function(){ renderAca(); }; });
   host.querySelectorAll('[data-jump]').forEach(function(a){ a.onclick=function(ev){ ev.preventDefault(); intakeJump(a.dataset.jump); }; });
@@ -2989,7 +2994,7 @@ function applySuiteClient(c){
   if(h.curOop)     Cu.oop=suiteNum(h.curOop);
   /* A marketplace plan today makes it the ACA baseline: its deductible and copay are used, and the
      subsidy they get now is typed in as the actual figure rather than estimated. */
-  if(h.curIsAca==="Yes"){ Cu.isAca=true; var Ai=acaIn(); Ai.status='onaca'; if(suiteNum(h.curSubsidy)>0) Ai.ov.subsidy=suiteNum(h.curSubsidy); }
+  if(h.curIsAca==="Yes"){ Cu.isAca=true; var Ai=acaIn(); Ai.status='onaca'; var pn=[h.curCarrier,h.curPlan].filter(Boolean).join(' '); if(pn&&!Ai.plan) Ai.plan=pn; if(suiteNum(h.curSubsidy)>0) Ai.ov.subsidy=suiteNum(h.curSubsidy); }
   else if(h.curIsAca==="No") Cu.isAca=false;
 
   /* Family history and the general needs, per person. */
@@ -3556,7 +3561,7 @@ function buildPrintout(){
   }
   if(showAca){
     var sub=+a.subsidy||0, ef=acaEstFlags(), E=function(k){ return ef[k]?' <i style="color:#9a5b00;font-size:.85em">est.</i>':''; };
-    html+='<div class="po-acabox'+solo+'"><div class="t">'+(A.status==='onaca'?'Your marketplace plan':'The ACA marketplace — bronze')+'<small>What the exchange plan really costs once the deductible &amp; co-pays are counted</small></div>'
+    html+='<div class="po-acabox'+solo+'"><div class="t">'+(A.status==='onaca'?'Your marketplace plan':'The ACA marketplace — bronze')+(A.plan?'<span class="pn">'+esc(A.plan)+'</span>':'')+'<small>What the exchange plan really costs once the deductible &amp; co-pays are counted</small></div>'
       +li('Monthly premium'+E('prem'),sub>0?'The full price of the plan':'What you pay the carrier each month',fmt2(a.prem)+' /mo')
       +(sub>0?li('Less your subsidy'+E('subsidy'),'Applied to the premium only',' − '+fmt2(sub)+' /mo')+li('Net monthly premium'+E(ef.prem||ef.subsidy?'any':'x'),'What you actually pay',fmt2(netPrem)+' /mo'):'')
       +((+a.ded>0)?li('Annual deductible'+E('ded'),'The subsidy does not reduce this',fmt2(a.ded)):'')
