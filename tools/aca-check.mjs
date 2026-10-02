@@ -141,7 +141,17 @@ if (mode === 'engine') {
   ok(!html.includes('<div class="po-navy">'), 'printout no longer builds the navy savings box');
   ok(html.includes("'your marketplace plan':'your current plan'"), 'per-plan savings name the anchor');
   ok(html.includes('id="tfraHint"') && html.includes('Fund a portion, not all of it'), 'TFRA hint');
-  for (const id of ['b_er', 'b_amb', 'b_acc', 'b_dx', 'r_type', 'r_count', 'evMajor', 'evEveryday']) ok(html.includes('id="' + id + '"'), 'event input/output ' + id);
+  for (const id of ['ev0_editor', 'ev1_editor', 'evOut0', 'evOut1', 'neg_on', 'neg_pct', 'neg_min']) ok(html.includes('id="' + id + '"'), 'event card / Bill Saver ' + id);
+  for (const gone of ['id="b_preset"', 'id="r_preset"', 'id="r_type"', 'id="neg_on2"', 'id="evMajor"', 'id="evEveryday"']) ok(!html.includes(gone), 'old per-card input removed: ' + gone);
+  ok((html.match(/id="neg_on"/g) || []).length === 1 && html.indexOf('id="neg_on"') < html.indexOf('id="ev0_editor"'), 'one Bill Saver master, above both example cards');
+  { const a = html.indexOf('var EV_SCENARIOS=['), b = html.indexOf('];', a); const blk = html.slice(a, b);
+    const labels = [...blk.matchAll(/label:'([^']+)'/g)].map(m => m[1]);
+    const want = ['Hospital stay (national average)', 'ER visit — admitted, 3 days', 'Broken arm — cast, no surgery', 'Broken arm — needs surgery', 'Heart attack', 'Cancer — first year of treatment', 'Doctor visit', 'Urgent care visit', 'ER visit (not admitted)', 'MRI', 'Outpatient knee surgery'];
+    ok(labels.length === 11 && want.every(w => labels.includes(w)), 'one scenario list for both cards, all 11 scenarios (' + labels.length + ')');
+    ok(/src:'Derived: 3 of the 5\.2-day/.test(blk), 'ER-admitted 3-day stay cites how it was derived'); }
+  ok(/ev:\[evScn\('hosp'\),evScn\('urgent'\)\]/.test(html), 'new cases start with hospital stay on top and urgent care below');
+  { const a = html.indexOf('var showEvents=false'), b = html.indexOf('/* ---- last page', a), blk = html.slice(a, b);
+    ok(/po-newpage po-evpage/.test(blk) && !/\bevM\b|\bevE\b/.test(blk), 'printout: both examples sit on their own page, no leftover old variables'); }
   for (const gone of ['id="b_daily"', 'id="b_adm"', 'id="b_his"', 'id="b_other"', 'id="r_pay"', 'id="r_aca"']) ok(!html.includes(gone), 'hand-typed field removed: ' + gone);
   ok(/body\.client #printout\{display:block/.test(html), 'Client View shows the presentation');
   if (!fails) console.log('intake structure checks passed');
@@ -223,6 +233,28 @@ if (mode === 'engine') {
   r = ctx.evEveryday({ type: 'er', charge: 2209, count: 1, afc: n, acc: 1, accU: 1, gapEa: 1 });
   ok(r.pays === Math.min(n.er, n.outLimit || Infinity) + 2000 + 250, 'everyday broken arm: AFC ER + accident medical (capped $2,000/unit) + Gap ER accident');
   ok(ctx.evEveryday({ type: 'er', charge: 2209, count: 1, afc: n, acc: 0, accU: 1, gapEa: 1 }).pays === Math.min(n.er, n.outLimit || Infinity), 'no accident: accident plan and Gap ER pay nothing');
+  // ---- One event built from parts: matches today's results for the scenarios that existed ----
+  const pk = { afc: n, his: { ben: 10000, amb: 1 }, gap: { daily: 100, adm: 2500, ea: 1 }, accU: 1, hisOutp: 1000, gapOutp: 1000 };
+  const same = (a, b, msg) => ok(Math.abs(a.pays - b.pays) < 0.01 && Math.abs(a.owe0 - b.owe0) < 0.01, msg + ' (' + a.pays + '/' + a.owe0 + ' vs ' + b.pays + '/' + b.owe0 + ')');
+  same(ctx.evEvent({ charge: 69847, disc: 41809, days: 5, er: 1 }, pk), ctx.evMajor({ bal: 28038, days: 5, er: 1, afc: n, his: pk.his, gap: pk.gap, accU: 1 }), 'event = hospital stay engine for the national-average stay');
+  same(ctx.evEvent({ add: { urgent: { n: 1, each: 220 } } }, { afc: n }), ctx.evEveryday({ type: 'urgent', charge: 220, count: 1, afc: n }), 'event = everyday engine for an urgent care visit');
+  same(ctx.evEvent({ charge: 7595, surg: 1 }, pk), ctx.evEveryday({ type: 'osurg', charge: 7595, count: 1, afc: n, hisOutp: 1000, gapOutp: 1000 }), 'event = everyday engine for outpatient knee surgery');
+  same(ctx.evEvent({ charge: 2909, er: 1 }, { afc: n }), ctx.evEveryday({ type: 'er', charge: 2909, count: 1, afc: n }), 'event = everyday engine for an ER visit, not admitted');
+  same(ctx.evEvent({ charge: 2209, er: 1, acc: 1 }, { afc: n, accU: 1, gap: { daily: 100, adm: 2500, ea: 1 } }), ctx.evEveryday({ type: 'er', charge: 2209, count: 1, afc: n, acc: 1, accU: 1, gapEa: 1 }), 'event = everyday engine for a broken arm in the ER');
+  // Add-ons: each brings its own cost and pays its own benefit.
+  const hosp = ctx.evEvent({ charge: 69847, disc: 41809, days: 5, er: 1 }, pk), hv = ctx.evEvent({ charge: 69847, disc: 41809, days: 5, er: 1, add: { visit: { n: 2, each: 125 } } }, pk);
+  ok(hv.bill === hosp.bill + 250 && Math.abs(hv.pays - (hosp.pays + n.visit * Math.min(2, n.visitN))) < 0.01, 'add-on: 2 doctor visits add $250 to the bill and 2 visit benefits to the payout');
+  r = ctx.evEvent({ charge: 1500, er: 1, acc: 1, add: { visit: { n: 2, each: 300 } } }, { accU: 1 });
+  ok(r.pays === 2000, 'accident limit is shared across the event: $1,500 ER + $600 follow-up pays $2,000, not $2,100 (' + r.pays + ')');
+  const cig = { oop: 7350, ded: 3500, coins: 20, visit: 45, urgent: 75 };
+  r = ctx.evEvent({ charge: 20000, days: 3, add: { visit: { n: 3, each: 125 } } }, { major: cig });
+  ok(r.owe0 === Math.min(7350, 135 + ctx.evMajorOwe(cig, 20000)), 'major medical: visit copays + deductible/coinsurance on the rest, capped at the OOP (' + r.owe0 + ')');
+  const Aca2 = { oop: 9950, ded: 7476, coins: 50, visit: 50 };
+  ok(ctx.evAnchorOweEv({ charge: 10000, add: { visit: { n: 2, each: 125 } } }, Aca2) === 100 + ctx.evAnchorOwe('major', 10000, Aca2), 'ACA share: visit copays + deductible/coinsurance on the rest');
+  ok(ctx.evAnchorOweEv({ charge: 40000, add: { visit: { n: 2, each: 125 } } }, Aca2) === 9950, 'ACA share never passes the out-of-pocket limit');
+  r = ctx.evEvent({ charge: 20000, days: 3, add: { visit: { n: 2, each: 125 } } }, { afc: n, negotPct: 40 });
+  ok(r.negotiated === 12150 && r.owe0 === 12150, 'Bill Saver lowers the whole Manhattan bill, add-ons included (40% of $20,250 -> $12,150)');
+  ok(ctx.evEvent({ charge: 20000, days: 3 }, { major: cig, negotPct: 40 }).negotiated === null, 'Bill Saver never touches major medical');
   if (!fails) console.log('event checks passed');
 } else if (mode === 'pop') {
   const a = html.indexOf('/* ACA-ENGINE:BEGIN */'), b = html.indexOf('/* ACA-ENGINE:END */');
