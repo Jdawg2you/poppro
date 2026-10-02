@@ -67,6 +67,14 @@ const TEST = `(async function(){
   ok(!negApplies(0,bill(0))&&!negApplies(1,bill(1)), 'master off: neither card');
   $('neg_on').checked=true; $('neg_on').dispatchEvent(new Event('change')); await wait(30);
   ok(negApplies(0,bill(0))&&negApplies(1,bill(1)), 'master back on resets the per-card choices: both cards');
+  ok(blankState().negot.pct===40, 'a new case defaults Medical Bill Saver to 40%');
+  /* whatever % the agent types is the % the client sees, and the bill follows it */
+  $('neg_pct').value='35'; $('neg_pct').dispatchEvent(new Event('input')); await wait(60);
+  setView('client'); buildPrintout(); await wait(60);
+  var g=(document.querySelector('#printout .po-event .evneg:not(.off)')||{}).innerText||'', exp=Math.round(evScnBill(S.ev[0]).total*0.65*100)/100;
+  ok(/illustrated here at 35%/.test(g)&&/assumes a 35% reduction/.test(g)&&!/40%/.test(g), 'client green line uses the typed 35%: '+g.slice(0,140).replace(/\\s+/g,' '));
+  ok(/35% average reduction/.test(document.querySelector('#printout .po-event').innerText)&&evEvent(S.ev[0],Object.assign({},evTierPack('best'),{negotPct:S.negot.pct})).negotiated===exp, 'bill after Bill Saver = 65% of the bill at 35% ('+exp+')');
+  setView('agent'); $('neg_pct').value='40'; $('neg_pct').dispatchEvent(new Event('input')); await wait(30);
 
   /* a quote with nothing in either card still prints */
   var keepEv=JSON.stringify(S.ev); S.ev=[evScn(''),evScn('')]; var perr=null; try{ setView('client'); buildPrintout(); }catch(e){ perr=e.message; } setView('agent');
