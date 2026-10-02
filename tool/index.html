@@ -1122,7 +1122,7 @@ body.client #classicWrap>summary{display:none}
     <div class="negbar"><label><input type="checkbox" id="neg_on"> Medical Bill Saver (CareGuide) on both examples — Manhattan packages</label>
       <span>average reduction <input id="neg_pct" type="number" min="0" max="90" step="1" placeholder="%" style="width:64px"> %</span>
       <span>only on bills over $<input id="neg_min" type="number" min="0" step="100" style="width:80px"></span>
-      <small id="neg_note"></small><small>On Client View each example has its own On / Off button.</small></div>
+      <small id="neg_note"></small><small>Field training cites savings around 62%; ManhattanLife and CareGuide publish no average and CareGuide doesn’t guarantee savings, so we default to a conservative 40%. The quote shows it as an illustration.</small><small>On Client View each example has its own On / Off button.</small></div>
   </div>
 
   <div class="card pad">
@@ -2464,7 +2464,7 @@ function blankState(){
     },
     pension:{monthly:0,note:'e.g., IUL / tax-free retirement savings for your future',cv10:0,cv20:0,cv30:0,leg1:0,leg25:0},
     ev:[evScn('hosp'),evScn('urgent')],   // the two example cards: same builder, any scenario
-    negot:{on:false,pct:null,min:2500,cards:{}},   // Medical Bill Saver - % stays blank until a ManhattanLife source is on file
+    negot:{on:false,pct:40,min:2500,cards:{}},   // Medical Bill Saver (CareGuide) - a conservative 40% illustration; no carrier average is published
     intake:{who:{app:true,spouse:false,kids:false},phone:'',email:'',tobaccoP:false,tobaccoS:false,maternityP:false,maternityS:false,maternity:false,dv:false,famcancerP:false,famcancerS:false,famcancer:false,famheartP:false,famheartS:false,famheart:false,mentalP:false,mentalS:false,mental:false,surg2yrP:false,surg2yrS:false,surg2yr:false,majorcond:false,majorcondNote:'',diabetic:false,diabeticNote:'',health:'',income:0,pincome:0,sincome:0,hhManual:false,retage:'',savings:0,invest:0,invprot:false,invsra:false,invnote:'',docs1:'',docs2:'',docs3:'',keepaca:'',keepafc:'',docnote:'',medList:[],budget:0,priority:'coverage',notes:'',carrier:'',plan:'',pheight:'',pweight:'',sheight:'',sweight:'',psex:'',ssex:'',kidsNote:'',routeNote:'',docsNote:'',whyShop:'',effDate:''},
     recommended:'best',
     chosen:{tier:null},   // the package the client picked - carries from the builder / Client View to Enroll
@@ -3234,7 +3234,7 @@ function fill(){
   $('p_pension').value=(+S.pension.monthly)?fmtMoneyStr(String(S.pension.monthly)):'';$('p_pnote').value=S.pension.note;
   ;['cv10','cv20','cv30','leg1','leg25'].forEach(function(k){ $('pp_'+k).value=(+S.pension[k])?fmtMoneyStr(String(S.pension[k])):''; });
   evRenderEditors();
-  S.negot=Object.assign({on:false,pct:null,min:2500,cards:{}},S.negot||{}); $('neg_on').checked=!!S.negot.on; $('neg_min').value=S.negot.min; $('neg_pct').value=S.negot.pct==null?'':S.negot.pct;
+  S.negot=Object.assign({on:false,pct:40,min:2500,cards:{}},S.negot||{}); $('neg_on').checked=!!S.negot.on; $('neg_min').value=S.negot.min; $('neg_pct').value=S.negot.pct==null?'':S.negot.pct;
   $('tl_good').textContent=S.tabLabels.good;$('tl_better').textContent=S.tabLabels.better;$('tl_best').textContent=S.tabLabels.best;
   document.querySelectorAll('#tabs button').forEach(function(b){b.classList.toggle('on',b.dataset.tab===S.activeTab);b.classList.toggle('rec',b.dataset.tab===S.recommended);});
   S.include=S.include||{good:true,better:true,best:true};
@@ -3795,7 +3795,7 @@ function evFromReg(r){ var sc=evScn(''), each=+r.charge||0, n=Math.max(1,+r.coun
   if(t==='visit') sc.add.visit={n:n,each:each}; else if(t==='urgent') sc.add.urgent={n:n,each:each}; else if(t==='imaging') sc.add.mri={n:n,each:each};
   else { sc.charge=each*n; if(t==='er') sc.er=1; if(t==='osurg') sc.surg=1; }
   return sc; }
-function migrateEvents(raw){ if(!raw) return; S.negot=Object.assign({on:false,pct:null,min:2500,cards:{}},S.negot||{});
+function migrateEvents(raw){ if(!raw) return; S.negot=Object.assign({on:false,pct:40,min:2500,cards:{}},S.negot||{}); if(S.negot.pct==null||S.negot.pct==='') S.negot.pct=40;
   if(!raw.ev&&(raw.big||raw.reg)){ S.ev=[raw.big?evFromBig(raw.big):evScn('hosp'), raw.reg?evFromReg(raw.reg):evScn('urgent')];
     var ng=raw.negot||{}; if('onEvery' in ng) S.negot.on=!!(ng.on||ng.onEvery); }
   if(!Array.isArray(S.ev)||S.ev.length<2) S.ev=[evScn('hosp'),evScn('urgent')];
@@ -4460,7 +4460,7 @@ function evBindToggles(root){ (root||document).querySelectorAll('[data-evtog]').
   el.onclick=go; el.onkeydown=function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); go(); } }; }); }
 function renderEvents(){ var need=['afc','triad'].filter(function(f){ return !BEN_DATA[f]; });
   if(need.length&&!renderEvents._loading){ renderEvents._loading=true; Promise.all(need.map(function(f){ return benLoad(f).catch(function(){}); })).then(function(){ renderEvents._loading=false; renderEvents(); if(document.body.classList.contains('client')) buildPrintout(); }); }
-  var nn=$('neg_note'); if(nn) nn.textContent=(+(S.negot||{}).pct>0)?'':'Enter the reduction to illustrate — ManhattanLife and CareGuide publish no average (CareGuide: savings not guaranteed), so the figure is yours; the quote labels it an illustration.';
+  var nn=$('neg_note'); if(nn) nn.textContent=(+(S.negot||{}).pct>0)?'':'Enter the reduction to illustrate (40% is the default).';
   if($('neg_on')) $('neg_on').disabled=!(+(S.negot||{}).pct>0);
   [0,1].forEach(function(i){ var o=$('evOut'+i); if(o) o.innerHTML=evTableHTML(i)||'<div class="note">Enter a bill or an add-on to see what each package pays.</div>'; });
   evBindToggles(document);
