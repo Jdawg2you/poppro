@@ -58,6 +58,11 @@ const TEST = `(async function(){
   if(btn){ btn.click(); await wait(60); }
   ok(negApplies(0,bill(0))&&!negApplies(1,bill(1)), 'Client View toggle on card 2 turns off card 2 only');
   setView('agent'); await wait(30);
+  ok(negApplies(0,bill(0))&&negApplies(1,bill(1)), 'back to setup: both cards follow the master again');
+  /* a card under the minimum has no Client View button (it would change nothing) */
+  evApplyPreset(1,'urgent'); setView('client'); buildPrintout(); await wait(60);
+  ok(!document.querySelector('#printout [data-negtog="1"]')&&!!document.querySelector('#printout [data-negtog="0"]'), 'no Bill Saver button on a card under the minimum');
+  setView('agent'); evApplyPreset(1,'heart'); await wait(30);
   $('neg_on').checked=false; $('neg_on').dispatchEvent(new Event('change')); await wait(30);
   ok(!negApplies(0,bill(0))&&!negApplies(1,bill(1)), 'master off: neither card');
   $('neg_on').checked=true; $('neg_on').dispatchEvent(new Event('change')); await wait(30);
@@ -74,11 +79,11 @@ const TEST = `(async function(){
     negot:{on:true,onEvery:false,pct:40,min:2500}};
   var oldNet=['good','better','best'].map(function(t){ var o=evTierPack(t); return [
      evMajor({bal:28038,days:5,er:1,amb:0,acc:0,dx:'',afc:o.afc,his:o.his,gap:o.gap,accU:o.accU,chas:o.chas,major:o.major,negotPct:40}).net,
-     evEveryday({type:'osurg',charge:7595,count:1,afc:o.afc,hisOutp:o.hisOutp,gapOutp:o.gapOutp,acc:0,accU:o.accU,gapEa:o.gap&&o.gap.ea,major:o.major,negotPct:0}).net]; });
+     evEveryday({type:'osurg',charge:7595,count:1,afc:o.afc,hisOutp:o.hisOutp,gapOutp:o.gapOutp,acc:0,accU:o.accU,gapEa:o.gap&&o.gap.ea,major:o.major,negotPct:40}).net]; });
   var keepPk=JSON.stringify(S.packages), keepCfg=JSON.stringify(S.cfg);
   S=deepMerge(blankState(),raw); migrateEvents(raw); S.packages=JSON.parse(keepPk); S.cfg=JSON.parse(keepCfg); S.client.state='TX'; S.client.page='45';
   ok(!('big' in S)&&!('reg' in S)&&S.ev.length===2, 'old save converted to two cards');
-  ok(S.negot.on===true&&S.negot.cards[1]===false&&S.negot.cards[0]!==false, 'old save: Bill Saver stays on the first card and off the second');
+  ok(S.negot.on===true&&S.negot.cards[0]!==false&&S.negot.cards[1]!==false, 'old save: Bill Saver on for both cards (the master runs both)');
   var newNet=['good','better','best'].map(function(t){ var o=evTierPack(t); return [0,1].map(function(i){ return evEvent(S.ev[i],Object.assign({},o,{negotPct:negApplies(i,evScnBill(S.ev[i]).total)?S.negot.pct:0})).net; }); });
   var same=oldNet.every(function(r,ti){ return Math.abs(r[0]-newNet[ti][0])<0.01&&Math.abs(r[1]-newNet[ti][1])<0.01; });
   ok(same, 'old save: same "you pay" per package as before '+JSON.stringify(oldNet)+' vs '+JSON.stringify(newNet));
