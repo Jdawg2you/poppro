@@ -380,6 +380,7 @@
   .tfrahint .tfrause{font:inherit;font-size:11.5px;border:1px solid #b0872f;background:#fff;color:#26324a;border-radius:6px;padding:2px 8px;cursor:pointer;margin:2px 2px 0 0}
   .evflags{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;font-size:13px}
   .evhead,#printout .evhead{font-size:12px;color:var(--muted);padding:8px 0 6px}
+  .evadd{display:inline-flex;align-items:center;gap:4px;font-size:13px;margin-right:12px}.evadd input{border:1px solid var(--line);border-radius:6px;padding:3px 5px}
   .evtab,#printout .evtab{display:grid;gap:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff}
   .evtab .c,#printout .evtab .c{padding:8px 10px;border-top:1px solid #f1ede2;font-size:13px;text-align:center}
   .evtab .c.l,#printout .evtab .c.l{text-align:left;color:var(--navy);font-weight:600}.evtab .c small,#printout .evtab .c small{display:block;font-size:10.5px;color:var(--muted);font-weight:400}
@@ -1105,39 +1106,23 @@ body.client #classicWrap>summary{display:none}
     </div>
   </div>
 
-  <div class="card pad">
-    <div class="plainband">If a major event happens <span class="desc" id="o_big_desc_h"></span></div>
-    <div class="claim hidein-client">
-      <div class="row"><div class="lab">Scenario</div><select id="b_preset" class="selfld" style="max-width:320px"></select></div>
-      <div class="row"><div class="lab">Description</div><input id="b_desc" style="flex:1;border:1px solid var(--line);border-radius:7px;padding:6px 8px"></div>
-      <div class="row"><div class="lab">Total billed charges</div><input class="num" id="b_charge" type="number" step="0.01"></div>
-      <div class="row"><div class="lab">Network discount / adjustment</div><input class="num" id="b_disc" type="number" step="0.01"></div>
-      <div class="row"><div class="lab">Days in the hospital</div><input class="num" id="b_days" type="number" min="0"></div>
-      <div class="row"><div class="lab">What happened</div><div class="evflags">
-        <label><input type="checkbox" id="b_er"> Came in through the ER</label>
-        <label><input type="checkbox" id="b_amb"> Ambulance</label>
-        <label><input type="checkbox" id="b_acc"> Caused by an accident</label>
-        <select id="b_dx" class="selfld" style="max-width:220px"><option value="">No cancer / heart / stroke diagnosis</option><option value="cancer">Cancer diagnosis</option><option value="heart">Heart attack</option><option value="stroke">Stroke</option></select></div></div>
-    </div>
-    <div class="negbar hidein-client"><label><input type="checkbox" id="neg_on"> Medical Bill Saver (care negotiation) on this event — Manhattan packages</label>
+  <div class="card pad hidein-client">
+    <div class="negbar"><label><input type="checkbox" id="neg_on"> Medical Bill Saver (CareGuide) on both examples — Manhattan packages</label>
       <span>average reduction <input id="neg_pct" type="number" min="0" max="90" step="1" placeholder="%" style="width:64px"> %</span>
       <span>only on bills over $<input id="neg_min" type="number" min="0" step="100" style="width:80px"></span>
-      <small id="neg_note"></small></div>
-    <div id="evMajor" class="evwrap"></div>
+      <small id="neg_note"></small><small>On Client View each example has its own On / Off button.</small></div>
   </div>
 
   <div class="card pad">
-    <div class="plainband">On an everyday event <span class="desc" id="o_reg_desc_h"></span></div>
-    <div class="claim hidein-client">
-      <div class="row"><div class="lab">Scenario</div><select id="r_preset" class="selfld" style="max-width:320px"></select></div>
-      <div class="row"><div class="lab">Description</div><input id="r_desc" style="flex:1;border:1px solid var(--line);border-radius:7px;padding:6px 8px"></div>
-      <div class="row"><div class="lab">Kind of visit</div><select id="r_type" class="selfld" style="max-width:260px"><option value="visit">Doctor visit</option><option value="urgent">Urgent care</option><option value="er">ER visit (not admitted)</option><option value="osurg">Outpatient surgery</option><option value="imaging">MRI / CT scan</option></select></div>
-      <div class="row"><div class="lab">How many times this year</div><input class="num" id="r_count" type="number" min="1"></div>
-      <div class="row"><div class="lab">What happened</div><div class="evflags"><label><input type="checkbox" id="r_acc"> Caused by an accident</label></div></div>
-      <div class="row"><div class="lab">Charge each time (after discount)</div><input class="num" id="r_charge" type="number" step="0.01"></div>
-    </div>
-    <div class="negbar hidein-client"><label><input type="checkbox" id="neg_on2"> Medical Bill Saver (care negotiation) on this event — Manhattan packages</label><small>Its own switch; the reduction and the minimum bill are set on the major event.</small></div>
-    <div id="evEveryday" class="evwrap"></div>
+    <div class="plainband">Example 1 <span class="desc" id="ev0_desc_h"></span></div>
+    <div class="claim hidein-client" id="ev0_editor"></div>
+    <div id="evOut0" class="evwrap"></div>
+  </div>
+
+  <div class="card pad">
+    <div class="plainband">Example 2 <span class="desc" id="ev1_desc_h"></span></div>
+    <div class="claim hidein-client" id="ev1_editor"></div>
+    <div id="evOut1" class="evwrap"></div>
   </div>
 
     <div id="afcPartners"></div>
@@ -1780,6 +1765,58 @@ function evAnchorOwe(kind,bill,A,type,count){ if(!A) return null; var cap=A.oop>
   /* Deductible first, then the plan's coinsurance share, never more than the out-of-pocket limit. */
   if(A.ded>0&&A.coins!=null&&bill>A.ded) return Math.min(cap,Math.round((A.ded+(+A.coins)/100*(bill-A.ded))*100)/100);
   return Math.min(bill,cap); }
+/* ---- One event, built from parts (tested by aca-check events) ----
+   A scenario: {charge, disc, days, er, amb, acc, dx, surg, add:{visit:{n,each}, urgent:{n,each}, mri:{n,each}}}.
+   The main bill (billed charges less the network discount) runs through the hospital-stay engine: days,
+   ER, ambulance, accident and a cancer/heart/stroke diagnosis. If it was an outpatient surgery (no days),
+   the outpatient-surgery benefits pay on it too. Each add-on carries its own cost x count and pays its own
+   per-visit benefits. Every plan pays every benefit the event triggers. */
+var EV_ADDONS=[['visit','Doctor visit','visit',125],['urgent','Urgent care visit','urgent',220],['mri','MRI / CT scan','imaging',861]];
+function evScnBill(sc){ sc=sc||{}; var main=Math.max(0,(+sc.charge||0)-(+sc.disc||0)), ex=0, add=sc.add||{};
+  EV_ADDONS.forEach(function(a){ var x=add[a[0]]; if(x&&+x.n>0) ex+=(+x.n)*Math.max(0,+x.each||0); });
+  return {main:Math.round(main*100)/100, extra:Math.round(ex*100)/100, total:Math.round((main+ex)*100)/100}; }
+var EV_SCENARIOS=[
+ {id:'hosp',label:'Hospital stay (national average)',desc:'Hospital stay — national average',charge:69847,disc:41809,days:5,er:1,src:'Billed: HCUP 2022 average hospital charge ($69,847). Network price: HCCI 2022 average commercial payment for the hospital itself ($28,038) — doctors’ and surgeons’ fees are billed on top. 5.2-day average stay (HCUP 2022)'},
+ {id:'eradmit',label:'ER visit — admitted, 3 days',desc:'ER visit, admitted for 3 days',charge:40296,disc:24120,days:3,er:1,src:'Derived: 3 of the 5.2-day national average stay — HCUP 2022 average hospital charge ($69,847) and HCCI 2022 average commercial payment ($28,038), each × 3 ÷ 5.2 = $40,296 billed, $16,176 network price. Admissions through the ER were 59% of US stays in 2021 (HCUP Statistical Brief #311).'},
+ {id:'arm',label:'Broken arm — cast, no surgery',desc:'Broken arm (cast, no surgery)',charge:2209,er:1,acc:1,src:'Shapiro et al., J Hand Microsurg 2023 — non-surgical wrist fracture, whole episode, MarketScan 2007–16'},
+ {id:'armsx',label:'Broken arm — needs surgery',desc:'Broken arm with surgery',charge:6577,er:1,acc:1,surg:1,src:'Huetteman et al., J Hand Surg Am 2018 — surgical wrist fracture, $6,577–$8,181 published range (low end used), MarketScan 2009–15'},
+ {id:'heart',label:'Heart attack',desc:'Heart attack hospitalization',charge:47666,days:5,er:1,amb:1,dx:'heart',src:'Peterson-KFF Health System Tracker 2018 (average allowed, large employer plans); 5-day average stay'},
+ {id:'cancer',label:'Cancer — first year of treatment',desc:'Cancer — first year of treatment',charge:43600,dx:'cancer',src:'Mariotto et al. 2020 (NCI, SEER-Medicare) — first-year cancer cost, 2019 dollars; commercial costs are typically higher'},
+ {id:'visit',label:'Doctor visit',desc:'Doctor visit',add:{visit:1},src:'Peterson-KFF Health System Tracker 2021 — average office visit'},
+ {id:'urgent',label:'Urgent care visit',desc:'Urgent care visit',add:{urgent:1},src:'HCCI 2022 — average urgent care visit'},
+ {id:'er',label:'ER visit (not admitted)',desc:'ER visit (not admitted)',charge:2909,er:1,src:'HCCI 2021 — average ER visit including all services'},
+ {id:'mri',label:'MRI',desc:'MRI',add:{mri:1},src:'Peterson-KFF Health System Tracker 2018 — lower-back MRI'},
+ {id:'knee',label:'Outpatient knee surgery',desc:'Outpatient knee surgery (arthroscopy)',charge:7595,surg:1,src:'Peterson-KFF Health System Tracker 2018 — outpatient meniscus repair'}
+];
+/* A scenario as the two cards hold it: every field present, add-ons at their national-average cost. */
+function evBlankAdd(){ var o={}; EV_ADDONS.forEach(function(a){ o[a[0]]={n:0,each:a[3]}; }); return o; }
+function evScn(id){ var p=EV_SCENARIOS.filter(function(x){ return x.id===id; })[0]||{}, add=evBlankAdd();
+  Object.keys(p.add||{}).forEach(function(k){ add[k].n=p.add[k]; });
+  return {preset:p.id||'',desc:p.desc||'',src:p.src||'',charge:p.charge||0,disc:p.disc||0,days:p.days||0,er:p.er||0,amb:p.amb||0,acc:p.acc||0,dx:p.dx||'',surg:p.surg||0,add:add}; }
+/* o: one package {afc, his, gap:{daily,adm,ea}, accU, chas, major:{oop,ded,coins,visit,urgent}, hisOutp, gapOutp, negotPct} */
+function evEvent(sc,o){ sc=sc||{}; o=o||{}; var b=evScnBill(sc), days=+sc.days||0, add=sc.add||{}, parts=[], pays=0, accUsed=0;
+  var take=function(r){ (r.parts||[]).forEach(function(q){ parts.push(q); pays+=q.v; }); };
+  if(b.main>0||days>0||sc.dx){ var mj=evMajor({bal:b.main,days:days,er:sc.er,amb:sc.amb,acc:sc.acc,dx:sc.dx,afc:o.afc,his:o.his,gap:o.gap,accU:o.accU,chas:o.chas});
+    take(mj); if(sc.acc&&o.accU) accUsed=Math.min(b.main,2000*o.accU); }
+  if(sc.surg&&days===0&&b.main>0) take(evEveryday({type:'osurg',charge:b.main,count:1,afc:o.afc,hisOutp:o.hisOutp,gapOutp:o.gapOutp}));
+  EV_ADDONS.forEach(function(a){ var x=add[a[0]]; if(x&&+x.n>0&&+x.each>0) take(evEveryday({type:a[2],charge:+x.each,count:+x.n,afc:o.afc})); });
+  /* The accident plan's medical benefit is one limit for the whole event, follow-up care included. */
+  if(sc.acc&&o.accU&&b.extra>0){ var rest=Math.max(0,2000*o.accU-accUsed), v=Math.min(b.extra,rest); if(v>0){ v=Math.round(v*100)/100; parts.push({lab:'24-Hour Accident — follow-up care (same limit)',v:v}); pays+=v; } }
+  pays=Math.round(pays*100)/100;
+  var negotiated=(!o.major&&+o.negotPct>0)?Math.round(b.total*(1-(+o.negotPct)/100)*100)/100:null, owe0;
+  if(o.major){ var m=o.major, cop=0, pool=b.main;
+    EV_ADDONS.forEach(function(a){ var x=add[a[0]]; if(!(x&&+x.n>0)) return; var amt=(+x.n)*Math.max(0,+x.each||0), c=a[0]==='visit'?m.visit:a[0]==='urgent'?m.urgent:0;
+      if(c>0) cop+=Math.min(amt,c*(+x.n)); else pool+=amt; });
+    owe0=Math.round(Math.min(+m.oop>0?+m.oop:b.total,cop+(pool>0?evMajorOwe(m,pool):0))*100)/100; }
+  else owe0=negotiated!=null?negotiated:b.total;
+  return {bill:b.total,main:b.main,extra:b.extra,pays:pays,parts:parts,owe0:owe0,net:Math.round((owe0-pays)*100)/100,negotiated:negotiated}; }
+/* The anchor's share of the same event: doctor visits at the plan's copay when it has one; everything else
+   goes through the deductible and coinsurance, never past the out-of-pocket limit. */
+function evAnchorOweEv(sc,A){ if(!A) return null; var b=evScnBill(sc), add=(sc&&sc.add)||{}, cop=0, pool=b.main;
+  EV_ADDONS.forEach(function(a){ var x=add[a[0]]; if(!(x&&+x.n>0)) return; var amt=(+x.n)*Math.max(0,+x.each||0);
+    if(a[0]==='visit'&&A.visit>0) cop+=Math.min(amt,A.visit*(+x.n)); else pool+=amt; });
+  var cap=A.oop>0?A.oop:b.total;
+  return Math.round(Math.min(cap,cop+(pool>0?evAnchorOwe('major',pool,A):0))*100)/100; }
 /* ---- POP Score: how complete the protection is (tested by aca-check pop) ----
    Every piece is graded against the BEST build available in the client's state (x.best): the
    strongest Affordable Choice level, HI Select $10K + $1,500 outpatient, Out-of-Pocket at its top
@@ -2414,9 +2451,8 @@ function blankState(){
       best:{products:defProducts('best'),dropped:[],lb:45,lbCarrier:'',lbCov:'',med:0,rxBenefit:0}
     },
     pension:{monthly:0,note:'e.g., IUL / tax-free retirement savings for your future',cv10:0,cv20:0,cv30:0,leg1:0,leg25:0},
-    big:{desc:'Hospital stay — national average',charge:69847,disc:41809,days:5,er:1,amb:0,acc:0,dx:'',preset:'hosp',src:'Billed: HCUP 2022 average hospital charge ($69,847). Network price: HCCI 2022 average commercial payment for the hospital itself ($28,038) — doctors’ and surgeons’ fees are billed on top. 5.2-day average stay (HCUP 2022)'},
-    negot:{on:false,onEvery:false,pct:null,min:2500},   // Medical Bill Saver - % stays blank until a ManhattanLife source is on file
-    reg:{desc:'Urgent care visit',type:'urgent',count:1,charge:220,acc:0,preset:'urgent',src:'HCCI 2022 — average urgent care visit'},
+    ev:[evScn('hosp'),evScn('urgent')],   // the two example cards: same builder, any scenario
+    negot:{on:false,pct:null,min:2500,cards:{}},   // Medical Bill Saver - % stays blank until a ManhattanLife source is on file
     intake:{who:{app:true,spouse:false,kids:false},phone:'',email:'',tobaccoP:false,tobaccoS:false,maternityP:false,maternityS:false,maternity:false,dv:false,famcancerP:false,famcancerS:false,famcancer:false,famheartP:false,famheartS:false,famheart:false,mentalP:false,mentalS:false,mental:false,surg2yrP:false,surg2yrS:false,surg2yr:false,majorcond:false,majorcondNote:'',diabetic:false,diabeticNote:'',health:'',income:0,pincome:0,sincome:0,hhManual:false,retage:'',savings:0,invest:0,invprot:false,invsra:false,invnote:'',docs1:'',docs2:'',docs3:'',keepaca:'',keepafc:'',docnote:'',medList:[],budget:0,priority:'coverage',notes:'',carrier:'',plan:'',pheight:'',pweight:'',sheight:'',sweight:'',psex:'',ssex:'',kidsNote:'',routeNote:'',docsNote:'',whyShop:'',effDate:''},
     recommended:'best',
     chosen:{tier:null},   // the package the client picked - carries from the builder / Client View to Enroll
@@ -3185,8 +3221,8 @@ function fill(){
   $('p_lb').value=pk.lb;$('p_rxben').value=pk.rxBenefit||'';$('p_lb_carrier').value=pk.lbCarrier||'';$('p_lb_cov').value=pk.lbCov||'';
   $('p_pension').value=(+S.pension.monthly)?fmtMoneyStr(String(S.pension.monthly)):'';$('p_pnote').value=S.pension.note;
   ;['cv10','cv20','cv30','leg1','leg25'].forEach(function(k){ $('pp_'+k).value=(+S.pension[k])?fmtMoneyStr(String(S.pension[k])):''; });
-  $('b_desc').value=S.big.desc;$('b_charge').value=S.big.charge;$('b_disc').value=S.big.disc;$('b_preset').innerHTML=evPresetOpts('major',S.big.preset||''); $('b_days').value=S.big.days;$('b_er').checked=!!S.big.er;$('b_amb').checked=!!S.big.amb;$('b_acc').checked=!!S.big.acc;$('b_dx').value=S.big.dx||'';
-  $('r_desc').value=S.reg.desc;$('r_preset').innerHTML=evPresetOpts('everyday',S.reg.preset||''); S.negot=Object.assign({on:false,onEvery:false,pct:null,min:2500},S.negot||{}); $('neg_on').checked=!!S.negot.on; $('neg_on2').checked=!!S.negot.onEvery; $('neg_min').value=S.negot.min; $('neg_pct').value=S.negot.pct==null?'':S.negot.pct; $('r_charge').value=S.reg.charge;$('r_type').value=S.reg.type||'visit'; $('r_acc').checked=!!S.reg.acc;$('r_count').value=S.reg.count||1;
+  evRenderEditors();
+  S.negot=Object.assign({on:false,pct:null,min:2500,cards:{}},S.negot||{}); $('neg_on').checked=!!S.negot.on; $('neg_min').value=S.negot.min; $('neg_pct').value=S.negot.pct==null?'':S.negot.pct;
   $('tl_good').textContent=S.tabLabels.good;$('tl_better').textContent=S.tabLabels.better;$('tl_best').textContent=S.tabLabels.best;
   document.querySelectorAll('#tabs button').forEach(function(b){b.classList.toggle('on',b.dataset.tab===S.activeTab);b.classList.toggle('rec',b.dataset.tab===S.recommended);});
   S.include=S.include||{good:true,better:true,best:true};
@@ -3201,9 +3237,8 @@ function read(){
   S.aca=Object.assign({},S.aca,{subsidy:+S.aca.subsidy||0,prem:+$('a_prem').value||0,ded:+$('a_ded').value||0,oop:+$('a_oop').value||0,med:+$('a_med').value||0,visits:+$('a_visits').value||0,copay:+$('a_copay').value||0,fullded:$('a_fullded').checked});
   var pk=S.packages[S.activeTab]; pk.lb=+$('p_lb').value||0; pk.rxBenefit=+$('p_rxben').value||0; pk.lbCarrier=$('p_lb_carrier').value; pk.lbCov=$('p_lb_cov').value;
   S.pension={monthly:moneyNum($('p_pension').value),note:$('p_pnote').value,cv10:moneyNum($('pp_cv10').value),cv20:moneyNum($('pp_cv20').value),cv30:moneyNum($('pp_cv30').value),leg1:moneyNum($('pp_leg1').value),leg25:moneyNum($('pp_leg25').value)};
-  S.big={desc:$('b_desc').value,charge:+$('b_charge').value||0,disc:+$('b_disc').value||0,days:+$('b_days').value||0,er:$('b_er').checked?1:0,amb:$('b_amb').checked?1:0,acc:$('b_acc').checked?1:0,dx:$('b_dx').value,preset:(S.big||{}).preset||'',src:(S.big||{}).src||''};
-  S.negot={on:$('neg_on').checked,onEvery:$('neg_on2').checked,pct:$('neg_pct').value===''?null:+$('neg_pct').value,min:$('neg_min').value===''?2500:+$('neg_min').value};
-  S.reg={desc:$('r_desc').value,charge:+$('r_charge').value||0,type:$('r_type').value,count:+$('r_count').value||1,acc:$('r_acc').checked?1:0,preset:(S.reg||{}).preset||'',src:(S.reg||{}).src||''};
+  var nc=(S.negot&&S.negot.cards)||{}, wasOn=!!(S.negot&&S.negot.on);
+  S.negot={on:$('neg_on').checked,pct:$('neg_pct').value===''?null:+$('neg_pct').value,min:$('neg_min').value===''?2500:+$('neg_min').value,cards:$('neg_on').checked===wasOn?nc:{}};   /* the master resets the Client View per-card choices */
 }
 
 var AFC_PARTNERS=[
@@ -3390,6 +3425,7 @@ function applyClientZeroHide(){
 }
 
 function setView(v){
+  if(v!=='client'&&S.negot) S.negot.cards={};   /* setup always runs both examples off the one switch */
   view=v; document.body.classList.toggle('client',v==='client');
   var cw=document.getElementById('classicWrap'); if(cw&&v==='client') cw.open=true;   // client view still renders from the classic card
   document.querySelectorAll('#viewseg button').forEach(function(b){b.classList.toggle('on',b.dataset.view===v);});
@@ -3608,15 +3644,14 @@ function buildPrintout(){
   } /* end Show-on-quote gate for TFRA */
   var tfra=html; html=main;
 
-  /* ---- event illustrations, page 3: major first, then everyday ---- */
-  var showEvents=false, evM=evTableHTML('major'), evE=evTableHTML('everyday');
-  if(evM||evE) html+='<div class="po-newpage po-evpage">';
-  if(evM){ showEvents=true; html+='<div class="po-event"><div class="band">If a major event happens'+(S.big.desc?' <span class="d">'+esc(S.big.desc)+'</span>':'')+negToggleHTML('major')+'</div>'+evM+'</div>'; }
-  if(evE){ showEvents=true; html+='<div class="po-event"><div class="band">On an everyday event'+(S.reg.desc?' <span class="d">'+esc(S.reg.desc)+'</span>':'')+negToggleHTML('everyday')+'</div>'+evE+'</div>'; }
+  /* ---- event illustrations, page 3: the two example cards, on a page of their own ---- */
+  var showEvents=false, evs=[evTableHTML(0),evTableHTML(1)];
+  if(evs[0]||evs[1]) html+='<div class="po-newpage po-evpage">';
+  evs.forEach(function(t,i){ if(!t) return; showEvents=true; var d=(S.ev[i]||{}).desc;
+    html+='<div class="po-event"><div class="band">'+(d?'If this happens: <span class="d">'+esc(d)+'</span>':'Example '+(i+1))+negToggleHTML(i)+'</div>'+t+'</div>'; });
   var foot='<div class="po-foot">'+esc(agency)+' — Package of Protection. Figures are estimates from the inputs provided; confirm exact benefits in the policy / ARC. ManhattanLife plans are limited-benefit indemnity coverage, not major medical.</div>';
   /* the fine print sits with the event examples' fine print, so it never lands on a page of its own */
   if(showEvents){ html+='<div class="po-illus">The examples above are for illustrative purposes only, shown to demonstrate how the coverage responds. The actual event, length of stay, and benefits paid vary by person and policy.</div>'+foot+'</div>'; foot=''; }
-  else if(evM||evE) html+='</div>';
 
   /* ---- last page: the TFRA and what else comes with the plan ---- */
   var partners=renderAfcPartnersHTML(true);
@@ -3625,7 +3660,8 @@ function buildPrintout(){
   evBindToggles($('printout'));
   $('printout').querySelectorAll('[data-choose]').forEach(function(el){ el.onclick=function(){ chooseTier(el.dataset.choose); }; el.onkeydown=function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); chooseTier(el.dataset.choose); } }; });
   $('printout').querySelectorAll('[data-dental]').forEach(function(b){ b.onclick=function(){ setDental(b.dataset.t,b.dataset.dental==='1'); }; });
-  $('printout').querySelectorAll('[data-negtog]').forEach(function(b){ b.onclick=function(){ var ev=b.dataset.negtog==='everyday', k=ev?'onEvery':'on'; S.negot[k]=!S.negot[k]; $(ev?'neg_on2':'neg_on').checked=S.negot[k]; compute(); autosave(); }; });
+  /* Client View: each example has its own Bill Saver On / Off, on top of the agent's master switch. */
+  $('printout').querySelectorAll('[data-negtog]').forEach(function(b){ b.onclick=function(){ var i=+b.dataset.negtog; S.negot.cards=S.negot.cards||{}; S.negot.cards[i]=!negOn(i); compute(); autosave(); }; });
 }
 
 function currentQuote(){read();return JSON.parse(JSON.stringify(S));}
@@ -3738,7 +3774,22 @@ function migrateAca(raw){ if(!raw||raw.acaIn) return; var A=acaIn(), a=raw.aca||
   if(+a.visits>0){ S.intake=S.intake||{}; S.intake.visits=+a.visits; }
   A.fullded=a.fullded!==false; }
 /* Saves from before the scenario presets have no preset/src; don't let the defaults cite a source for them. */
-function migrateEvents(raw){ if(!raw) return; if(raw.big&&!('preset' in raw.big)){ S.big.preset=''; S.big.src=''; } if(raw.reg&&!('preset' in raw.reg)){ S.reg.preset=''; S.reg.src=''; if(!('type' in raw.reg)) S.reg.type='visit'; } }
+/* Saves from before the two-card builder kept a major event (big) and an everyday event (reg) in different
+   shapes. Both become the same scenario shape with the same numbers, so a reopened quote shows what it showed. */
+function evFromBig(b){ var sc=evScn(''); ['desc','charge','disc','days','er','amb','acc','dx','preset','src'].forEach(function(k){ if(b[k]!=null) sc[k]=b[k]; });
+  if(!EV_SCENARIOS.some(function(x){ return x.id===sc.preset; })) sc.preset=''; if(sc.preset==='armsx') sc.surg=1; return sc; }
+function evFromReg(r){ var sc=evScn(''), each=+r.charge||0, n=Math.max(1,+r.count||1), t=r.type||'visit'; sc.desc=r.desc||''; sc.acc=+r.acc||0; sc.src=r.src||'';
+  var map={armc:'arm',arms:'armsx',visit:'visit',urgent:'urgent',er:'er',mri:'mri',knee:'knee'}; sc.preset=map[r.preset]||'';
+  if(t==='visit') sc.add.visit={n:n,each:each}; else if(t==='urgent') sc.add.urgent={n:n,each:each}; else if(t==='imaging') sc.add.mri={n:n,each:each};
+  else { sc.charge=each*n; if(t==='er') sc.er=1; if(t==='osurg') sc.surg=1; }
+  return sc; }
+function migrateEvents(raw){ if(!raw) return; S.negot=Object.assign({on:false,pct:null,min:2500,cards:{}},S.negot||{});
+  if(!raw.ev&&(raw.big||raw.reg)){ S.ev=[raw.big?evFromBig(raw.big):evScn('hosp'), raw.reg?evFromReg(raw.reg):evScn('urgent')];
+    var ng=raw.negot||{}; if('onEvery' in ng) S.negot.on=!!(ng.on||ng.onEvery); }
+  if(!Array.isArray(S.ev)||S.ev.length<2) S.ev=[evScn('hosp'),evScn('urgent')];
+  S.ev=S.ev.map(function(sc){ var base=evScn(''); sc=Object.assign(base,sc||{}); sc.add=Object.assign(evBlankAdd(),sc.add||{}); return sc; });
+  S.negot.cards={};   /* per-card Client View choices last only while presenting */
+  delete S.big; delete S.reg; delete S.negot.onEvery; }
 function restore(){ try{ var s=localStorage.getItem('hf_pop_last'); if(s){ var raw=JSON.parse(s); S=deepMerge(blankState(),raw); migrateAca(raw); migrateEvents(raw); if(!S.aca)S.aca=blankState().aca; } }catch(e){} }
 
 /* ========== INTAKE + RECOMMENDATION ENGINE ========== */
@@ -4041,25 +4092,11 @@ function zipFillsState(){
   if(sel.value!==st){ sel.value=st; captureIntake(); }
 }
 function bindInputs(){
-  ['c_pname','c_sname','c_agent','c_state','c_zip','c_page','c_sage','a_prem','a_ded','a_oop','a_med','a_visits','a_copay','p_lb','p_lb_carrier','p_lb_cov','p_rxben','p_pension','p_pnote','pp_cv10','pp_cv20','pp_cv30','pp_leg1','pp_leg25',
-   'b_desc','b_charge','b_disc','b_days','r_desc','r_charge','r_count']
+  ['c_pname','c_sname','c_agent','c_state','c_zip','c_page','c_sage','a_prem','a_ded','a_oop','a_med','a_visits','a_copay','p_lb','p_lb_carrier','p_lb_cov','p_rxben','p_pension','p_pnote','pp_cv10','pp_cv20','pp_cv30','pp_leg1','pp_leg25']
    .forEach(function(id){ $(id).addEventListener('input',compute); });
   $('a_fullded').addEventListener('change',compute);
-  ['b_er','b_amb','b_acc','b_dx','r_type','neg_on'].forEach(function(id){ $(id).addEventListener('change',compute); });
+  $('neg_on').addEventListener('change',compute); evBindEditors();
   $('neg_pct').addEventListener('input',compute);
-  $('b_preset').addEventListener('change',function(){ if(this.value) evApplyPreset('major',this.value); else { S.big.preset=''; S.big.src=''; compute(); } });
-  $('r_preset').addEventListener('change',function(){ if(this.value) evApplyPreset('everyday',this.value); else { S.reg.preset=''; S.reg.src=''; compute(); } });
-  /* A hand-edited figure is no longer the national average - drop the source so it isn't cited. */
-  /* Leaving a preset: drop its citation, and its name too if the agent hasn't renamed it. */
-  var evCustom=function(kind){ var st=kind==='major'?S.big:S.reg, sel=$(kind==='major'?'b_preset':'r_preset'), de=$(kind==='major'?'b_desc':'r_desc');
-    var pr=EV_PRESETS[kind].filter(function(x){ return x.id===st.preset; })[0]; if(pr&&de.value===pr.desc){ de.value=''; st.desc=''; }
-    st.preset=''; st.src=''; sel.value=''; compute(); };
-  ['b_charge','b_disc','b_days'].forEach(function(id){ $(id).addEventListener('input',function(){ evCustom('major'); }); });
-  ['r_charge','r_count'].forEach(function(id){ $(id).addEventListener('input',function(){ evCustom('everyday'); }); });
-  ['b_er','b_amb','b_acc','b_dx'].forEach(function(id){ $(id).addEventListener('change',function(){ evCustom('major'); }); });
-  $('r_type').addEventListener('change',function(){ evCustom('everyday'); });
-  $('r_acc').addEventListener('change',function(){ evCustom('everyday'); });
-  $('neg_on2').addEventListener('change',compute);
   $('neg_min').addEventListener('input',compute);
   ['in_keepaca','in_keepafc'].forEach(function(id){ $(id).addEventListener('change',function(){ readIntake(); autosave(); }); });
   document.querySelectorAll('#tabs button').forEach(function(b){ b.onclick=function(){ read(); S.activeTab=b.dataset.tab; fill(); compute(); }; });
@@ -4311,26 +4348,33 @@ function benRefresh(){ if(!BEN_VIEW.length) return; var views=BEN_VIEW.slice();
 document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&BEN_VIEW.length){ BEN_VIEW=[]; benRender(); } });
 /* National-average scenarios - what commercial insurance actually pays (allowed amount), so the
    "bill after discount" is the real network price. Sources: data/aca/national-event-costs.json. */
-var EV_PRESETS={
- major:[
-  {id:'hosp',label:'Hospital stay (national average)',desc:'Hospital stay — national average',charge:69847,disc:41809,days:5,er:1,amb:0,acc:0,dx:'',src:'Billed: HCUP 2022 average hospital charge ($69,847). Network price: HCCI 2022 average commercial payment for the hospital itself ($28,038) — doctors’ and surgeons’ fees are billed on top. 5.2-day average stay (HCUP 2022)'},
-  {id:'arm',label:'Broken arm — cast, no surgery',desc:'Broken arm (cast, no surgery)',charge:2209,days:0,er:1,amb:0,acc:1,dx:'',src:'Shapiro et al., J Hand Microsurg 2023 — non-surgical wrist fracture, whole episode, MarketScan 2007–16'},
-  {id:'armsx',label:'Broken arm — needs surgery',desc:'Broken arm with surgery',charge:6577,days:0,er:1,amb:0,acc:1,dx:'',src:'Huetteman et al., J Hand Surg Am 2018 — surgical wrist fracture, $6,577–$8,181 published range (low end used), MarketScan 2009–15'},
-  {id:'heart',label:'Heart attack',desc:'Heart attack hospitalization',charge:47666,days:5,er:1,amb:1,acc:0,dx:'heart',src:'Peterson-KFF Health System Tracker 2018 (average allowed, large employer plans); 5-day average stay'},
-  {id:'cancer',label:'Cancer — first year of treatment',desc:'Cancer — first year of treatment',charge:43600,days:0,er:0,amb:0,acc:0,dx:'cancer',src:'Mariotto et al. 2020 (NCI, SEER-Medicare) — first-year cancer cost, 2019 dollars; commercial costs are typically higher'}],
- everyday:[
-  {id:'armc',label:'Broken arm — cast, no surgery',desc:'Broken arm (cast, no surgery)',type:'er',acc:1,count:1,charge:2209,src:'Shapiro et al., J Hand Microsurg 2023 — non-surgical wrist fracture, whole episode, MarketScan 2007–16'},
-  {id:'arms',label:'Broken arm — needs surgery',desc:'Broken arm with surgery',type:'osurg',acc:1,count:1,charge:6577,src:'Huetteman et al., J Hand Surg Am 2018 — surgical wrist fracture, $6,577–$8,181 published range (low end used), MarketScan 2009–15'},
-  {id:'visit',label:'Doctor visit',desc:'Doctor visit',type:'visit',count:1,charge:125,src:'Peterson-KFF Health System Tracker 2021 — average office visit'},
-  {id:'urgent',label:'Urgent care visit',desc:'Urgent care visit',type:'urgent',count:1,charge:220,src:'HCCI 2022 — average urgent care visit'},
-  {id:'er',label:'ER visit (not admitted)',desc:'ER visit (not admitted)',type:'er',count:1,charge:2909,src:'HCCI 2021 — average ER visit including all services'},
-  {id:'mri',label:'MRI',desc:'MRI',type:'imaging',count:1,charge:861,src:'Peterson-KFF Health System Tracker 2018 — lower-back MRI'},
-  {id:'knee',label:'Outpatient knee surgery',desc:'Outpatient knee surgery (arthroscopy)',type:'osurg',count:1,charge:7595,src:'Peterson-KFF Health System Tracker 2018 — outpatient meniscus repair'}]};
-function evPresetOpts(kind,cur){ return '<option value="">Custom</option>'+EV_PRESETS[kind].map(function(p){ return '<option value="'+p.id+'"'+(p.id===cur?' selected':'')+'>'+p.label+'</option>'; }).join(''); }
-function evApplyPreset(kind,id){ var p=EV_PRESETS[kind].filter(function(x){ return x.id===id; })[0]; if(!p) return;
-  if(kind==='major'){ S.big={desc:p.desc,charge:p.charge,disc:p.disc||0,days:p.days,er:p.er,amb:p.amb,acc:p.acc,dx:p.dx,preset:p.id,src:p.src}; }
-  else { S.reg={desc:p.desc,charge:p.charge,type:p.type,count:p.count,acc:p.acc||0,preset:p.id,src:p.src}; }
-  fill(); compute(); autosave(); }
+function evPresetOpts(cur){ return '<option value="">Custom</option>'+EV_SCENARIOS.map(function(p){ return '<option value="'+p.id+'"'+(p.id===cur?' selected':'')+'>'+p.label+'</option>'; }).join(''); }
+function evApplyPreset(i,id){ if(!EV_SCENARIOS.some(function(x){ return x.id===id; })) return; S.ev[i]=evScn(id); evRenderEditors(); compute(); autosave(); }
+/* The two example cards share one builder, so either can carry a heavy or a light example. */
+function evEditorHTML(i){ var sc=S.ev[i], f=function(k){ return 'data-ev="'+i+'" data-f="'+k+'"'; }, ck=function(k,lab){ return '<label><input type="checkbox" '+f(k)+(sc[k]?' checked':'')+'> '+lab+'</label>'; };
+  return '<div class="row"><div class="lab">Scenario</div><select class="selfld" style="max-width:320px" '+f('preset')+'>'+evPresetOpts(sc.preset)+'</select></div>'
+   +'<div class="row"><div class="lab">Description</div><input style="flex:1;border:1px solid var(--line);border-radius:7px;padding:6px 8px" '+f('desc')+' value="'+esc(sc.desc||'')+'"></div>'
+   +'<div class="row"><div class="lab">Total billed charges</div><input class="num" type="number" step="0.01" '+f('charge')+' value="'+(+sc.charge||0)+'"></div>'
+   +'<div class="row"><div class="lab">Network discount / adjustment</div><input class="num" type="number" step="0.01" '+f('disc')+' value="'+(+sc.disc||0)+'"></div>'
+   +'<div class="row"><div class="lab">Days in the hospital</div><input class="num" type="number" min="0" '+f('days')+' value="'+(+sc.days||0)+'"></div>'
+   +'<div class="row"><div class="lab">What happened</div><div class="evflags">'+ck('er','Came in through the ER')+ck('amb','Ambulance')+ck('acc','Caused by an accident')+ck('surg','Outpatient surgery')
+   +'<select class="selfld" style="max-width:220px" '+f('dx')+'>'+[['','No cancer / heart / stroke diagnosis'],['cancer','Cancer diagnosis'],['heart','Heart attack'],['stroke','Stroke']].map(function(o){ return '<option value="'+o[0]+'"'+(o[0]===(sc.dx||'')?' selected':'')+'>'+o[1]+'</option>'; }).join('')+'</select></div></div>'
+   +'<div class="row"><div class="lab">Add-ons<small style="display:block;color:var(--muted);font-weight:400">each adds its own cost</small></div><div class="evflags">'
+   +EV_ADDONS.map(function(a){ var x=(sc.add||{})[a[0]]||{n:0,each:a[3]}; return '<span class="evadd">'+a[1]+' <input type="number" min="0" style="width:52px" '+f('add.'+a[0]+'.n')+' value="'+(+x.n||0)+'"> × $<input type="number" min="0" step="1" style="width:76px" '+f('add.'+a[0]+'.each')+' value="'+(+x.each||0)+'"></span>'; }).join('')
+   +'</div></div>'; }
+function evRenderEditors(){ [0,1].forEach(function(i){ var h=$('ev'+i+'_editor'); if(h) h.innerHTML=evEditorHTML(i); }); }
+/* Typing into a card updates that card only. A changed number is no longer the national average, so the
+   citation goes (and the preset's own name, if the agent hasn't renamed it). */
+function evBindEditors(){ [0,1].forEach(function(i){ var h=$('ev'+i+'_editor'); if(!h||h._bound) return; h._bound=true;
+  var on=function(e){ var el=e.target, k=el.dataset&&el.dataset.f; if(!k) return; var sc=S.ev[i];
+    if(k==='preset'){ if(el.value) evApplyPreset(i,el.value); else { sc.preset=''; sc.src=''; compute(); autosave(); } return; }
+    var v=el.type==='checkbox'?(el.checked?1:0):(el.type==='number'?(+el.value||0):el.value);
+    if(k.indexOf('add.')===0){ var q=k.split('.'); sc.add=sc.add||evBlankAdd(); sc.add[q[1]]=sc.add[q[1]]||{n:0,each:0}; sc.add[q[1]][q[2]]=v; } else sc[k]=v;
+    /* Add-ons carry their own cost, so adding one keeps the scenario and its citation. */
+    if(k!=='desc'&&k.indexOf('add.')!==0&&sc.preset){ var pr=EV_SCENARIOS.filter(function(x){ return x.id===sc.preset; })[0]; if(pr&&sc.desc===pr.desc){ sc.desc=''; var d=h.querySelector('[data-f="desc"]'); if(d) d.value=''; }
+      sc.preset=''; sc.src=''; var sel=h.querySelector('[data-f="preset"]'); if(sel) sel.value=''; }
+    compute(); autosave(); };
+  h.addEventListener('input',on); h.addEventListener('change',function(e){ if(e.target.type==='checkbox'||e.target.tagName==='SELECT') on(e); }); }); }
 /* ===== Event gut checks per package (screen + print) ===== */
 var EV_TIERS=[['good','Essential'],['better','Complete'],['best','Comprehensive']];
 function evIncluded(){ var inc=S.include||{}; return EV_TIERS.filter(function(T){ return inc[T[0]]!==false&&tierTotals(T[0]).mo>0; }); }
@@ -4358,19 +4402,20 @@ function evAnchor(){ var B=anchorBase(); if(!B) return null;
     return {lab:'Your ACA plan',oop:oop,visit:+S.aca.copay||0,ded:dPer||null,coins:co,how:((dPer?'deductible '+fmt(dPer)+', then '+(co!=null?co+'% ':'')+'coinsurance — ':'')+'capped at the '+fmt(oop)+(fam?' per-person':'')+' out-of-pocket limit')}; }
   var C=curIn(); return {lab:'Your current plan',oop:+C.oop>0?+C.oop:(+C.ded||0),visit:+C.copay||0,note:+C.oop>0?'':'out-of-pocket max not entered — using their deductible'}; }
 function evMoneyTxt(v){ return (v<0?'+':'')+fmt2(Math.abs(v)); }
-function evTableHTML(kind){ var tiers=evIncluded(); if(!tiers.length) return '';
+function evTableHTML(i){ var tiers=evIncluded(); if(!tiers.length) return ''; var kind=i, sc=S.ev[i]||evScn('');
   var A=evAnchor(), B=anchorBase(), res=[], bill, head;
-  if(kind==='major'){ var b=S.big; bill=Math.max(0,(+b.charge||0)-(+b.disc||0)); if(!(bill>0)) return '';
-    head=((+b.disc||0)>0?'Billed '+fmt2(+b.charge)+', network price after a '+fmt2(+b.disc)+' discount · ':'Network price — what insurance actually pays · ')+((+b.days||0)>0?(+b.days)+' day'+(+b.days===1?'':'s')+' in the hospital':'no hospital stay')+(b.er?' · through the ER':'')+(b.amb?' · ambulance':'')+(b.acc?' · accident':'')+(b.dx?' · '+b.dx+' diagnosis':'');
-    tiers.forEach(function(T){ var o=evTierPack(T[0]); res.push({T:T,o:o,r:evMajor({bal:bill,days:b.days,er:b.er,amb:b.amb,acc:b.acc,dx:b.dx,afc:o.afc,his:o.his,gap:o.gap,accU:o.accU,chas:o.chas,major:o.major,negotPct:negApplies(kind,bill)?S.negot.pct:0})}); }); }
-  else { var r=S.reg, cnt=Math.max(1,+r.count||1); bill=(+r.charge||0)*cnt; if(!(bill>0)) return '';
-    head=({visit:'Doctor visit',urgent:'Urgent care',er:'ER visit',osurg:'Outpatient surgery',imaging:'MRI / CT scan'}[r.type]||'Visit')+(cnt>1?' · '+cnt+' times at '+fmt2(+r.charge||0):'')+(r.acc?' · accident':'')+' · network price — what insurance actually pays';
-    tiers.forEach(function(T){ var o=evTierPack(T[0]); res.push({T:T,o:o,r:evEveryday({type:r.type,charge:r.charge,count:cnt,afc:o.afc,hisOutp:o.hisOutp,gapOutp:o.gapOutp,acc:r.acc,accU:o.accU,gapEa:o.gap&&o.gap.ea,major:o.major,negotPct:negApplies(kind,bill)?S.negot.pct:0})}); }); }
-  var aOwe=A?evAnchorOwe(kind,bill,A,S.reg.type,S.reg.count):null;
-  var billed=kind==='major'&&(+S.big.disc||0)>0?+S.big.charge:0, negB=negApplies(kind,bill)?Math.round(bill*(1-S.negot.pct/100)*100)/100:null;
-  var cols=(A?1:0)+res.length, h='<div class="evbill"><span>This event costs</span>'+(billed?'<b class="was">'+fmt2(billed)+'</b><i class="arr">→</i>':'')+'<b>'+fmt2(bill)+'</b>'+(billed?'<em>network price — every plan pays this, not the sticker price</em>':'')+(negB!=null?'<i class="arr">→</i><b class="neg">'+fmt2(negB)+'</b><em>with Medical Bill Saver, Manhattan packages</em>':'')+'<small>'+head+'</small></div>'+(negOn(kind)&&!negApplies(kind,bill)?'<div class="evneg off">Medical Bill Saver is for bills over '+fmt(+S.negot.min||2500)+' — this one is not negotiated.</div>':'')+(negApplies(kind,bill)?'<div class="evneg"><b>Medical Bill Saver is on.</b><span class="ex"> On the Manhattan packages, ManhattanLife’s care-negotiation service (CareGuide) works the bill down before you pay it — illustrated here at '+S.negot.pct+'%. The plan still pays its full benefits, so more of that money stays with you.</span><span class="printonly" style="display:none"> CareGuide negotiates the bill down; the plan still pays in full.</span><small>Illustration: assumes a '+S.negot.pct+'% reduction. CareGuide states savings are not guaranteed.</small></div>':'')+'<div class="evtab'+(((S.evOpen||{})[kind])?' open':'')+'" style="grid-template-columns:var(--evlab,minmax(120px,1.1fr)) repeat('+cols+',1fr)">';
+  var bb=evScnBill(sc), bill=bb.total, head, adds=[]; if(!(bill>0)) return '';
+  EV_ADDONS.forEach(function(a){ var x=(sc.add||{})[a[0]]; if(x&&+x.n>0) adds.push((+x.n)+' '+a[1].toLowerCase()+(+x.n>1?'s':'')+' at '+fmt2(+x.each||0)); });
+  head=(bb.main>0?((+sc.disc||0)>0?'Billed '+fmt2(+sc.charge)+', network price after a '+fmt2(+sc.disc)+' discount':'Network price — what insurance actually pays'):'')
+    +((+sc.days||0)>0?' · '+(+sc.days)+' day'+(+sc.days===1?'':'s')+' in the hospital':'')+(sc.er?' · through the ER':'')+(sc.amb?' · ambulance':'')+(sc.acc?' · accident':'')+(sc.surg&&!(+sc.days)?' · outpatient surgery':'')+(sc.dx?' · '+sc.dx+' diagnosis':'')
+    +(adds.length?(bb.main>0?' · plus ':'')+adds.join(', '):'');
+  head=head.replace(/^ · /,'');
+  tiers.forEach(function(T){ var o=evTierPack(T[0]); res.push({T:T,o:o,r:evEvent(sc,Object.assign({},o,{negotPct:negApplies(i,bill)?S.negot.pct:0}))}); });
+  var aOwe=A?evAnchorOweEv(sc,A):null;
+  var billed=(+sc.disc||0)>0&&!bb.extra?+sc.charge:0, negB=negApplies(kind,bill)?Math.round(bill*(1-S.negot.pct/100)*100)/100:null;
+  var cols=(A?1:0)+res.length, h='<div class="evbill"><span>This event costs</span>'+(billed?'<b class="was">'+fmt2(billed)+'</b><i class="arr">→</i>':'')+'<b>'+fmt2(bill)+'</b>'+(billed?'<em>network price — every plan pays this, not the sticker price</em>':'')+(negB!=null?'<i class="arr">→</i><b class="neg">'+fmt2(negB)+'</b><em>with Medical Bill Saver (CareGuide), Manhattan packages</em>':'')+'<small>'+head+'</small></div>'+(negOn(i)&&!negApplies(i,bill)?'<div class="evneg off">Medical Bill Saver is for bills over '+fmt(+S.negot.min||2500)+' — this one is not negotiated.</div>':'')+(negApplies(i,bill)?'<div class="evneg"><b>Medical Bill Saver (CareGuide) is on.</b><span class="ex"> On the Manhattan packages, ManhattanLife’s care-negotiation service (CareGuide) works the bill down before you pay it — illustrated here at '+S.negot.pct+'%. The plan still pays its full benefits, so more of that money stays with you.</span><span class="printonly" style="display:none"> CareGuide negotiates the bill down; the plan still pays in full.</span><small>Illustration: assumes a '+S.negot.pct+'% reduction. CareGuide states savings are not guaranteed.</small></div>':'')+'<div class="evtab'+(((S.evOpen||{})[i])?' open':'')+'" style="grid-template-columns:var(--evlab,minmax(120px,1.1fr)) repeat('+cols+',1fr)">';
   h+='<div class="c l"></div>'+(A?'<div class="c h anc">'+A.lab+'</div>':'')+res.map(function(x){ return '<div class="c h">'+x.T[1]+'</div>'; }).join('');
-  h+='<div class="c l evtog" data-evtog="'+kind+'" role="button" tabindex="0"><span class="car">▸</span> Your plan pays<small class="noprint">click to see why</small></div>'+(A?'<div class="c anc">'+fmt2(Math.max(0,bill-aOwe))+'<small>toward the bill</small></div>':'')
+  h+='<div class="c l evtog" data-evtog="'+i+'" role="button" tabindex="0"><span class="car">▸</span> Your plan pays<small class="noprint">click to see why</small></div>'+(A?'<div class="c anc">'+fmt2(Math.max(0,bill-aOwe))+'<small>toward the bill</small></div>':'')
     +res.map(function(x){ return '<div class="c">'+(x.o.unknown&&!x.r.pays?'—':fmt2(x.r.pays+(x.o.major?Math.max(0,bill-x.r.owe0):0)))+'<small>'+(x.o.major?'plan + cash benefits':'paid to you')+'</small></div>'; }).join('');
   /* Itemised: what each benefit pays and why - behind the caret on screen, always shown in print. */
   var li=function(lab,v){ return '<div class="it"><span>'+esc(lab)+'</span><b>'+fmt2(v)+'</b></div>'; };
@@ -4379,8 +4424,8 @@ function evTableHTML(kind){ var tiers=evIncluded(); if(!tiers.length) return '';
     +res.map(function(x){ var its=x.r.parts.map(function(p){ return li(p.lab,p.v); });
       if(x.o.major&&bill-x.r.owe0>0) its.unshift(li('Cigna pays the rest of the bill',bill-x.r.owe0));
       if(x.o.unknown&&!x.r.pays) its=['<div class="why">'+esc(x.o.unknown)+'</div>'];
-      return '<div class="c evit">'+(its.join('')||'<div class="why">No benefit applies to this event.</div>')+(x.o.afc&&kind==='major'?'<div class="why surg">Surgery benefits (paid on the policy fee schedule) are extra and not counted here.</div>':'')+'</div>'; }).join('');
-  if(negApplies(kind,bill)) h+='<div class="c l">Bill after Medical Bill Saver <small>'+S.negot.pct+'% average reduction</small></div>'+(A?'<div class="c anc">—<small>network price already</small></div>':'')
+      return '<div class="c evit">'+(its.join('')||'<div class="why">No benefit applies to this event.</div>')+(x.o.afc&&(+sc.days||0)>0?'<div class="why surg">Surgery benefits (paid on the policy fee schedule) are extra and not counted here.</div>':'')+'</div>'; }).join('');
+  if(negApplies(i,bill)) h+='<div class="c l">Bill after Medical Bill Saver <small>'+S.negot.pct+'% average reduction</small></div>'+(A?'<div class="c anc">—<small>network price already</small></div>':'')
     +res.map(function(x){ return '<div class="c">'+(x.r.negotiated!=null?fmt2(x.r.negotiated):'—<small>major medical</small>')+'</div>'; }).join('');
   h+='<div class="c l">You pay <small>(or receive)</small></div>'+(A?'<div class="c anc big">'+fmt2(aOwe)+(A.note?'<small>'+A.note+'</small>':(A.how&&aOwe>=A.oop?'<small>'+A.how+'</small>':''))+'</div>':'')
     +res.map(function(x){ var n=x.r.net; return '<div class="c big '+(n<=0?'up':'dn')+'">'+(x.o.unknown&&!x.r.pays?'<small>'+x.o.unknown+'</small>':(n<=0?'You receive '+fmt2(-n):'You pay '+fmt2(n)))+'</div>'; }).join('');
@@ -4388,14 +4433,16 @@ function evTableHTML(kind){ var tiers=evIncluded(); if(!tiers.length) return '';
     +res.map(function(x){ var sv=anchorSavings(B,pkgPremMo(x.T[0]))||{actual:0}, v=sv.actual*12+(aOwe-x.r.net); return '<div class="c '+(v>=0?'up':'dn')+'">'+(v>=0?'Ahead ':'Behind ')+fmt(Math.abs(v))+'</div>'; }).join(''); }
   h+='</div>';
   if(res.some(function(x){ return !x.o.major; })) h+='<div class="evhow"><b>How the money reaches you:</b> the Manhattan benefits are fixed amounts paid for the event, not a share of the bill. In network, show the card and the provider bills ManhattanLife directly; whatever the benefits pay beyond the bill comes back to you. Out of network, you pay the provider and the benefits are paid to you.</div>';
-  if(kind==='major'&&res.some(function(x){ return x.o.afc; })) h+='<div class="evsrc printonly">Affordable Choice surgery benefits (paid on the policy fee schedule) are extra and not counted above.</div>';
-  var src=kind==='major'?(S.big||{}).src:(S.reg||{}).src; if(src) h+='<div class="evsrc">National average (what insurance pays): '+esc(src)+'</div>';
+  if((+sc.days||0)>0&&res.some(function(x){ return x.o.afc; })) h+='<div class="evsrc printonly">Affordable Choice surgery benefits (paid on the policy fee schedule) are extra and not counted above.</div>';
+  var src=sc.src; if(src) h+='<div class="evsrc">National average (what insurance pays): '+esc(src)+'</div>';
   return h; }
-function negOn(kind){ var n=S.negot||{}; return +n.pct>0&&!!(kind==='everyday'?n.onEvery:n.on); }
+function negOn(i){ var n=S.negot||{}; return +n.pct>0&&!!n.on&&((n.cards||{})[i]!==false); }
 /* Medical Bill Saver is used on big bills only - over the agent's minimum ($2,500 by default). */
-function negApplies(kind,bill){ return negOn(kind)&&bill>(+((S.negot||{}).min)||2500); }
-function negToggleHTML(kind){ var n=S.negot||{}; if(!(+n.pct>0)) return ''; var on=negOn(kind);
-  return '<button type="button" class="negtog noprint'+(on?' on':'')+'" data-negtog="'+kind+'">Medical Bill Saver: '+(on?'On':'Off')+'</button>'; }
+function negApplies(i,bill){ return negOn(i)&&bill>(+((S.negot||{}).min)||2500); }
+function negToggleHTML(i){ var n=S.negot||{}; if(!(+n.pct>0)||!n.on) return ''; var on=negOn(i);
+  /* A bill at or under the minimum is never negotiated, so a button there would change nothing. */
+  if(!(evScnBill(S.ev[i]).total>(+n.min||2500))) return '';
+  return '<button type="button" class="negtog noprint'+(on?' on':'')+'" data-negtog="'+i+'">Medical Bill Saver (CareGuide): '+(on?'On':'Off')+'</button>'; }
 /* The caret on 'Your plan pays' - one state per event, shared by the agent view and Client View. */
 function evBindToggles(root){ (root||document).querySelectorAll('[data-evtog]').forEach(function(el){ var go=function(){ S.evOpen=S.evOpen||{}; S.evOpen[el.dataset.evtog]=!S.evOpen[el.dataset.evtog]; compute(); };
   el.onclick=go; el.onkeydown=function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); go(); } }; }); }
@@ -4403,11 +4450,9 @@ function renderEvents(){ var need=['afc','triad'].filter(function(f){ return !BE
   if(need.length&&!renderEvents._loading){ renderEvents._loading=true; Promise.all(need.map(function(f){ return benLoad(f).catch(function(){}); })).then(function(){ renderEvents._loading=false; renderEvents(); if(document.body.classList.contains('client')) buildPrintout(); }); }
   var nn=$('neg_note'); if(nn) nn.textContent=(+(S.negot||{}).pct>0)?'':'Enter the reduction to illustrate — ManhattanLife and CareGuide publish no average (CareGuide: savings not guaranteed), so the figure is yours; the quote labels it an illustration.';
   if($('neg_on')) $('neg_on').disabled=!(+(S.negot||{}).pct>0);
-  if($('neg_on2')) $('neg_on2').disabled=$('neg_on').disabled;
-  if($('evMajor')) $('evMajor').innerHTML=evTableHTML('major')||'<div class="note">Enter the billed charges to see what each package pays.</div>';
-  if($('evEveryday')) $('evEveryday').innerHTML=evTableHTML('everyday')||'<div class="note">Enter the charge to see what each package pays.</div>';
+  [0,1].forEach(function(i){ var o=$('evOut'+i); if(o) o.innerHTML=evTableHTML(i)||'<div class="note">Enter a bill or an add-on to see what each package pays.</div>'; });
   evBindToggles(document);
-  var bh=$('o_big_desc_h'); if(bh) bh.textContent=S.big.desc||''; var rh=$('o_reg_desc_h'); if(rh) rh.textContent=S.reg.desc||''; }
+  [0,1].forEach(function(i){ var d=$('ev'+i+'_desc_h'); if(d) d.textContent=(S.ev[i]||{}).desc||''; }); }
 /* TFRA: what each package frees up against the anchor, and a quick "use part of it". */
 function renderTfraHint(){ var el=$('tfraHint'); if(!el) return; var B=anchorBase();
   if(!B){ el.innerHTML='No anchor chosen, so there are no savings to fund a TFRA from. Set one in Budget &amp; Notes.'; return; }
