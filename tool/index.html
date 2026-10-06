@@ -1836,9 +1836,11 @@ function evEvent(sc,o){ sc=sc||{}; o=o||{}; var b=evScnBill(sc), days=+sc.days||
   if(o.major){ var m=o.major, cop=0, pool=b.main;
     EV_ADDONS.forEach(function(a){ var x=add[a[0]]; if(!(x&&+x.n>0)) return; var amt=(+x.n)*Math.max(0,+x.each||0), c=a[0]==='visit'?m.visit:a[0]==='urgent'?m.urgent:0;
       if(c>0) cop+=Math.min(amt,c*(+x.n)); else pool+=amt; });
-    owe0=Math.round(Math.min(+m.oop>0?+m.oop:b.total,cop+(pool>0?evMajorOwe(m,pool):0))*100)/100; }
+    var oweParts=[]; if(cop>0) oweParts.push({lab:'visit copays',v:cop});
+    owe0=Math.round(Math.min(+m.oop>0?+m.oop:b.total,cop+(pool>0?evMajorOwe(m,pool,{days:days,er:sc.er,type:(sc.surg&&days===0)?'osurg':'',out:oweParts}):0))*100)/100;
+    o.__oweParts=oweParts; }
   else owe0=negotiated!=null?negotiated:b.total;
-  return {bill:b.total,main:b.main,extra:b.extra,pays:pays,parts:parts,owe0:owe0,net:Math.round((owe0-pays)*100)/100,negotiated:negotiated}; }
+  return {bill:b.total,main:b.main,extra:b.extra,pays:pays,parts:parts,owe0:owe0,net:Math.round((owe0-pays)*100)/100,negotiated:negotiated,oweParts:(o.__oweParts||[])}; }
 /* The anchor's share of the same event: doctor visits at the plan's copay when it has one; everything else
    goes through the deductible and coinsurance, never past the out-of-pocket limit. */
 function evAnchorOweEv(sc,A){ if(!A) return null; var b=evScnBill(sc), add=(sc&&sc.add)||{}, cop=0, pool=b.main;
@@ -4436,7 +4438,11 @@ function evTierPack(t){ var c=effCfg(t), st=(S.client.state||'').toUpperCase(), 
   if(evHas(t,'base')&&c.base==='triad'&&BEN_DATA.triad){ var tm=benModel(BEN_DATA.triad,st,'Triad Cigna '+(c.triadPlan||'3500'),c), rows=evFlatRows(tm), fam=acaPeople().length>1;
     var get=function(re){ var r=rows.filter(function(x){ return re.test(x.label); })[0]; return r?r.value:''; };
     var oo=evMoneyAll(get(/^Out-of-pocket maximum/i)); o.major={oop:oo[0]||0,ded:evMoney(get(/^Calendar-year deductible/i))||null,coins:(String(get(/^Hospital facility/i)).match(/(\d+)%/)||[,null])[1],visit:evMoney(get(/^Primary care visit/i)),urgent:evMoney(get(/^Urgent care/i))}; if(o.major.coins!=null) o.major.coins=+o.major.coins; }   // one person's event: individual OOP
-  if(evHas(t,'base')&&c.base==='lifex') o.unknown='LifeX benefit summary not on file';
+  if(evHas(t,'base')&&c.base==='lifex'){ var lfam=acaPeople().length>1, lxd=LIFEX_PPO.ded[c.lifexPlan||'$500 PPO']||500;
+    /* LifeX is a COPAY plan: the deductible, then a flat copay per event — read from the PHCS SBCs, not scraped. */
+    o.major={oop:lfam?LIFEX_OOP_BOUND.family:LIFEX_OOP_BOUND.self,ded:lxd*(lfam?2:1),copay:true,
+      visit:LIFEX_PPO.visit,urgent:LIFEX_PPO.urgent,er:LIFEX_PPO.er,adm:LIFEX_PPO.adm,
+      osurg:LIFEX_PPO.osurg,imaging:LIFEX_PPO.imaging}; }
   return o; }
 function evAnchor(){ var B=anchorBase(); if(!B) return null;
   if(B.k==='aca'){ var fam=acaPeople().length>1, r=S.acaRes||{}, bz=ACA26.bronze||{}, cap=(ACA26.moop2026||{}).self||10600;
