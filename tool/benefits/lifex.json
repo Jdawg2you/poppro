@@ -16,7 +16,7 @@
    "code": "PHCS_PPO_SBC_V1.2_0326",
    "file": "LifeX/Copay PPO/PHCS_PPO_<ded>_SBC+Rates_V1.2_0326.pdf",
    "states": [
-    "ALL — PHCS network. MagnaCare replaces PHCS in NY and NJ only."
+    "*"
    ],
    "page": "2-4",
    "sections": [
@@ -495,6 +495,7 @@
     }
    ],
    "notes": [
+    "Sold in every state LifeX operates in. Network is PHCS via MultiPlan; MagnaCare replaces PHCS in New York and New Jersey only.",
     "Only the deductible and the premium differ across the four Copay PPO plans. Every copay, the $9,200 out-of-pocket maximum, preventive care and the prescription schedule are IDENTICAL.",
     "Because preventive care and generic maintenance drugs are $0 with no deductible on all four, a client who only uses those two things should take the HIGHEST deductible — it is the cheapest premium for the same practical outcome.",
     "Benefit schedule read from the four PHCS SBCs, rates effective 1 January 2026. Filed at Optimum Carrier Library/LifeX/Copay PPO/.",

@@ -38,6 +38,10 @@ for (const k of keys) {
     const id = k + '/' + (b.code || '?');
     ok(b.code && b.file, id + ': code and file');
     ok(Array.isArray(b.states) && b.states.length, id + ': states[]');
+    // benBrochure() matches a two-letter code or the '*' wildcard. Anything else silently matches
+    // nothing and the slide-out opens empty — which is how LifeX shipped blank on 6 Oct 2026.
+    for (const s of b.states || []) ok(s === '*' || /^[A-Z]{2}$/.test(s),
+      `${id}: state ${JSON.stringify(s)} is not a two-letter code or '*' — benBrochure() will never match it`);
     for (const s of b.states || []) { ok(!seen.has(s), `${k}: state ${s} in both ${seen.get(s)} and ${b.code}`); seen.set(s, b.code); }
     const secs = b.sameAs ? (d.brochures.find(x => x.code === b.sameAs) || {}).sections : b.sections;
     ok(!b.sameAs || d.brochures.some(x => x.code === b.sameAs && !x.sameAs), id + ': sameAs points at a real, non-alias brochure');
