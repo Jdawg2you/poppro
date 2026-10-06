@@ -1,0 +1,505 @@
+{
+ "product": "lifex",
+ "name": "LifeX Copay PPO",
+ "carrier": "Benefit Re, Inc (NAIC #17459) — LifeX / Benefits Health Plan Inc, TPA",
+ "columns": {
+  "by": "plan",
+  "values": [
+   "$500 PPO",
+   "$750 PPO",
+   "$1000 PPO",
+   "$1,500 PPO"
+  ]
+ },
+ "brochures": [
+  {
+   "code": "PHCS_PPO_SBC_V1.2_0326",
+   "file": "LifeX/Copay PPO/PHCS_PPO_<ded>_SBC+Rates_V1.2_0326.pdf",
+   "states": [
+    "ALL — PHCS network. MagnaCare replaces PHCS in NY and NJ only."
+   ],
+   "page": "2-4",
+   "sections": [
+    {
+     "title": "Deductible & out-of-pocket",
+     "rows": [
+      {
+       "label": "Calendar-year deductible",
+       "values": {
+        "$500 PPO": "$500 individual / $1,000 family — the SAME in network and out of network",
+        "$750 PPO": "$750 individual / $1,500 family — the SAME in network and out of network",
+        "$1000 PPO": "$1,000 individual / $2,000 family — the SAME in network and out of network",
+        "$1,500 PPO": "$1,500 individual / $3,000 family — the SAME in network and out of network"
+       },
+       "key": true
+      },
+      {
+       "label": "Out-of-pocket maximum, including the deductible",
+       "values": {
+        "$500 PPO": "$9,200 individual / $18,400 family — identical on all four plans, and the same in network and out",
+        "$750 PPO": "$9,200 individual / $18,400 family — identical on all four plans, and the same in network and out",
+        "$1000 PPO": "$9,200 individual / $18,400 family — identical on all four plans, and the same in network and out",
+        "$1,500 PPO": "$9,200 individual / $18,400 family — identical on all four plans, and the same in network and out"
+       },
+       "key": true
+      },
+      {
+       "label": "Out-of-network",
+       "values": {
+        "$500 PPO": "Covered once the deductible is met, then the copay PLUS 10% coinsurance",
+        "$750 PPO": "Covered once the deductible is met, then the copay PLUS 10% coinsurance",
+        "$1000 PPO": "Covered once the deductible is met, then the copay PLUS 10% coinsurance",
+        "$1,500 PPO": "Covered once the deductible is met, then the copay PLUS 10% coinsurance"
+       }
+      },
+      {
+       "label": "Maximum annual benefit",
+       "values": {
+        "$500 PPO": "No stated cap — benefits follow the services performed",
+        "$750 PPO": "No stated cap — benefits follow the services performed",
+        "$1000 PPO": "No stated cap — benefits follow the services performed",
+        "$1,500 PPO": "No stated cap — benefits follow the services performed"
+       }
+      }
+     ]
+    },
+    {
+     "title": "Doctor visits",
+     "rows": [
+      {
+       "label": "Primary care",
+       "values": {
+        "$500 PPO": "$50 copay, after deductible",
+        "$750 PPO": "$50 copay, after deductible",
+        "$1000 PPO": "$50 copay, after deductible",
+        "$1,500 PPO": "$50 copay, after deductible"
+       }
+      },
+      {
+       "label": "Specialist — no referral needed",
+       "values": {
+        "$500 PPO": "$50 copay, after deductible",
+        "$750 PPO": "$50 copay, after deductible",
+        "$1000 PPO": "$50 copay, after deductible",
+        "$1,500 PPO": "$50 copay, after deductible"
+       }
+      },
+      {
+       "label": "Urgent care",
+       "values": {
+        "$500 PPO": "$50 copay, after deductible",
+        "$750 PPO": "$50 copay, after deductible",
+        "$1000 PPO": "$50 copay, after deductible",
+        "$1,500 PPO": "$50 copay, after deductible"
+       }
+      },
+      {
+       "label": "Telemedicine — OurLiveDoc, 940-LIVE-DOC",
+       "values": {
+        "$500 PPO": "$0 copay, UNLIMITED visits. Primary care, urgent care and behavioural health. Not covered out of network.",
+        "$750 PPO": "$0 copay, UNLIMITED visits. Primary care, urgent care and behavioural health. Not covered out of network.",
+        "$1000 PPO": "$0 copay, UNLIMITED visits. Primary care, urgent care and behavioural health. Not covered out of network.",
+        "$1,500 PPO": "$0 copay, UNLIMITED visits. Primary care, urgent care and behavioural health. Not covered out of network."
+       },
+       "key": true
+      },
+      {
+       "label": "Chiropractic",
+       "values": {
+        "$500 PPO": "$50 copay after deductible, 12 visits per calendar year",
+        "$750 PPO": "$50 copay after deductible, 12 visits per calendar year",
+        "$1000 PPO": "$50 copay after deductible, 12 visits per calendar year",
+        "$1,500 PPO": "$50 copay after deductible, 12 visits per calendar year"
+       }
+      },
+      {
+       "label": "Physical, speech, occupational, cardiac & respiratory therapy",
+       "values": {
+        "$500 PPO": "$50 per visit after deductible, 16 visits per calendar year combined",
+        "$750 PPO": "$50 per visit after deductible, 16 visits per calendar year combined",
+        "$1000 PPO": "$50 per visit after deductible, 16 visits per calendar year combined",
+        "$1,500 PPO": "$50 per visit after deductible, 16 visits per calendar year combined"
+       }
+      }
+     ]
+    },
+    {
+     "title": "Preventive — no deductible",
+     "rows": [
+      {
+       "label": "Annual wellness exam, labs and immunisations",
+       "values": {
+        "$500 PPO": "$0 copay, $0 deductible, in network. See the plan's Preventive Care Guide.",
+        "$750 PPO": "$0 copay, $0 deductible, in network. See the plan's Preventive Care Guide.",
+        "$1000 PPO": "$0 copay, $0 deductible, in network. See the plan's Preventive Care Guide.",
+        "$1,500 PPO": "$0 copay, $0 deductible, in network. See the plan's Preventive Care Guide."
+       },
+       "key": true
+      }
+     ]
+    },
+    {
+     "title": "Tests and imaging",
+     "rows": [
+      {
+       "label": "Labs — independent lab only",
+       "values": {
+        "$500 PPO": "$25 copay",
+        "$750 PPO": "$25 copay",
+        "$1000 PPO": "$25 copay",
+        "$1,500 PPO": "$25 copay"
+       }
+      },
+      {
+       "label": "X-ray — stand-alone radiology only",
+       "values": {
+        "$500 PPO": "$50 copay",
+        "$750 PPO": "$50 copay",
+        "$1000 PPO": "$50 copay",
+        "$1,500 PPO": "$50 copay"
+       }
+      },
+      {
+       "label": "Advanced imaging (MRI, CT, PET)",
+       "values": {
+        "$500 PPO": "$200 copay after deductible. PRE-CERTIFICATION REQUIRED.",
+        "$750 PPO": "$200 copay after deductible. PRE-CERTIFICATION REQUIRED.",
+        "$1000 PPO": "$200 copay after deductible. PRE-CERTIFICATION REQUIRED.",
+        "$1,500 PPO": "$200 copay after deductible. PRE-CERTIFICATION REQUIRED."
+       }
+      },
+      {
+       "label": "Outpatient labs — no pre-certification",
+       "values": {
+        "$500 PPO": "$100 copay after deductible",
+        "$750 PPO": "$100 copay after deductible",
+        "$1000 PPO": "$100 copay after deductible",
+        "$1,500 PPO": "$100 copay after deductible"
+       }
+      }
+     ]
+    },
+    {
+     "title": "Emergency",
+     "rows": [
+      {
+       "label": "Emergency room",
+       "values": {
+        "$500 PPO": "$1,000 copay, after deductible. Any provider may be used for a true emergency.",
+        "$750 PPO": "$1,000 copay, after deductible. Any provider may be used for a true emergency.",
+        "$1000 PPO": "$1,000 copay, after deductible. Any provider may be used for a true emergency.",
+        "$1,500 PPO": "$1,000 copay, after deductible. Any provider may be used for a true emergency."
+       },
+       "key": true
+      },
+      {
+       "label": "Ambulance — land",
+       "values": {
+        "$500 PPO": "$250 copay after deductible",
+        "$750 PPO": "$250 copay after deductible",
+        "$1000 PPO": "$250 copay after deductible",
+        "$1,500 PPO": "$250 copay after deductible"
+       }
+      },
+      {
+       "label": "Ambulance — air",
+       "values": {
+        "$500 PPO": "$1,000 copay after deductible. Two ambulance trips per plan year, any type combined.",
+        "$750 PPO": "$1,000 copay after deductible. Two ambulance trips per plan year, any type combined.",
+        "$1000 PPO": "$1,000 copay after deductible. Two ambulance trips per plan year, any type combined.",
+        "$1,500 PPO": "$1,000 copay after deductible. Two ambulance trips per plan year, any type combined."
+       }
+      },
+      {
+       "label": "Emergency admission",
+       "values": {
+        "$500 PPO": "Pre-certification required within 48 hours of admission, or the next business day",
+        "$750 PPO": "Pre-certification required within 48 hours of admission, or the next business day",
+        "$1000 PPO": "Pre-certification required within 48 hours of admission, or the next business day",
+        "$1,500 PPO": "Pre-certification required within 48 hours of admission, or the next business day"
+       }
+      }
+     ]
+    },
+    {
+     "title": "Hospital",
+     "rows": [
+      {
+       "label": "Inpatient hospital or partial hospitalisation",
+       "values": {
+        "$500 PPO": "$2,500 copay PER ADMISSION, after deductible. Pre-certification required.",
+        "$750 PPO": "$2,500 copay PER ADMISSION, after deductible. Pre-certification required.",
+        "$1000 PPO": "$2,500 copay PER ADMISSION, after deductible. Pre-certification required.",
+        "$1,500 PPO": "$2,500 copay PER ADMISSION, after deductible. Pre-certification required."
+       },
+       "key": true
+      },
+      {
+       "label": "Inpatient surgery",
+       "values": {
+        "$500 PPO": "$2,500 copay per surgery, after deductible",
+        "$750 PPO": "$2,500 copay per surgery, after deductible",
+        "$1000 PPO": "$2,500 copay per surgery, after deductible",
+        "$1,500 PPO": "$2,500 copay per surgery, after deductible"
+       }
+      },
+      {
+       "label": "Organ transplant",
+       "values": {
+        "$500 PPO": "$2,500 copay per admission, after deductible",
+        "$750 PPO": "$2,500 copay per admission, after deductible",
+        "$1000 PPO": "$2,500 copay per admission, after deductible",
+        "$1,500 PPO": "$2,500 copay per admission, after deductible"
+       }
+      },
+      {
+       "label": "Hospice",
+       "values": {
+        "$500 PPO": "$0 copay after deductible. 30-day limit per lifetime.",
+        "$750 PPO": "$0 copay after deductible. 30-day limit per lifetime.",
+        "$1000 PPO": "$0 copay after deductible. 30-day limit per lifetime.",
+        "$1,500 PPO": "$0 copay after deductible. 30-day limit per lifetime."
+       }
+      }
+     ]
+    },
+    {
+     "title": "Outpatient",
+     "rows": [
+      {
+       "label": "Outpatient surgery — hospital, surgery centre or office",
+       "values": {
+        "$500 PPO": "$2,500 copay per surgery, after deductible. Pre-certification required.",
+        "$750 PPO": "$2,500 copay per surgery, after deductible. Pre-certification required.",
+        "$1000 PPO": "$2,500 copay per surgery, after deductible. Pre-certification required.",
+        "$1,500 PPO": "$2,500 copay per surgery, after deductible. Pre-certification required."
+       }
+      },
+      {
+       "label": "Surgeon, anaesthesia and associated services",
+       "values": {
+        "$500 PPO": "$250 per service, after deductible",
+        "$750 PPO": "$250 per service, after deductible",
+        "$1000 PPO": "$250 per service, after deductible",
+        "$1,500 PPO": "$250 per service, after deductible"
+       }
+      },
+      {
+       "label": "Chemotherapy and radiotherapy",
+       "values": {
+        "$500 PPO": "$250 per visit, after deductible",
+        "$750 PPO": "$250 per visit, after deductible",
+        "$1000 PPO": "$250 per visit, after deductible",
+        "$1,500 PPO": "$250 per visit, after deductible"
+       }
+      },
+      {
+       "label": "Infusion or injection",
+       "values": {
+        "$500 PPO": "$250 per visit, after deductible",
+        "$750 PPO": "$250 per visit, after deductible",
+        "$1000 PPO": "$250 per visit, after deductible",
+        "$1,500 PPO": "$250 per visit, after deductible"
+       }
+      },
+      {
+       "label": "Dialysis",
+       "values": {
+        "$500 PPO": "$250 copay, after deductible",
+        "$750 PPO": "$250 copay, after deductible",
+        "$1000 PPO": "$250 copay, after deductible",
+        "$1,500 PPO": "$250 copay, after deductible"
+       }
+      }
+     ]
+    },
+    {
+     "title": "Prescriptions — ProAct, 1-888-250-8032",
+     "rows": [
+      {
+       "label": "Generic — preventive, urgent care or maintenance",
+       "values": {
+        "$500 PPO": "$0 COPAY, 30-day retail or 90-day mail order",
+        "$750 PPO": "$0 COPAY, 30-day retail or 90-day mail order",
+        "$1000 PPO": "$0 COPAY, 30-day retail or 90-day mail order",
+        "$1,500 PPO": "$0 COPAY, 30-day retail or 90-day mail order"
+       },
+       "key": true
+      },
+      {
+       "label": "Preferred brand-name",
+       "values": {
+        "$500 PPO": "NOT COVERED. Patient assistance programmes available.",
+        "$750 PPO": "NOT COVERED. Patient assistance programmes available.",
+        "$1000 PPO": "NOT COVERED. Patient assistance programmes available.",
+        "$1,500 PPO": "NOT COVERED. Patient assistance programmes available."
+       },
+       "key": true
+      },
+      {
+       "label": "Non-preferred brand-name",
+       "values": {
+        "$500 PPO": "NOT COVERED. Patient assistance programmes available.",
+        "$750 PPO": "NOT COVERED. Patient assistance programmes available.",
+        "$1000 PPO": "NOT COVERED. Patient assistance programmes available.",
+        "$1,500 PPO": "NOT COVERED. Patient assistance programmes available."
+       }
+      },
+      {
+       "label": "Specialty drugs",
+       "values": {
+        "$500 PPO": "NOT COVERED. Patient assistance programmes available.",
+        "$750 PPO": "NOT COVERED. Patient assistance programmes available.",
+        "$1000 PPO": "NOT COVERED. Patient assistance programmes available.",
+        "$1,500 PPO": "NOT COVERED. Patient assistance programmes available."
+       }
+      },
+      {
+       "label": "Maintenance medication",
+       "values": {
+        "$500 PPO": "Mail order required after the initial 30-day retail supply",
+        "$750 PPO": "Mail order required after the initial 30-day retail supply",
+        "$1000 PPO": "Mail order required after the initial 30-day retail supply",
+        "$1,500 PPO": "Mail order required after the initial 30-day retail supply"
+       }
+      }
+     ]
+    },
+    {
+     "title": "Other services",
+     "rows": [
+      {
+       "label": "Maternity — routine delivery",
+       "values": {
+        "$500 PPO": "$2,500 copay per admission after deductible. All other routine maternity care 100% covered.",
+        "$750 PPO": "$2,500 copay per admission after deductible. All other routine maternity care 100% covered.",
+        "$1000 PPO": "$2,500 copay per admission after deductible. All other routine maternity care 100% covered.",
+        "$1,500 PPO": "$2,500 copay per admission after deductible. All other routine maternity care 100% covered."
+       }
+      },
+      {
+       "label": "Home health care",
+       "values": {
+        "$500 PPO": "$50 per visit after deductible, 10 visits per benefit year. Pre-certification required.",
+        "$750 PPO": "$50 per visit after deductible, 10 visits per benefit year. Pre-certification required.",
+        "$1000 PPO": "$50 per visit after deductible, 10 visits per benefit year. Pre-certification required.",
+        "$1,500 PPO": "$50 per visit after deductible, 10 visits per benefit year. Pre-certification required."
+       }
+      },
+      {
+       "label": "Durable medical equipment",
+       "values": {
+        "$500 PPO": "$50 per item after deductible, 5 items per benefit period. Pre-certification required.",
+        "$750 PPO": "$50 per item after deductible, 5 items per benefit period. Pre-certification required.",
+        "$1000 PPO": "$50 per item after deductible, 5 items per benefit period. Pre-certification required.",
+        "$1,500 PPO": "$50 per item after deductible, 5 items per benefit period. Pre-certification required."
+       }
+      },
+      {
+       "label": "Prosthetics",
+       "values": {
+        "$500 PPO": "$50 per item after deductible, 1 item per benefit year. Pre-certification required.",
+        "$750 PPO": "$50 per item after deductible, 1 item per benefit year. Pre-certification required.",
+        "$1000 PPO": "$50 per item after deductible, 1 item per benefit year. Pre-certification required.",
+        "$1,500 PPO": "$50 per item after deductible, 1 item per benefit year. Pre-certification required."
+       }
+      },
+      {
+       "label": "Allergy shots and serum",
+       "values": {
+        "$500 PPO": "$25 copay after deductible",
+        "$750 PPO": "$25 copay after deductible",
+        "$1000 PPO": "$25 copay after deductible",
+        "$1,500 PPO": "$25 copay after deductible"
+       }
+      },
+      {
+       "label": "Allergy visits and testing",
+       "values": {
+        "$500 PPO": "$50 per visit after deductible",
+        "$750 PPO": "$50 per visit after deductible",
+        "$1000 PPO": "$50 per visit after deductible",
+        "$1,500 PPO": "$50 per visit after deductible"
+       }
+      },
+      {
+       "label": "Diabetic nutritional counselling",
+       "values": {
+        "$500 PPO": "$0 copay after deductible, 1 visit per plan year",
+        "$750 PPO": "$0 copay after deductible, 1 visit per plan year",
+        "$1000 PPO": "$0 copay after deductible, 1 visit per plan year",
+        "$1,500 PPO": "$0 copay after deductible, 1 visit per plan year"
+       }
+      }
+     ]
+    },
+    {
+     "title": "Conditions you must tell the client about",
+     "rows": [
+      {
+       "label": "Elective surgery",
+       "values": {
+        "$500 PPO": "NOT COVERED for the first 90 days of coverage",
+        "$750 PPO": "NOT COVERED for the first 90 days of coverage",
+        "$1000 PPO": "NOT COVERED for the first 90 days of coverage",
+        "$1,500 PPO": "NOT COVERED for the first 90 days of coverage"
+       }
+      },
+      {
+       "label": "Failure to pre-authorise",
+       "values": {
+        "$500 PPO": "50% reduction of allowed charges, or outright denial of the claim",
+        "$750 PPO": "50% reduction of allowed charges, or outright denial of the claim",
+        "$1000 PPO": "50% reduction of allowed charges, or outright denial of the claim",
+        "$1,500 PPO": "50% reduction of allowed charges, or outright denial of the claim"
+       }
+      },
+      {
+       "label": "Employment condition",
+       "values": {
+        "$500 PPO": "The client becomes a W-2 Research Associate of LifeX Research Corporation and must complete one health activity each month. Paid $40/hour pro rata, about $10 for 15 minutes. THERE IS NO GRACE PERIOD FOR LATE ACTIVITIES.",
+        "$750 PPO": "The client becomes a W-2 Research Associate of LifeX Research Corporation and must complete one health activity each month. Paid $40/hour pro rata, about $10 for 15 minutes. THERE IS NO GRACE PERIOD FOR LATE ACTIVITIES.",
+        "$1000 PPO": "The client becomes a W-2 Research Associate of LifeX Research Corporation and must complete one health activity each month. Paid $40/hour pro rata, about $10 for 15 minutes. THERE IS NO GRACE PERIOD FOR LATE ACTIVITIES.",
+        "$1,500 PPO": "The client becomes a W-2 Research Associate of LifeX Research Corporation and must complete one health activity each month. Paid $40/hour pro rata, about $10 for 15 minutes. THERE IS NO GRACE PERIOD FOR LATE ACTIVITIES."
+       },
+       "key": true
+      },
+      {
+       "label": "Dental and vision",
+       "values": {
+        "$500 PPO": "Available through LifeX only as HUMANA products — Humana Vision 150, Humana TRP or PPO dental",
+        "$750 PPO": "Available through LifeX only as HUMANA products — Humana Vision 150, Humana TRP or PPO dental",
+        "$1000 PPO": "Available through LifeX only as HUMANA products — Humana Vision 150, Humana TRP or PPO dental",
+        "$1,500 PPO": "Available through LifeX only as HUMANA products — Humana Vision 150, Humana TRP or PPO dental"
+       }
+      },
+      {
+       "label": "Network",
+       "values": {
+        "$500 PPO": "PHCS via MultiPlan — providersearch.multiplan.com, select PHCS. NOT First Health. MagnaCare in NY and NJ only.",
+        "$750 PPO": "PHCS via MultiPlan — providersearch.multiplan.com, select PHCS. NOT First Health. MagnaCare in NY and NJ only.",
+        "$1000 PPO": "PHCS via MultiPlan — providersearch.multiplan.com, select PHCS. NOT First Health. MagnaCare in NY and NJ only.",
+        "$1,500 PPO": "PHCS via MultiPlan — providersearch.multiplan.com, select PHCS. NOT First Health. MagnaCare in NY and NJ only."
+       }
+      },
+      {
+       "label": "Underwriter",
+       "values": {
+        "$500 PPO": "Benefit Re, Inc, NAIC #17459. Not underwritten by the network.",
+        "$750 PPO": "Benefit Re, Inc, NAIC #17459. Not underwritten by the network.",
+        "$1000 PPO": "Benefit Re, Inc, NAIC #17459. Not underwritten by the network.",
+        "$1,500 PPO": "Benefit Re, Inc, NAIC #17459. Not underwritten by the network."
+       }
+      }
+     ]
+    }
+   ],
+   "notes": [
+    "Only the deductible and the premium differ across the four Copay PPO plans. Every copay, the $9,200 out-of-pocket maximum, preventive care and the prescription schedule are IDENTICAL.",
+    "Because preventive care and generic maintenance drugs are $0 with no deductible on all four, a client who only uses those two things should take the HIGHEST deductible — it is the cheapest premium for the same practical outcome.",
+    "Benefit schedule read from the four PHCS SBCs, rates effective 1 January 2026. Filed at Optimum Carrier Library/LifeX/Copay PPO/.",
+    "VL, MM, MM Plus and HSA families are priced in tool/rates/lifex-rates.json but their benefit schedules are NOT yet held — only the Copay PPO SBCs are in hand."
+   ]
+  }
+ ]
+}

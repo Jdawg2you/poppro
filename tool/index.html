@@ -1741,7 +1741,20 @@ function afcEventNums(rows){ var n={visit:0,visitN:null,urgent:0,urgentN:null,er
   return n; }
 /* p: {bal, days, er, amb, acc, dx, afc, his:{ben,amb}, gap:{daily,adm,ea}, accU, chas:{cancer,hs}, major:{oop}} */
 /* A major-medical plan (Cigna): one person pays the deductible, then coinsurance, up to the out-of-pocket max. */
-function evMajorOwe(m,bill){ var cap=+m.oop>0?+m.oop:bill;
+function evMajorOwe(m,bill,ev){ var cap=+m.oop>0?+m.oop:bill;
+  /* A COPAY plan (LifeX): the client pays the deductible, then a flat copay for each thing the event
+     triggers — not a percentage of the bill. Everyday visits are handled by the caller. */
+  if(m.copay){ ev=ev||{}; var ded=+m.ded||0, owe=Math.min(bill,ded), out=ev.out;
+    if(out&&owe>0) out.push({lab:'Deductible',v:owe});
+    if(bill>ded){
+      var pc=function(lab,v){ v=+v||0; if(v>0){ owe+=v; if(out) out.push({lab:lab,v:v}); } };
+      if(ev.days>0) pc('Hospital admission copay',m.adm);
+      if(ev.er) pc('Emergency room copay',m.er);
+      if(ev.type==='osurg') pc('Outpatient surgery copay',m.osurg);
+      if(ev.type==='imaging') pc('Advanced imaging copay',m.imaging); }
+    var fin=Math.round(Math.min(cap,bill,owe)*100)/100;
+    if(out&&fin<owe) out.push({lab:'Capped at the out-of-pocket maximum',v:fin-owe});
+    return fin; }
   if(m.ded!=null&&m.coins!=null) return Math.min(cap,bill<=m.ded?bill:m.ded+(+m.coins)/100*(bill-m.ded));
   return Math.min(bill,cap); }
 function evM(v){ return '$'+Math.round(+v||0).toLocaleString('en-US'); }
@@ -1756,8 +1769,8 @@ function evMajor(p){ var parts=[], pays=0, days=+p.days||0, bal=Math.max(0,+p.ba
   if(p.chas&&p.dx==='cancer') add('Cancer lump sum on diagnosis',p.chas.cancer); if(p.chas&&(p.dx==='heart'||p.dx==='stroke')) add((p.dx==='heart'?'Heart attack':'Stroke')+' lump sum on diagnosis',p.chas.hs);
   /* Medical Bill Saver negotiates a Manhattan client's bill down; a major-medical plan already has network pricing. */
   var negotiated=(!p.major&&+p.negotPct>0)?Math.round(bal*(1-(+p.negotPct)/100)*100)/100:null;
-  var owe0=p.major?evMajorOwe(p.major,bal):(negotiated!=null?negotiated:bal);
-  return {pays:pays,parts:parts,owe0:owe0,net:owe0-pays,negotiated:negotiated}; }
+  var oweParts=[], owe0=p.major?evMajorOwe(p.major,bal,{days:days,er:p.er,out:oweParts}):(negotiated!=null?negotiated:bal);
+  return {pays:pays,parts:parts,owe0:owe0,net:owe0-pays,negotiated:negotiated,oweParts:oweParts}; }
 /* p: {type:'visit'|'urgent'|'er'|'osurg'|'imaging', charge (each), count, afc, hisOutp, gapOutp, major:{visit,urgent}} */
 function evEveryday(p){ var c=Math.max(1,+p.count||1), ch=Math.max(0,+p.charge||0), bill=ch*c, parts=[], pays=0;
   var add=function(lab,v){ v=Math.round((+v||0)*100)/100; if(v>0){ parts.push({lab:lab,v:v}); pays+=v; } };
@@ -1770,8 +1783,11 @@ function evEveryday(p){ var c=Math.max(1,+p.count||1), ch=Math.max(0,+p.charge||
   if(p.acc&&p.accU) add('24-Hour Accident — medical expenses (up to '+evM(2000*p.accU)+')',Math.min(bill,2000*p.accU));
   if(p.acc&&p.type==='er'&&p.gapEa) add('Out-of-Pocket — ER accident benefit',250);
   var negotiated=(!p.major&&+p.negotPct>0)?Math.round(bill*(1-(+p.negotPct)/100)*100)/100:null, owe0=negotiated!=null?negotiated:bill;
-  if(p.major){ if(p.type==='visit'&&p.major.visit) owe0=Math.min(bill,p.major.visit*c); else if(p.type==='urgent'&&p.major.urgent) owe0=Math.min(bill,p.major.urgent*c); else owe0=evMajorOwe(p.major,bill); }
-  return {pays:pays,parts:parts,owe0:owe0,net:owe0-pays,negotiated:negotiated}; }
+  var oweParts=[];
+  if(p.major){ if(p.type==='visit'&&p.major.visit){ owe0=Math.min(bill,p.major.visit*c); oweParts.push({lab:c+' × '+evM(p.major.visit)+' visit copay',v:owe0}); }
+    else if(p.type==='urgent'&&p.major.urgent){ owe0=Math.min(bill,p.major.urgent*c); oweParts.push({lab:c+' × '+evM(p.major.urgent)+' urgent care copay',v:owe0}); }
+    else owe0=evMajorOwe(p.major,bill,{type:p.type,er:p.type==='er',out:oweParts}); }
+  return {pays:pays,parts:parts,owe0:owe0,net:owe0-pays,negotiated:negotiated,oweParts:oweParts}; }
 /* The anchor's share: what the client pays on the ACA / their current plan. */
 function evAnchorOwe(kind,bill,A,type,count){ if(!A) return null; var cap=A.oop>0?A.oop:bill;
   if(kind==='everyday'&&type==='visit'&&A.visit>0) return Math.min(bill,A.visit*Math.max(1,+count||1),cap);
@@ -2301,8 +2317,12 @@ function applySuggestion(tier,s){
 /* ========== POP SCORE — coverage completeness, risk-weighted (excludes savings/TFRA) ========== */
 /* Texas Affordable Choice numbers (AFC7010-BR_0424), used only until tool/benefits/afc.json has loaded. */
 var POP_AFC_FALLBACK={"Classic":{"visit":75,"visitN":6,"urgent":250,"urgentN":2,"er":250,"erN":1,"daily":2000,"adm":1000,"amb":150,"osurg":1000,"mri":300,"outLimit":4000},"ClassicPlus":{"visit":125,"visitN":8,"urgent":250,"urgentN":2,"er":250,"erN":1,"daily":3000,"adm":1000,"amb":150,"osurg":2000,"mri":500,"outLimit":4000},"Elite":{"visit":175,"visitN":10,"urgent":300,"urgentN":4,"er":300,"erN":2,"daily":4000,"adm":2000,"amb":150,"osurg":2500,"mri":600,"outLimit":6000},"ElitePlus":{"visit":200,"visitN":10,"urgent":300,"urgentN":4,"er":300,"erN":2,"daily":6000,"adm":3000,"amb":150,"osurg":3000,"mri":700,"outLimit":8000}};
-/* The 2026 federal out-of-pocket limit binds LifeX's group plan too; used until its SBC is on file. */
-var LIFEX_OOP_BOUND={self:10600,family:21200};
+/* LifeX Copay PPO, read from the four PHCS SBCs (V1.2, rates effective 1 Jan 2026). The out-of-pocket
+   maximum and every copay are IDENTICAL across the four plans; only the deductible and premium differ. */
+var LIFEX_OOP_BOUND={self:9200,family:18400};
+var LIFEX_PPO={ded:{'$500 PPO':500,'$750 PPO':750,'$1000 PPO':1000,'$1,500 PPO':1500},
+  visit:50,urgent:50,er:1000,adm:2500,osurg:2500,imaging:200,telemed:0,
+  note:'Copays apply after the deductible. Preventive care and generic maintenance drugs are $0 with no deductible.'};
 /* What the score needs, read from the package's config and its priced products (not their names). */
 function popInputsFor(c,prods){ c=c||{}; prods=prods||[];
   var has=function(k){ return prods.some(function(p){ return p.k===k&&(+p.monthly||0)>0; }); };
@@ -2311,7 +2331,10 @@ function popInputsFor(c,prods){ c=c||{}; prods=prods||[];
   if(has('base')&&c.base==='triad'){ var tm=BEN_DATA.triad?benModel(BEN_DATA.triad,st,'Triad Cigna '+(c.triadPlan||'3500'),c):null, rows=evFlatRows(tm);
     var get=function(re){ var r=rows.filter(function(q){ return re.test(q.label); })[0]; return r?r.value:''; }, oo=evMoneyAll(get(/^Out-of-pocket maximum/i));
     x.major={oop:oo[0]||7350,ded:evMoney(get(/^Calendar-year deductible/i))||+(c.triadPlan||3500),coins:(String(get(/^Hospital facility/i)).match(/(\d+)%/)||[,20])[1]*1,visit:evMoney(get(/^Primary care visit/i)),urgent:evMoney(get(/^Urgent care/i))}; x.base='triad'; }   // one person's event: individual OOP
-  if(has('base')&&c.base==='lifex'){ x.major={oop:fam?LIFEX_OOP_BOUND.family:LIFEX_OOP_BOUND.self,visit:0,urgent:0}; x.base='lifex'; x.provisional=true; }
+  if(has('base')&&c.base==='lifex'){ var lxd=LIFEX_PPO.ded[c.lifexPlan||'$500 PPO']||500;
+    x.major={oop:fam?LIFEX_OOP_BOUND.family:LIFEX_OOP_BOUND.self,ded:lxd*(fam?2:1),copay:true,
+             visit:LIFEX_PPO.visit,urgent:LIFEX_PPO.urgent,er:LIFEX_PPO.er,adm:LIFEX_PPO.adm,
+             osurg:LIFEX_PPO.osurg,imaging:LIFEX_PPO.imaging}; x.base='lifex'; }
   if(has('his')&&c.his){ x.his={ben:+c.his.ben||0,amb:+c.his.amb||0}; x.hisOutp=+c.his.outp||0; }
   if(has('gap')&&c.gap){ x.gap={daily:+c.gap.daily||0,adm:+c.gap.adm||0,ea:+c.gap.ea||0}; x.gapOutp=+c.gap.outp||0; }
   if(has('acc')) x.accU=+c.acc||1;
@@ -2335,7 +2358,13 @@ function popStrengths(tier){ return popStrengthsFrom(popInputsFor(effCfg(tier),(
    "meets the deductible" switch, capped at its out-of-pocket max). LifeX's deductible isn't on file. */
 function tierTrue(t){ var pm=tierTotals(t).mo, r={mo:pm,note:'',extra:0};
   if(!popIsMajor(t)) return r; var c=effCfg(t), fam=acaPeople().length>1;
-  if(c.base==='lifex'){ r.note='LifeX’s deductible isn’t on file yet — its true cost is shown as premium only.'; return r; }
+  if(c.base==='lifex'){ var ld=(LIFEX_PPO.ded[c.lifexPlan||'$500 PPO']||500)*(fam?2:1),
+      lx=popInputsFor(c,(S.packages[t]||{}).products), lv=(+((S.intake||{}).visits)||0)*LIFEX_PPO.visit,
+      ly=(acaIn().fullded!==false?ld:0)+lv;
+    if(lx.major&&lx.major.oop) ly=Math.min(ly,lx.major.oop);
+    r.extra=ly/12; r.mo=pm+r.extra;
+    r.note='True cost includes its $'+ld.toLocaleString('en-US')+' deductible'+(lv?' and $50 visit copays':'')+'. Preventive care and generic drugs are $0.';
+    return r; }
   var plan=(TRI&&TRI.plans&&TRI.plans['Triad Cigna '+(c.triadPlan||'3500')])||{}, ded=(+plan.deductible||0)*(fam?2:1);
   var x=popInputsFor(c,(S.packages[t]||{}).products), cop=(x.major&&x.major.visit)||0, vis=(+((S.intake||{}).visits)||0)*cop;
   var yr=(acaIn().fullded!==false?ded:0)+vis; if(x.major&&x.major.oop) yr=Math.min(yr,x.major.oop);
@@ -4439,7 +4468,8 @@ function evTableHTML(i){ var tiers=evIncluded(); if(!tiers.length) return ''; va
   h+='<div class="c l evit">What each benefit pays</div>'
     +(A?'<div class="c anc evit">'+li('Plan pays toward the bill',Math.max(0,bill-aOwe))+'<div class="why">Your share first: '+(A.how||'up to the out-of-pocket limit')+'.</div></div>':'')
     +res.map(function(x){ var its=x.r.parts.map(function(p){ return li(p.lab,p.v); });
-      if(x.o.major&&bill-x.r.owe0>0) its.unshift(li('Cigna pays the rest of the bill',bill-x.r.owe0));
+      if(x.o.major&&bill-x.r.owe0>0) its.unshift(li('The plan pays the rest of the bill',bill-x.r.owe0));
+      if(x.o.major&&x.r.oweParts&&x.r.oweParts.length) its=its.concat(x.r.oweParts.map(function(p){ return li('You pay — '+p.lab,p.v); }));
       if(x.o.unknown&&!x.r.pays) its=['<div class="why">'+esc(x.o.unknown)+'</div>'];
       return '<div class="c evit">'+(its.join('')||'<div class="why">No benefit applies to this event.</div>')+(x.o.afc&&(+sc.days||0)>0?'<div class="why surg">Surgery benefits (paid on the policy fee schedule) are extra and not counted here.</div>':'')+'</div>'; }).join('');
   if(negApplies(i,bill)) h+='<div class="c l">Bill after Medical Bill Saver <small>'+S.negot.pct+'% average reduction</small></div>'+(A?'<div class="c anc">—<small>network price already</small></div>':'')
