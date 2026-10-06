@@ -4425,7 +4425,18 @@ function evBindEditors(){ [0,1].forEach(function(i){ var h=$('ev'+i+'_editor'); 
   h.addEventListener('input',on); h.addEventListener('change',function(e){ if(e.target.type==='checkbox'||e.target.tagName==='SELECT') on(e); }); }); }
 /* ===== Event gut checks per package (screen + print) ===== */
 var EV_TIERS=[['good','Essential'],['better','Complete'],['best','Comprehensive']];
-function evIncluded(){ var inc=S.include||{}; return EV_TIERS.filter(function(T){ return inc[T[0]]!==false&&tierTotals(T[0]).mo>0; }); }
+/* Jesse, 6 Oct 2026: when the columns are all ManhattanLife, Essential/Complete/Comprehensive reads
+   fine. The moment one of them is a different carrier, those names hide the only thing the client
+   needs to compare — so the header becomes the carrier and the plan it is actually quoting. */
+function evTierCarrier(t){ var c=effCfg(t);
+  if(c.base==='lifex') return {co:'LifeX', plan:String(c.lifexPlan||'$500 PPO').replace(/\s*PPO$/,'')+' PPO'};
+  if(c.base==='triad') return {co:'Cigna', plan:'$'+Number(c.triadPlan||3500).toLocaleString('en-US')};
+  return {co:'ManhattanLife', plan:(LVLNAME&&LVLNAME[c.afc])||c.afc||''}; }
+function evTierName(t,mixed,fallback){ if(!mixed) return fallback;
+  var x=evTierCarrier(t); return x.plan?x.co+' '+x.plan:x.co; }
+function evIncluded(){ var inc=S.include||{}, rows=EV_TIERS.filter(function(T){ return inc[T[0]]!==false&&tierTotals(T[0]).mo>0; });
+  var cos=rows.map(function(T){ return evTierCarrier(T[0]).co; }), mixed=cos.some(function(c){ return c!==cos[0]; });
+  return rows.map(function(T){ return [T[0], evTierName(T[0],mixed,T[1])]; }); }
 function evFlatRows(m){ return m?m.key.concat([].concat.apply([],m.sections.map(function(s){ return s.rows; }))):[]; }
 function evHas(t,k){ var pk=S.packages[t]||{}; return (pk.products||[]).some(function(p){ return p.k===k&&(+p.monthly||0)>0; }); }
 /* Everything the pure engine needs for one package. */
