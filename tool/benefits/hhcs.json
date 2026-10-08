@@ -1,0 +1,280 @@
+{
+  "product": "hhcs",
+  "name": "Home Health Care Select",
+  "carrier": "ManhattanLife",
+  "columns": {
+    "by": "plan",
+    "values": [
+      "Classic",
+      "Premier",
+      "Deluxe"
+    ]
+  },
+  "brochures": [
+    {
+      "code": "HHCS-BR_0623",
+      "file": "HHCS-BR_0623 (PA Home Health Care Select - Home Health Care Select Brochure).pdf",
+      "states": [
+        "ID",
+        "IN",
+        "MD",
+        "PA",
+        "VA"
+      ],
+      "page": "2-3",
+      "notes": [
+        "Issue ages 45 - 89; guaranteed renewable for life; 30 day \"free look\" period; simple underwriting. Underwritten by Standard Life and Casualty and ManhattanLife Insurance and Annuity (policy form AM7008).",
+        "Sold where Home Health Care Enhanced is not (ID, IN, MD, PA, VA). Compared with Enhanced: a lower aide benefit, no homemaker benefit, and a $600 Deluxe prescription maximum instead of $900.",
+        "Brochure footnotes: benefits are subject to state-specific details in the Policy/Outline of Coverage; the 365-day maximum benefit period may vary by state."
+      ],
+      "sections": [
+        {
+          "title": "Home health care services",
+          "rows": [
+            {
+              "label": "Daily maximum benefit",
+              "values": {
+                "Classic": "$150",
+                "Premier": "$300",
+                "Deluxe": "$450"
+              },
+              "key": true,
+              "note": "Maximum benefit period of 365 days (may vary by state)."
+            },
+            {
+              "label": "Nursing Care",
+              "values": {
+                "Classic": "$75",
+                "Premier": "$150",
+                "Deluxe": "$200"
+              },
+              "key": true
+            },
+            {
+              "label": "Physical Therapy",
+              "values": {
+                "Classic": "$75",
+                "Premier": "$150",
+                "Deluxe": "$200"
+              }
+            },
+            {
+              "label": "Speech Pathology",
+              "values": {
+                "Classic": "$75",
+                "Premier": "$150",
+                "Deluxe": "$200"
+              }
+            },
+            {
+              "label": "Occupational Therapy",
+              "values": {
+                "Classic": "$75",
+                "Premier": "$150",
+                "Deluxe": "$200"
+              }
+            },
+            {
+              "label": "Chemotherapy Specialist Services",
+              "values": {
+                "Classic": "$60",
+                "Premier": "$120",
+                "Deluxe": "$200"
+              }
+            },
+            {
+              "label": "Enterostomal Therapy",
+              "values": {
+                "Classic": "$50",
+                "Premier": "$100",
+                "Deluxe": "$200"
+              }
+            },
+            {
+              "label": "Medical Social Worker Services",
+              "values": {
+                "Classic": "$100",
+                "Premier": "$200",
+                "Deluxe": "$300"
+              }
+            },
+            {
+              "label": "Respiratory Therapy",
+              "values": {
+                "Classic": "$50",
+                "Premier": "$100",
+                "Deluxe": "$200"
+              }
+            },
+            {
+              "label": "Home Health Care Aide Services",
+              "values": {
+                "Classic": "$40",
+                "Premier": "$80",
+                "Deluxe": "$120"
+              },
+              "key": true,
+              "note": "Daily benefit for each day you require Home Health Care Aide services at home. Maximum benefit period of 60 days."
+            }
+          ]
+        },
+        {
+          "title": "Prescriptions",
+          "rows": [
+            {
+              "label": "Prescription Drug Benefit",
+              "values": {
+                "*": "$10 per Generic or $25 per Brand prescription"
+              },
+              "key": true
+            },
+            {
+              "label": "Prescription Drug maximum benefit per policy year",
+              "values": {
+                "Classic": "$300",
+                "Premier": "$600",
+                "Deluxe": "$600"
+              },
+              "key": true
+            }
+          ]
+        },
+        {
+          "title": "Other",
+          "rows": [
+            {
+              "label": "Restoration of Benefits",
+              "values": {
+                "*": "The Maximum Benefit Period for Home Health Care Select and Aide benefits is restored if benefits have not been paid or required for 180 consecutive days."
+              }
+            }
+          ]
+        },
+        {
+          "title": "Rider: Routine Annual Physical Examination",
+          "rows": [
+            {
+              "label": "Routine annual physical",
+              "values": {
+                "*": "$150, one benefit per year"
+              },
+              "note": "12-month waiting period. Not available in Virginia (or Colorado)."
+            }
+          ]
+        },
+        {
+          "title": "Rider: Accidental Death & Dismemberment",
+          "rows": [
+            {
+              "label": "Accidental Death",
+              "values": {
+                "*": "$10,000"
+              },
+              "note": "Death or dismemberment within 90 days of the covered accident while the policy and rider are in force. Lifetime maximum $10,000."
+            },
+            {
+              "label": "Sight, both eyes",
+              "values": {
+                "*": "$5,000"
+              }
+            },
+            {
+              "label": "Sight, one eye",
+              "values": {
+                "*": "$2,500"
+              }
+            },
+            {
+              "label": "Hand/arm/foot/leg (multi)",
+              "values": {
+                "*": "$5,000"
+              }
+            },
+            {
+              "label": "Hand/arm/foot/leg (single)",
+              "values": {
+                "*": "$2,500"
+              }
+            },
+            {
+              "label": "Finger or toe (multiple)",
+              "values": {
+                "*": "$500"
+              }
+            },
+            {
+              "label": "Finger or toe (single)",
+              "values": {
+                "*": "$250"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Rider: Home Medical Equipment",
+          "rows": [
+            {
+              "label": "Home medical equipment",
+              "values": {
+                "*": "$100 per piece; lifetime maximum $500"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Rider: Ambulance",
+          "rows": [
+            {
+              "label": "Ambulance",
+              "values": {
+                "*": "$200 per one-way trip, 4 trips per year; lifetime maximum $2,500"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Rider: Accident Expense (Option 1 / Option 2)",
+          "rows": [
+            {
+              "label": "Max amount per accident",
+              "values": {
+                "*": "Option 1: $1,250; Option 2: $2,500"
+              },
+              "note": "Dislocations, fractures or knee ligament tears treated in an ER, urgent care or physician's office within 48 hours of the accident. Lifetime maximum $10,000."
+            },
+            {
+              "label": "Fracture, hip or skull",
+              "values": {
+                "*": "Option 1: $1,250; Option 2: $2,500"
+              }
+            },
+            {
+              "label": "Dislocation Hip",
+              "values": {
+                "*": "Option 1: $1,000; Option 2: $2,000"
+              }
+            },
+            {
+              "label": "Tear, knee ligament or meniscus",
+              "values": {
+                "*": "Option 1: $500; Option 2: $1,000"
+              }
+            },
+            {
+              "label": "Dislocation Knee",
+              "values": {
+                "*": "Option 1: $500; Option 2: $1,000"
+              }
+            },
+            {
+              "label": "Fracture, all other",
+              "values": {
+                "*": "Option 1: $250; Option 2: $500"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

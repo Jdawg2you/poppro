@@ -1302,7 +1302,7 @@ var ML_OFFERED={
  chas:'AK AL AR AZ CA CO CT DC FL GA HI IA ID IL IN KS KY LA MD ME MI MN MO MS MT NC ND NE NH NV OH OK OR PA RI SC SD TN TX UT VT WA WI WV',
  afc:'AK AL AR AZ CA DE FL GA HI IA IL IN KY LA MD ME MI MN MO MS MT NC ND NE NM NV OH OK OR PA RI SC SD TN TX UT VA WI WV WY',
  /* Home Health Care Enhanced: states with a brochure in the carrier library or rates in the portal pull (2026-09-29). */
- hhc:'AK AL AR AZ CO DC DE GA HI IA IL LA ME MI MO MS MT NC ND NE NH NV OH OK OR RI SC SD TN TX UT WI WV WY',
+ hhc:'AK AL AR AZ CO DC DE GA HI IA ID IL IN LA MD ME MI MO MS MT NC ND NE NH NV OH OK OR PA RI SC SD TN TX UT VA WI WV WY',   /* Enhanced, plus Select in ID IN MD PA VA */
  /* DVH Select: the portal pull's states plus MS NV NJ NC PA from their own brochures (rates/dvh-brochure-rates.json). */
  dvh7016:'MD MT VA',   /* the older Dental, Vision and Hearing plan, served only where DVH Select is not sold */
  dvh:'AL AR AZ CA CO CT DC DE FL GA IA ID IL IN KS KY LA ME MI MN MO MS NC ND NE NJ NM NV OH OK OR PA SC SD TN TX UT WI WV WY'
@@ -1437,6 +1437,8 @@ function dentalCo(st){ st=(st||(S.client||{}).state||'').toUpperCase(); var ch=S
   return mlDentalSold(st)?'ml':(sparkleSold(st)?'sparkle':'ml'); }
 function pSPARKLE(hh,st){ if(!sparkleSold(st)) return {price:null,note:'Sparkle Care Dental is not sold in '+st};
   var v=SPARKLE.rates[hh||'i']; return v==null?{price:null,note:'Sparkle Care Dental: no rate for this household'}:{price:v,note:'',sparkle:true,parts:{dental:v,vision:0,hearing:0}}; }
+/* Home Health Care Select is what's sold where Enhanced isn't (ID IN MD PA VA). */
+function hhcIsSelect(st){ st=(st||(S.client||{}).state||'').toUpperCase(); return !!(st&&PR&&!prGroup(306,st)&&(prGroup(304,st)||prGroup(305,st))); }
 /* The 7016 plan is the dental offer where DVH Select is not sold (MD, MT, VA). */
 function dvhIs7016(st){ st=(st||(S.client||{}).state||'').toUpperCase(); return !!(st&&dentalCo(st)==='ml'&&PR&&!prGroup(301,st)&&prGroup(150,st)); }
 function dvh7016Maxes(st){ var g=PR&&prGroup(150,(st||(S.client||{}).state||'').toUpperCase()); return g?Object.keys(g.plans).map(function(k){ return k.match(/\$([\d,]+)/)[1].replace(/,/g,''); }):[]; }
@@ -1508,9 +1510,10 @@ function pCHAS(st,age,hh,cfg){
 function pHHC(R,st,age,col){
   if(st&&(ML_OFFERED.hhc||'').split(' ').indexOf(st)<0) return {price:null,note:notLoaded('hhc','Home Health Care',st)};
   if(!col) return {price:null,note:''};
-  var pg=prGroup(306,st);
+  /* Enhanced where it is sold; the older Home Health Care Select where it is not (ID IN MD PA VA - portal 304/305). */
+  var pg=prGroup(306,st), prod='Enhanced'; if(!pg){ pg=prGroup(304,st)||prGroup(305,st); prod='Select'; }
   if(pg){ var v=prVal(pg.plans,col+' | UNITS','i',age);
-    return v==null?{price:null,note:'HHC '+col+' not available at age '+age+' in '+st}:{price:v,note:'',prod:'Enhanced'}; }
+    return v==null?{price:null,note:'HHC '+prod+' '+col+' not available at age '+age+' in '+st+(prod==='Select'?' (issue ages 45-89)':'')}:{price:v,note:'',prod:prod}; }
   var g=rGrp(R.hhc.g,st); if(!g) return {price:null,note:'HHC not available in '+st};
   var row=g.base[bandHHC(age)]; if(!row||row[col]==null) return {price:null,note:'HHC rate n/a'};
   return {price:row[col],note:'',prod:g.prod};
@@ -2211,7 +2214,7 @@ function buildTierProducts(c,byKey,extras){
   add('gap','Out-of-Pocket / Gap — $'+c.gap.daily+'/day · $'+c.gap.adm+' admission', pGAP(R,st,age,hh,c.gap));
   var dr=dvhRiders(c.dvh), dres=pDVH(R,age,hh,c.dvh,st);
   add('dvh',dres.sparkle?'Sparkle Care Dental — $4,500 per member per year':dres.plan7016?'Dental, Vision & Hearing (7016) — $'+(+dres.max/1000)+'K':'DVH Select — Dental $'+(+c.dvh.max/1000)+'K'+(dr.vis?' + Vision':'')+(dr.hear?' + Hearing':''), dres);
-  if(c.hhc) add('hhc','Home Health Care — HHC '+c.hhc, pHHC(R,st,age,c.hhc));
+  if(c.hhc){ var hr=pHHC(R,st,age,c.hhc); add('hhc','Home Health Care'+(hr.prod==='Select'?' Select':'')+' — HHC '+c.hhc, hr); }
   if(c.lb){ lbPersons().forEach(function(pp){ var lc=c.lb[pp.k]; if(!lc||!lc.face) return;
     var r=pLB1(pp,lc); add('lb'+pp.k,'Living Benefits — '+pp.tag+' $'+(+lc.face/1000)+'K term life, 20-year ('+(r.carrier||'')+')', r); }); }
   if(c.chas&&(c.chas.cancer||c.chas.hs)) add('chas','Cancer / Heart Attack & Stroke — CHAS'+(c.chas.cancer?' Cancer $'+(c.chas.cancer/1000)+'K':'')+(c.chas.hs?(c.chas.cancer?' ·':'')+' Heart & Stroke $'+(c.chas.hs/1000)+'K':''), pCHAS(st,age,hh,c.chas));
@@ -4335,7 +4338,7 @@ function pbReprice(){ autoPriceTiers(); fill(); compute(); autosave(); }
    Elite?" comparison. A different product replaces it. */
 var BEN_DATA={}, BEN_VIEW=[];
 var BEN_FILE={afc:'afc',sdr:'sdr',his:'his',acc:'acc',gap:'gap',chas:'chas',hhc:'hhc',dvh:'dvh',lbp:'lb',lbs:'lb'};
-function benFileFor(k,c){ if(k==='base') return c.base==='lifex'?'lifex':(c.base==='triad'?'triad':null); if(k==='dvh'&&dentalCo()==='sparkle') return 'sparkle'; if(k==='dvh'&&dvhIs7016()) return 'dvh7016'; return BEN_FILE[k]||null; }
+function benFileFor(k,c){ if(k==='base') return c.base==='lifex'?'lifex':(c.base==='triad'?'triad':null); if(k==='hhc'&&hhcIsSelect()) return 'hhcs'; if(k==='dvh'&&dentalCo()==='sparkle') return 'sparkle'; if(k==='dvh'&&dvhIs7016()) return 'dvh7016'; return BEN_FILE[k]||null; }
 function benCol(k,c){ switch(k){
   case 'afc': return c.afc; case 'acc': return String(c.acc||1); case 'hhc': return c.hhc; case 'dvh': return String((c.dvh&&c.dvh.max)||'');
   case 'lbp': return (c.lb&&c.lb.p&&c.lb.p.carrier)||'moo'; case 'lbs': return (c.lb&&c.lb.s&&c.lb.s.carrier)||'moo';

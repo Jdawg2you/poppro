@@ -330,6 +330,284 @@
         "Brochure footnotes: benefits are subject to state-specific details in the Policy/Outline of Coverage; the 365-day maximum benefit period may vary by state.",
         "Every state folder also holds the trifold HHCE-BRF_0726 (except NV, which has only the BR); every state has the full HHCE-BR_0326, so the BR is used and the BRF ignored. The trifold's benefit amounts match the BR."
       ]
+    },
+    {
+      "code": "HHCE-UTBR_0926",
+      "file": "HHCE-UTBR_0926 (UT Home Health Care Enhanced) — Utah state-specific brochure",
+      "states": [
+        "UT"
+      ],
+      "page": "2-3",
+      "sections": [
+        {
+          "title": "Home health care services",
+          "rows": [
+            {
+              "label": "Daily maximum benefit",
+              "values": {
+                "Classic": "$150",
+                "Premier": "$300",
+                "Deluxe": "$450"
+              },
+              "key": true,
+              "note": "Maximum benefit period of 365 days (brochure footnote: \"Maximum benefit period may vary by state\") for services in your home from an Approved Home Health Care Practitioner, subject to the eligibility conditions."
+            },
+            {
+              "label": "Nursing Care",
+              "values": {
+                "Classic": "$75",
+                "Premier": "$150",
+                "Deluxe": "$200"
+              },
+              "key": true,
+              "note": "The brochure lists each service amount without stating a unit (per visit or per day); the daily maximum above caps the total."
+            },
+            {
+              "label": "Physical Therapy",
+              "values": {
+                "Classic": "$75",
+                "Premier": "$150",
+                "Deluxe": "$200"
+              }
+            },
+            {
+              "label": "Speech Pathology",
+              "values": {
+                "Classic": "$75",
+                "Premier": "$150",
+                "Deluxe": "$200"
+              }
+            },
+            {
+              "label": "Occupational Therapy",
+              "values": {
+                "Classic": "$75",
+                "Premier": "$150",
+                "Deluxe": "$200"
+              }
+            },
+            {
+              "label": "Chemotherapy Specialist Services",
+              "values": {
+                "Classic": "$60",
+                "Premier": "$120",
+                "Deluxe": "$200"
+              }
+            },
+            {
+              "label": "Enterostomal Therapy",
+              "values": {
+                "Classic": "$50",
+                "Premier": "$100",
+                "Deluxe": "$200"
+              }
+            },
+            {
+              "label": "Medical Social Worker Services",
+              "values": {
+                "Classic": "$100",
+                "Premier": "$200",
+                "Deluxe": "$300"
+              }
+            },
+            {
+              "label": "Respiratory Therapy",
+              "values": {
+                "Classic": "$50",
+                "Premier": "$100",
+                "Deluxe": "$200"
+              }
+            },
+            {
+              "label": "Home Health Care Aide Services",
+              "values": {
+                "Classic": "$50",
+                "Premier": "$100",
+                "Deluxe": "$150"
+              },
+              "key": true,
+              "note": "Brochure footnote: see the Policy and/or Outline of Coverage for state-specific details."
+            }
+          ]
+        },
+        {
+          "title": "Homemaker services (unlicensed family member, neighbor or friend)",
+          "rows": [
+            {
+              "label": "Homemaker Services daily maximum",
+              "values": {
+                "Classic": "$25",
+                "Premier": "$50",
+                "Deluxe": "$75"
+              },
+              "key": true,
+              "note": "Daily maximum care benefit for care received at home from an unlicensed family member, neighbor or friend."
+            },
+            {
+              "label": "Homemaker Services policy maximum",
+              "values": {
+                "Classic": "$4,000",
+                "Premier": "$5,000",
+                "Deluxe": "$6,000"
+              },
+              "key": true
+            }
+          ]
+        },
+        {
+          "title": "Prescriptions",
+          "rows": [
+            {
+              "label": "Prescription Drug Benefit",
+              "values": {
+                "*": "30-day prescription: $10/Generic or $25/Brand. 90-day prescription: $30/Generic or $75/Brand."
+              },
+              "key": true,
+              "note": "Brochure: \"Prescription Drug Benefit Available in Most States\" — it does not name the states where it is unavailable; check the Outline of Coverage."
+            },
+            {
+              "label": "Prescription Drug maximum benefit per policy year",
+              "values": {
+                "Classic": "$300",
+                "Premier": "$600",
+                "Deluxe": "$900"
+              },
+              "key": true
+            }
+          ]
+        },
+        {
+          "title": "Other",
+          "rows": [
+            {
+              "label": "Restoration of Benefits",
+              "values": {
+                "*": "The Maximum Benefit Period and/or Policy Maximum will be restored if benefits have not been paid or required for 180 consecutive days."
+              }
+            }
+          ]
+        },
+        {
+          "title": "Rider: Accidental Death & Dismemberment",
+          "rows": [
+            {
+              "label": "Accidental Death",
+              "values": {
+                "*": "$10,000"
+              },
+              "note": "Death or dismemberment must occur within 90 days of the covered accident and while the policy and rider are in force. Lifetime maximum is $10,000. Rider (separate rider form); POP Pro's Home Health Care price is the base plan only. See the Rider and/or Outline of Coverage for state-specific details."
+            },
+            {
+              "label": "Sight, both eyes",
+              "values": {
+                "*": "$5,000"
+              }
+            },
+            {
+              "label": "Sight, one eye",
+              "values": {
+                "*": "$2,500"
+              }
+            },
+            {
+              "label": "Hand/arm/foot/leg (multi)",
+              "values": {
+                "*": "$5,000"
+              }
+            },
+            {
+              "label": "Hand/arm/foot/leg (single)",
+              "values": {
+                "*": "$2,500"
+              }
+            },
+            {
+              "label": "Finger or toe (multiple)",
+              "values": {
+                "*": "$1,000"
+              }
+            },
+            {
+              "label": "Finger or toe (single)",
+              "values": {
+                "*": "$500"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Rider: Home Medical Equipment",
+          "rows": [
+            {
+              "label": "Home medical equipment",
+              "values": {
+                "*": "$100 per piece; lifetime maximum $500"
+              },
+              "note": "Paid when you need home medical equipment prescribed by your physician while receiving Home Health Care Services. Limited to mobility assistance, transfer aids, bathroom safety, home accommodations, personal medical equipment. Rider (separate rider form); POP Pro's Home Health Care price is the base plan only. See the Rider and/or Outline of Coverage for state-specific details."
+            }
+          ]
+        },
+        {
+          "title": "Rider: Ambulance",
+          "rows": [
+            {
+              "label": "Ambulance",
+              "values": {
+                "*": "$200 per trip (each one-way trip), 4 trips per year; lifetime maximum $2,500"
+              },
+              "note": "Transportation in an ambulance for emergency care, including transport between medical facilities when health care services are provided during the trip. Rider (separate rider form); POP Pro's Home Health Care price is the base plan only. See the Rider and/or Outline of Coverage for state-specific details."
+            }
+          ]
+        },
+        {
+          "title": "Rider: Accident Expense (Option 1 / Option 2)",
+          "rows": [
+            {
+              "label": "Max amount per accident",
+              "values": {
+                "*": "Option 1: $1,250; Option 2: $2,500"
+              },
+              "note": "Dislocations, fractures or knee ligament tears treated by a health care practitioner in a hospital emergency room, urgent care facility or physician's office within 48 hours of the covered accident. Lifetime maximum is $10,000. Rider (separate rider form); POP Pro's Home Health Care price is the base plan only. See the Rider and/or Outline of Coverage for state-specific details."
+            },
+            {
+              "label": "Fracture, hip or skull",
+              "values": {
+                "*": "Option 1: $1,250; Option 2: $2,500"
+              }
+            },
+            {
+              "label": "Dislocation Hip",
+              "values": {
+                "*": "Option 1: $1,000; Option 2: $2,000"
+              }
+            },
+            {
+              "label": "Tear, knee ligament or meniscus",
+              "values": {
+                "*": "Option 1: $500; Option 2: $1,000"
+              }
+            },
+            {
+              "label": "Dislocation Knee",
+              "values": {
+                "*": "Option 1: $500; Option 2: $1,000"
+              }
+            },
+            {
+              "label": "Fracture, all other",
+              "values": {
+                "*": "Option 1: $250; Option 2: $500"
+              }
+            }
+          ]
+        }
+      ],
+      "notes": [
+        "Utah has its own brochure, application and rates (launched September 2026). Base rates match the CO/ME/MI/OH/SC/TN group in the September 2026 rate guide.",
+        "Differs from the standard brochure in two places: no Routine Annual Physical Examination rider in Utah, and a higher finger/toe benefit on the AD&D rider.",
+        "Issue ages 18 - 89; guaranteed renewable for life; 30 day \"free look\" period; simple underwriting.",
+        "Brochure footnotes: benefits are subject to state-specific details in the Policy/Outline of Coverage; the 365-day maximum benefit period may vary by state."
+      ]
     }
   ]
 }
