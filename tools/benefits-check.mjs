@@ -85,6 +85,8 @@ for (const k of keys) {
       if (eng.length) expect.set(st, eng.map(x => x.split(' (')[0]));
     }
     const notOffered = new Set((d.notOffered && d.notOffered.states) || []);
+    const noBrochure = new Set((d.noBrochure && d.noBrochure.states) || []);
+    ok(!d.noBrochure || (d.noBrochure.reason && [...noBrochure].every(st => !seen.has(st) && !notOffered.has(st))), k + ': noBrochure needs a reason and must not overlap mapped or not-offered states');
     ok(!d.notOffered || (d.notOffered.reason && [...notOffered].every(st => !seen.has(st))), k + ': notOffered needs a reason and must not overlap mapped states');
     for (const [st, codes] of expect) {
       if (notOffered.has(st)) continue;

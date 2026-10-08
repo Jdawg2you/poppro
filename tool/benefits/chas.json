@@ -950,5 +950,12 @@
         "Brochure: \"This is not a complete disclosure of plan qualifications and limitations\" — full list at disclosure.manhattanlife.com."
       ]
     }
-  ]
+  ],
+  "noBrochure": {
+    "states": [
+      "MT",
+      "SD"
+    ],
+    "reason": "ManhattanLife quotes and prices it here, but publishes no brochure for this state (checked in the agent portal, Oct 2026). Benefits can vary by state, so confirm them in the policy / outline of coverage rather than the standard brochure."
+  }
 }

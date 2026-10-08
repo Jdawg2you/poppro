@@ -396,5 +396,13 @@
         "Policy form AN7003-IL; riders AN7003HA-IL, AN7003OS-IL, AN7003SN-IL."
       ]
     }
-  ]
+  ],
+  "noBrochure": {
+    "states": [
+      "AK",
+      "ME",
+      "WY"
+    ],
+    "reason": "ManhattanLife quotes and prices it here, but publishes no brochure for this state (checked in the agent portal, Oct 2026). Benefits can vary by state, so confirm them in the policy / outline of coverage rather than the standard brochure."
+  }
 }
