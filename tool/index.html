@@ -520,6 +520,9 @@
     #printout .po-glance td b{white-space:nowrap;font-size:12.5px}
     #printout .evneg{font-size:9.5px;padding:5px 9px;margin:4px 0}#printout .evneg small{display:inline;margin-left:4px}
     #printout .evneg .ex{display:none}#printout .evneg .printonly{display:inline!important}
+    /* On paper the green box repeats the bill line: one small disclaimer under the bill instead. */
+    #printout .evneg{display:none!important}#printout .evbill .negfine{display:block!important;font-size:8.5px;color:#2f7d4a;font-style:italic}
+    #printout .evbill em{display:none}#printout .evbill{padding-top:4px;padding-bottom:2px}#printout .evtab .c{padding-top:4px;padding-bottom:4px}#printout .evbill b{font-size:20px}#printout .evbill b.was,#printout .evbill b.neg{font-size:16px}
     /* The TFRA and partner benefits follow the events: a new page when the events fill theirs, and
        straight on beneath them when the everyday event had to move over - never a half-empty page. */
     #printout .afc-grid{grid-template-columns:1fr 1fr 1fr!important;gap:8px!important}
@@ -2500,7 +2503,7 @@ function blankState(){
     },
     pension:{monthly:0,note:'e.g., IUL / tax-free retirement savings for your future',cv10:0,cv20:0,cv30:0,leg1:0,leg25:0},
     ev:[evScn('hosp'),evScn('urgent')],   // the two example cards: same builder, any scenario
-    negot:{on:false,pct:40,min:2500,cards:{}},   // Medical Bill Saver (CareGuide) - a conservative 40% illustration; no carrier average is published
+    negot:{on:true,pct:40,min:2500,cards:{}},   // Medical Bill Saver (CareGuide) - a conservative 40% illustration; no carrier average is published
     intake:{who:{app:true,spouse:false,kids:false},phone:'',email:'',tobaccoP:false,tobaccoS:false,maternityP:false,maternityS:false,maternity:false,dv:false,famcancerP:false,famcancerS:false,famcancer:false,famheartP:false,famheartS:false,famheart:false,mentalP:false,mentalS:false,mental:false,surg2yrP:false,surg2yrS:false,surg2yr:false,majorcond:false,majorcondNote:'',diabetic:false,diabeticNote:'',health:'',income:0,pincome:0,sincome:0,hhManual:false,retage:'',savings:0,invest:0,invprot:false,invsra:false,invnote:'',docs1:'',docs2:'',docs3:'',keepaca:'',keepafc:'',docnote:'',medList:[],budget:0,priority:'coverage',notes:'',carrier:'',plan:'',pheight:'',pweight:'',sheight:'',sweight:'',psex:'',ssex:'',kidsNote:'',routeNote:'',docsNote:'',whyShop:'',effDate:''},
     recommended:'best',
     chosen:{tier:null},   // the package the client picked - carries from the builder / Client View to Enroll
@@ -3270,7 +3273,7 @@ function fill(){
   $('p_pension').value=(+S.pension.monthly)?fmtMoneyStr(String(S.pension.monthly)):'';$('p_pnote').value=S.pension.note;
   ;['cv10','cv20','cv30','leg1','leg25'].forEach(function(k){ $('pp_'+k).value=(+S.pension[k])?fmtMoneyStr(String(S.pension[k])):''; });
   evRenderEditors();
-  S.negot=Object.assign({on:false,pct:40,min:2500,cards:{}},S.negot||{}); $('neg_on').checked=!!S.negot.on; $('neg_min').value=S.negot.min; $('neg_pct').value=S.negot.pct==null?'':S.negot.pct;
+  S.negot=Object.assign({on:true,pct:40,min:2500,cards:{}},S.negot||{}); $('neg_on').checked=!!S.negot.on; $('neg_min').value=S.negot.min; $('neg_pct').value=S.negot.pct==null?'':S.negot.pct;
   $('tl_good').textContent=S.tabLabels.good;$('tl_better').textContent=S.tabLabels.better;$('tl_best').textContent=S.tabLabels.best;
   document.querySelectorAll('#tabs button').forEach(function(b){b.classList.toggle('on',b.dataset.tab===S.activeTab);b.classList.toggle('rec',b.dataset.tab===S.recommended);});
   S.include=S.include||{good:true,better:true,best:true};
@@ -3831,7 +3834,7 @@ function evFromReg(r){ var sc=evScn(''), each=+r.charge||0, n=Math.max(1,+r.coun
   if(t==='visit') sc.add.visit={n:n,each:each}; else if(t==='urgent') sc.add.urgent={n:n,each:each}; else if(t==='imaging') sc.add.mri={n:n,each:each};
   else { sc.charge=each*n; if(t==='er') sc.er=1; if(t==='osurg') sc.surg=1; }
   return sc; }
-function migrateEvents(raw){ if(!raw) return; S.negot=Object.assign({on:false,pct:40,min:2500,cards:{}},S.negot||{}); if(S.negot.pct==null||S.negot.pct==='') S.negot.pct=40;
+function migrateEvents(raw){ if(!raw) return; S.negot=Object.assign({on:true,pct:40,min:2500,cards:{}},S.negot||{}); if(S.negot.pct==null||S.negot.pct==='') S.negot.pct=40;
   if(!raw.ev&&(raw.big||raw.reg)){ S.ev=[raw.big?evFromBig(raw.big):evScn('hosp'), raw.reg?evFromReg(raw.reg):evScn('urgent')];
     var ng=raw.negot||{}; if('onEvery' in ng) S.negot.on=!!(ng.on||ng.onEvery); }
   if(!Array.isArray(S.ev)||S.ev.length<2) S.ev=[evScn('hosp'),evScn('urgent')];
@@ -4476,7 +4479,7 @@ function evTableHTML(i){ var tiers=evIncluded(); if(!tiers.length) return ''; va
   tiers.forEach(function(T){ var o=evTierPack(T[0]); res.push({T:T,o:o,r:evEvent(sc,Object.assign({},o,{negotPct:negApplies(i,bill)?S.negot.pct:0}))}); });
   var aOwe=A?evAnchorOweEv(sc,A):null;
   var billed=(+sc.disc||0)>0&&!bb.extra?+sc.charge:0, negB=negApplies(kind,bill)?Math.round(bill*(1-S.negot.pct/100)*100)/100:null;
-  var cols=(A?1:0)+res.length, h='<div class="evbill"><span>This event costs</span>'+(billed?'<b class="was">'+fmt2(billed)+'</b><i class="arr">→</i>':'')+'<b>'+fmt2(bill)+'</b>'+(billed?'<em>network price — every plan pays this, not the sticker price</em>':'')+(negB!=null?'<i class="arr">→</i><b class="neg">'+fmt2(negB)+'</b><em>with Medical Bill Saver (CareGuide), Manhattan packages</em>':'')+'<small>'+head+'</small></div>'+(negOn(i)&&!negApplies(i,bill)?'<div class="evneg off">Medical Bill Saver is for bills over '+fmt(+S.negot.min||2500)+' — this one is not negotiated.</div>':'')+(negApplies(i,bill)?'<div class="evneg"><b>Medical Bill Saver (CareGuide) is on.</b><span class="ex"> On the Manhattan packages, ManhattanLife’s care-negotiation service (CareGuide) works the bill down before you pay it — illustrated here at '+S.negot.pct+'%. The plan still pays its full benefits, so more of that money stays with you.</span><span class="printonly" style="display:none"> CareGuide negotiates the bill down; the plan still pays in full.</span><small>Illustration: assumes a '+S.negot.pct+'% reduction. CareGuide states savings are not guaranteed.</small></div>':'')+'<div class="evtab'+(((S.evOpen||{})[i])?' open':'')+'" style="grid-template-columns:var(--evlab,minmax(120px,1.1fr)) repeat('+cols+',1fr)">';
+  var cols=(A?1:0)+res.length, h='<div class="evbill"><span>This event costs</span>'+(billed?'<b class="was">'+fmt2(billed)+'</b><i class="arr">→</i>':'')+'<b>'+fmt2(bill)+'</b>'+(billed?'<em>network price — every plan pays this, not the sticker price</em>':'')+(negB!=null?'<i class="arr">→</i><b class="neg">'+fmt2(negB)+'</b><em>with Medical Bill Saver (CareGuide), Manhattan packages</em>':'')+'<small>'+head+'</small>'+(negApplies(i,bill)?'<small class="printonly negfine">Medical Bill Saver (CareGuide): illustrated at '+S.negot.pct+'% off the network price on the Manhattan packages; CareGuide states savings are not guaranteed.</small>':'')+'</div>'+(negOn(i)&&!negApplies(i,bill)?'<div class="evneg off">Medical Bill Saver is for bills over '+fmt(+S.negot.min||2500)+' — this one is not negotiated.</div>':'')+(negApplies(i,bill)?'<div class="evneg"><b>Medical Bill Saver (CareGuide) is on.</b><span class="ex"> On the Manhattan packages, ManhattanLife’s care-negotiation service (CareGuide) works the bill down before you pay it — illustrated here at '+S.negot.pct+'%. The plan still pays its full benefits, so more of that money stays with you.</span><span class="printonly" style="display:none"> CareGuide negotiates the bill down; the plan still pays in full.</span><small>Illustration: assumes a '+S.negot.pct+'% reduction. CareGuide states savings are not guaranteed.</small></div>':'')+'<div class="evtab'+(((S.evOpen||{})[i])?' open':'')+'" style="grid-template-columns:var(--evlab,minmax(120px,1.1fr)) repeat('+cols+',1fr)">';
   h+='<div class="c l"></div>'+(A?'<div class="c h anc">'+A.lab+'</div>':'')+res.map(function(x){ return '<div class="c h">'+x.T[1]+'</div>'; }).join('');
   h+='<div class="c l evtog" data-evtog="'+i+'" role="button" tabindex="0"><span class="car">▸</span> Your plan pays<small class="noprint">click to see why</small></div>'+(A?'<div class="c anc">'+fmt2(Math.max(0,bill-aOwe))+'<small>toward the bill</small></div>':'')
     +res.map(function(x){ return '<div class="c">'+(x.o.unknown&&!x.r.pays?'—':fmt2(x.r.pays+(x.o.major?Math.max(0,bill-x.r.owe0):0)))+'<small>'+(x.o.major?'plan + cash benefits':'paid to you')+'</small></div>'; }).join('');

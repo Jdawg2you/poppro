@@ -67,7 +67,7 @@ const TEST = `(async function(){
   ok(!negApplies(0,bill(0))&&!negApplies(1,bill(1)), 'master off: neither card');
   $('neg_on').checked=true; $('neg_on').dispatchEvent(new Event('change')); await wait(30);
   ok(negApplies(0,bill(0))&&negApplies(1,bill(1)), 'master back on resets the per-card choices: both cards');
-  ok(blankState().negot.pct===40, 'a new case defaults Medical Bill Saver to 40%');
+  ok(blankState().negot.pct===40&&blankState().negot.on===true, 'a new case starts with Medical Bill Saver on, at 40%');
   /* whatever % the agent types is the % the client sees, and the bill follows it */
   $('neg_pct').value='35'; $('neg_pct').dispatchEvent(new Event('input')); await wait(60);
   setView('client'); buildPrintout(); await wait(60);
