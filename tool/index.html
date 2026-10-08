@@ -767,6 +767,8 @@ body.client #classicWrap>summary{display:none}
 .medsug{position:absolute;left:0;right:0;top:100%;z-index:50;background:#fff;border:1px solid var(--line);border-radius:8px;box-shadow:0 6px 18px rgba(18,33,59,.12);display:none;max-height:260px;overflow:auto}
 .medsug button{display:block;width:100%;text-align:left;font:inherit;font-size:13px;padding:8px 10px;border:0;background:#fff;cursor:pointer}
 .medsug button:hover,.medsug button.hl{background:#f1ede2}
+.medsug button small{color:var(--muted);font-size:11.5px}
+.medsug button.typed{border-top:1px dashed var(--line);color:var(--navy);font-weight:600}
 #medFlags .mflag{margin:8px 0;background:#fff8ec;border:1px solid #e8c98a;border-radius:8px;padding:9px 12px;font-size:13.5px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 #medFlags .mflag button{font:inherit;font-size:12.5px;font-weight:700;border-radius:7px;padding:5px 10px;cursor:pointer;border:1px solid var(--line);background:#fff}
 #medFlags .mflag button.yes{background:var(--navy);color:#fff;border-color:var(--navy)}
@@ -2917,6 +2919,7 @@ function popMedResolve(n){
   n=String(n||'').trim(); if(!n) return '';
   var exact=medLabel(n);
   if(MED_FOR[exact]) return exact;
+  if(medFdaRow(n)) return exact;
   var g=medSuggest(n,1);
   return (g && g.length && MED_FOR[g[0]]) ? g[0] : exact;
 }
@@ -3963,7 +3966,7 @@ function medDisc(m){ return +((m.disc!=null)?m.disc:(m.cost||0))||0; }
 function medDiscTotal(){ return ((S.intake&&S.intake.medList)||[]).reduce(function(s,m){return s+medDisc(m);},0); }
 /* Generic or brand, for the ACA copay estimate. The agent's click wins; otherwise the
    dictionary drug's NADAC classification (MED_RX); a drug not in the dictionary is unknown. */
-function medKind(m){ if(m.kind==='g'||m.kind==='b') return m.kind; var l=popMedResolve(m.name); return (l&&MED_RX[l])||null; }
+function medKind(m){ if(m.kind==='g'||m.kind==='b') return m.kind; var l=popMedResolve(m.name); if(l&&MED_RX[l]) return MED_RX[l]; var f=medFdaRow(m.name); return f?f[2]:null; }
 function medGenericCopay(){ return (ACA26.bronze&&ACA26.bronze.rxGenericCopay)||25; }
 function medAcaEst(m){ var k=medKind(m); if(k==='g') return medGenericCopay(); if(k==='b'){ var d=medDisc(m); return d>0?d:null; } return null; }
 function medAcaTyped(m){ return m.aca!=null&&m.aca!==''&&(m.acaSet||+m.aca>0); }
@@ -4363,6 +4366,7 @@ function bindInputs(){
   $('in_aemail').addEventListener('input',function(){ markValid(this,emailOK(this.value)); captureIntake(); });
   $('c_date').addEventListener('input',function(){ this.value=fmtDate(this.value); markValid(this,dateOK(this.value)); compute(); });
   $('in_priority').addEventListener('change',function(){ readIntake(); autosave(); });
+  medFdaLoad();
   $('addMed').onclick=function(){ S.intake.medList=S.intake.medList||[]; S.intake.medList.push({name:'',cost:0,forP:true,forS:false}); renderMeds(); };
   $('p_lb_cov').addEventListener('input',function(){ this.value=fmtMoneyStr(this.value); });
   ['p_pension','pp_cv10','pp_cv20','pp_cv30','pp_leg1','pp_leg25'].forEach(function(id){
@@ -4929,15 +4933,51 @@ function renderKids(){ var host=$('kidRows'); if(!host) return; var k=kidsList()
 function kidsSetCount(n){ var k=kidsList(); n=+n||0; while(k.length<n) k.push({n:'',dob:'',age:'',sex:''}); while(k.length>n&&!(k[k.length-1].n||k[k.length-1].dob)) k.pop(); renderKids(); kidsSyncNote(); autosave(); }
 function kidsShowCount(){ var on=$('in_who_kids')&&$('in_who_kids').checked, w=$('kidCountWrap'); if(w) w.style.display=on?'inline-flex':'none'; if(on&&!kidsList().length) kidsSetCount(1); }
 
+/* ===== The big medication list =====
+   tool/meds/fda-meds.json: every prescription brand and generic on the FDA NDC directory, with generic vs
+   brand taken from what pharmacies actually bought in the latest CMS NADAC week. Rebuild it with
+   tools/build-fda-meds.py. Rows are [name, other name, 'g'|'b']. These names price (generic/brand) but are
+   NOT linked to conditions - that stays the navigator's MEDS/MED_FOR, which always rank first. */
+var MED_FDA=[], MED_FDA_BY={};
+function medFdaLoad(){ return fetch('meds/fda-meds.json').then(function(r){ return r.json(); }).then(function(d){
+    MED_FDA=(d.meds||[]).map(function(r){ return {r:r, n:r[0].toLowerCase(), o:(r[1]||'').toLowerCase(), k:medKey(r[0]), k2:medKey2(r[0])}; });
+    MED_FDA_BY={}; MED_FDA.forEach(function(x){ MED_FDA_BY[x.n]=x.r; });
+    if(typeof renderMeds==='function'&&$('medList')&&(S.intake&&(S.intake.medList||[]).length)) renderMeds(); }).catch(function(){}); }
+function medFdaRow(n){ return MED_FDA_BY[String(n||'').trim().toLowerCase()]||null; }
+/* Core dictionary first (it lifts conditions), then the big list: exact, starts-with, other name, inside,
+   then sounds-like for a misspelling. Each hit says whether it is a confident match (the word is in it). */
+function popMedSuggest(q,limit){ limit=limit||8; var t=String(q||'').trim(), lt=t.toLowerCase(); if(t.length<2) return [];
+  var out=[], had={};
+  var add=function(label,other,src,sure){ var k=label.toLowerCase(); if(had[k]) return; had[k]=1; out.push({label:label,other:other,src:src,sure:sure}); };
+  var core={}; MEDS.forEach(function(r){ r.forEach(function(n){ core[n.toLowerCase()]=1; }); });   /* names the core list already owns */
+  var addF=function(label,other,sure){ if(core[label.toLowerCase()]) return; add(label,other,'fda',sure); };
+  medSuggest(t,limit).forEach(function(h){ var sure=medRow(h).some(function(n){ return n.toLowerCase().indexOf(lt)>=0; }); add(h,'', 'core',sure); });
+  if(out.length<limit&&MED_FDA.length){ var kt=medKey(t), k2=medKey2(t), sc=[];
+    MED_FDA.forEach(function(x){ var s=x.n===lt?0:x.n.indexOf(lt)===0?1+x.n.length/1000:x.o.indexOf(lt)===0?2:x.n.indexOf(lt)>0?3:x.o.indexOf(lt)>0?3.5:
+        (kt.length>=3&&x.k.indexOf(kt)===0)?4+Math.abs(x.k.length-kt.length)/10:(k2.length>=3&&x.k2.indexOf(k2)===0)?6+Math.abs(x.k2.length-k2.length):-1;
+      if(s>=0) sc.push([s,x]); });
+    sc.sort(function(a,b){ return a[0]-b[0]; }).forEach(function(p){ if(out.length<limit*2) addF(p[1].r[0],p[1].r[1],p[0]<4); }); }
+  /* names that contain what was typed; sounds-like guesses only when nothing does (a misspelling) */
+  var sure=out.filter(function(h){ return h.sure; });
+  return (sure.length?sure:out.slice(0,4)).slice(0,limit); }
+
 /* Medication type-ahead on each medication row — same dictionary as the navigator (medSuggest). */
 function medTypeahead(inp,onPick){ var box=document.createElement('div'); box.className='medsug'; inp.parentNode.insertBefore(box,inp.nextSibling);
   var hide=function(){ setTimeout(function(){ box.style.display='none'; },150); };
-  inp.addEventListener('input',function(){ var q=inp.value.trim(); var hits=q.length>=2?medSuggest(q,8):[];
-    box.innerHTML=hits.map(function(h,j){ return '<button type="button" data-med="'+String(h).replace(/"/g,'&quot;')+'"'+(j?'':' class="hl"')+'>'+medOption(h,q)+'</button>'; }).join(''); box.style.display=hits.length?'block':'none';
+  var pickIt=function(v){ inp.value=v; box.style.display='none'; onPick(v); };
+  inp.addEventListener('input',function(){ var q=inp.value.trim(); var hits=q.length>=2?popMedSuggest(q,8):[];
+    var exact=hits.some(function(h){ return h.label.toLowerCase()===q.toLowerCase(); });
+    var html=hits.map(function(h,j){ var lab=h.src==='core'?medOption(h.label,q):esc(h.label)+(h.other?' <small>('+esc(h.other)+')</small>':'');
+      return '<button type="button" data-med="'+esc(h.label).replace(/"/g,'&quot;')+'"'+(j===0&&h.sure?' class="hl"':'')+'>'+(h.sure?'':'<small>did you mean</small> ')+lab+'</button>'; }).join('');
+    /* anything can be added as typed - the agent is never forced to pick from the list */
+    if(q.length>=2&&!exact) html+='<button type="button" class="typed" data-med="'+esc(q).replace(/"/g,'&quot;')+'">+ Add “'+esc(q)+'” as typed</button>';
+    box.innerHTML=html; box.style.display=html?'block':'none';
     /* the label shows both names; the value picked is the canonical one */
-    box.querySelectorAll('button').forEach(function(b){ b.onmousedown=function(e){ e.preventDefault(); var pick=b.getAttribute('data-med'); inp.value=pick; box.style.display='none'; onPick(pick); }; }); });
-  inp.addEventListener('keydown',function(e){ if(e.key==='Enter'){ var f=box.querySelector('button'); if(f&&box.style.display==='block'){ e.preventDefault(); var pick=f.getAttribute('data-med'); inp.value=pick; box.style.display='none'; onPick(pick); } } });
-  inp.addEventListener('blur',hide); }
+    box.querySelectorAll('button').forEach(function(b){ b.onmousedown=function(e){ e.preventDefault(); pickIt(b.getAttribute('data-med')); }; }); });
+  /* Enter takes the highlighted CONFIDENT match only; with no confident match it keeps what was typed */
+  inp.addEventListener('keydown',function(e){ if(e.key==='Enter'&&box.style.display==='block'){ e.preventDefault(); var f=box.querySelector('button.hl');
+      pickIt(f?f.getAttribute('data-med'):inp.value.trim()); } });
+  inp.addEventListener('blur',function(){ hide(); if(inp.value.trim()) onPick(inp.value.trim()); }); }
 function renderMedFlags(){ var host=$('medFlags'); if(!host) return; var fl=popMedFlags();
   host.innerHTML=fl.map(function(f,i){ return '<div class="mflag"><span><b>'+f.m+'</b> is usually for <b>'+f.c+'</b> — is that why?</span><button type="button" class="yes" data-i="'+i+'">Yes, add it</button><button type="button" data-no="'+i+'">No</button></div>'; }).join('');
   host.querySelectorAll('[data-i]').forEach(function(b){ b.onclick=function(){ var f=fl[+b.dataset.i], who='';
