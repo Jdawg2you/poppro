@@ -541,7 +541,44 @@
   }
   #printout .po-save .yr{font-family:var(--serif);font-weight:700;color:var(--navy);margin-top:3px}
   /* Client View = the presentation: the printout, on screen. */
-  body.client #step-intake,body.client #step-quote,body.client #step-enroll,body.client #stepper,body.client #benDrawer{display:none!important}
+  body.client #step-intake,body.client #step-quote,body.client #step-present,body.client #step-enroll,body.client #stepper,body.client #benDrawer{display:none!important}
+  /* ===== Present mode (agent-only; never on Client View or the printout) ===== */
+  .pr-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+  .pr-top h3{margin:0;font-family:var(--serif);color:var(--navy);font-size:22px}.pr-top small{display:block;color:var(--muted);font-size:13px;margin-top:2px}
+  .pr-prog{display:flex;gap:4px;margin:6px 0 14px;flex-wrap:wrap}
+  .pr-prog button{font:inherit;font-size:12px;font-weight:700;border:1px solid var(--line);background:#fff;color:var(--muted);border-radius:999px;padding:5px 11px;cursor:pointer}
+  .pr-prog button.on{background:var(--navy);color:#fff;border-color:var(--navy)}.pr-prog button.done{color:#2f7d4a;border-color:#b7d3b0}
+  .pr-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px;align-items:start}
+  @media(max-width:900px){.pr-grid{grid-template-columns:1fr}}
+  .pr-card{border:1px solid var(--line);border-radius:12px;background:#fff;padding:16px 18px}
+  .pr-card .sec{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#8a6a1f;margin-bottom:8px}
+  .pr-line{display:flex;gap:10px;align-items:flex-start;padding:7px 0;border-top:1px dotted #e7dfcb;font-size:15px;line-height:1.5;color:#1f2937}
+  .pr-line:first-of-type{border-top:none}
+  .pr-tag{flex:none;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;border-radius:6px;padding:3px 6px;margin-top:3px}
+  .pr-tag.say{background:#e8eef9;color:#1f3a6b}.pr-tag.ask{background:#fdf1d8;color:#8a5a00}.pr-tag.do{background:#eef6ec;color:#2f7d4a}.pr-tag.note{background:#f3f4f6;color:#6b7280}
+  .pr-line .do{font-style:italic;color:#4b5563;font-size:14px}
+  .pr-val{font-weight:700;color:var(--navy);background:#fff7e0;border-radius:4px;padding:0 3px}
+  .pr-miss{font-weight:700;color:#b42318;background:#fde8e8;border-radius:4px;padding:0 4px}
+  .pr-nav{display:flex;justify-content:space-between;gap:8px;margin-top:14px;flex-wrap:wrap}
+  .pr-nav button,.pr-rail button,.pr-apply button{font:inherit;font-size:13px;font-weight:700;border-radius:9px;padding:8px 13px;cursor:pointer;border:1px solid var(--line);background:#fff;color:var(--navy)}
+  .pr-nav button.go{background:var(--navy);color:#fff;border-color:var(--navy)}
+  .pr-branch{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  .pr-branch button{background:#fff7e0;border-color:#e2c27a}
+  .pr-rail{position:sticky;top:12px;display:flex;flex-direction:column;gap:12px}
+  .pr-rail .box{border:1px solid var(--line);border-radius:12px;background:#faf7ef;padding:12px}
+  .pr-rail .box b{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+  .pr-rail .box button{display:block;width:100%;text-align:left;margin-top:6px;font-weight:600}
+  .pr-qa summary{cursor:pointer;font-weight:600;font-size:13px;color:var(--navy);padding:4px 0}.pr-qa p{margin:4px 0 8px;font-size:13px;color:#374151}
+  .pr-apply ol{margin:6px 0 0;padding-left:20px}.pr-apply li{margin:8px 0;font-size:14px}
+  .pr-apply .why{display:block;font-size:12px;color:var(--muted)}
+  .pr-fields{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;margin-top:8px}
+  @media(max-width:700px){.pr-fields{grid-template-columns:1fr}}
+  .pr-f{display:flex;justify-content:space-between;gap:8px;align-items:center;border-bottom:1px dotted #e7dfcb;padding:4px 0;font-size:13px}
+  .pr-f span{color:var(--muted)}.pr-f b{color:var(--navy);text-align:right}.pr-f.miss b{color:#b42318}
+  .pr-f input{border:1px solid #f0b9b9;border-radius:6px;padding:3px 6px;width:55%}
+  .pr-f .cp{font-size:11px;padding:2px 7px;margin-left:6px}
+  #presentBack{position:fixed;right:18px;bottom:18px;z-index:9998;font:inherit;font-weight:800;font-size:14px;background:var(--navy);color:#fff;border:none;border-radius:999px;padding:12px 18px;box-shadow:0 6px 18px rgba(0,0,0,.25);cursor:pointer;display:none}
+  @media print{#presentBack{display:none!important}}
   body.client .discl{display:none!important}
   body.client #printout{display:block;max-width:1000px;margin:12px auto 60px;padding:0 16px;box-sizing:border-box}
   .pbanchor{font-size:12.5px;color:var(--navy);background:#fbf9f2;border:1px solid var(--line);border-radius:8px;padding:7px 12px;margin:0 0 10px}
@@ -738,8 +775,10 @@ body.client #classicWrap>summary{display:none}
 </head>
 <body>
 <!-- Local compare label: shows only when served on 127.0.0.1:8766 (version B). Never appears on mypoppro.com. -->
+<button type="button" id="presentBack" onclick="presentBack()">← Back to the script</button>
 <div id="verBanner" style="display:none;position:sticky;top:0;z-index:9999;background:#9c3b2f;color:#fff;font:600 13px -apple-system,sans-serif;text-align:center;padding:6px 10px">VERSION B — in progress · compare with A at 127.0.0.1:8765</div>
-<script>if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.style.display='block'; document.title='B · '+document.title;
+<script>if(location.port==='8767'){ var vb0=document.getElementById('verBanner'); vb0.style.display='block'; vb0.style.background='#1f6b3b'; vb0.textContent='PRESENT SANDBOX — not live · trying out Present mode'; document.title='Present · '+document.title; }
+if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.style.display='block'; document.title='B · '+document.title;
   /* The file's own timestamp: if this doesn't match the latest change, the browser is showing an old copy. */
   var lm=new Date(document.lastModified); if(!isNaN(lm)) vb.textContent+=' · updated '+lm.toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}); }</script>
 <div class="wrap">
@@ -778,7 +817,8 @@ body.client #classicWrap>summary{display:none}
   <div class="stepper noprint" id="stepper">
     <button data-step="intake"><span class="n">1</span> Intake</button>
     <button data-step="quote" class="on"><span class="n">2</span> Quote</button>
-    <button data-step="enroll"><span class="n">3</span> Enroll</button>
+    <button data-step="present"><span class="n">3</span> Present</button>
+    <button data-step="enroll"><span class="n">4</span> Enroll</button>
   </div>
 
   <div id="step-intake" class="step">
@@ -1144,6 +1184,10 @@ body.client #classicWrap>summary{display:none}
     <div id="afcPartners"></div>
 
   </div><!-- /step-quote -->
+
+  <div id="step-present" class="step">
+    <div class="card pad" id="presentHost"></div>
+  </div>
 
   <div id="step-enroll" class="step">
    <div class="card pad">
@@ -4095,6 +4139,137 @@ function renderEstimate(){
     : ('Full-package total per tier. No AFC rate-guide table for "'+(state||'—')+'" in your files — showing loaded prices only. Enter exact ARC prices for the real quote.');
   host.innerHTML=rows+'<div class="note" style="padding-top:8px">'+esc(src)+'</div>';
 }
+
+/* ===================================================================================
+   PRESENT MODE — sandbox (branch `present`, preview port 8767). Agent-only: hidden on
+   Client View and never part of the printout.
+   The script is data: sections of lines {t:'say'|'ask'|'do'|'note', x:'text with {{blanks}}',
+   when:'has:lb'}. Blanks are filled from the chosen package; an unknown blank shows as a red
+   [missing: name] so nothing silently drops out of a live call.
+   PRESENT_SCRIPT below is a PLACEHOLDER until Jesse's presentation script is done.
+   =================================================================================== */
+var PRESENT_SCRIPT=[
+ {id:'recap',title:'Recap',lines:[
+  {t:'note',x:'PLACEHOLDER — Jesse’s presentation script replaces this. The blanks show how it fills in.'},
+  {t:'say',x:'{{client.first}}, last time you told me you were looking because {{client.why}}.'},
+  {t:'ask',x:'Is that still the main thing for you?'},
+  {t:'say',x:'You’re in {{client.state}}, and today you’re {{anchor.today}}.'}]},
+ {id:'plan',title:'Their plan',lines:[
+  {t:'say',x:'The plan I’d put you on is our {{plan.name}} package — {{plan.products}}.'},
+  {t:'say',x:'It’s {{plan.monthly}} a month.',when:''},
+  {t:'say',x:'It includes life insurance with living benefits — {{product.lb.summary}}.',when:'has:lb'},
+  {t:'say',x:'Your hospital indemnity pays {{product.his.summary}}.',when:'has:his'},
+  {t:'do',x:'Open the benefits on the right if they ask what a piece covers.'}]},
+ {id:'pays',title:'What it pays',lines:[
+  {t:'say',x:'Here’s what happens with {{event1.desc}}: the bill is {{event1.bill}}, and on this plan {{event1.result}}.'},
+  {t:'say',x:'On {{event2.desc}} ({{event2.bill}}), {{event2.result}}.'},
+  {t:'do',x:'Use “Show them the examples” to put this on the shared screen.'}]},
+ {id:'price',title:'Price & savings',lines:[
+  {t:'say',x:'Against {{anchor.name}}, that’s {{savings.monthly}} a month on premium, and {{savings.yearly}} a year on true cost.'},
+  {t:'say',x:'Your POP Score on this plan is {{plan.pop}} out of 100.'}]},
+ {id:'close',title:'Close',lines:[
+  {t:'ask',x:'Does this look like the right fit for you, {{client.first}}?'},
+  {t:'do',x:'Yes → go to Apply. Not yet → use the quick answers on the right.'}],
+  branches:[['They’re in — apply','apply'],['They have a question','close']]},
+ {id:'apply',title:'Apply',apply:true}
+];
+/* Placeholder quick answers - Jesse's script supplies the real ones. */
+var PRESENT_QA=[
+ ['“I need to think about it”','Your script’s answer goes here.'],
+ ['“It’s more than I wanted to spend”','Your script’s answer goes here.'],
+ ['“Is this real insurance?”','Your script’s answer goes here.'],
+ ['“Can I keep my doctor?”','Your script’s answer goes here.']];
+var PRESENT_MMN='';   /* mother's maiden name: typed during the application, held in memory only, never saved */
+
+function presentTier(){ return chosenTier()||S.activeTab||'best'; }
+function presentOpen(){ if(!chosenTier()){ var t=S.activeTab||'best'; if(!confirm('No package is marked as their plan yet. Present '+TIER_NAME[t]+'?')) return; chooseTier(t); }
+  S.present=S.present||{}; S.present.sec=S.present.sec||0; goStep('present'); }
+function presentHas(t,cond){ if(!cond) return true; var m=String(cond).match(/^(has|base):(\w+)$/); if(!m) return true;
+  if(m[1]==='base') return (effCfg(t).base||'afc')===m[2];
+  var pk=S.packages[t]||{}; return (pk.products||[]).some(function(p){ return (p.k===m[2]||(m[2]==='lb'&&(p.k==='lbp'||p.k==='lbs')))&&(+p.monthly||0)>0; }); }
+/* Every blank the script can use, from the chosen package. */
+function presentTokens(t){ var c=effCfg(t), pk=S.packages[t]||{products:[]}, I=S.intake||{}, C=S.client||{}, tot=tierTotals(t), B=anchorBase(), T={};
+  var first=((C.pname||'').trim().split(/\s+/)[0])||'';
+  T['client.first']=first; T['client.name']=(C.pname||'').trim(); T['client.state']=(C.state||'').toUpperCase(); T['client.why']=(I.whyShop||'').trim();
+  T['agent.name']=(C.agent||'').trim(); T['agency']=S.agency||'';
+  T['plan.name']=TIER_NAME[t]; T['plan.label']=(S.tabLabels||{})[t]||''; T['plan.monthly']=fmt2(tot.mo); T['plan.annual']=fmt2(tot.yr);
+  var prods=(pk.products||[]).filter(function(p){ return (+p.monthly||0)>0; });
+  T['plan.products']=prods.map(function(p){ return String(p.name||'').split(' — ')[0]; }).join(', ');
+  try{ var pop=computePop(t); T['plan.pop']=pop&&pop.score!=null?String(pop.score):''; }catch(e){}
+  prods.forEach(function(p){ var k=(p.k==='lbp'||p.k==='lbs')?'lb':p.k; T['product.'+k+'.name']=p.name; T['product.'+k+'.monthly']=fmt2(+p.monthly||0); var sm=pbSummary(p.k,c,p); if(sm) T['product.'+k+'.summary']=sm; });
+  if(B){ T['anchor.name']=B.k==='aca'?'the marketplace bronze plan':'your current plan'; T['anchor.today']=B.k==='aca'?'comparing against the marketplace bronze plan at '+fmt2(B.prem)+' a month':'paying '+fmt2(B.premOnly)+' a month on your current plan';
+    var sv=anchorSavings(B,pkgPremMo(t),tot.mo+tierTrue(t).extra); T['savings.monthly']=fmt2(sv.actual); T['savings.yearly']=fmt2(sv.tru*12); }
+  [0,1].forEach(function(i){ var sc=(S.ev||[])[i]; if(!sc) return; var bill=evScnBill(sc).total; if(!(bill>0)) return;
+    var r=evEvent(sc,Object.assign({},evTierPack(t),{negotPct:negApplies(i,bill)?S.negot.pct:0})), n='event'+(i+1);
+    T[n+'.desc']=(sc.desc||'this').toLowerCase(); T[n+'.bill']=fmt2(bill); T[n+'.result']=r.net<=0?'you receive '+fmt2(-r.net):'you pay '+fmt2(r.net); });
+  var meds=(I.medList||[]).map(function(m){ return m&&m.name; }).filter(Boolean); T['meds.count']=String(meds.length); if(meds.length) T['meds.list']=meds.join(', ');
+  var docs=[I.docs1,I.docs2,I.docs3].filter(Boolean); if(docs.length) T['doctors.list']=docs.join(', ');
+  if(I.effDate) T['start.date']=I.effDate;
+  return T; }
+function presentFill(x,T){ return esc(x).replace(/\{\{\s*([\w.]+)\s*\}\}/g,function(_,k){ var v=T[k]; return (v!=null&&String(v).trim()!=='')?'<span class="pr-val">'+esc(String(v))+'</span>':'<span class="pr-miss">[missing: '+k+']</span>'; }); }
+
+/* The application, in the order it should be done: life first (it carries the health questions and
+   can decline), then ManhattanLife (one app), then a major-medical base, then a separate dental. */
+function presentApplyPlan(t){ var pk=S.packages[t]||{}, c=effCfg(t), prods=(pk.products||[]).filter(function(p){ return (+p.monthly||0)>0; }), steps=[];
+  var lb=prods.filter(function(p){ return p.k==='lbp'||p.k==='lbs'; });
+  if(lb.length){ var lcar=function(p){ return ((c.lb||{})[p.k.slice(2)]||{}).carrier==='americo'?'americo':'mutual'; },
+      am=lb.filter(function(p){ return lcar(p)==='americo'; }), mo=lb.filter(function(p){ return lcar(p)==='mutual'; });
+    if(am.length) steps.push({car:'Americo — Term 125 with living benefits',url:AMERICO_URL,why:'Life first: it has the health questions and can decline, so do it before anything else.',items:am});
+    if(mo.length) steps.push({car:'Mutual of Omaha — Term Life Express',url:MUTUAL_URL,why:'Life first: it has the health questions and can decline.',items:mo}); }
+  var ml=prods.filter(function(p){ return ['afc','his','acc','gap','chas','hhc','sdr'].indexOf(p.k)>=0||(p.k==='dvh'&&!/Sparkle/.test(p.name)); });
+  if(ml.length) steps.push({car:'ManhattanLife — one application',url:MANHATTAN_URL,why:'All the ManhattanLife pieces go on one application.',items:ml});
+  var base=prods.filter(function(p){ return p.k==='base'; });
+  if(base.length) steps.push(c.base==='lifex'?{car:'LifeX — client enrollment',url:LIFEX_URL,why:'LifeX makes the client a LifeX employee; enroll on its page.',items:base}:{car:'Cigna (USA Health / Triad) — 1Enrollment',url:CIGNA_URL,why:'Cigna enrolls through 1Enrollment.',items:base});
+  var sp=prods.filter(function(p){ return p.k==='dvh'&&/Sparkle/.test(p.name); });
+  if(sp.length) steps.push({car:'Sparkle Care Dental — 1Enrollment',url:SPARKLE.enroll,why:'Separate enrollment.',items:sp});
+  return steps; }
+function presentFields(){ var C=S.client||{}, I=S.intake||{}, ft=function(v){ var x=parseInt(v,10); return x>=48&&x<=84?Math.floor(x/12)+'′'+(x%12)+'″':''; };
+  var kids=(I.kids||[]).filter(function(k){ return k&&(k.n||k.dob||k.age); }).map(function(k){ return [k.n,k.dob||(k.age?k.age+'y':'')].filter(Boolean).join(' '); }).join('; ');
+  return [['Full name',C.pname,'c:pname'],['Date of birth',C.dob||C.date,'c:dob'],['Age',C.page||C.age],['Address',C.address,'c:address'],['State',C.state],['ZIP',C.zip,'c:zip'],
+    ['Phone',I.phone,'i:phone'],['Email',I.email,'i:email'],['Height',ft(I.pheight)],['Weight',I.pweight],['Tobacco',I.tobaccoP?'Yes':'No'],
+    ['Spouse',C.sname?(C.sname+(C.sdob?' · '+C.sdob:'')):''],['Children',kids],
+    ['Medications',(I.medList||[]).map(function(m){ return m&&m.name; }).filter(Boolean).join(', ')],['Doctors',[I.docs1,I.docs2,I.docs3].filter(Boolean).join(', ')],
+    ['Coverage start',I.effDate,'i:effDate'],['Beneficiary',I.beneficiary,'i:beneficiary'],['Mother’s maiden name',PRESENT_MMN,'mmn']]; }
+function renderPresent(){ var host=$('presentHost'); if(!host) return; var t=presentTier(), T=presentTokens(t);
+  S.present=S.present||{}; var cur=Math.max(0,Math.min(PRESENT_SCRIPT.length-1,+S.present.sec||0)), sec=PRESENT_SCRIPT[cur];
+  var h='<div class="pr-top"><div><h3>Presenting '+esc(TIER_NAME[t])+' to '+esc(T['client.first']||'the client')+'</h3><small>Agent-only — this never appears on Client View or the printout. '
+    +'Script: <b>placeholder</b> until the presentation script is done.</small></div>'
+    +'<button type="button" data-pr="quote" style="font:inherit;font-weight:700;border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 13px;cursor:pointer">← Back to the Quote</button></div>';
+  h+='<div class="pr-prog">'+PRESENT_SCRIPT.map(function(x,i){ return '<button type="button" data-prsec="'+i+'" class="'+(i===cur?'on':(i<cur?'done':''))+'">'+(i+1)+'. '+esc(x.title)+'</button>'; }).join('')+'</div>';
+  h+='<div class="pr-grid"><div>';
+  if(sec.apply){ var steps=presentApplyPlan(t), F=presentFields();
+    h+='<div class="pr-card pr-apply"><div class="sec">Apply — in this order</div>'+(steps.length?'<ol>'+steps.map(function(st){ return '<li><b>'+esc(st.car)+'</b> <a href="'+st.url+'" target="_blank" rel="noopener">open ↗</a><span class="why">'+esc(st.why)+'</span><span class="why">'+st.items.map(function(p){ return esc(p.name)+' — '+fmt2(+p.monthly||0); }).join(' · ')+'</span></li>'; }).join('')+'</ol>':'<p>No products priced in this package yet.</p>')+'</div>';
+    h+='<div class="pr-card" style="margin-top:12px"><div class="sec">What you’ll need — from their profile</div><div class="pr-fields">'+F.map(function(f){ var v=(f[1]==null?'':String(f[1])).trim(), miss=!v;
+        return '<div class="pr-f'+(miss?' miss':'')+'"><span>'+esc(f[0])+'</span>'+(miss&&f[2]?'<input data-prf="'+f[2]+'" placeholder="add it"'+(f[2]==='mmn'?' autocomplete="off"':'')+'>':'<b>'+(v?esc(v):'—')+(v?'<button type="button" class="cp" data-copy="'+esc(v).replace(/"/g,'&quot;')+'">copy</button>':'')+'</b>')+'</div>'; }).join('')+'</div>'
+      +'<p style="font-size:12px;color:var(--muted);margin:10px 0 0">Mother’s maiden name is held only while this page is open — never saved, printed or sent anywhere. SSN and bank details never go in POP Pro: enter them directly on the carrier’s application.</p></div>';
+    h+='<div class="pr-nav"><button type="button" data-prnav="-1">← Back</button><button type="button" class="go" data-pr="enroll">Notes & follow-ups (Enroll) →</button></div>'; }
+  else { h+='<div class="pr-card"><div class="sec">'+esc(sec.title)+'</div>'+(sec.lines||[]).filter(function(l){ return presentHas(t,l.when); }).map(function(l){ return '<div class="pr-line"><span class="pr-tag '+l.t+'">'+l.t+'</span><div class="'+(l.t==='do'?'do':'')+'">'+presentFill(l.x,T)+'</div></div>'; }).join('')
+      +(sec.branches?'<div class="pr-branch">'+sec.branches.map(function(b){ return '<button type="button" data-prgo="'+b[1]+'">'+esc(b[0])+'</button>'; }).join('')+'</div>':'')+'</div>';
+    h+='<div class="pr-nav"><button type="button" data-prnav="-1"'+(cur?'':' disabled')+'>← Back</button><button type="button" class="go" data-prnav="1">Next →</button></div>'; }
+  h+='</div><div class="pr-rail">'
+    +'<div class="box"><b>Show them</b><button type="button" data-show="cmp">The plans side by side</button><button type="button" data-show="ev">The examples (what it pays)</button><button type="button" data-show="top">Their situation & options</button></div>'
+    +'<div class="box"><b>Benefits in this plan</b>'+(S.packages[t].products||[]).filter(function(p){ return (+p.monthly||0)>0&&benFileFor(p.k,effCfg(t)); }).map(function(p){ return '<button type="button" data-ben="'+p.k+'">ⓘ '+esc(String(p.name).split(' — ')[0])+'</button>'; }).join('')+'</div>'
+    +'<div class="box pr-qa"><b>Quick answers</b>'+PRESENT_QA.map(function(q){ return '<details><summary>'+esc(q[0])+'</summary><p>'+esc(q[1])+'</p></details>'; }).join('')+'</div>'
+    +'</div></div>';
+  host.innerHTML=h;
+  var go=function(i){ S.present.sec=Math.max(0,Math.min(PRESENT_SCRIPT.length-1,i)); autosave(); renderPresent(); window.scrollTo(0,0); };
+  host.querySelectorAll('[data-prsec]').forEach(function(b){ b.onclick=function(){ go(+b.dataset.prsec); }; });
+  host.querySelectorAll('[data-prnav]').forEach(function(b){ b.onclick=function(){ go(cur+(+b.dataset.prnav)); }; });
+  host.querySelectorAll('[data-prgo]').forEach(function(b){ b.onclick=function(){ var i=PRESENT_SCRIPT.findIndex(function(x){ return x.id===b.dataset.prgo; }); if(i>=0) go(i); }; });
+  host.querySelectorAll('[data-pr="quote"]').forEach(function(b){ b.onclick=function(){ goStep('quote'); }; });
+  host.querySelectorAll('[data-pr="enroll"]').forEach(function(b){ b.onclick=function(){ goStep('enroll'); }; });
+  host.querySelectorAll('[data-ben]').forEach(function(b){ b.onclick=function(){ benOpen(t,b.dataset.ben); }; });
+  host.querySelectorAll('[data-show]').forEach(function(b){ b.onclick=function(){ presentShow(b.dataset.show); }; });
+  host.querySelectorAll('[data-copy]').forEach(function(b){ b.onclick=function(){ try{ navigator.clipboard.writeText(b.dataset.copy); b.textContent='copied'; }catch(e){} }; });
+  host.querySelectorAll('[data-prf]').forEach(function(inp){ inp.onchange=function(){ var k=inp.dataset.prf, v=inp.value.trim();
+    if(k==='mmn'){ PRESENT_MMN=v; } else if(k.indexOf('c:')===0){ S.client[k.slice(2)]=v; if(k==='c:dob') S.client.date=v; } else if(k.indexOf('i:')===0){ S.intake[k.slice(2)]=v; }
+    if(k!=='mmn') autosave(); renderPresent(); }; }); }
+/* "Show them": the shared screen gets Client View; a floating button brings the agent straight back. */
+function presentShow(where){ S.present=S.present||{}; S.present.returning=true; setView('client'); buildPrintout();
+  var b=$('presentBack'); if(b) b.style.display='block';
+  setTimeout(function(){ var el=where==='cmp'?document.querySelector('#printout .po-cmp'):where==='ev'?document.querySelector('#printout .po-evpage'):document.querySelector('#printout .po-head');
+    if(el){ var r=el.getBoundingClientRect(); document.scrollingElement.scrollTop+=r.top-20; } },60); }
+function presentBack(){ var b=$('presentBack'); if(b) b.style.display='none'; if(S.present) S.present.returning=false; setView('agent'); goStep('present'); }
 function goStep(s){
   S.step=s;
   document.querySelectorAll('.step').forEach(function(el){el.classList.toggle('on',el.id==='step-'+s);});
@@ -4102,6 +4277,7 @@ function goStep(s){
   var cs=$('clientStrip'); if(cs) cs.style.display=(s==='intake')?'none':'';
   if(s==='intake') fillIntake();
   if(s==='enroll') renderEnroll();
+  if(s==='present') renderPresent();
   if(s==='quote'){ syncRateBasis(); acaSync(); autoPriceTiers(); fill(); compute(); }
   autosave(); window.scrollTo(0,0);
 }
@@ -4564,9 +4740,11 @@ function renderBuilder(){
       :(ak==='cur'?'Anchor is the current plan, but there is no current premium — add it under Current Insurance.':(ak==='aca'?'Anchor is the ACA bronze, but it has no premium yet — add the state and ages on the Intake.':'No anchor — the packages are only compared with each other.')))
     +' <a href="#" class="jump" data-jumpto="in_anchor">change</a></div>';
   var LINEUPS=[['mh','Manhattan only'],['lx-mh-cg','LifeX · Manhattan · Cigna'],['custom','Custom — you choose each']];
+  var presentBtn='<button type="button" data-act="present" style="margin-left:auto;font:inherit;font-size:14px;font-weight:800;border-radius:999px;padding:9px 18px;cursor:pointer;border:none;background:#2f7d4a;color:#fff">▶ Present'+(chosenTier()?' '+TIER_NAME[chosenTier()]:' a plan')+'</button>';
   var lineupBar='<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 12px"><span style="font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--muted);text-transform:uppercase">Lineup</span>'
     +'<button type="button" data-act="reload" title="Put all three packages back to POP Pro’s recommendation" style="font:inherit;font-size:13px;font-weight:700;border-radius:999px;padding:7px 14px;cursor:pointer;border:1.5px solid var(--gold);background:#fffdf7;color:#8a6a1f;margin-right:6px">↺ Reload our recommendation</button>'
     +LINEUPS.map(function(L){ var on=(S.lineup||'mh')===L[0]; return '<button type="button" data-lineup="'+L[0]+'" style="font:inherit;font-size:13px;font-weight:600;border-radius:999px;padding:7px 14px;cursor:pointer;border:1px solid '+(on?'var(--navy)':'#d6cdb4')+';background:'+(on?'var(--navy)':'#fff')+';color:'+(on?'#fff':'var(--ink)')+'">'+L[1]+'</button>'; }).join('')+'</div>';
+  lineupBar=lineupBar.replace(/<\/div>$/,presentBtn+'</div>');
   var html=lineupBar+anchorStrip+'<div class="bh"><h3>Package builder</h3><small>'+st+' · age '+age+' · '+({i:'Individual',s:'Individual + Spouse',c:'Individual + Children',f:'Family'}[householdKey()])+' · prices from the ManhattanLife rate tables</small></div><div class="pb3">';
   tiers.forEach(function(T){
     var t=T[0], c=effCfg(t), pk=S.packages[t]||{products:[]}, dropped=pk.dropped||[];
@@ -4674,6 +4852,7 @@ function renderBuilder(){
       if(sel.value==='lifex') c.lifexPlan='$500 PPO'; if(sel.value==='triad'){ c.triadPlan=c.triadPlan||'3500'; c.his=c.his||{amb:1,outp:0}; c.his.ben=cignaHIS(c.triadPlan); }
       PB_OPEN[t+'|base']=sel.value!=='afc'; pbReprice(); }; });
   host.querySelectorAll('[data-act="hsa"]').forEach(function(cb){ cb.onchange=function(){ S.intake.hasHSA=cb.checked; renderBuilder(); autosave(); }; });
+  var pb=host.querySelector('[data-act="present"]'); if(pb) pb.onclick=function(){ presentOpen(); };
   var rl=host.querySelector('[data-act="reload"]'); if(rl) rl.onclick=function(){ ['good','better','best'].forEach(pbResetTier); pbReprice(); };
   host.querySelectorAll('[data-act="reset1"]').forEach(function(b){ b.onclick=function(){ pbResetTier(b.closest('.pbcol').dataset.t); pbReprice(); }; });
   host.querySelectorAll('[data-lineup]').forEach(function(b){ b.onclick=function(){ pbApplyLineup(b.dataset.lineup); }; });
