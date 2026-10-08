@@ -52,6 +52,11 @@ const TEST = `(async function(){
   var steps=presentApplyPlan('best').map(function(s){ return s.car.split(' ')[0]; });
   ok(steps[0]==='Americo','life first: '+steps.join(' > '));
   ok(steps.indexOf('ManhattanLife')>0,'ManhattanLife after life: '+steps.join(' > '));
+  /* the life step names the carrier that was actually priced, even when the builder fell back from another */
+  effCfg('best').lb.p.carrier='moo'; autoPriceTiers(); compute(); await wait(100);
+  presentApplyPlan('best').filter(function(s){ return /Term/.test(s.car); }).forEach(function(s){ s.items.forEach(function(p){ var m=String(p.name).match(/\\((Americo|Mutual)/);
+    ok(!m||s.car.indexOf(m[1])===0,'life step '+s.car+' matches the priced policy '+p.name); }); });
+  chooseTier('best');
   /* maiden name: in memory only */
   S.present.sec=PRESENT_SCRIPT.length-1; renderPresent(); await wait(30);
   var mm=document.querySelector('[data-prf="mmn"]'); ok(!!mm,'maiden-name box on Apply');

@@ -4212,7 +4212,8 @@ function presentFill(x,T){ return esc(x).replace(/\{\{\s*([\w.]+)\s*\}\}/g,funct
    can decline), then ManhattanLife (one app), then a major-medical base, then a separate dental. */
 function presentApplyPlan(t){ var pk=S.packages[t]||{}, c=effCfg(t), prods=(pk.products||[]).filter(function(p){ return (+p.monthly||0)>0; }), steps=[];
   var lb=prods.filter(function(p){ return p.k==='lbp'||p.k==='lbs'; });
-  if(lb.length){ var lcar=function(p){ return ((c.lb||{})[p.k.slice(2)]||{}).carrier==='americo'?'americo':'mutual'; },
+  if(lb.length){ var lcar=function(p){ var nm=String(p.name||''); if(/americo/i.test(nm)) return 'americo'; if(/mutual|omaha/i.test(nm)) return 'mutual';   // the policy actually priced
+        return ((c.lb||{})[p.k.slice(2)]||{}).carrier==='americo'?'americo':'mutual'; },
       am=lb.filter(function(p){ return lcar(p)==='americo'; }), mo=lb.filter(function(p){ return lcar(p)==='mutual'; });
     if(am.length) steps.push({car:'Americo — Term 125 with living benefits',url:AMERICO_URL,why:'Life first: it has the health questions and can decline, so do it before anything else.',items:am});
     if(mo.length) steps.push({car:'Mutual of Omaha — Term Life Express',url:MUTUAL_URL,why:'Life first: it has the health questions and can decline.',items:mo}); }
