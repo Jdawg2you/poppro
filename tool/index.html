@@ -4430,7 +4430,7 @@ function presentTokens(t){ var c=effCfg(t), pk=S.packages[t]||{products:[]}, I=S
     var sv=anchorSavings(B,pkgPremMo(t),tot.mo+tierTrue(t).extra); T['savings.monthly']=fmt2(sv.actual); T['savings.yearly']=fmt2(sv.tru*12); }
   [0,1].forEach(function(i){ var sc=(S.ev||[])[i]; if(!sc) return; var bill=evScnBill(sc).total; if(!(bill>0)) return;
     var r=evEvent(sc,Object.assign({},evTierPack(t),{negotPct:negApplies(i,bill)?S.negot.pct:0})), n='event'+(i+1);
-    T[n+'.desc']=(sc.desc||'this').toLowerCase(); T[n+'.bill']=fmt2(bill); T[n+'.result']=r.net<=0?'you receive '+fmt2(-r.net):'you pay '+fmt2(r.net); });
+    T[n+'.desc']=(sc.desc||'this').toLowerCase(); T[n+'.bill']=fmt2(bill); T[n+'.result']=r.net<=0?'you NET '+fmt2(-r.net):'you pay '+fmt2(r.net); });
   var meds=(I.medList||[]).map(function(m){ return m&&m.name; }).filter(Boolean); T['meds.count']=String(meds.length); if(meds.length) T['meds.list']=meds.join(', ');
   var docs=[I.docs1,I.docs2,I.docs3].filter(Boolean); if(docs.length) T['doctors.list']=docs.join(', ');
   if(I.effDate) T['start.date']=I.effDate;
@@ -5279,8 +5279,8 @@ function evTableHTML(i,opt){ var O=opt||{}, tiers=O.tiers?EV_TIERS.filter(functi
       return '<div class="c evit">'+(its.join('')||'<div class="why">No benefit applies to this event.</div>')+(x.o.afc&&(+sc.days||0)>0?'<div class="why surg">Surgery benefits (paid on the policy fee schedule) are extra and not counted here.</div>':'')+'</div>'; }).join('');
   if(negA(bill)) h+='<div class="c l">Bill after Medical Bill Saver <small>'+S.negot.pct+'% average reduction</small></div>'+(A?'<div class="c anc">—<small>network price already</small></div>':'')
     +res.map(function(x){ return '<div class="c">'+(x.r.negotiated!=null?fmt2(x.r.negotiated):'—<small>major medical</small>')+'</div>'; }).join('');
-  h+='<div class="c l">You pay <small>(or receive)</small></div>'+(A?'<div class="c anc big">'+fmt2(aOwe)+(A.note?'<small>'+A.note+'</small>':(A.how&&aOwe>=A.oop?'<small>'+A.how+'</small>':''))+'</div>':'')
-    +res.map(function(x){ var n=x.r.net; return '<div class="c big '+(n<=0?'up':'dn')+'">'+(x.o.unknown&&!x.r.pays?'<small>'+x.o.unknown+'</small>':(n<=0?'You receive '+fmt2(-n):'You pay '+fmt2(n)))+'</div>'; }).join('');
+  h+='<div class="c l">You pay <small>(or net)</small></div>'+(A?'<div class="c anc big">'+fmt2(aOwe)+(A.note?'<small>'+A.note+'</small>':(A.how&&aOwe>=A.oop?'<small>'+A.how+'</small>':''))+'</div>':'')
+    +res.map(function(x){ var n=x.r.net; return '<div class="c big '+(n<=0?'up':'dn')+'">'+(x.o.unknown&&!x.r.pays?'<small>'+x.o.unknown+'</small>':(n<=0?'You NET '+fmt2(-n):'You pay '+fmt2(n)))+'</div>'; }).join('');
   if(A&&B){ h+='<div class="c l">This year <small>premium savings + this event</small></div><div class="c anc">—</div>'
     +res.map(function(x){ var sv=anchorSavings(B,pkgPremMo(x.T[0]))||{actual:0}, v=sv.actual*12+(aOwe-x.r.net); return '<div class="c '+(v>=0?'up':'dn')+'">'+(v>=0?'Ahead ':'Behind ')+fmt(Math.abs(v))+'</div>'; }).join(''); }
   h+='</div>';
