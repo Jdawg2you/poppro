@@ -49,6 +49,8 @@ const TEST = `(async function(){
   var bx=document.createElement('div'); bx.innerHTML='<p>Discounts up to 80%</p>'; picWords(bx); ok(bx.querySelectorAll('span').length===4&&bx.textContent.replace(/ /g,'')==='Discountsupto80%','picture words each get their own box (Safari spacing fix)');
   ok(AFC_PARTNERS.every(function(p){ return AFC_PARTNER_EMAIL[p.name]; })&&(afcInPk(S.packages.best)?/partner benefits built in/.test(enrollEmail().body):true),'enrollment email carries a line for each of the six partners');
   var kb=S.cfg&&S.cfg.good?S.cfg.good.base:undefined; ok(!tierNonMh('best')&&NONMH.lifex&&NONMH.triad&&!!document.getElementById('enSaveBar'),'Manhattan plans present normally; LifeX/Cigna have a notice; Enroll carries the Save Quote reminder');
+  var lbB=lbSummary('best'); ok(!lbB.length||(/includes living benefits/.test(buildEmail().body)||/can include living benefits/.test(buildEmail().body)),'quote email mentions living benefits when the plan carries them');
+  ok(!lbB.length||lbB.every(function(x){ return enrollEmail().body.indexOf(x.who+' — ')>0; }),'enrollment email lists each person’s living-benefit coverage');
   ok(!!document.getElementById('sqDate')&&!!document.getElementById('sqTime')&&!!document.getElementById('sqPdf')&&document.querySelectorAll('#sendQuote .sqstep').length===3,'Send the quote has its three steps');
   ok(!document.querySelector('#printout .brlist')&&document.getElementById('brochBox').classList.contains('hidein-client'),'the brochure box stays off the printout and Client View');
   buildPrintout(); ok(!document.querySelector('#printout [data-copypic]')&&!/Copy (plans|example|picture)/.test(document.getElementById('printout').textContent),'no copy button inside the printout / emailed quote');
