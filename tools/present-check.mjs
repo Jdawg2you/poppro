@@ -33,6 +33,9 @@ const TEST = `(async function(){
   var fr; for(var i=0;i<60;i++){ await wait(100); fr=document.getElementById('prFrame'); if(fr&&fr.contentDocument&&fr.contentDocument.querySelector('var.pp-ok')) break; }
   var pblob2=null; goStep('quote'); await wait(200); ok(!!document.querySelector('.bh [data-copypic="plans"]'),'Copy plans button on the Package builder');
   pblob2=await picOf('plans'); ok(pblob2&&pblob2.type==='image/png'&&pblob2.size>50000&&getComputedStyle(document.getElementById('printout')).display==='none','the three plans render to a PNG and the page is left as it was');
+  var eb=document.querySelector('.evtab .evcorner [data-copypic="ev0"]'); ok(!!eb,'Copy example button sits in the corner of the Quote example table');
+  var ebl=await picOf('ev0'); ok(ebl&&ebl.type==='image/png'&&ebl.size>50000,'the Quote example renders to a PNG');
+  var etmp=document.createElement('div'); etmp.innerHTML=evTableHTML(0,{open:true,pic:true}); var en=etmp.querySelector('.evcorner .evname'); ok(en&&!etmp.querySelector('.evcorner button')&&en.textContent===(S.ev[0].desc||S.ev[0].label||en.textContent),'in the picture the corner names the example instead of the button');
   presentOpen(); for(var ii=0;ii<60;ii++){ await wait(100); fr=document.getElementById('prFrame'); if(fr&&fr.contentDocument&&fr.contentDocument.querySelector('var.pp-ok')) break; }
   ok(S.step==='present','Present step opens');
   var g8=document.querySelector('#clientStrip .grid8'); ok(getComputedStyle(g8).display==='none'&&/Pat/.test(document.getElementById('csSum').textContent),'client strip folds to one line on Present');
@@ -117,6 +120,7 @@ const TEST = `(async function(){
   S.intake.docs1='Dr. Ramirez (primary care)'; presentWire(d,'best');
   ok(drLine2().indexOf('found Dr Ramirez — they’re in the network')>=0&&drLine2().indexOf('Dr Dr')<0,'one doctor: '+drLine2().slice(0,90));
   S.intake.docs1=keepDocs; presentWire(d,'best');
+  ok(!/My stab at it/.test(d.body.textContent)&&/Let me do a real one/.test(d.body.textContent),'the 5.2 preface is gone, the example words stay');
   /* catastrophic: the quote page's own event card, anchor vs the chosen package, Bill Saver on, layers open */
   S.negot.on=false; presentGo(presentPageIx('Catastrophic — walk it as layers')); await wait(60);
   var mc=d.querySelector('[data-mount="conditions"]'), tab=mc&&mc.querySelector('.evtab');
