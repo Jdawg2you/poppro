@@ -70,7 +70,9 @@ const TEST = `(async function(){
   presentGo(presentPageIx('Networks & providers')); await wait(30);
   var drLine=Array.prototype.filter.call(d.querySelectorAll('.say'),function(x){ return /already found Dr/.test(x.innerText); })[0];
   ok(drLine&&!/ on /.test(drLine.innerText.split('—')[0].replace(/^.*already found Dr/,''))&&!/street/i.test(drLine.innerText),'doctor line has no street: '+(drLine&&drLine.innerText.slice(0,90)));
-  var sit=d.querySelector('var[data-k="client.situation"]'); ok(sit&&!sit.classList.contains('pp-miss')&&!sit.classList.contains('pp-ok')&&fr.contentWindow.getComputedStyle(sit).backgroundColor.indexOf('253, 232')<0,'their situation reads as plain words, not a blank');
+  ok(!d.querySelector('var[data-k="client.situation"]')&&d.body.textContent.indexOf('small business owners / 1099')>=0,'their situation is plain script words, no blank');
+  ok(!!d.querySelector('[data-screen="lb-price"]'),'lb-price marker is a real element');
+  ok(!Array.prototype.some.call(d.body.children,function(e){ return /^\s*↳/.test(e.textContent)&&fr.contentWindow.getComputedStyle(e).display!=='none'; }),'the ↳ explanation lines are hidden');
   ok(/Kyle.s daughter/.test(document.getElementById('prStories').innerText),'prose mentioning Kyle is untouched');
   /* every screen shows only its own blocks (a forcing style once leaked the closes onto every screen) */
   var leaks=[]; for(var pi=0;pi<presentNav().length;pi++){ var ix=presentNav()[pi]; presentGo(ix); await wait(10);

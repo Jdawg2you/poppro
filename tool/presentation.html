@@ -59,7 +59,7 @@ ul,ol{margin:0 0 11px;padding-left:22px}li{margin-bottom:6px}
 </style></head><body>
 
 <h1>Presentation Call &mdash; the script</h1>
-<p class="sub0">Kyle's script as the spine, with your 8 October decisions applied. Read it top to bottom on a live call. Elite tier shown; figures in blue fill automatically from the plan you selected. v1 of the actual script, 8 October 2026.</p>
+<p class="sub0">Kyle Course's HealthFirst presentation script as the spine, kept verbatim, with Big Mike's additions and Jesse's decisions applied over seven rounds of notes on 8 October 2026. Thirteen sections, about 7&ndash;10 minutes of talking. Source tags show whose words each block is; figures verified against AFC7010-FLBR_1125 page 4 (Florida, Elite). This folder is the source of truth &mdash; POP Pro renders a copy and hides this line, the source tags and the working flags. Held to an 18-gate ledger; run the four checkers after any edit.</p>
 
 <p class="legend"><var>Blue</var> = filled automatically from the selected plan or the client's intake &mdash; you never type or remember these.
 <span class="pinmark">1.2</span> = still waiting on your answer; the line is my best guess until you settle it.<br>
@@ -98,9 +98,11 @@ Source tags show where each piece came from: <span class="who wK">KYLE</span> hi
 
 <h2><span class="n">2</span>Set the stage</h2>
 
-<div class="say">To review, I specialize in helping small business owners <var data-k="client.situation">(and &lt;their situation&gt;)</var> find affordable private health coverage. Marketplace plans are good for families who qualify for big subsidies &mdash; but they must include 10 government-mandated Essential Health Benefits, even ones you may never use. If you&rsquo;re not pregnant, why pay for maternity coverage? Our private PPO options let you pay for what you need and skip what you don&rsquo;t. Make sense?<span class="who wK">KYLE</span><span class="pinmark">2.3</span></div>
+<div class="say">To review, I specialize in helping small business owners / 1099 employees / (insert their situation) find affordable private health coverage. Marketplace plans are good for families who qualify for big subsidies &mdash; but they must include 10 government-mandated Essential Health Benefits, even ones you may never use. If you&rsquo;re not pregnant, why pay for maternity coverage? Our private PPO options let you pay for what you need and skip what you don&rsquo;t. Make sense?<span class="who wK">KYLE</span><span class="pinmark">2.3</span></div>
 
-<div class="aside">The bracket after &ldquo;small business owners&rdquo; fills from their profile &mdash; their trade, their business type, or why they are looking. Short, two or three words: <i>&ldquo;(and contractors like yourself)&rdquo;</i>, <i>&ldquo;(and folks between jobs)&rdquo;</i>, <i>&ldquo;(and anyone paying full price on the marketplace)&rdquo;</i>, <i>&ldquo;(and self-employed tradespeople)&rdquo;</i>. Kyle&rsquo;s sentence carries on unchanged after it.<span class="pinmark">2.3</span></div>
+<div class="aside">Those three are <b>options you pick from while speaking</b>, not a blank the tool fills &mdash; say whichever fits and move on. &ldquo;(insert their situation)&rdquo; is your prompt to use their own trade or reason in your own words. Nothing here is highlighted, because nothing here gets filled in for you.<span class="who wJ">JESSE</span><span class="pinmark">2.3</span></div>
+
+<div class="flag"><b>One word in that line is worth a second look.</b> Kyle wrote &ldquo;1099 <i>professionals</i>&rdquo;; you have asked for &ldquo;1099 <i>employees</i>&rdquo;. A 1099 contractor is specifically <b>not</b> an employee &mdash; that is the whole distinction from a W-2 &mdash; so a self-employed client who files their own Schedule C may hear it as someone who does not understand their situation. Kyle&rsquo;s word avoids that. I have used yours because you asked for it; say the word and it goes back to &ldquo;professionals&rdquo;, or &ldquo;1099 contractors&rdquo; if you want plainer.<span class="pinmark">2.3</span></div>
 
 <h2 data-screen="reason"><span class="n">3</span>Their reason, in their words</h2>
 
@@ -284,7 +286,7 @@ Now compare that to where you are today. On a <var data-k="anchor.deductible">$1
 
 <div class="tip">If they hesitate, this is the one that moves people: &ldquo;Think about it this way &mdash; if you had a cardiac event tomorrow and the doctor told you six months of rehab, no work, who&rsquo;s paying the mortgage? Health insurance handles the hospital. This handles the six months.&rdquo; It converts &ldquo;I don&rsquo;t need life insurance&rdquo; into &ldquo;I don&rsquo;t have six months of income.&rdquo;<span class="who wM">MIKE</span><span class="pinmark">S1</span></div>
 
-<div class="do"><span class="lab">NOT SPOKEN</span data-screen="lb-price">Price it here, then do the arithmetic out loud. The numbers are already computed &mdash; don&rsquo;t do mental maths on a live call.<span class="who wM">MIKE</span></div>
+<div class="do" data-screen="lb-price"><span class="lab">NOT SPOKEN</span>Price it here, then do the arithmetic out loud. The numbers are already computed &mdash; don&rsquo;t do mental maths on a live call.<span class="who wM">MIKE</span></div>
 
 <div style="border:2px solid #1d4e79;border-radius:6px;padding:13px 16px;margin:11px 0;background:#f7faff">
 <p style="margin:0 0 9px;font-weight:700;color:#1d4e79;font-size:11px;letter-spacing:1px">LIVING BENEFITS &mdash; QUOTE IT WITHOUT LEAVING THE SCRIPT<span class="who wJ">JESSE</span><span class="pinmark">7.2</span></p>
@@ -414,11 +416,11 @@ I&rsquo;ve kept a slot open about a week out in case you want to go over anythin
 
 <h2><span class="n">13</span>Fields POP Pro cannot fill yet<span class="pinmark">6.4</span></h2>
 
-<p>Everything else in this script fills from data that already exists. <b>Two</b> still do not, so they show red in the sandbox until you decide &mdash; each has a cheap option and a free one. The third is settled.</p>
+<p>Everything else in this script fills from data that already exists. <b>One</b> still does not, so they show red in the sandbox until you decide &mdash; it has a cheap option and a free one. The other two are settled.</p>
 
 <table>
 <tr><th>Key</th><th>Where it is spoken</th><th>Your options</th></tr>
-<tr><td><code>client.situation</code></td><td>Section 2 &mdash; the bracket after &ldquo;small business owners&rdquo;</td><td><b>Capture it:</b> one short free-text field on intake, two or three words. <b>Or drop it:</b> Kyle&rsquo;s sentence reads fine without the bracket, you just lose the personalisation you asked for.</td></tr>
+<tr style="background:#f3f8f4"><td><code>client.situation</code> <span style="font-size:11px;color:#2f5f42;font-weight:700">SETTLED &mdash; NO FIELD NEEDED</span></td><td>Section 2</td><td><b>Gone.</b> It is no longer a blank. The line now offers three spoken options &mdash; small business owners / 1099 employees / (insert their situation) &mdash; which the agent chooses between while talking. Your call, 8 Oct: it must not read like something the system fills.</td></tr>
 <tr><td><code>doctor.street</code></td><td>Section 5 &mdash; &ldquo;Dr &lt;name&gt; on &lt;street&gt;&rdquo;</td><td><b>Capture it:</b> you already have it on screen in the First Health locator when you take the screenshot, so it is a copy-paste. <b>Or drop it:</b> but the street is the whole point of Mike&rsquo;s move &mdash; clients know their doctor&rsquo;s name and not the address, which is why saying it lands.</td></tr>
 <tr style="background:#f3f8f4"><td><code>drug.now</code> <span style="font-size:11px;color:#2f5f42;font-weight:700">SETTLED</span></td><td>Section 7 &mdash; &ldquo;runs about $&lt;now&gt; at the pharmacy&rdquo;</td><td><b>Done, no new field.</b> Was <code>drug.cash</code>, which needed a retail price nobody holds. Renamed <code>drug.now</code> &mdash; &ldquo;what they pay for it today&rdquo; &mdash; and filled from the medication's current copay, which POP Pro already has. True whether they have a copay or pay cash, which the old name was not.</td></tr>
 </table>
