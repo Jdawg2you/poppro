@@ -159,6 +159,8 @@ const TEST = `(async function(){
   presentShow('ev'); await wait(120);
   ok(document.body.classList.contains('client')&&getComputedStyle(document.getElementById('step-present')).display==='none','Show them: Client View, script hidden');
   ok(!/Presentation Call|pp-ok/.test(document.getElementById('printout').innerHTML),'no script in the printout');
+  var pt=document.getElementById('printout').innerText;
+  ok(!/\b(GOOD|BETTER|BEST)\b/.test(pt)&&/ESSENTIAL|Essential/.test(pt),'Client View says Essential / Complete / Comprehensive, never Good / Better / Best');
   presentBack(); await wait(600); ok(S.step==='present'&&S.present.pg===nav[nav.length-1],'Back returns to the same screen');
   /* Send the quote lives at the bottom of Quote */
   document.querySelector('#prNav [data-go="quote"]').click(); await wait(100);

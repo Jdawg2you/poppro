@@ -3705,7 +3705,8 @@ function poGlanceHTML(tiers,labels,B){
 function buildPrintout(){
   read();
   var a=S.aca, agency=S.agency||'HealthFirst', c=S.client;
-  var labels={good:['GOOD',S.tabLabels.good],better:['BETTER',S.tabLabels.better],best:['BEST',S.tabLabels.best]};
+  /* the client reads Essential / Complete / Comprehensive; Good / Better / Best stays on the agent's screens (Jesse, 2026-10-09) */
+  var labels={good:[TIER_NAME.good.toUpperCase(),S.tabLabels.good],better:[TIER_NAME.better.toUpperCase(),S.tabLabels.better],best:[TIER_NAME.best.toUpperCase(),S.tabLabels.best]};
   var inc=S.include||{}; var tiers=['good','better','best'].map(function(t){var x=tierTotals(t);x.t=t;return x;}).filter(function(x){return x.mo>0 && inc[x.t]!==false;});
   var aca=acaTrue();
   var netPrem=acaNetPrem();
