@@ -32,7 +32,7 @@ const TEST = `(async function(){
   S=blankState(); applySuiteClient({first:'P',last:'Q',state:'TX',age:'34',dob:'01/01/1992',kids:[],health:{}}); ['good','better','best'].forEach(function(t){ S.include[t]=true; }); autoPriceTiers(); compute();
   var c=effCfg('best'); c.lb=c.lb||{}; c.lb.p={face:'75000',carrier:'other',otherName:'Corebridge QoL Flex',otherMonthly:'41.50'}; S.packages.best.dropped=(S.packages.best.dropped||[]).filter(function(x){ return x!=='lbp'; }); pbReprice();
   var pr=S.packages.best.products.filter(function(p){ return p.k==='lbp'; })[0];
-  ok(pr&&pr.monthly===41.5&&/\$75K \(Corebridge QoL Flex\)/.test(pr.name),'Other carrier priced as typed: '+(pr&&pr.name));
+  ok(pr&&pr.monthly===41.5&&pr.name.indexOf('$75K (Corebridge QoL Flex)')>=0,'Other carrier priced as typed: '+(pr&&pr.name));
   ok(!same('best'),'Other carrier: '+same('best'));
   c.lb.p.otherMonthly=''; pbReprice(); ok(!S.packages.best.products.some(function(p){ return p.k==='lbp'&&+p.monthly>0; }),'no premium typed yet: nothing invented');
   return {n:4, fails:fails};
