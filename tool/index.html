@@ -4151,28 +4151,10 @@ function renderEstimate(){
    PRESENT_SCRIPT below is a PLACEHOLDER until Jesse's presentation script is done.
    =================================================================================== */
 var PRESENT_SCRIPT=[
- {id:'recap',title:'Recap',lines:[
-  {t:'note',x:'PLACEHOLDER — Jesse’s presentation script replaces this. The blanks show how it fills in.'},
-  {t:'say',x:'{{client.first}}, last time you told me you were looking because {{client.why}}.'},
-  {t:'ask',x:'Is that still the main thing for you?'},
-  {t:'say',x:'You’re in {{client.state}}, and today you’re {{anchor.today}}.'}]},
- {id:'plan',title:'Their plan',lines:[
-  {t:'say',x:'The plan I’d put you on is our {{plan.name}} package — {{plan.products}}.'},
-  {t:'say',x:'It’s {{plan.monthly}} a month.',when:''},
-  {t:'say',x:'It includes life insurance with living benefits — {{product.lb.summary}}.',when:'has:lb'},
-  {t:'say',x:'Your hospital indemnity pays {{product.his.summary}}.',when:'has:his'},
-  {t:'do',x:'Open the benefits on the right if they ask what a piece covers.'}]},
- {id:'pays',title:'What it pays',lines:[
-  {t:'say',x:'Here’s what happens with {{event1.desc}}: the bill is {{event1.bill}}, and on this plan {{event1.result}}.'},
-  {t:'say',x:'On {{event2.desc}} ({{event2.bill}}), {{event2.result}}.'},
-  {t:'do',x:'Use “Show them the examples” to put this on the shared screen.'}]},
- {id:'price',title:'Price & savings',lines:[
-  {t:'say',x:'Against {{anchor.name}}, that’s {{savings.monthly}} a month on premium, and {{savings.yearly}} a year on true cost.'},
-  {t:'say',x:'Your POP Score on this plan is {{plan.pop}} out of 100.'}]},
- {id:'close',title:'Close',lines:[
-  {t:'ask',x:'Does this look like the right fit for you, {{client.first}}?'},
-  {t:'do',x:'Yes → go to Apply. Not yet → use the quick answers on the right.'}],
-  branches:[['They’re in — apply','apply'],['They have a question','close']]},
+ /* The real script (Health ZONE thread, 2026-10-08): tool/presentation.html, shown as-is so Kyle's sentences stay
+    word-for-word (its own gates check that). Its blue blanks still show example values until each <var> carries a
+    field name; presentFillFrame() fills every named one from presentTokens(). */
+ {id:'script',title:'The script',frame:'presentation.html'},
  {id:'apply',title:'Apply',apply:true}
 ];
 /* Placeholder quick answers - Jesse's script supplies the real ones. */
@@ -4236,7 +4218,7 @@ function presentFields(){ var C=S.client||{}, I=S.intake||{}, ft=function(v){ va
 function renderPresent(){ var host=$('presentHost'); if(!host) return; var t=presentTier(), T=presentTokens(t);
   S.present=S.present||{}; var cur=Math.max(0,Math.min(PRESENT_SCRIPT.length-1,+S.present.sec||0)), sec=PRESENT_SCRIPT[cur];
   var h='<div class="pr-top"><div><h3>Presenting '+esc(TIER_NAME[t])+' to '+esc(T['client.first']||'the client')+'</h3><small>Agent-only — this never appears on Client View or the printout. '
-    +'Script: <b>placeholder</b> until the presentation script is done.</small></div>'
+    +'Script: Health ZONE’s presentation script — its blanks still show example values until they are named and wired.</small></div>'
     +'<button type="button" data-pr="quote" style="font:inherit;font-weight:700;border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 13px;cursor:pointer">← Back to the Quote</button></div>';
   h+='<div class="pr-prog">'+PRESENT_SCRIPT.map(function(x,i){ return '<button type="button" data-prsec="'+i+'" class="'+(i===cur?'on':(i<cur?'done':''))+'">'+(i+1)+'. '+esc(x.title)+'</button>'; }).join('')+'</div>';
   h+='<div class="pr-grid"><div>';
@@ -4246,6 +4228,8 @@ function renderPresent(){ var host=$('presentHost'); if(!host) return; var t=pre
         return '<div class="pr-f'+(miss?' miss':'')+'"><span>'+esc(f[0])+'</span>'+(miss&&f[2]?'<input data-prf="'+f[2]+'" placeholder="add it"'+(f[2]==='mmn'?' autocomplete="off"':'')+'>':'<b>'+(v?esc(v):'—')+(v?'<button type="button" class="cp" data-copy="'+esc(v).replace(/"/g,'&quot;')+'">copy</button>':'')+'</b>')+'</div>'; }).join('')+'</div>'
       +'<p style="font-size:12px;color:var(--muted);margin:10px 0 0">Mother’s maiden name is held only while this page is open — never saved, printed or sent anywhere. SSN and bank details never go in POP Pro: enter them directly on the carrier’s application.</p></div>';
     h+='<div class="pr-nav"><button type="button" data-prnav="-1">← Back</button><button type="button" class="go" data-pr="enroll">Notes & follow-ups (Enroll) →</button></div>'; }
+  else if(sec.frame){ h+='<iframe id="prFrame" src="'+sec.frame+'" title="Presentation script" style="width:100%;min-height:75vh;border:1px solid var(--line);border-radius:12px;background:#fff"></iframe>';
+    h+='<div class="pr-nav"><button type="button" data-prnav="-1"'+(cur?'':' disabled')+'>← Back</button><button type="button" class="go" data-prnav="1">Apply →</button></div>'; }
   else { h+='<div class="pr-card"><div class="sec">'+esc(sec.title)+'</div>'+(sec.lines||[]).filter(function(l){ return presentHas(t,l.when); }).map(function(l){ return '<div class="pr-line"><span class="pr-tag '+l.t+'">'+l.t+'</span><div class="'+(l.t==='do'?'do':'')+'">'+presentFill(l.x,T)+'</div></div>'; }).join('')
       +(sec.branches?'<div class="pr-branch">'+sec.branches.map(function(b){ return '<button type="button" data-prgo="'+b[1]+'">'+esc(b[0])+'</button>'; }).join('')+'</div>':'')+'</div>';
     h+='<div class="pr-nav"><button type="button" data-prnav="-1"'+(cur?'':' disabled')+'>← Back</button><button type="button" class="go" data-prnav="1">Next →</button></div>'; }
@@ -4255,6 +4239,7 @@ function renderPresent(){ var host=$('presentHost'); if(!host) return; var t=pre
     +'<div class="box pr-qa"><b>Quick answers</b>'+PRESENT_QA.map(function(q){ return '<details><summary>'+esc(q[0])+'</summary><p>'+esc(q[1])+'</p></details>'; }).join('')+'</div>'
     +'</div></div>';
   host.innerHTML=h;
+  var fr=$('prFrame'); if(fr) fr.onload=function(){ try{ presentFillFrame(fr.contentDocument,T); fr.style.height=(fr.contentDocument.documentElement.scrollHeight+20)+'px'; }catch(e){} };
   var go=function(i){ S.present.sec=Math.max(0,Math.min(PRESENT_SCRIPT.length-1,i)); autosave(); renderPresent(); window.scrollTo(0,0); };
   host.querySelectorAll('[data-prsec]').forEach(function(b){ b.onclick=function(){ go(+b.dataset.prsec); }; });
   host.querySelectorAll('[data-prnav]').forEach(function(b){ b.onclick=function(){ go(cur+(+b.dataset.prnav)); }; });
@@ -4267,6 +4252,13 @@ function renderPresent(){ var host=$('presentHost'); if(!host) return; var t=pre
   host.querySelectorAll('[data-prf]').forEach(function(inp){ inp.onchange=function(){ var k=inp.dataset.prf, v=inp.value.trim();
     if(k==='mmn'){ PRESENT_MMN=v; } else if(k.indexOf('c:')===0){ S.client[k.slice(2)]=v; if(k==='c:dob') S.client.date=v; } else if(k.indexOf('i:')===0){ S.intake[k.slice(2)]=v; }
     if(k!=='mmn') autosave(); renderPresent(); }; }); }
+/* Fill the script's blanks. A <var data-k="client.first"> gets that value; an unknown or empty name is marked
+   red so a gap shows before it is said out loud. A <var> with no data-k is left exactly as written. */
+function presentFillFrame(doc,T){ if(!doc) return 0; var n=0;
+  Array.prototype.forEach.call(doc.querySelectorAll('var[data-k]'),function(v){ var k=v.getAttribute('data-k'), val=T[k];
+    if(val!=null&&String(val).trim()!==''){ v.textContent=String(val); v.style.background='#fff7e0'; n++; }
+    else { v.style.background='#fde8e8'; v.style.color='#b42318'; v.title='missing: '+k; } });
+  return n; }
 /* "Show them": the shared screen gets Client View; a floating button brings the agent straight back. */
 function presentShow(where){ S.present=S.present||{}; S.present.returning=true; setView('client'); buildPrintout();
   var b=$('presentBack'); if(b) b.style.display='block';

@@ -31,22 +31,23 @@ const TEST = `(async function(){
   var pb=document.querySelector('[data-act="present"]'); ok(!!pb,'Present button on the Quote step');
   chooseTier('best'); pb=document.querySelector('[data-act="present"]'); pb.click(); await wait(300);
   ok(S.step==='present'&&getComputedStyle(document.getElementById('step-present')).display!=='none','Present step opens');
-  var missing=[], filled=0;
-  for(var i=0;i<PRESENT_SCRIPT.length-1;i++){ S.present.sec=i; renderPresent(); await wait(20);
-    var h=document.getElementById('presentHost');
-    h.querySelectorAll('.pr-miss').forEach(function(m){ missing.push(PRESENT_SCRIPT[i].id+':'+m.textContent); });
-    filled+=h.querySelectorAll('.pr-val').length; }
-  ok(!missing.length,'every blank fills: '+missing.join(', '));
-  ok(filled>=15,'blanks filled across the script ('+filled+')');
+  var filled=0;
+  S.present.sec=0; renderPresent(); var fr=document.getElementById('prFrame'); ok(!!fr,'the script frame is on the Present step');
+  for(var w=0;w<40&&!(fr.contentDocument&&/Presentation Call/.test(fr.contentDocument.body&&fr.contentDocument.body.innerText||''));w++) await wait(100);
+  ok(/Presentation Call/.test(fr.contentDocument.body.innerText),'Health ZONE script loaded inside Present');
+  /* the filler: a named blank fills, an unknown name shows red, an unnamed one is left exactly as written */
+  var d=document.implementation.createHTMLDocument('t'); d.body.innerHTML='<var data-k="client.first">X</var><var data-k="no.such">Y</var><var>$50</var>';
+  filled=presentFillFrame(d,presentTokens('best')); var vs=d.querySelectorAll('var');
+  ok(filled===1&&vs[0].textContent==='Pat'&&vs[1].title==='missing: no.such'&&vs[2].textContent==='$50','filler: named fills, unknown flagged, unnamed untouched');
   var T=presentTokens('best'); ok(T['plan.monthly']===fmt2(tierTotals('best').mo),'plan.monthly = package total ('+T['plan.monthly']+')');
   /* Show them -> Client View, Back -> same section */
-  S.present.sec=2; renderPresent(); presentShow('ev'); await wait(150);
+  S.present.sec=0; renderPresent(); presentShow('ev'); await wait(150);
   ok(document.body.classList.contains('client'),'Show them flips to Client View');
   ok(getComputedStyle(document.getElementById('step-present')).display==='none','script hidden on Client View');
   ok(getComputedStyle(document.getElementById('presentBack')).display!=='none','Back to the script button showing');
   ok(!/PLACEHOLDER|pr-line/.test(document.getElementById('printout').innerHTML),'no script text in the printout');
   presentBack(); await wait(100);
-  ok(!document.body.classList.contains('client')&&S.step==='present'&&S.present.sec===2,'Back returns to section 3 ('+S.step+' '+S.present.sec+')');
+  ok(!document.body.classList.contains('client')&&S.step==='present'&&S.present.sec===0,'Back returns to the script ('+S.step+' '+S.present.sec+')');
   ok(getComputedStyle(document.getElementById('presentBack')).display==='none','Back button hides again');
   /* Apply order */
   var steps=presentApplyPlan('best').map(function(s){ return s.car.split(' ')[0]; });
