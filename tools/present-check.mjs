@@ -121,9 +121,9 @@ const TEST = `(async function(){
   ok(!!mc.querySelector('.evtab .c.l .pp-exbtn'),'Copy example button in the table corner');
   var exb=await picOf('example'); ok(exb&&exb.type==='image/png'&&exb.size>50000,'the example renders to a PNG ('+(exb&&exb.size)+' bytes)');
   /* the spoken appendicitis example and the card say the same total */
-  var exSay=d.querySelector('var[data-k="example.total"]').closest('.say').textContent, cardPays=(mc.querySelector('.evtab').innerText.match(/\$[\d,]+\.\d\d/g)||[]);
-  var spoken=d.querySelector('var[data-k="example.total"]').textContent.replace(/[^\d]/g,'');
-  ok(cardPays.some(function(x){ return x.replace(/[^\d]/g,'')===spoken+'00'; })&&exSay.indexOf('ten thousand dollars')<0,'narrative total matches the card ('+spoken+')');
+  var exSay=d.querySelector('var[data-k="example.total"]').closest('.say').textContent, cardPays=(mc.querySelector('.evtab').innerText.match(/[$][0-9,]+[.][0-9][0-9]/g)||[]);
+  var spoken=d.querySelector('var[data-k="example.total"]').textContent.replace(/[^0-9]/g,'');
+  ok(!!spoken&&cardPays.some(function(x){ return x.replace(/[^0-9]/g,'')===spoken+'00'; })&&exSay.indexOf('ten thousand dollars')<0,'narrative total matches the card ('+spoken+')');
   ok(mc.querySelector('[data-pp="cond"]').value==='append'&&/Appendicitis/.test(mc.innerText),'catastrophic card opens on appendicitis - the story in the script');
   ok(tab&&/repeat\\(2,/.test(tab.getAttribute('style'))&&tab.querySelectorAll('.c.h.anc').length===1,'two columns: their anchor and the chosen package');
   ok(/Bill after Medical Bill Saver/.test(tab.innerText),'Bill Saver applied even with the quote-page switch off');

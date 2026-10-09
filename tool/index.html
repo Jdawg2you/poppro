@@ -4616,7 +4616,9 @@ function presentScriptTokens(t){ var T=presentTokens(t), C=S.client||{}, I=S.int
     var extra={}; (apR.parts||[]).forEach(function(pp){ if(/^Affordable Choice/.test(pp.lab)) return; var nm=String(pp.lab).split(' — ')[0]; extra[nm]=(extra[nm]||0)+(+pp.v||0); });
     var en=Object.keys(extra).filter(function(k){ return extra[k]>0; }).map(function(k){ return 'your '+k+' adds '+m0(extra[k]); });
     T['_exMore']=en.length?en.slice(0,-1).join(', ')+(en.length>1?' and ':'')+en[en.length-1]:''; T['_exGrand']=m0(apR.pays); }catch(e){}
-  var EA=evAnchor(); if(EA&&EA.ded){ T['anchor.deductible']=m0(EA.ded); T['_exDedWords']=m0(EA.ded); }
+  /* per-person deductible for the worked example: the ACA anchor's embedded figure, or the current plan's own deductible */
+  var EA=evAnchor(), exDed=EA&&EA.ded?EA.ded:(EA&&EA.lab==='Your current plan'&&+curIn().ded>0?+curIn().ded:0);
+  if(exDed){ T['anchor.deductible']=m0(exDed); T['_exDedWords']=m0(exDed); }
   T['anchor.aside_obj']=(presentHasCur()&&!(+curIn().emp>0))?'those':'that one';
   var planMo=tierTotals(t).mo-lbMo, ak=presentAnchor(), anc=ak==='aca'?(+S.aca.prem>0?acaNetPrem():null):ak==='cur'||ak==='employer'?(+Cu.prem>0?+Cu.prem:null):null;
   T['plan.monthly']=fmt2(planMo); T['lb.addback']=lbMo>0?fmt2(lbMo):''; T['new.total']=fmt2(planMo+lbMo);
