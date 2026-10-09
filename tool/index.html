@@ -2110,6 +2110,10 @@ function renderFollowUps(){
   });
 }
 function lbLabel(c){ return c==='other'?'Other carrier':(LB_RATES[c]?LB_RATES[c].label:c); }
+/* The classic package panel (and its Living Benefits box) is hidden in B - the builder prices living benefits as
+   lbp/lbs products. Its box still auto-prices in the background, so only take its figure when it is on screen;
+   otherwise a hidden ~$45 was being added to the package total on top of the builder's own living benefits. */
+function classicLbOn(){ var w=$('classicWrap'); return !!(w&&$('p_lb')&&$('p_lb').offsetParent); }
 function renderLB(applyPrice){
   var host=$('lbRows'); if(!host) return;
   // Never rebuild the rows while someone is typing in a manual price — it would kill focus mid-entry.
@@ -2164,14 +2168,14 @@ function renderLB(applyPrice){
       var v=parseFloat(inp.value);
       S.lb[k].manual=isNaN(v)?null:v;   // manual entry wins until a dropdown is touched
       var pk=S.packages[S.activeTab], t=lbCompute();
-      if(pk){ pk.lb=(t.total==null)?0:t.total; if($('p_lb')) $('p_lb').value=pk.lb||''; }
+      if(pk){ pk.lb=classicLbOn()?((t.total==null)?0:t.total):0; if($('p_lb')) $('p_lb').value=(t.total==null)?'':t.total; }
       var tot=host.querySelector('.lbtotal');
       if(tot) tot.innerHTML='Living Benefits total <b>'+(t.total==null?'—':'$'+t.total.toFixed(2)+'/mo')+'</b>';
       compute(); };
   });
   if(applyPrice){
     var pk=S.packages[S.activeTab];
-    if(pk){ pk.lb=(r.total==null)?0:r.total;
+    if(pk){ pk.lb=classicLbOn()?((r.total==null)?0:r.total):0;
       pk.lbCarrier=r.lines.map(function(l){return l.tag+': '+lbLabel(l.carrier);}).join(' | ');
       pk.lbCov=r.lines.map(function(l){return l.tag+' '+(l.face?('$'+(l.face/1000)+'K'):'custom')+(l.term?(' / '+l.term+'yr'):'');}).join(' + ');
       if($('p_lb')) $('p_lb').value=pk.lb||'';
@@ -2505,7 +2509,7 @@ function blankState(){
     packages:{
       good:{products:defProducts('good'),dropped:[],lb:0,lbCarrier:'',lbCov:'',med:0,rxBenefit:0},
       better:{products:defProducts('better'),dropped:[],lb:0,lbCarrier:'',lbCov:'',med:0,rxBenefit:0},
-      best:{products:defProducts('best'),dropped:[],lb:45,lbCarrier:'',lbCov:'',med:0,rxBenefit:0}
+      best:{products:defProducts('best'),dropped:[],lb:0,lbCarrier:'',lbCov:'',med:0,rxBenefit:0}
     },
     pension:{monthly:0,note:'e.g., IUL / tax-free retirement savings for your future',cv10:0,cv20:0,cv30:0,leg1:0,leg25:0},
     ev:[evScn('hosp'),evScn('urgent')],   // the two example cards: same builder, any scenario
@@ -3292,7 +3296,8 @@ function fill(){
 function read(){
   /* Keep what the quote page has no box for (coinsurance, brand-drug share of the deductible). */
   S.aca=Object.assign({},S.aca,{subsidy:+S.aca.subsidy||0,prem:+$('a_prem').value||0,ded:+$('a_ded').value||0,oop:+$('a_oop').value||0,med:+$('a_med').value||0,visits:+$('a_visits').value||0,copay:+$('a_copay').value||0,fullded:$('a_fullded').checked});
-  var pk=S.packages[S.activeTab]; pk.lb=+$('p_lb').value||0; pk.rxBenefit=+$('p_rxben').value||0; pk.lbCarrier=$('p_lb_carrier').value; pk.lbCov=$('p_lb_cov').value;
+  var pk=S.packages[S.activeTab]; pk.lb=classicLbOn()?(+$('p_lb').value||0):0;
+  if(!classicLbOn()) ['good','better','best'].forEach(function(t){ if(S.packages[t]) S.packages[t].lb=0; });   /* every tier, and old saves too */ pk.rxBenefit=+$('p_rxben').value||0; pk.lbCarrier=$('p_lb_carrier').value; pk.lbCov=$('p_lb_cov').value;
   S.pension={monthly:moneyNum($('p_pension').value),note:$('p_pnote').value,cv10:moneyNum($('pp_cv10').value),cv20:moneyNum($('pp_cv20').value),cv30:moneyNum($('pp_cv30').value),leg1:moneyNum($('pp_leg1').value),leg25:moneyNum($('pp_leg25').value)};
   var nc=(S.negot&&S.negot.cards)||{}, wasOn=!!(S.negot&&S.negot.on);
   S.negot={on:$('neg_on').checked,pct:$('neg_pct').value===''?null:+$('neg_pct').value,min:$('neg_min').value===''?2500:+$('neg_min').value,cards:$('neg_on').checked===wasOn?nc:{}};   /* the master resets the Client View per-card choices */
