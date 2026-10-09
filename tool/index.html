@@ -4605,12 +4605,13 @@ function presentMeds(doc,T){ var meds=T['_meds']||[], fill=function(el,m){ Array
    them in the source with markers. Delete this function when it arrives; nothing else depends on it.
    1. "So let's put that one to the side." says "those" when the today version (two plans) was spoken.
    2. Author notes Jesse removed: the two under section 2 (the "options you pick from" aside, the 1099 flag) and the
-      EasyCare2Go "never sell one benefit twice" note in section 8.
+      EasyCare2Go "never sell one benefit twice" note and the Green Imaging "not verified" note in section 8 (the
+      50-90% claim itself is still to be verified - Jesse, tomorrow).
    3. "(insert their situation)" is bold italic. */
 function presentTempEdits(doc,useCur){
   Array.prototype.forEach.call(doc.querySelectorAll('.say'),function(x){ var tn=x.firstChild;
     if(tn&&tn.nodeType===3&&/So let.s put (that one|those) to the side/.test(tn.textContent)) tn.textContent=tn.textContent.replace(/that one|those/,useCur?'those':'that one'); });
-  Array.prototype.forEach.call(doc.body.children,function(x){ var t=(x.textContent||'').trim(); if(/^Those three are options you pick from/.test(t)||/^One word in that line is worth a second look/.test(t)||/^Worth knowing so you never sell one benefit twice/.test(t)) x.classList.add('pp-off'); });
+  Array.prototype.forEach.call(doc.body.children,function(x){ var t=(x.textContent||'').trim(); if(/^Those three are options you pick from/.test(t)||/^One word in that line is worth a second look/.test(t)||/^Worth knowing so you never sell one benefit twice/.test(t)||/^One note of the same kind as the CareGuide one/.test(t)) x.classList.add('pp-off'); });
   Array.prototype.forEach.call(doc.querySelectorAll('.say'),function(x){ if(x.dataset.ppSit) return; Array.prototype.forEach.call(x.childNodes,function(nd){ if(nd.nodeType!==3) return; var i=nd.textContent.indexOf('(insert their situation)'); if(i<0) return;
       var rest=nd.splitText(i), after=rest.splitText('(insert their situation)'.length), b=doc.createElement('b'), it=doc.createElement('i'); it.textContent=rest.textContent; b.appendChild(it); rest.parentNode.replaceChild(b,rest); x.dataset.ppSit='1'; }); }); }
 function m0y(n){ return '$'+Math.round(+n||0).toLocaleString('en-US'); }
