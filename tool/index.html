@@ -4171,8 +4171,11 @@ function renderEnroll(){
 /* the script's application and finish screens, filled and wired the same as on Present */
 function enrollScript(){ var t=chosenTier()||S.activeTab, fr=$('enFrame2'); if(!fr) return;
   var show=function(){ var doc=fr.contentDocument; presentPaginate(doc); benLoad('afc').then(function(){ presentShowPage(doc,['Security question & finish','Wrap-up — text them'].map(presentPageIx)); presentWire(doc,t);
-      /* the security question and its tip sit beside the maiden-name box in section 2 */
-      Array.prototype.forEach.call(doc.body.children,function(el){ var x=(el.innerText||'').trim(); if(/^For security purposes/i.test(x)||/^If they don.t know it or won.t give it/i.test(x)) el.classList.add('pp-off'); });
+      /* the security question is rendered beside the maiden-name box straight from the script's data-render="enroll"
+         block - no copy of Mike's words lives here. Its fallback tip says to write the answer into the notes, which
+         breaks the never-saved rule, so it is left out until the source is corrected. */
+      var blk=doc.querySelector('[data-render="enroll"] .say'); if(blk){ var c2=blk.cloneNode(true); Array.prototype.forEach.call(c2.querySelectorAll('.who'),function(x){ x.remove(); }); EN_SAY=c2.textContent.trim(); }
+      var sy=document.querySelector('#enPeople .en-say'); if(sy) sy.textContent=EN_SAY?'Say: “'+EN_SAY+'”':'';
       fr.style.height='60px'; fr.style.height=(doc.documentElement.scrollHeight+8)+'px'; }); };
   if(fr.dataset.loaded) show(); else { fr.onload=function(){ fr.dataset.loaded='1'; show(); }; fr.src='presentation.html'; } }
 /* 2. The application, one open block per person (Jesse, 2026-10-08). Every field is a box: filled from the profile
@@ -4180,7 +4183,7 @@ function enrollScript(){ var t=chosenTier()||S.activeTab, fr=$('enFrame2'); if(!
    so Save / Print carry it and the navigator gets it on the next file load. Medications and conditions are a row each.
    Beneficiaries for each adult. A notes box per person feeds the one main notes field as "Name: …". The mother's
    maiden name is typed beside its security question and held in memory only - never saved. SSN / bank never here. */
-var EN_SECURITY='“For security purposes — and this’ll be the code word you sign the health application with — what’s your mother’s maiden name?”';
+var EN_SAY='';   /* filled from the script's data-render="enroll" block when Enroll loads it */
 function enSplit(n){ n=String(n||'').trim(); var i=n.indexOf(' '); return i<0?[n,'']:[n.slice(0,i),n.slice(i+1)]; }
 function enInches(v){ v=String(v||'').trim(); var m=v.match(/^(\d)\s*['′ ]\s*(\d{1,2})/); if(m) return String(+m[1]*12+(+m[2])); var n=parseInt(v,10); return n>=48&&n<=84?String(n):''; }
 function enFt(v){ var x=parseInt(v,10); return x>=48&&x<=84?Math.floor(x/12)+'′'+(x%12)+'″':''; }
@@ -4232,7 +4235,7 @@ function enrollPeople(){ var host=$('enPeople'); if(!host) return; var C=S.clien
   var person=function(id,title,adult){ return '<div class="en-person" data-enp="'+id+'"><h5>'+esc(title)+'</h5><div class="en-grid">'+enFieldsFor(id).map(field).join('')+'</div>'
       +listRows('Medications',medsOf(id),'med',id)+listRows('Conditions',condsOf(id),'cond',id)
       +(adult?beneBlock(id):'')
-      +(id==='p'?'<div class="en-sec"><label class="en-f"><span>Mother’s maiden name</span><input data-mmn="1" autocomplete="off" value="'+q(PRESENT_MMN)+'" placeholder="typed here, never saved">'+cp(PRESENT_MMN)+'</label><div class="en-say">Say: '+EN_SECURITY+'<br>If they don’t know it or won’t give it, any word they’ll remember works.</div></div>':'')
+      +(id==='p'?'<div class="en-sec"><label class="en-f"><span>Mother’s maiden name</span><input data-mmn="1" autocomplete="off" value="'+q(PRESENT_MMN)+'" placeholder="typed here, never saved">'+cp(PRESENT_MMN)+'</label><div class="en-say">'+(EN_SAY?esc('Say: “'+EN_SAY+'”'):'')+'</div></div>':'')
       +notesBlock(id)+'</div>'; };
   var h='<div class="en-step"><span>2</span> Information for your life application <small class="en-hint">(complete below and copy into the application — it’s all stored on the client profile and goes into your follow-up system / CRM)</small></div>';
   h+=person('p',(C.pname||'Primary applicant')+' — applicant',true);
@@ -4383,14 +4386,14 @@ var PRESENT_PAGES=[
  {t:'Living benefits — price it & do the numbers',m:['DIV',/^NOT SPOKEN\s*Price it here/i]},
  {t:'Pick your close',m:['H2',/^10\s*The bold/i]},
  {t:'The application',m:['DIV',/^Take the life application first/i],en:true},
- {t:'Security question & finish',m:['DIV',/^For security purposes/i],en:true},
+ {t:'Security question & finish',m:['ATTR','data-render'],en:true},
  {t:'Wrap-up — text them',m:['DIV',/^Text them the moment/i],en:true},
  {t:'_rail',m:['H2',/^11\s*Story/i]}
 ];
 function presentPages(){ return PRESENT_PAGES.filter(function(p){ return p.t!=='_rail'; }); }
 /* give every top-level block of the script a screen number; -1 = rail only (stories, objections) */
 function presentPaginate(doc){ if(!doc||!doc.body||doc.body.dataset.pp) return; var pages=presentPages(), cur=0;
-  var at=function(el,m){ return el.tagName===m[0]&&m[1].test((el.innerText||el.textContent||'').replace(/\s+/g,' ').trim()); };
+  var at=function(el,m){ if(m[0]==='ATTR') return el.hasAttribute(m[1]); return el.tagName===m[0]&&m[1].test((el.innerText||el.textContent||'').replace(/\s+/g,' ').trim()); };
   Array.prototype.forEach.call(doc.body.children,function(el){
     PRESENT_PAGES.forEach(function(p){ if(p.m&&at(el,p.m)) cur=p.t==='_rail'?-1:pages.indexOf(p); });
     el.dataset.pg=String(cur); });
@@ -4523,7 +4526,7 @@ var PRESENT_CSS='.pp-off{display:none!important}.pp-chosen{outline:3px solid #2f
  +'.pp-mount table{margin:6px 0 0;font-size:13.5px}.pp-copy{font:inherit;font-size:12px;font-weight:700;border:none;background:#16203c;color:#fff;border-radius:6px;padding:7px 12px;cursor:pointer;margin-top:8px}'
  +'.pp-lbadd{font:inherit;font-size:12.5px;font-weight:700;border:none;background:#2f7d4a;color:#fff;border-radius:6px;padding:5px 11px;cursor:pointer}.pp-lbx{font:inherit;font-size:11.5px;border:none;background:none;color:#8a1f12;text-decoration:underline;cursor:pointer}.pp-in{font-size:12.5px;font-weight:700;color:#2f7d4a}.pp-lbnote{font-size:11px;color:#8a5a00;max-width:220px}'
  +'.pp-medlist{margin:6px 0 6px 18px;padding:0}.pp-medlist li{margin:3px 0}'
- +'.pp-two{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:start}.pp-or{display:flex;align-items:center;justify-content:center;align-self:stretch;position:relative;min-width:36px}'
+ +'.pp-two{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:14px;align-items:start}.pp-two>*{min-width:0;max-width:none;margin:0;align-self:start}.pp-two>:not([data-close]){align-self:center}.pp-or{display:flex;align-items:center;justify-content:center;align-self:stretch;position:relative;min-width:36px}'
  +'.pp-or:before{content:"";position:absolute;top:0;bottom:0;left:50%;border-left:2px dashed #c9a24e}.pp-or span{position:relative;background:#fff;border:2px solid #c9a24e;color:#8a6a1f;font-weight:800;font-size:12px;border-radius:999px;padding:6px 8px}'
  +'@media(max-width:640px){.pp-two{grid-template-columns:1fr}.pp-or{min-height:40px}.pp-or:before{top:50%;bottom:auto;left:0;right:0;border-left:0;border-top:2px dashed #c9a24e}}'
  +'.pp-sug{font-size:12px;font-weight:700;color:#2f7d4a}.pp-nlab{margin-top:10px;font-size:13.5px;color:#16203c}'
@@ -4583,12 +4586,14 @@ function presentWire(doc,t){ if(!doc||!doc.body) return 0; var T=presentScriptTo
   Array.prototype.forEach.call(doc.querySelectorAll('[data-saving]'),function(x){ x.classList.toggle('pp-off',ak==='none'); });
   /* prescriptions: serve the version that matches the profile */
   Array.prototype.forEach.call(doc.querySelectorAll('div.say'),function(x){ if(/^If they are on something now/i.test((x.innerText||'').trim())) x.classList.toggle('pp-off',!presentHasCur()); });
+  Array.prototype.forEach.call(doc.querySelectorAll('[data-render="enroll"]'),function(x){ x.classList.add('pp-off'); });
   presentMeds(doc,T);
   var hasRx=(S.intake.medList||[]).some(function(m){ return m&&String(m.name||'').trim(); });
   Array.prototype.forEach.call(doc.querySelectorAll('[data-rx]'),function(x){ x.classList.toggle('pp-off',(x.getAttribute('data-rx')==='has')!==hasRx); });
   /* two closes side by side with an OR between them - the agent just reads the one they choose (Jesse, 2026-10-08) */
   var two=doc.querySelector('[data-close="assumptive"]'); two=two&&two.parentNode;
-  if(two&&!two.querySelector('.pp-or')){ two.classList.add('pp-two'); var or=doc.createElement('div'); or.className='pp-or'; or.innerHTML='<span>OR</span>';
+  if(two&&two.hasAttribute('data-closes')) two.classList.add('pp-two');   /* the script's own OR sits in the middle column */
+  else if(two&&!two.querySelector('.pp-or')){ two.classList.add('pp-two'); var or=doc.createElement('div'); or.className='pp-or'; or.innerHTML='<span>OR</span>';
     var b2=two.querySelector('[data-close="bold"]'); if(b2) two.insertBefore(or,b2); }
   /* conditions: the quote page's own event card (Jesse, 2026-10-08) - their anchor in red against the package they
      picked, Medical Bill Saver on, every layer of protection shown. Same evTableHTML the quote page draws. */

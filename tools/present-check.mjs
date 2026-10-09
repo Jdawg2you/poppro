@@ -89,7 +89,8 @@ const TEST = `(async function(){
   /* prescriptions, closes */
   ok(d.querySelector('[data-rx="none"]').classList.contains('pp-off')&&!d.querySelector('[data-rx="has"]').classList.contains('pp-off'),'Rx: the has-prescriptions version is served');
   var closeIx=presentPageIx('Pick your close'); presentGo(closeIx); await wait(30);
-  var cl=d.querySelectorAll('[data-close]'), or=d.querySelector('.pp-or');
+  var cl=d.querySelectorAll('[data-close]'), or=Array.prototype.filter.call(d.querySelectorAll('[data-closes] > *'),function(x){ return !x.hasAttribute('data-close')&&/^\s*OR\s*$/i.test(x.textContent); })[0]||d.querySelector('.pp-or');
+  ok(d.querySelectorAll('.pp-or').length+(d.querySelector('[data-closes]')?1:0)===1,'exactly one OR');
   ok(cl.length===2&&Array.prototype.every.call(cl,function(x){ return x.offsetParent!==null; })&&!!or&&cl[0].getBoundingClientRect().left<or.getBoundingClientRect().left&&or.getBoundingClientRect().left<cl[1].getBoundingClientRect().left,'Assumptive | OR | Bold side by side');
   ok(!d.querySelector('.pp-pick'),'no "use this close" buttons');
   /* LB in the script writes back to the builder */
@@ -146,7 +147,8 @@ const TEST = `(async function(){
   ok(/code word: bluebird/.test(S.intake.notes)&&/— From the application —/.test(S.intake.notes)&&/Pat: prefers texts after 5pm/.test(S.intake.notes),'person notes land in the one main notes field as "Name: …"');
   pn.value='prefers texts after 6pm'; pn.dispatchEvent(new Event('input'));
   ok((S.intake.notes.match(/Pat: /g)||[]).length===1&&/after 6pm/.test(S.intake.notes),'editing a person note replaces its line, never stacks');
-  ok(/For security purposes/.test(pp.querySelector('.en-say').innerText),'security question sits beside the maiden-name box');
+  for(var ws=0;ws<40&&!/For security purposes/.test(pp.querySelector('.en-say').innerText);ws++) await wait(100);
+  ok(/For security purposes/.test(pp.querySelector('.en-say').innerText)&&!/notes field/i.test(pp.querySelector('.en-say').innerText),'security question rendered from the script beside the maiden-name box (no write-it-in-notes tip)');
   ok(['lnkMutual','lnkNLG','lnkAmerico','lnkManhattan','lnkCigna','lnkLifex'].every(function(id){ return document.getElementById(id).style.display!=='none'; }),'standard life and health links always shown');
   ok(document.getElementById('lnkNLG').href.indexOf('nationallife.com/agent')>=0,'National Life Group agent login');
   var order=['enLife','enPeople','enScriptEnd','enHealth'].map(function(id){ return document.getElementById(id).getBoundingClientRect().top; });
@@ -156,7 +158,7 @@ const TEST = `(async function(){
   ok(!/discuss Living Benefits/.test(fl),'LB on the plan: no living-benefits follow-up');
   var ef2=document.getElementById('enFrame2'); for(var k3=0;k3<40;k3++){ await wait(100); if(ef2.contentDocument&&ef2.contentDocument.querySelector('.pp-copy')) break; }
   ok(!Array.prototype.some.call(ef2.contentDocument.querySelectorAll('[data-close]'),function(x){ return ef2.contentWindow.getComputedStyle(x).display!=='none'&&x.closest('body>*').style.display!=='none'; })&&!/Assumptive Sale Close/.test(ef2.contentDocument.body.innerText),'no closes under Wrapping things up');
-  ok(/That.s everything I need/.test(ef2.contentDocument.body.innerText),'wrapping up starts with That is everything I need');
+  ok(/That.s everything I need/.test(ef2.contentDocument.body.innerText)&&!/For security purposes/.test(ef2.contentDocument.body.innerText),'wrapping up starts with That is everything I need');
   ok(/Text them the moment/.test(ef2.contentDocument.body.innerText)&&Array.prototype.every.call(ef2.contentDocument.body.children,function(e){ return !/^For security purposes/.test((e.innerText||'').trim())||e.classList.contains('pp-off'); }),'wrapping up on Enroll; security question moved to the maiden-name box');
   var pc=ef2.contentDocument.querySelector('.pp-copy'); ok(pc&&pc.disabled&&/email/.test(pc.nextSibling.textContent),'post-call copy dimmed, names what is missing');
   var steps=presentApplyPlan('best').map(function(s){ return s.car.split(' ')[0]; });
