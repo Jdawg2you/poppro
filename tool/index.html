@@ -1268,8 +1268,7 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
         <div class="sectitle" style="margin-bottom:4px">Agent — Items to Follow Up</div>
         <div class="note" style="padding:0 0 8px">Checked items save with the quote. Prompts appear automatically based on what you captured.</div>
         <div id="followList"></div>
-        <div style="margin-top:10px"><label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px">Other follow-up notes</label>
-          <textarea id="in_followNote" class="autogrow" rows="2" style="width:100%;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font:inherit;background:#fff;resize:vertical" placeholder="Anything else to circle back on with this client."></textarea></div>
+        <div id="enNotesHost" style="margin-top:12px"></div>
       </div>
       <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--line)">
         <div style="font-family:var(--serif);font-weight:700;color:var(--navy);margin-bottom:8px">Helpful links</div>
@@ -4173,7 +4172,8 @@ function renderFlags(){
 }
 function renderEnroll(){
   if($('followList')) renderFollowUps();
-  if($('in_followNote')) { $('in_followNote').value=(S.follow&&S.follow.note)||''; autoGrow($('in_followNote')); }
+  /* the separate "Other follow-up notes" box is gone - anything typed there joins the one Notes field, once */
+  if(S.follow&&String(S.follow.note||'').trim()){ S.intake=S.intake||{}; S.intake.notes=(String(S.intake.notes||'').replace(/\s+$/,'')+(S.intake.notes?'\n':'')+'Follow-up: '+S.follow.note.trim()); S.follow.note=''; autosave(); }
   var t=chosenTier()||S.activeTab, pk=S.packages[t]||{products:[]}, c=effCfg(t);
   var name=S.client.pname||'Client'; if(S.client.sname) name+=' & '+S.client.sname;
   var carrierOf=function(p){ if(p.k==='base') return c.base==='lifex'?'LifeX (E123 site)':'Cigna — USA Health / Triad (1Enrollment)';
@@ -4281,7 +4281,6 @@ function enrollPeople(){ var host=$('enPeople'); if(!host) return; var C=S.clien
   h+=person('p',(C.pname||'Primary applicant')+' — applicant',true);
   if(w.spouse||C.sname) h+=person('s',(C.sname||'Spouse')+' — spouse',true);
   (I.kids||[]).forEach(function(k,i){ if(k&&(k.n||k.dob||k.age)) h+=person('k'+i,(k.n||('Child '+(i+1)))+' — child',false); });
-  h+='<div class="en-notes"><label for="enNotes"><b>Notes</b> (anything off script, what they said, what to remember or follow up — the same notes as the client profile; each person’s notes above land here too)</label><textarea id="enNotes" rows="5"></textarea></div>';
   h+='<div class="en-prof"><button type="button" class="btn-gold" data-enprof="save">Save profile</button><button type="button" class="btn-ghost" data-enprof="print">Print profile</button></div>';
   h+='<p class="note" style="margin:10px 0 0">SSN and bank details never go in POP Pro — enter them directly on the carrier’s application. The mother’s maiden name is held only while this page is open — never saved, printed or sent.</p>';
   host.innerHTML=h;
@@ -4302,7 +4301,9 @@ function enrollPeople(){ var host=$('enPeople'); if(!host) return; var C=S.clien
   host.querySelectorAll('[data-benex]').forEach(function(b){ b.onclick=function(){ var q2=b.dataset.benex.split(':'), bs=benesOf(q2[0]).slice(); bs.splice(+q2[1],1); bset(q2[0],bs); enrollPeople(); }; });
   host.querySelectorAll('[data-pnote]').forEach(function(ta){ ta.oninput=function(){ I.personNotes=I.personNotes||{}; I.personNotes[ta.dataset.pnote]=ta.value; enNotesSync(); }; });
   var mm=host.querySelector('[data-mmn]'); if(mm) mm.onchange=function(){ PRESENT_MMN=mm.value.trim(); var c2=mm.nextElementSibling; if(c2) c2.style.visibility=PRESENT_MMN?'visible':'hidden'; };
-  var nt=$('enNotes'); nt.value=I.notes||''; nt.oninput=function(){ S.intake.notes=nt.value; if($('in_notes')) $('in_notes').value=nt.value; autosave(); };
+  /* the one Notes box sits at the bottom of Enroll - the same field as the bottom of Intake (Jesse, 2026-10-08) */
+  var nh=$('enNotesHost'); if(nh&&!$('enNotes')) nh.innerHTML='<div class="en-notes"><label for="enNotes"><b>Notes</b> (anything off script, what they said, what to remember or follow up — the same notes as the bottom of Intake; each person’s notes above land here too)</label><textarea id="enNotes" rows="6"></textarea></div>';
+  var nt=$('enNotes'); if(nt){ if(document.activeElement!==nt) nt.value=I.notes||''; nt.oninput=function(){ S.intake.notes=nt.value; if($('in_notes')) $('in_notes').value=nt.value; autosave(); }; }
   host.querySelector('[data-enprof="save"]').onclick=function(){ saveQuote(); };
   host.querySelector('[data-enprof="print"]').onclick=function(){ enPrintProfile(); }; }
 /* the old [label,value] rows for the printed profile */
@@ -4702,11 +4703,20 @@ function presentWire(doc,t){ if(!doc||!doc.body) return 0; var T=presentScriptTo
   /* life application: every ⧉ COPY copies the value on its row */
   Array.prototype.forEach.call(doc.querySelectorAll('a'),function(a){ if(!/COPY/.test(a.textContent)) return; var row=a.closest('tr'); if(!row) return;
     a.onclick=function(e){ e.preventDefault(); var vs=row.querySelectorAll('var'); copy(Array.prototype.map.call(vs,function(v){ return v.textContent.trim(); }).filter(Boolean).join(' / ')); a.textContent='✓ copied'; }; });
-  /* post-call text: copy only when the agent info is complete, and say what is missing */
-  var mp=doc.querySelector('[data-mount="posttext"]'); if(mp){ var body=mp.querySelector('.body'), need=[['agent.name','your name'],['agency','agency'],['agent.phone','phone'],['agent.email','email']].filter(function(q){ return !String(T[q[0]]||'').trim(); }).map(function(q){ return q[1]; });
-    var btn=mp.querySelector('.pp-copy'); if(!btn&&body){ btn=doc.createElement('button'); btn.type='button'; btn.className='pp-copy'; body.appendChild(btn); var nd=doc.createElement('span'); nd.className='pp-need'; body.appendChild(nd); }
-    if(btn){ btn.textContent='Copy the text'; btn.disabled=!!need.length; btn.nextSibling.textContent=need.length?'Add to Agent Setup first: '+need.join(', '):'';
-      btn.onclick=function(){ var pEl=body.querySelector('p'); if(pEl) copy(pEl.innerText.trim()); btn.textContent='✓ copied'; }; } }
+  /* post-call text: the script's own COPY link and "not finished" warning, driven by the real agent info. Every field
+     the text uses must be filled - name, agency, phone, email, website, booking - or the link stays dim and the warning
+     names exactly what is still blank. Complete: warning hidden, link live. */
+  var mp=doc.querySelector('[data-mount="posttext"]'); if(mp){ var body=mp.querySelector('.body')||mp, cpy=mp.querySelector('a.cpy'), needs=mp.querySelector('.needs');
+    var need=[['agent.name','your name'],['agency','agency'],['agent.phone','phone'],['agent.email','email'],['agent.website','website'],['agent.booking','booking link']].filter(function(q){ return !String(T[q[0]]||'').trim(); }).map(function(q){ return q[1]; });
+    Array.prototype.forEach.call(mp.querySelectorAll('.pp-copy,.pp-need'),function(x){ x.remove(); });   /* the older POP Pro button, if a previous render left one */
+    if(cpy){ cpy.classList.toggle('dim',!!need.length); cpy.textContent='⧉ COPY THE TEXT'+(need.length?' — '+need.length+' field'+(need.length>1?'s':'')+' still blank':'');
+      cpy.onclick=function(e){ e.preventDefault(); if(need.length) return; var pEl=body.querySelector('p'); if(pEl){ copy(pEl.innerText.trim()); cpy.textContent='✓ Copied'; } }; }
+    if(needs){ needs.classList.toggle('pp-off',!need.length);
+      /* rewrite only the list after "Missing:" - the script's own wording stays */
+      var kids=Array.prototype.slice.call(needs.childNodes), at=-1; kids.forEach(function(nd,i){ if(at<0&&nd.nodeType===3&&/Missing:\s*$/.test(nd.textContent)) at=i; });
+      if(at>=0&&need.length){ var j=at+1; while(j<kids.length&&!(kids[j].nodeType===3&&/^\./.test(kids[j].textContent))){ kids[j].remove(); j++; }
+        var frag=doc.createDocumentFragment(); need.forEach(function(x,i){ if(i) frag.appendChild(doc.createTextNode(i===need.length-1?' and ':', ')); var bb=doc.createElement('b'); bb.textContent=x; frag.appendChild(bb); });
+        needs.insertBefore(frag,kids[j]||null); } } }
   return n; }
 /* kept for the check: fill a bare document (named fills, unknown flagged, unnamed untouched) */
 function presentFillFrame(doc,T){ if(!doc) return 0; var n=0;
@@ -4810,6 +4820,7 @@ function bindInputs(){
   $('in_agency').addEventListener('input',function(){ captureIntake(); $('brandName').textContent=S.agency||'HealthFirst'; });
   $('in_aphone').addEventListener('input',function(){ this.value=fmtPhone(this.value); markValid(this,phoneOK(this.value)); captureIntake(); });
   $('in_aemail').addEventListener('input',function(){ markValid(this,emailOK(this.value)); captureIntake(); });
+  ['in_anpn','in_aweb','in_abook'].forEach(function(id){ $(id).addEventListener('input',function(){ captureIntake(); }); });
   $('c_date').addEventListener('input',function(){ this.value=fmtDate(this.value); markValid(this,dateOK(this.value)); compute(); });
   $('in_priority').addEventListener('change',function(){ readIntake(); autosave(); });
   medFdaLoad();
@@ -4844,7 +4855,7 @@ function bindInputs(){
   if($('a_med')) $('a_med').addEventListener('input',function(){ S.medEstCount=0; });
   if($('a_visits')) $('a_visits').addEventListener('input',function(){ S.intake.visits=+this.value||0; });
   if($('a_fullded')) $('a_fullded').addEventListener('change',function(){ acaIn().fullded=this.checked; });
-  if($('in_followNote')) $('in_followNote').addEventListener('input',function(){ S.follow=S.follow||{}; S.follow.note=this.value; autoGrow(this); autosave(); });
+
   // Income: currency-format all three. Primary/Spouse auto-sum into Household unless Household was typed.
   ['in_pincome','in_sincome'].forEach(function(id){ $(id).addEventListener('input',function(){
     this.value=fmtMoneyStr(this.value);

@@ -186,6 +186,9 @@ const TEST = `(async function(){
   ok(/code word: bluebird/.test(S.intake.notes)&&/— From the application —/.test(S.intake.notes)&&/Pat: prefers texts after 5pm/.test(S.intake.notes),'person notes land in the one main notes field as "Name: …"');
   pn.value='prefers texts after 6pm'; pn.dispatchEvent(new Event('input'));
   ok((S.intake.notes.match(/Pat: /g)||[]).length===1&&/after 6pm/.test(S.intake.notes),'editing a person note replaces its line, never stacks');
+  var eb=document.getElementById('enNotes'), fl=document.getElementById('followList');
+  ok(!document.getElementById('in_followNote')&&eb&&fl&&(fl.compareDocumentPosition(eb)&Node.DOCUMENT_POSITION_FOLLOWING),'one Notes box, at the bottom of Enroll, below the follow-ups');
+  ok(!!document.querySelector('[data-enprof="save"]')&&!!document.querySelector('[data-enprof="print"]'),'save / print profile buttons');
   for(var ws=0;ws<40&&!/For security purposes/.test(pp.querySelector('.en-say').innerText);ws++) await wait(100);
   ok(/For security purposes/.test(pp.querySelector('.en-say').innerText)&&!/notes field/i.test(pp.querySelector('.en-say').innerText),'security question rendered from the script beside the maiden-name box (no write-it-in-notes tip)');
   ok(['lnkMutual','lnkNLG','lnkAmerico','lnkManhattan','lnkCigna','lnkLifex'].every(function(id){ return document.getElementById(id).style.display!=='none'; }),'standard life and health links always shown');
@@ -199,7 +202,13 @@ const TEST = `(async function(){
   ok(!Array.prototype.some.call(ef2.contentDocument.querySelectorAll('[data-close]'),function(x){ return ef2.contentWindow.getComputedStyle(x).display!=='none'&&x.closest('body>*').style.display!=='none'; })&&!/Assumptive Sale Close/.test(ef2.contentDocument.body.innerText),'no closes under Wrapping things up');
   ok(/That.s everything I need/.test(ef2.contentDocument.body.innerText)&&!/For security purposes/.test(ef2.contentDocument.body.innerText),'wrapping up starts with That is everything I need');
   ok(/Text them the moment/.test(ef2.contentDocument.body.innerText)&&Array.prototype.every.call(ef2.contentDocument.body.children,function(e){ return !/^For security purposes/.test((e.innerText||'').trim())||e.classList.contains('pp-off'); }),'wrapping up on Enroll; security question moved to the maiden-name box');
-  var pc=ef2.contentDocument.querySelector('.pp-copy'); ok(pc&&pc.disabled&&/email/.test(pc.nextSibling.textContent),'post-call copy dimmed, names what is missing');
+  var e2=ef2.contentDocument, ac=e2.querySelector('[data-mount="posttext"] a.cpy'), nd=e2.querySelector('[data-mount="posttext"] .needs');
+  ok(ac&&ac.classList.contains('dim')&&/still blank/.test(ac.textContent)&&!nd.classList.contains('pp-off')&&/email/.test(nd.textContent)&&/website/.test(nd.textContent)&&!e2.querySelector('.pp-copy'),'post-call: their link dim, warning names what is blank (email, website…)');
+  S.agentEmail='j@x.com'; S.agentWebsite='optimum.com'; S.agentBooking='cal.com/j'; S.agentPhone=S.agentPhone||'555-0199'; S.client.agent=S.client.agent||'Jesse Stamm'; S.agency='Optimum';
+  presentWire(e2,chosenTier()||'best'); ac=e2.querySelector('[data-mount="posttext"] a.cpy'); nd=e2.querySelector('[data-mount="posttext"] .needs');
+  ok(!ac.classList.contains('dim')&&!/still blank/.test(ac.textContent)&&nd.classList.contains('pp-off'),'agent info complete: warning gone, copy live');
+  S.agentBooking=''; presentWire(e2,chosenTier()||'best'); nd=e2.querySelector('[data-mount="posttext"] .needs');
+  ok(!nd.classList.contains('pp-off')&&nd.textContent.split(String.fromCharCode(10)).join(' ').indexOf('Missing: booking link.')>=0,'one field blank: warning lists just that one ('+nd.textContent.slice(150,230)+')');
   var steps=presentApplyPlan('best').map(function(s){ return s.car.split(' ')[0]; });
   ok(steps[0]==='Americo'&&steps.indexOf('ManhattanLife')>0,'life first then ManhattanLife: '+steps.join(' > '));
   /* maiden name: memory only */
