@@ -1589,7 +1589,7 @@ function pGAP(R,st,age,hh,cfg){
       cfg.ea?['rider','Emergency Accident | Emergency Accident $250']:null].filter(Boolean);
     var sum=0;
     for(var i=0;i<parts.length;i++){ var v=prVal(parts[i][0]==='plan'?pg.plans:pg.riders,parts[i][1],hh,age);
-      if(v==null) return {price:null,note:'Gap option not available at age '+age+' in '+st}; sum+=v; }
+      if(v==null) return {price:null,note:'This option ($'+cfg.daily+'/day'+(cfg.adm?' + '+prMoney(cfg.adm)+' admission':'')+(+cfg.outp?' + '+prMoney(cfg.outp)+' outpatient surgery':'')+') isn’t priced at age '+age+' in '+st+' — change it below'}; sum+=v; }
     return {price:Math.round(sum*100)/100,note:''};
   }
   if(R.gap.st.indexOf(st)<0) return {price:null,note:notLoaded('gap','Out-of-Pocket / Gap',st)};
@@ -5295,8 +5295,9 @@ function renderBuilder(){
       if(price==null){
         html+='<div class="pbrow off"><div class="pbhead"><span class="nm">'+sl.name+'</span><span class="pr na">not available</span><button class="pbib" data-act="rm" data-k="'+k+'" title="Remove" aria-label="Remove '+sl.name+'">✕</button></div>'
           +'<div class="pbnote">'+pbWhyNot(k,c,st,age)+'</div>'
-          /* living benefits keep their controls, so an Other carrier's premium can be typed (or the carrier switched) */
-          +((k==='lbp'||k==='lbs')?'<div class="pbbody" data-k="'+k+'">'+pbControls(k,c)+'</div>':'')+'</div>';
+          /* an unpriced row keeps its controls (Jesse, 2026-10-09): the agent can see which option failed and pick one that
+             prices, or type an Other carrier's premium. A product the state does not sell never reaches this branch. */
+          +(pbControls(k,c)?'<div class="pbbody" data-k="'+k+'">'+pbControls(k,c)+'</div>':'')+'</div>';
         return;
       }
       sum+=+price||0; var open=PB_OPEN[t+'|'+k], edited=!!(live&&live.manual);
