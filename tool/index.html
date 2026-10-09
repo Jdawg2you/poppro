@@ -614,6 +614,12 @@
   @media (prefers-reduced-motion:reduce){#agentSetup .fld.needfill input{animation:none;box-shadow:0 0 0 3px rgba(34,160,90,.5)}}
   @keyframes fuglow{0%,100%{box-shadow:0 0 0 2px rgba(198,154,60,.35)}50%{box-shadow:0 0 0 4px rgba(198,154,60,.75),0 0 18px rgba(198,154,60,.5)}}
   .fitem.fu-glow{border-radius:8px;background:#fff8e6;animation:fuglow 1.4s ease-in-out infinite}
+  .cele-shield{position:fixed;left:50%;top:42%;transform:translate(-50%,-50%);z-index:9999;pointer-events:none;font-size:84px;text-align:center;animation:celeshield 2.5s ease forwards;filter:drop-shadow(0 8px 18px rgba(18,33,59,.3))}
+  .cele-shield small{display:block;font-family:var(--serif);font-size:22px;font-weight:700;color:#12213b;background:#fff8e6;border:1.5px solid #c69a3c;border-radius:999px;padding:4px 14px;margin-top:4px}
+  @keyframes celeshield{0%{opacity:0;transform:translate(-50%,-50%) scale(.4)}18%{opacity:1;transform:translate(-50%,-50%) scale(1.12)}28%{transform:translate(-50%,-50%) scale(1)}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-60%) scale(.96)}}
+  .en-pol{display:inline-block;margin-left:6px;font-size:11.5px;font-weight:700;color:#17824a;background:#eaf7ef;border:1px solid #b9e3c9;border-radius:999px;padding:1px 8px}
+  @keyframes enjust{0%{box-shadow:0 0 0 0 rgba(34,160,90,.6)}100%{box-shadow:0 0 0 8px rgba(34,160,90,0)}}
+  .en-f.just input,.en-f.just select{border-color:#22a05a;animation:enjust .9s ease-out}
   .cele-canvas{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:9999}
   .cele-float{position:fixed;bottom:12vh;pointer-events:none;z-index:9999;animation:celefloat 2.4s cubic-bezier(.2,.7,.3,1) forwards;filter:drop-shadow(0 4px 8px rgba(0,0,0,.18))}
   @keyframes celefloat{0%{transform:translateY(0) scale(.4) rotate(-8deg);opacity:0}15%{opacity:1;transform:translateY(-8vh) scale(1.1) rotate(6deg)}100%{transform:translateY(-70vh) scale(1) rotate(-4deg);opacity:0}}
@@ -622,7 +628,7 @@
   .cele-banner .cele-l1,.cele-banner .cele-l2{display:block}.cele-banner .cele-who{white-space:nowrap;color:#f3d48a}
   .cele-banner small{display:block;font-family:-apple-system,sans-serif;font-size:14px;font-weight:600;color:#e9d6a6;margin-top:4px}
   @keyframes celebanner{0%{opacity:0;transform:translate(-50%,-50%) scale(.6)}8%{opacity:1;transform:translate(-50%,-50%) scale(1.06)}14%{transform:translate(-50%,-50%) scale(1)}85%{opacity:1}100%{opacity:0;transform:translate(-50%,-60%) scale(.98)}}
-  @media print{.cele-canvas,.cele-float,.cele-banner{display:none!important}}
+  @media print{.cele-canvas,.cele-float,.cele-banner,.cele-shield{display:none!important}}
   .picbar{display:flex;justify-content:flex-end;margin:10px 0 -4px}.picbtn{font:inherit;font-size:12.5px;font-weight:700;border:1px solid #c69a3c;background:#12213b;color:#fff;border-radius:999px;padding:6px 13px;cursor:pointer;box-shadow:0 1px 3px rgba(18,33,59,.25);white-space:nowrap;transition:background .15s}.picbtn:hover{background:#1c3a63}
   .en-hint{font-family:-apple-system,sans-serif;font-weight:400;font-size:12.5px;color:var(--muted)}
   .en-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px}
@@ -4440,7 +4446,8 @@ function renderEnroll(){
     +'<div class="en-hd"><div><div class="en-nm">'+esc(name)+'</div><div class="en-pk">Enrolling: <b>'+TIER_NAME[t]+'</b>'+(chosenTier()?'':' <span class="en-warn">— no package chosen yet; showing '+TIER_NAME[t]+'. Mark the client’s choice on the builder or in Client View.</span>')+'</div></div>'
     +'<div class="en-tot"><span>Monthly</span><b>'+fmt2(total)+'</b></div></div>';
   order.forEach(function(g){ h+='<div class="en-grp"><div class="en-car">'+esc(g)+'</div>'
-    +groups[g].map(function(p){ return '<div class="en-row"><span class="nm">'+esc(sname(p))+'</span><span class="lv">'+esc(pbSummary(p.k,c,p)||'')+'</span><b>'+fmt2(+p.monthly||0)+'</b></div>'; }).join('')+'</div>'; });
+    +groups[g].map(function(p){ var pol=(p.k==='lbp'||p.k==='lbs')?String((S.intake||{})['lbPolicy'+p.k.slice(2).toUpperCase()]||'').trim():'';
+      return '<div class="en-row"><span class="nm">'+esc(sname(p))+'</span><span class="lv">'+esc(pbSummary(p.k,c,p)||'')+(pol?' <span class="en-pol">Policy # '+esc(pol)+'</span>':'')+'</span><b>'+fmt2(+p.monthly||0)+'</b></div>'; }).join('')+'</div>'; });
   var eph=dvhPhrase(effCfg(t).dvh).replace(/&/g,'&amp;');
   h+='<div class="en-dental">'+(tierHasDental(t)?eph.charAt(0).toUpperCase()+eph.slice(1)+': <b>included</b>':'Dental: <b>not included</b>')+'</div></div>';
   $('enrollSummary').innerHTML=h;
@@ -4543,7 +4550,10 @@ function enrollPeople(){ var host=$('enPeople'); if(!host) return; var C=S.clien
   h+='<p class="note" style="margin:10px 0 0">SSN and bank details never go in POP Pro — enter them directly on the carrier’s application. The mother’s maiden name (or code word) saves with the quote.</p>';
   host.innerHTML=h;
   host.querySelectorAll('[data-cpfrom]').forEach(function(b){ b.onclick=function(e){ e.preventDefault(); var el=b.previousElementSibling; if(!el) return; try{ navigator.clipboard.writeText(String(el.value||'').trim()); b.textContent='copied'; }catch(x){} }; });
-  host.querySelectorAll('[data-enw]').forEach(function(inp){ inp.onchange=function(){ var path=inp.dataset.enw; enWrite(path,inp.value.trim());
+  host.querySelectorAll('[data-enw]').forEach(function(inp){ if(inp.tagName==='INPUT') inp.onkeydown=function(e){ if(e.key==='Enter'){ e.preventDefault(); inp.blur(); } };
+    inp.onchange=function(){ var path=inp.dataset.enw, was=String((S.intake||{})[path.split(':')[1]]||'').trim(); enWrite(path,inp.value.trim());
+    var lab=inp.closest('.en-f'); if(lab){ lab.classList.toggle('miss',!inp.value.trim()); lab.classList.remove('just'); void lab.offsetWidth; if(inp.value.trim()) lab.classList.add('just'); }
+    if(/^i:lbPolicy/.test(path)){ renderEnroll(); if(inp.value.trim()&&!was) celebrate('shield'); return; }
     if(/dob|ht:|:ht$/.test(path)){ enrollPeople(); return; } var c2=inp.nextElementSibling; if(c2) c2.style.visibility=inp.value.trim()?'visible':'hidden'; }; });
   host.querySelectorAll('[data-enl]').forEach(function(inp){ inp.onchange=function(){ var q2=inp.dataset.enl.split(':'), kind=q2[0], id=q2[1], j=q2[2], v=inp.value.trim();
     if(id[0]==='k'){ var kd=(I.kids||[])[+id.slice(1)]; var key=kind==='med'?'meds':'conds', arr=String(kd[key]||'').split(/\s*;\s*/).filter(Boolean); if(j==='new'){ if(v) arr.push(v); } else { if(v) arr[+j]=v; else arr.splice(+j,1); } kd[key]=arr.join('; '); autosave(); enrollPeople(); return; }
@@ -4642,6 +4652,7 @@ function enrollCheer(){ var C=S.client||{}, I=S.intake||{}, w=I.who||{}, names=[
   return '<span class="cele-l1">🎉 Let’s get <span class="cele-who">'+esc(who).replace(/&amp;amp;/g,'&amp;')+'</span></span><span class="cele-l2">'+pro+' Package of Protection!</span>'; }
 function celebrate(kind,label){ try{
   var still=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(kind==='shield'){ var sh=document.createElement('div'); sh.className='cele-shield'; sh.innerHTML='🛡️<small>Family protected</small>'; document.body.appendChild(sh); setTimeout(function(){ sh.remove(); },2600); return; }
   if(kind==='thumbs'){ var n=still?1:5;
     for(var i=0;i<n;i++)(function(i){ var e=document.createElement('div'); e.className='cele-float'; e.textContent=i%3===2?'✨':'👍';
       e.style.left=(42+Math.random()*16)+'vw'; e.style.fontSize=(i?28+Math.random()*18:64)+'px'; e.style.animationDelay=(i*0.12)+'s'; if(still) e.style.animation='celefade 1.2s ease-out forwards';

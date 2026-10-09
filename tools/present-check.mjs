@@ -61,7 +61,9 @@ const TEST = `(async function(){
   var kc=S.chosen; S.chosen={}; chooseTier('best'); ok(document.querySelectorAll('.cele-float').length>0,'choosing a plan floats a thumbs-up'); document.querySelectorAll('.cele-float').forEach(function(e){ e.remove(); }); S.chosen=kc; compute();
   var hasLbP=(S.packages[chosenTier()||S.activeTab].products||[]).some(function(p){ return p.k==='lbp'&&+p.monthly>0; });
   ok(enFieldsFor('p').some(function(f){ return f[0]==='Living benefits policy #'; })===hasLbP,'living-benefits policy # appears in the applicant block exactly when they have living benefits');
-  enWrite('i:lbPolicyP','LB12345'); ok(S.intake.lbPolicyP==='LB12345','the policy # saves with the quote'); S.intake.lbPolicyP='';
+  enWrite('i:lbPolicyP','LB12345'); ok(S.intake.lbPolicyP==='LB12345','the policy # saves with the quote');
+  if(hasLbP){ goStep('enroll'); await wait(250); ok(/Policy # LB12345/.test(document.getElementById('enrollSummary').textContent),'the policy # shows on the Enroll summary beside living benefits'); goStep('quote'); await wait(150); }
+  S.intake.lbPolicyP='';
   ok(/Let’s get .*Package of Protection!/.test(enrollCheer())&&!/They’re in/.test(enrollCheer()),'the Enroll banner says Let’s get <names> their Package of Protection');
   goStep('enroll'); await wait(200); CELE_GOLD_PENDING=false; goldFinale(); window.dispatchEvent(new Event('focus')); await wait(2500);
   ok(document.querySelectorAll('#followList .fu-glow').length>0,'enrollment email: gold confetti, then the open follow-ups glow'); document.querySelectorAll('.cele-banner,.cele-canvas').forEach(function(e){ e.remove(); }); goStep('quote'); await wait(200);
