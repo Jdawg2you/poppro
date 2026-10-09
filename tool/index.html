@@ -612,6 +612,14 @@
   #agentSetup .fld.needfill label{color:#17824a}
   #agentSetupState.needfill-sum{color:#17824a;font-weight:700}
   @media (prefers-reduced-motion:reduce){#agentSetup .fld.needfill input{animation:none;box-shadow:0 0 0 3px rgba(34,160,90,.5)}}
+  .cele-canvas{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:9999}
+  .cele-float{position:fixed;bottom:12vh;pointer-events:none;z-index:9999;animation:celefloat 2.4s cubic-bezier(.2,.7,.3,1) forwards;filter:drop-shadow(0 4px 8px rgba(0,0,0,.18))}
+  @keyframes celefloat{0%{transform:translateY(0) scale(.4) rotate(-8deg);opacity:0}15%{opacity:1;transform:translateY(-8vh) scale(1.1) rotate(6deg)}100%{transform:translateY(-70vh) scale(1) rotate(-4deg);opacity:0}}
+  @keyframes celefade{0%{opacity:0}20%{opacity:1}100%{opacity:0}}
+  .cele-banner{position:fixed;left:50%;top:38%;transform:translate(-50%,-50%);z-index:10000;pointer-events:none;background:#12213b;color:#fff;border:2px solid #c69a3c;border-radius:18px;padding:18px 30px;font-family:var(--serif);font-size:30px;font-weight:700;box-shadow:0 18px 60px rgba(0,0,0,.35);animation:celebanner 3.4s ease forwards;text-align:center}
+  .cele-banner small{display:block;font-family:-apple-system,sans-serif;font-size:14px;font-weight:600;color:#e9d6a6;margin-top:4px}
+  @keyframes celebanner{0%{opacity:0;transform:translate(-50%,-50%) scale(.6)}12%{opacity:1;transform:translate(-50%,-50%) scale(1.06)}20%{transform:translate(-50%,-50%) scale(1)}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-60%) scale(.98)}}
+  @media print{.cele-canvas,.cele-float,.cele-banner{display:none!important}}
   .picbar{display:flex;justify-content:flex-end;margin:10px 0 -4px}.picbtn{font:inherit;font-size:12.5px;font-weight:700;border:1px solid #c69a3c;background:#12213b;color:#fff;border-radius:999px;padding:6px 13px;cursor:pointer;box-shadow:0 1px 3px rgba(18,33,59,.25);white-space:nowrap;transition:background .15s}.picbtn:hover{background:#1c3a63}
   .en-hint{font-family:-apple-system,sans-serif;font-weight:400;font-size:12.5px;color:var(--muted)}
   .en-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px}
@@ -4467,14 +4475,18 @@ function enInches(v){ v=String(v||'').trim(); var m=v.match(/^(\d)\s*['′ ]\s*(
 function enFt(v){ var x=parseInt(v,10); return x>=48&&x<=84?Math.floor(x/12)+'′'+(x%12)+'″':''; }
 function enWho(id){ var C=S.client||{}, I=S.intake||{}; if(id==='p') return enSplit(C.pname)[0]||'Applicant'; if(id==='s') return enSplit(C.sname)[0]||'Spouse'; var k=(I.kids||[])[+id.slice(1)]||{}; return enSplit(k.n)[0]||('Child '+(+id.slice(1)+1)); }
 /* field list per person: [label, value, write path, kind] */
+/* Living-benefits policy number (Jesse, 9 Oct): captured in the person's own block when their plan carries living
+   benefits for them; saved with the quote, not used in any email yet. */
+function enLbPolicy(w){ var t=chosenTier()||S.activeTab, pk=(S.packages||{})[t]||{}, I=S.intake||{};
+  var on=(pk.products||[]).some(function(p){ return p.k==='lb'+w&&(+p.monthly||0)>0; }); return on?[['Living benefits policy #',I['lbPolicy'+w.toUpperCase()],'i:lbPolicy'+w.toUpperCase()]]:[]; }
 function enFieldsFor(id){ var C=S.client||{}, I=S.intake||{};
   if(id==='p'){ var nm=enSplit(C.pname); return [['First name',nm[0],'name:p:0'],['Last name',nm[1],'name:p:1'],['Date of birth',C.dob||C.date,'c:dob'],['Age',C.page||C.age,'c:page'],
     ['Sex',I.psex,'i:psex','sex'],['Height',enFt(I.pheight),'ht:pheight'],['Weight (lb)',I.pweight,'wt:pweight'],['Tobacco',I.tobaccoP?'Yes':'No','tob:tobaccoP','yn'],
     ['Phone',I.phone,'i:phone'],['Email',I.email,'i:email'],['Street address',C.address,'c:address'],['State',C.state,'c:state'],['ZIP',C.zip,'c:zip'],
-    ['Doctor(s)',[I.docs1,I.docs2,I.docs3].filter(Boolean).join(', '),'i:docs1'],['Coverage start',I.effDate,'i:effDate']]; }
+    ['Doctor(s)',[I.docs1,I.docs2,I.docs3].filter(Boolean).join(', '),'i:docs1'],['Coverage start',I.effDate,'i:effDate']].concat(enLbPolicy('p')); }
   if(id==='s'){ var sn=enSplit(C.sname); return [['First name',sn[0],'name:s:0'],['Last name',sn[1],'name:s:1'],['Date of birth',C.sdob,'c:sdob'],['Age',C.sage,'c:sage'],
     ['Sex',I.ssex,'i:ssex','sex'],['Height',enFt(I.sheight),'ht:sheight'],['Weight (lb)',I.sweight,'wt:sweight'],['Tobacco',I.tobaccoS?'Yes':'No','tob:tobaccoS','yn'],
-    ['Phone',I.sphone,'i:sphone'],['Email',I.semail,'i:semail']]; }
+    ['Phone',I.sphone,'i:sphone'],['Email',I.semail,'i:semail']].concat(enLbPolicy('s')); }
   var i=+id.slice(1), k=(I.kids||[])[i]||{}, kn=enSplit(k.n);
   return [['First name',kn[0],'kid:'+i+':n0'],['Last name',kn[1],'kid:'+i+':n1'],['Date of birth',k.dob,'kid:'+i+':dob'],['Age',k.age,'kid:'+i+':age'],
     ['Sex',k.sex,'kid:'+i+':sex','sex'],['Height',enFt(k.ht),'kid:'+i+':ht'],['Weight (lb)',k.wt,'kid:'+i+':wt']]; }
@@ -4598,6 +4610,36 @@ function renderEstimate(){
 var PRESENT_MMN='';   /* mother's maiden name: typed during the application, held in memory only, never saved */
 
 function presentTier(){ return chosenTier()||S.activeTab||'best'; }
+/* ===== Celebrations (Jesse, 9 Oct) ===== the wins get a moment: "They're enrolling" sets off a full-page confetti storm,
+   choosing a plan floats a thumbs-up. Drawn on a throwaway canvas that ignores clicks and removes itself; reduced
+   motion gets a short, still version. Never on the printout. */
+function celebrate(kind,label){ try{
+  var still=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(kind==='thumbs'){ var n=still?1:5;
+    for(var i=0;i<n;i++)(function(i){ var e=document.createElement('div'); e.className='cele-float'; e.textContent=i%3===2?'✨':'👍';
+      e.style.left=(42+Math.random()*16)+'vw'; e.style.fontSize=(i?28+Math.random()*18:64)+'px'; e.style.animationDelay=(i*0.12)+'s'; if(still) e.style.animation='celefade 1.2s ease-out forwards';
+      document.body.appendChild(e); setTimeout(function(){ e.remove(); },2600+i*120); })(i);
+    return; }
+  /* confetti a go-go */
+  if(label){ var b=document.createElement('div'); b.className='cele-banner'; b.innerHTML=label; document.body.appendChild(b); setTimeout(function(){ b.remove(); },3600); }
+  if(still) return;
+  var cv=document.createElement('canvas'), W=innerWidth, H=innerHeight, dpr=Math.min(2,window.devicePixelRatio||1);
+  cv.className='cele-canvas'; cv.width=W*dpr; cv.height=H*dpr; document.body.appendChild(cv); var x=cv.getContext('2d'); x.scale(dpr,dpr);
+  var COL=['#12213b','#c69a3c','#2f7d4a','#e0301e','#3b82f6','#ec4899','#facc15','#22c55e','#a855f7'], EMO=['🎉','✨','⭐','💛','🥳'], P=[];
+  var burst=function(x0,y0,ang,spread,n,sp){ for(var i=0;i<n;i++){ var a=ang+(Math.random()-.5)*spread, v=sp*(0.55+Math.random()*0.75);
+      P.push({x:x0,y:y0,vx:Math.cos(a)*v,vy:Math.sin(a)*v,r:Math.random()*6.28,vr:(Math.random()-.5)*.35,w:6+Math.random()*8,h:4+Math.random()*7,c:COL[i%COL.length],
+        e:Math.random()<.07?EMO[(Math.random()*EMO.length)|0]:null,s:Math.random()<.35,wob:Math.random()*6.28,life:1}); } };
+  burst(0,H,-1.05,0.9,170,19); burst(W,H,-2.09,0.9,170,19);                                  /* two cannons from the bottom corners */
+  setTimeout(function(){ burst(W/2,H*0.35,-1.57,6.28,160,13); },450);                        /* a starburst in the middle */
+  setTimeout(function(){ for(var k=0;k<5;k++) burst(Math.random()*W,-10,1.57,1.2,40,4); },900);  /* then it rains */
+  var t0=performance.now();
+  (function step(now){ var dt=Math.min(32,now-(step.l||now))/16.7; step.l=now; x.clearRect(0,0,W,H);
+    P.forEach(function(p){ p.vy+=0.32*dt; p.vx*=0.985; p.vy*=0.985; p.x+=p.vx*dt+Math.sin(p.wob+=0.1*dt)*0.6; p.y+=p.vy*dt; p.r+=p.vr*dt; if(now-t0>3200) p.life-=0.02*dt;
+      x.save(); x.globalAlpha=Math.max(0,p.life); x.translate(p.x,p.y); x.rotate(p.r);
+      if(p.e){ x.font='22px serif'; x.fillText(p.e,-11,8); } else { x.fillStyle=p.c; if(p.s){ x.beginPath(); x.arc(0,0,p.w/2.4,0,6.28); x.fill(); } else { x.scale(1,Math.cos(p.wob)); x.fillRect(-p.w/2,-p.h/2,p.w,p.h); } }
+      x.restore(); });
+    if(now-t0<5200) requestAnimationFrame(step); else cv.remove(); })(t0);
+}catch(e){} }
 /* LifeX and Cigna (Jesse, 9 Oct): Present plays the Manhattan script and Enroll is built around Manhattan, so a
    LifeX or Cigna plan gets a note instead of the script - the quote email and Enroll's data capture still work. */
 var NONMH={lifex:{name:'LifeX',full:'LifeX $500 PPO',url:function(){ return LIFEX_URL; },lab:'LifeX — 1Enrollment client enrollment'},
@@ -4752,7 +4794,7 @@ function presentGo(pg){ var pages=presentPages(), nav=presentNav(), t=presentTie
     +(nx?'<button type="button" class="go" data-go="1">Next: '+esc(nx.next||nx.t)+' →</button>'
         :'<span style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" data-go="quote">Not today — send the quote ↩</button><button type="button" class="go" data-go="enroll">They’re in — Enroll them →</button></span>');
   $('prNav').querySelectorAll('[data-go]').forEach(function(b){ b.onclick=function(){ var g=b.dataset.go;
-    if(g==='enroll') goStep('enroll');
+    if(g==='enroll'){ var fn=enSplit(S.client.pname)[0]; celebrate('confetti','🎉 They’re in!'+(fn?'<small>Welcome aboard, '+esc(fn)+'</small>':'')); goStep('enroll'); }
     else if(g==='quote'){ goStep('quote'); setTimeout(function(){ var q=$('sendQuote'); if(q) q.scrollIntoView({behavior:'smooth',block:'start'}); },60); }
     else presentGo(nav[pos+(+g)]); }; });
   window.scrollTo(0,0); }
@@ -5598,7 +5640,7 @@ var TIER_NAME={good:'Essential',better:'Complete',best:'Comprehensive'};
 /* "▶ Present Comprehensive Plan" - the plan's name in italics; one label for the builder's button and the one under Send the quote */
 function presentBtnLabel(){ var t=chosenTier(), N=tierNonMh(t); if(N) return 'ⓘ '+N.name+' plan — how to present it'; return '▶ Present '+(t?'<i>'+TIER_NAME[t]+'</i> Plan':'a plan'); }
 function chosenTier(){ return (S.chosen&&S.chosen.tier)||null; }
-function chooseTier(t){ S.chosen=S.chosen||{}; S.chosen.tier=(S.chosen.tier===t)?null:t; if(S.chosen.tier&&tierNonMh(t)) setTimeout(function(){ nonMhNotice(t); },0); if(S.chosen.tier){ S.activeTab=t; S.include=S.include||{}; S.include[t]=true; } compute(); autosave(); }
+function chooseTier(t){ S.chosen=S.chosen||{}; S.chosen.tier=(S.chosen.tier===t)?null:t; if(S.chosen.tier) celebrate('thumbs'); if(S.chosen.tier&&tierNonMh(t)) setTimeout(function(){ nonMhNotice(t); },0); if(S.chosen.tier){ S.activeTab=t; S.include=S.include||{}; S.include[t]=true; } compute(); autosave(); }
 function tierHasDental(t){ return ((S.packages[t]||{}).products||[]).some(function(p){ return p.k==='dvh'&&(+p.monthly||0)>0; }); }
 function dentalPrice(t){ try{ var r=pDVH(HF_RATES,ratingAge(),householdKey(),effCfg(t).dvh,(S.client.state||'').toUpperCase()); return r&&r.price!=null?+r.price:null; }catch(e){ return null; } }
 /* Dental stays a yes/no after the choice: the three packages are compared without it, then the

@@ -58,6 +58,10 @@ const TEST = `(async function(){
   var kA=[S.agentWebsite,S.agentBooking]; applySuiteAgent({website:'https://example.com',booking:'https://example.com/book'}); ok(S.agentWebsite==='https://example.com'&&S.agentBooking==='https://example.com/book','website and booking link arrive from the navigator Set up'); S.agentWebsite=kA[0]; S.agentBooking=kA[1];
   var aw=document.getElementById('in_aweb'), kw=aw.value; aw.value=''; agentGlow(); var g1=aw.closest('.fld').classList.contains('needfill'); aw.value='x.com'; agentGlow(); var g2=aw.closest('.fld').classList.contains('needfill'); aw.value=kw; agentGlow();
   ok(g1&&!g2,'an empty agent box glows until it is filled');
+  var kc=S.chosen; S.chosen={}; chooseTier('best'); ok(document.querySelectorAll('.cele-float').length>0,'choosing a plan floats a thumbs-up'); document.querySelectorAll('.cele-float').forEach(function(e){ e.remove(); }); S.chosen=kc; compute();
+  var hasLbP=(S.packages[chosenTier()||S.activeTab].products||[]).some(function(p){ return p.k==='lbp'&&+p.monthly>0; });
+  ok(enFieldsFor('p').some(function(f){ return f[0]==='Living benefits policy #'; })===hasLbP,'living-benefits policy # appears in the applicant block exactly when they have living benefits');
+  enWrite('i:lbPolicyP','LB12345'); ok(S.intake.lbPolicyP==='LB12345','the policy # saves with the quote'); S.intake.lbPolicyP='';
   ok(!!document.getElementById('sqDate')&&!!document.getElementById('sqTime')&&!!document.getElementById('sqPdf')&&document.querySelectorAll('#sendQuote .sqstep').length===3,'Send the quote has its three steps');
   ok(!document.querySelector('#printout .brlist')&&document.getElementById('brochBox').classList.contains('hidein-client'),'the brochure box stays off the printout and Client View');
   buildPrintout(); ok(!document.querySelector('#printout [data-copypic]')&&!/Copy (plans|example|picture)/.test(document.getElementById('printout').textContent),'no copy button inside the printout / emailed quote');
