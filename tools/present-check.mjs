@@ -144,6 +144,7 @@ const TEST = `(async function(){
   var pms=Array.prototype.slice.call(d.querySelectorAll('.pinmark')); ok(pms.length>0&&pms.every(function(x){ return d.defaultView.getComputedStyle(x).display==='none'; }),'section markers (1.2, 5.2 ...) are hidden ('+pms.length+')');
   var spz=Array.prototype.filter.call(d.querySelectorAll('div.say'),function(x){ return /^If they need to think/.test(x.textContent.trim()); }), clz=d.querySelector('[data-closes]');
   ok(spz.length===1&&clz.nextElementSibling===spz[0]&&spz[0].dataset.pg===clz.dataset.pg,'the think-it-over line sits right after the two closes, on the same screen');
+  var lgd=d.querySelector('p.legend'); ok(lgd&&/Red/.test(lgd.textContent)&&/filled automatically/.test(lgd.textContent)&&!/waiting on your answer/.test(lgd.textContent)&&!/Source tags/.test(lgd.textContent),'the key reads blue = filled, red = flagged');
   ok(!/My stab at it/.test(d.body.textContent)&&/Let me do a real one/.test(d.body.textContent),'the 5.2 preface is gone, the example words stay');
   /* catastrophic: the quote page's own event card, anchor vs the chosen package, Bill Saver on, layers open */
   S.negot.on=false; presentGo(presentPageIx('Catastrophic — walk it as layers')); await wait(60);

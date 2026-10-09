@@ -4888,6 +4888,10 @@ function presentPendingEdits(doc){
   /* 8. (Jesse, 9 Oct) the "need to think / talk to a spouse" line closes section 10: after the two closes, before Enroll */
   var cl=doc.querySelector('[data-closes]'); if(cl) Array.prototype.forEach.call(doc.querySelectorAll('body > div.say'),function(x){ if(x.dataset.ppMv||!/^If they need to think/.test((x.textContent||'').trim())) return;
     x.dataset.ppMv='1'; cl.parentNode.insertBefore(x,cl.nextSibling); if(cl.dataset.pg!=null) x.dataset.pg=cl.dataset.pg; x.style.display=cl.style.display; });
+  /* 9. (Jesse, 9 Oct) the key at the top: blue = filled for you, red = flagged. The markers and source tags it used to
+     explain are hidden here, so their lines go. */
+  var lg=doc.querySelector('p.legend'); if(lg&&!lg.dataset.ppLg){ lg.dataset.ppLg='1';
+    lg.innerHTML='<var>Blue</var> = filled automatically from the selected plan or the client’s intake — you never type or remember these.<br><b style="color:#b42318">Red</b> = something flagged — you’ll want to look at that before you say it.'; }
   /* 6. (Jesse, 9 Oct) drop the author's preface above the worked example */
   Array.prototype.forEach.call(doc.querySelectorAll('details.exp .body > p'),function(p){ if(/^My stab at it/.test((p.textContent||'').trim())) p.remove(); });
   /* 3. Section 5 doctor line: the list carries its own "Dr", and it is "they're" (or "they're all" for several) */
