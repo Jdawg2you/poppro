@@ -124,6 +124,7 @@ const TEST = `(async function(){
   ok(drLine2().indexOf('found Dr Ramirez — they’re in the network')>=0&&drLine2().indexOf('Dr Dr')<0,'one doctor: '+drLine2().slice(0,90));
   S.intake.docs1=keepDocs; presentWire(d,'best');
   ok(d.querySelectorAll('.pp-fn').length===1&&/not included in this description/.test(d.body.textContent),'Bill Saver / net footnote sits under Why these figures, once');
+  var pms=Array.prototype.slice.call(d.querySelectorAll('.pinmark')); ok(pms.length>0&&pms.every(function(x){ return d.defaultView.getComputedStyle(x).display==='none'; }),'section markers (1.2, 5.2 ...) are hidden ('+pms.length+')');
   ok(!/My stab at it/.test(d.body.textContent)&&/Let me do a real one/.test(d.body.textContent),'the 5.2 preface is gone, the example words stay');
   /* catastrophic: the quote page's own event card, anchor vs the chosen package, Bill Saver on, layers open */
   S.negot.on=false; presentGo(presentPageIx('Catastrophic — walk it as layers')); await wait(60);
