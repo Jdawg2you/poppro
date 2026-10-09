@@ -67,6 +67,9 @@ const TEST = `(async function(){
   ok(/Let’s get .*Package of Protection!/.test(enrollCheer())&&!/They’re in/.test(enrollCheer()),'the Enroll banner says Let’s get <names> their Package of Protection');
   goStep('enroll'); await wait(200); CELE_GOLD_PENDING=false; goldFinale(); window.dispatchEvent(new Event('focus')); await wait(2500);
   ok(document.querySelectorAll('#followList .fu-glow').length>0,'enrollment email: gold confetti, then the open follow-ups glow'); document.querySelectorAll('.cele-banner,.cele-canvas').forEach(function(e){ e.remove(); }); goStep('quote'); await wait(200);
+  var fb=document.getElementById('fabSave'); ok(fb&&fb.classList.contains('noprint'),'floating Save tab is on the page and never prints');
+  document.body.classList.add('client'); ok(getComputedStyle(fb).display==='none','floating Save hides in Client View'); document.body.classList.remove('client');
+  ok(/^POP_Pro_.+_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{1,2}-[0-9]{2}(am|pm)[.]json$/.test(fileName()),'each save file is named with the local date and time: '+fileName());
   ok(!!document.getElementById('sqDate')&&!!document.getElementById('sqTime')&&!!document.getElementById('sqPdf')&&document.querySelectorAll('#sendQuote .sqstep').length===3,'Send the quote has its three steps');
   ok(!document.querySelector('#printout .brlist')&&document.getElementById('brochBox').classList.contains('hidein-client'),'the brochure box stays off the printout and Client View');
   buildPrintout(); ok(!document.querySelector('#printout [data-copypic]')&&!/Copy (plans|example|picture)/.test(document.getElementById('printout').textContent),'no copy button inside the printout / emailed quote');

@@ -620,6 +620,16 @@
   .en-pol{display:inline-block;margin-left:6px;font-size:11.5px;font-weight:700;color:#17824a;background:#eaf7ef;border:1px solid #b9e3c9;border-radius:999px;padding:1px 8px}
   @keyframes enjust{0%{box-shadow:0 0 0 0 rgba(34,160,90,.6)}100%{box-shadow:0 0 0 8px rgba(34,160,90,0)}}
   .en-f.just input,.en-f.just select{border-color:#22a05a;animation:enjust .9s ease-out}
+  .fab-save{position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:60;display:flex;align-items:center;gap:8px;padding:9px 10px 9px 12px;border:1.5px solid #c69a3c;border-right:none;border-radius:14px 0 0 14px;background:#12213b;color:#fff;font:inherit;cursor:pointer;box-shadow:-2px 4px 14px rgba(18,33,59,.28);max-width:58px;overflow:hidden;transition:max-width .25s ease}
+  .fab-save .fs-ico{font-size:20px;flex:none}
+  .fab-save .fs-txt{display:flex;flex-direction:column;text-align:left;white-space:normal;width:200px;flex:none;opacity:0;transition:opacity .2s}
+  .fab-save .fs-txt b{font-size:13.5px}.fab-save .fs-txt span{font-size:11.5px;color:#e9d6a6;line-height:1.35;margin-top:2px}
+  .fab-save:hover,.fab-save:focus-visible{max-width:280px}.fab-save:hover .fs-txt,.fab-save:focus-visible .fs-txt{opacity:1}
+  .fab-save small{font-size:11px;color:#9fe0b8;font-weight:700;margin-top:3px}.fab-save small:empty{display:none}
+  .fab-save .fs-ico{position:relative}.fab-save.saved .fs-ico::after{content:'✓';position:absolute;right:-6px;bottom:-4px;width:14px;height:14px;border-radius:50%;background:#22a05a;color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center}
+  body.client .fab-save{display:none}
+  @media (max-width:760px){.fab-save{top:auto;bottom:14px;transform:none;border-radius:14px 0 0 14px}}
+  @media print{.fab-save{display:none!important}}
   .cele-canvas{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:9999}
   .cele-float{position:fixed;bottom:12vh;pointer-events:none;z-index:9999;animation:celefloat 2.4s cubic-bezier(.2,.7,.3,1) forwards;filter:drop-shadow(0 4px 8px rgba(0,0,0,.18))}
   @keyframes celefloat{0%{transform:translateY(0) scale(.4) rotate(-8deg);opacity:0}15%{opacity:1;transform:translateY(-8vh) scale(1.1) rotate(6deg)}100%{transform:translateY(-70vh) scale(1) rotate(-4deg);opacity:0}}
@@ -849,6 +859,7 @@ body.client #classicWrap>summary{display:none}
 </style>
 </head>
 <body>
+<button type="button" id="fabSave" class="fab-save noprint hidein-client" onclick="saveQuote()" title="Save Quote — downloads this quote as a file you can load later"><span class="fs-ico">💾</span><span class="fs-txt"><b>Save any time</b><span>Each save makes a new file — when you load later, pick the newest one.</span><small id="fabSaved"></small></span></button>
 <!-- Local compare label: shows only when served on 127.0.0.1:8766 (version B). Never appears on mypoppro.com. -->
 <button type="button" id="presentBack" onclick="presentBack()">← Back to the script</button>
 <div id="verBanner" style="display:none;position:sticky;top:0;z-index:9999;background:#9c3b2f;color:#fff;font:600 13px -apple-system,sans-serif;text-align:center;padding:6px 10px">VERSION B — in progress · compare with A at 127.0.0.1:8765</div>
@@ -901,6 +912,7 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
    <div class="card pad">
     <div class="sectitle"><span class="dot">●</span> Client Intake</div>
     <div class="note" style="padding-top:2px">Fill what the client gives you, then hit Build Quote. It pre-fills the comparison and recommends Good / Better / Best from your answers.</div>
+    <div class="note" style="padding-top:4px">💾 Your browser keeps everything as you work — unless you’re in a private / incognito window or clear your browsing data. To keep a permanent copy on your computer, click <b>Save</b> (top of the page, or the 💾 tab on the right).</div>
     <div class="introbar">
       <button type="button" class="topbtn how" id="howBtn">How to use this tool<small>the flow, start to finish</small></button>
       <a class="topbtn nav" href="https://script.ffloptimum.com/" target="_blank" rel="noopener">Open the Script Navigator ↗<small>choose Health Discovery, then push the client here</small></a>
@@ -1395,7 +1407,7 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
       <ul>
         <li>No <b>Social Security number</b>, <b>bank routing or account number</b>, or draft date. Those go straight into the carrier's application. A driver's licence number is fine.</li>
       </ul>
-      <p style="color:var(--muted);font-size:12px;margin-top:10px"><b>Save Quote</b> downloads the quote as a file and <b>Load Quote</b> opens it again later. The printable client profile lives in the Script Navigator: print it from there.</p>
+      <p style="color:var(--muted);font-size:12px;margin-top:10px">Your browser keeps everything as you work, unless you're in a private / incognito window or clear your browsing data. <b>Save Quote</b> (or the 💾 tab on the right) downloads a permanent copy — each save is a new file named with the date and time, so load the newest one. <b>Load Quote</b> opens it again later. The printable client profile lives in the Script Navigator: print it from there.</p>
     </div>
   </div>
 </div>
@@ -4105,8 +4117,11 @@ function deepMerge(base, over){
 function fileName(){
   var base=(S.client.pname||'').trim(); if(S.client.sname) base+=' '+S.client.sname; if(!base) base='quote';
   var n=base.replace(/[^a-z0-9]+/gi,'_').replace(/^_|_$/g,'');
-  var d=new Date().toISOString().slice(0,10);
-  return 'HealthFirst_'+n+'_'+d+'.json';
+  /* local date AND time (Jesse, 9 Oct): several saves a day each get their own, sortable name - the newest is obvious.
+     (The old UTC date rolled over to tomorrow after 8 pm Eastern.) */
+  var D=new Date(), p2=function(x){ return (x<10?'0':'')+x; }, h=D.getHours();
+  var d=D.getFullYear()+'-'+p2(D.getMonth()+1)+'-'+p2(D.getDate())+'_'+((h%12)||12)+'-'+p2(D.getMinutes())+(h<12?'am':'pm');
+  return 'POP_Pro_'+n+'_'+d+'.json';
 }
 function saveQuote(){
   var data=currentQuote();
@@ -4114,6 +4129,7 @@ function saveQuote(){
   var url=URL.createObjectURL(blob);
   var a=document.createElement('a'); a.href=url; a.download=fileName(); document.body.appendChild(a); a.click(); a.remove();
   setTimeout(function(){URL.revokeObjectURL(url);},1500);
+  var fs=$('fabSaved'); if(fs){ var D=new Date(), h=D.getHours(); fs.textContent='✓ Last saved '+((h%12)||12)+':'+(D.getMinutes()<10?'0':'')+D.getMinutes()+' '+(h<12?'am':'pm'); if($('fabSave')) $('fabSave').classList.add('saved'); }
 }
 /* A Script Navigator profile file (the "… Profile - HEALTH - date.json" the navigator saves) is the
    navigator's own flat answers, not a POP Pro quote. Turn it into the same client object the navigator's
