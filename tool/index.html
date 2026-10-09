@@ -1556,7 +1556,12 @@ function pGAP(R,st,age,hh,cfg){
 /* Living benefits as a package product: one 20-year term policy per covered adult (primary, and spouse
    if covered). Mutual of Omaha TLE is the default (Jacob: 3-month chargeback vs Americo's 6); where MoO
    can't price someone (over 50, or sex not entered) it falls back to Americo Term 125 and says so. */
+/* "Other" carrier (Jesse, 2026-10-08): the agent types the carrier, the coverage and the monthly premium from that
+   carrier's own quote; nothing is looked up or guessed. */
+function lbFaceLabel(f){ f=+String(f||'').replace(/[^\d.]/g,'')||0; return f>=1000&&f%1000===0?'$'+(f/1000)+'K':'$'+f.toLocaleString('en-US'); }
 function pLB1(pp,lc){
+  if(lc&&lc.carrier==='other'){ var om=+String(lc.otherMonthly||'').replace(/[^\d.]/g,''), on=String(lc.otherName||'').trim()||'Other carrier';
+    return om>0?{price:om,note:'',carrier:on}:{price:null,note:pp.tag+': type the monthly premium from the other carrier’s quote'}; }
   var car=lc.carrier||'moo', r=lbRate(car,pp.age,pp.sex,pp.tob,lc.face,'20'), note='';
   if(r.price==null&&car==='moo'){ var r2=lbRate('americo',pp.age,pp.sex,pp.tob,lc.face,'20'); if(r2.price!=null){
       var why=/sex/.test(r.note||'')?'Mutual of Omaha needs the '+pp.tag.toLowerCase()+'’s sex at birth — add it on the Intake and this switches back to Mutual of Omaha.'
@@ -2299,7 +2304,7 @@ function buildTierProducts(c,byKey,extras){
   add('dvh',dres.sparkle?'Sparkle Care Dental — $4,500 per member per year':dres.plan7016?'Dental, Vision & Hearing (7016) — $'+(+dres.max/1000)+'K':'DVH Select — Dental $'+(+c.dvh.max/1000)+'K'+(dr.vis?' + Vision':'')+(dr.hear?' + Hearing':''), dres);
   if(c.hhc){ var hr=pHHC(R,st,age,c.hhc); add('hhc','Home Health Care'+(hr.prod==='Select'?' Select':'')+' — HHC '+c.hhc, hr); }
   if(c.lb){ lbPersons().forEach(function(pp){ var lc=c.lb[pp.k]; if(!lc||!lc.face) return;
-    var r=pLB1(pp,lc); add('lb'+pp.k,'Living Benefits — '+pp.tag+' $'+(+lc.face/1000)+'K term life, 20-year ('+(r.carrier||'')+')', r); }); }
+    var r=pLB1(pp,lc); add('lb'+pp.k,lc.carrier==='other'?'Living Benefits — '+pp.tag+' '+lbFaceLabel(lc.face)+' ('+(r.carrier||'Other carrier')+')':'Living Benefits — '+pp.tag+' $'+(+lc.face/1000)+'K term life, 20-year ('+(r.carrier||'')+')', r); }); }
   if(c.chas&&(c.chas.cancer||c.chas.hs)) add('chas','Cancer / Heart Attack & Stroke — CHAS'+(c.chas.cancer?' Cancer $'+(c.chas.cancer/1000)+'K':'')+(c.chas.hs?(c.chas.cancer?' ·':'')+' Heart & Stroke $'+(c.chas.hs/1000)+'K':''), pCHAS(st,age,hh,c.chas));
   return out.concat(extras||[]);
 }
@@ -4130,7 +4135,8 @@ function renderEnroll(){
   var t=chosenTier()||S.activeTab, pk=S.packages[t]||{products:[]}, c=effCfg(t);
   var name=S.client.pname||'Client'; if(S.client.sname) name+=' & '+S.client.sname;
   var carrierOf=function(p){ if(p.k==='base') return c.base==='lifex'?'LifeX (E123 site)':'Cigna — USA Health / Triad (1Enrollment)';
-    if(p.k==='lbp'||p.k==='lbs'){ var nm=String(p.name||''); if(/americo/i.test(nm)) return 'Americo'; if(/mutual|omaha/i.test(nm)) return 'Mutual of Omaha';   // the policy actually priced
+    if(p.k==='lbp'||p.k==='lbs'){ var lco=(c.lb||{})[p.k.slice(2)]||{}; if(lco.carrier==='other') return String(lco.otherName||'').trim()||'Other carrier';
+      var nm=String(p.name||''); if(/americo/i.test(nm)) return 'Americo'; if(/mutual|omaha/i.test(nm)) return 'Mutual of Omaha';   // the policy actually priced
       var lc=(c.lb||{})[p.k.slice(2)]||{}; return lc.carrier==='americo'?'Americo':'Mutual of Omaha'; }
     if(p.k==='dvh'&&/Sparkle/.test(String(p.name||''))) return 'Sparkle Care Dental — USA Health Plans (1Enrollment)'; return 'ManhattanLife'; };
   var rows=(pk.products||[]).filter(function(p){ return (+p.monthly||0)>0; }), groups={}, order=[];
@@ -4812,8 +4818,13 @@ function pbControls(k,c){
     +'<div style="font-size:11.5px;color:var(--muted)">Two separate policies — if the budget shrinks, drop Heart &amp; Stroke first.</div>'; }
   if(k==='lbp'||k==='lbs'){ var w=k.slice(2), lc=c.lb[w], pp=lbPersons().filter(function(x){ return x.k===w; })[0], rr=pp?pLB1(pp,lc):null;
     var fb=(rr&&rr.note)?'<div style="font-size:12px;color:var(--maroon);font-weight:600">'+rr.note+'</div>':'';
-    return fb+'<div class="two"><div class="f">Coverage<select data-f="lb.'+w+'.face">'+pbOpts([['25000','$25,000'],['50000','$50,000']],lc.face)+'</select></div><div class="f">Carrier<select data-f="lb.'+w+'.carrier">'+pbOpts([['moo','Mutual of Omaha'],['americo','Americo']],lc.carrier||'moo')+'</select></div></div>'
-    +'<div style="font-size:11.5px;color:var(--muted)">20-year term with living benefits for this person. $100K and 30-year rates aren’t loaded yet.</div>'; }
+    var oth=lc.carrier==='other', ev=function(x){ return String(x==null?'':x).replace(/"/g,'&quot;'); };
+    return fb+'<div class="two">'+(oth?'<div class="f">Coverage<input data-f="lb.'+w+'.face" inputmode="numeric" placeholder="e.g. 75000" value="'+ev(lc.face)+'"></div>'
+        :'<div class="f">Coverage<select data-f="lb.'+w+'.face">'+pbOpts([['25000','$25,000'],['50000','$50,000']],lc.face)+'</select></div>')
+      +'<div class="f">Carrier<select data-f="lb.'+w+'.carrier">'+pbOpts([['moo','Mutual of Omaha'],['americo','Americo'],['other','Other…']],lc.carrier||'moo')+'</select></div></div>'
+    +(oth?'<div class="two"><div class="f">Carrier name<input data-f="lb.'+w+'.otherName" placeholder="carrier and product" value="'+ev(lc.otherName)+'"></div><div class="f">Monthly premium<input data-f="lb.'+w+'.otherMonthly" inputmode="decimal" placeholder="$ from their quote" value="'+ev(lc.otherMonthly)+'"></div></div>'
+        +'<div style="font-size:11.5px;color:var(--muted)">Other carrier: type the coverage and monthly premium from that carrier’s own quote.</div>'
+        :'<div style="font-size:11.5px;color:var(--muted)">20-year term with living benefits for this person. $75K / $100K and 30-year rates aren’t loaded yet — use Other for now.</div>'); }
   if(k==='hhc') return '<div class="f">Plan<select data-f="hhc">'+pbOpts([['Classic','Classic'],['Premier','Premier'],['Deluxe','Deluxe']],c.hhc)+'</select></div>';
   if(k==='dvh'&&dentalCo()==='sparkle') return '<div class="two"><div class="f">Sparkle Care Dental<div style="padding:6px 0">$4,500 / member / yr · $50 deductible</div></div></div>';
   if(k==='dvh'&&dvhIs7016()) return '<div class="two"><div class="f">Annual max<select data-f="dvh.max">'+pbOpts(pbAmt(dvh7016Maxes()),dvh7016Max(c.dvh.max))+'</select></div><div class="f">Deductible<div style="padding:6px 0">$100 fixed</div></div></div>';
@@ -4834,7 +4845,7 @@ function pbSummary(k,c,live){
   if(k==='dvh'&&dentalCo()==='sparkle') return '$4,500 per member per year · $50 deductible · no waiting periods · Bento / Cigna DPPO network';
   if(k==='dvh'&&c.dvh&&dvhIs7016()) return m(dvh7016Max(c.dvh.max))+' annual max · $100 deductible · vision & hearing included (7016 plan)';
   if(k==='dvh'&&c.dvh){ var rr=dvhRiders(c.dvh); return m(c.dvh.max)+' annual max · '+m(c.dvh.ded||0)+' deductible · '+(rr.vis||rr.hear?'+ '+[rr.vis?'vision':'',rr.hear?'hearing':''].filter(Boolean).join(' & ')+' rider'+(rr.vis&&rr.hear?'s':''):'dental only'); }
-  if(k==='lbp'||k==='lbs'){ var lc=c.lb[k.slice(2)]; return m(lc.face)+' term life · 20-year · '+((live&&live.name||'').match(/\(([^)]+)\)$/)||[,'Mutual of Omaha'])[1]; }
+  if(k==='lbp'||k==='lbs'){ var lc=c.lb[k.slice(2)]; if(lc&&lc.carrier==='other') return lbFaceLabel(lc.face)+' · '+(String(lc.otherName||'').trim()||'Other carrier'); return m(lc.face)+' term life · 20-year · '+((live&&live.name||'').match(/\(([^)]+)\)$/)||[,'Mutual of Omaha'])[1]; }
   return '';
 }
 function pbSet(c,path,val){
@@ -4851,7 +4862,8 @@ function pbReprice(){ autoPriceTiers(); fill(); compute(); autosave(); }
    Elite?" comparison. A different product replaces it. */
 var BEN_DATA={}, BEN_VIEW=[];
 var BEN_FILE={afc:'afc',sdr:'sdr',his:'his',acc:'acc',gap:'gap',chas:'chas',hhc:'hhc',dvh:'dvh',lbp:'lb',lbs:'lb'};
-function benFileFor(k,c){ if(k==='base') return c.base==='lifex'?'lifex':(c.base==='triad'?'triad':null); if(k==='hhc'&&hhcIsSelect()) return 'hhcs'; if(k==='dvh'&&dentalCo()==='sparkle') return 'sparkle'; if(k==='dvh'&&dvhIs7016()) return 'dvh7016'; return BEN_FILE[k]||null; }
+function benFileFor(k,c){ if((k==='lbp'||k==='lbs')&&c.lb&&c.lb[k.slice(2)]&&c.lb[k.slice(2)].carrier==='other') return null;   /* no brochure for an Other carrier */
+  if(k==='base') return c.base==='lifex'?'lifex':(c.base==='triad'?'triad':null); if(k==='hhc'&&hhcIsSelect()) return 'hhcs'; if(k==='dvh'&&dentalCo()==='sparkle') return 'sparkle'; if(k==='dvh'&&dvhIs7016()) return 'dvh7016'; return BEN_FILE[k]||null; }
 function benCol(k,c){ switch(k){
   case 'afc': return c.afc; case 'acc': return String(c.acc||1); case 'hhc': return c.hhc; case 'dvh': return String((c.dvh&&c.dvh.max)||'');
   case 'lbp': return (c.lb&&c.lb.p&&c.lb.p.carrier)||'moo'; case 'lbs': return (c.lb&&c.lb.s&&c.lb.s.carrier)||'moo';
@@ -4865,7 +4877,7 @@ function benView(d,f,t,k){ var c=effCfg(t), st=(S.client.state||'').toUpperCase(
   var m=benModel(d,st,col,c), no=d.notOffered&&(d.notOffered.states||[]).indexOf(st)>=0?d.notOffered.reason:'', nob=d.noBrochure&&(d.noBrochure.states||[]).indexOf(st)>=0?d.noBrochure.reason:'', miss=(d.missing&&d.missing[col])||'';
   if(miss) m=null;
   var sum=pbSummary(k,c,null)||col;
-  if(k==='lbp'||k==='lbs'){ var lc=c.lb[k.slice(2)]||{}; sum='$'+Number(lc.face||0).toLocaleString('en-US')+' term life · 20-year · '+(lc.carrier==='americo'?'Americo':'Mutual of Omaha'); }
+  if(k==='lbp'||k==='lbs'){ var lc=c.lb[k.slice(2)]||{}; sum=lc.carrier==='other'?lbFaceLabel(lc.face)+' · '+(String(lc.otherName||'').trim()||'Other carrier'):'$'+Number(lc.face||0).toLocaleString('en-US')+' term life · 20-year · '+(lc.carrier==='americo'?'Americo':'Mutual of Omaha'); }
   return {f:f,t:t,k:k,col:col,no:no,nob:nob,miss:miss,title:d.name,sub:({good:'Essential',better:'Complete',best:'Comprehensive'}[t]||t)+' · '+sum,st:st,m:m,cfg:JSON.stringify(c)}; }
 function benOpen(t,k){ var c=effCfg(t), f=benFileFor(k,c); if(!f) return;
   var st=(S.client.state||'').toUpperCase();
@@ -5106,7 +5118,9 @@ function renderBuilder(){
       var live=byKpk[k]||byK[k], price=live?live.monthly:null;
       if(price==null){
         html+='<div class="pbrow off"><div class="pbhead"><span class="nm">'+sl.name+'</span><span class="pr na">not available</span><button class="pbib" data-act="rm" data-k="'+k+'" title="Remove" aria-label="Remove '+sl.name+'">✕</button></div>'
-          +'<div class="pbnote">'+pbWhyNot(k,c,st,age)+'</div></div>';
+          +'<div class="pbnote">'+pbWhyNot(k,c,st,age)+'</div>'
+          /* living benefits keep their controls, so an Other carrier's premium can be typed (or the carrier switched) */
+          +((k==='lbp'||k==='lbs')?'<div class="pbbody" data-k="'+k+'">'+pbControls(k,c)+'</div>':'')+'</div>';
         return;
       }
       sum+=+price||0; var open=PB_OPEN[t+'|'+k], edited=!!(live&&live.manual);
@@ -5180,7 +5194,10 @@ function renderBuilder(){
     col.querySelectorAll('input.pbprice').forEach(function(inp){ inp.onchange=function(){ var v=parseFloat(inp.value); var pk=S.packages[t]; var pr=(pk.products||[]).filter(function(x){ return x.k===inp.dataset.k; })[0]; if(!pr) return;
       if(isNaN(v)||v<0){ delete pr.manual; } else { pr.monthly=Math.round(v*100)/100; pr.manual=true; } pbReprice(); }; inp.onkeydown=function(e){ if(e.key==='Enter') inp.blur(); }; });
     col.querySelectorAll('[data-act="unedit"]').forEach(function(a){ a.onclick=function(e){ e.preventDefault(); var pr=(S.packages[t].products||[]).filter(function(x){ return x.k===a.dataset.k; })[0]; if(pr) delete pr.manual; pbReprice(); }; });
-    col.querySelectorAll('.pbbody select, .pbbody input[type="checkbox"]').forEach(function(el){ el.onchange=function(){ var c=effCfg(t); pbSet(c,el.dataset.f, el.type==='checkbox'?(el.checked?1:0):el.value);
+    col.querySelectorAll('.pbbody select, .pbbody input[type="checkbox"], .pbbody input[data-f^="lb."]').forEach(function(el){ el.onchange=function(){ var c=effCfg(t);
+      var val=el.type==='checkbox'?(el.checked?1:0):el.value; if(/^lb\.[ps]\.(face|otherMonthly)$/.test(el.dataset.f)) val=String(val).replace(/[^\d.]/g,'');
+      if(/^lb\.[ps]\.carrier$/.test(el.dataset.f)&&val!=='other'){ var lc0=c.lb&&c.lb[el.dataset.f.split('.')[1]]; if(lc0&&['25000','50000'].indexOf(String(lc0.face))<0) lc0.face='50000'; }   // back to a rate-table face
+      pbSet(c,el.dataset.f,val);
       var kk=el.closest('.pbbody').dataset.k, pr=(S.packages[t].products||[]).filter(function(x){ return x.k===kk; })[0]; if(pr) delete pr.manual;   // new options → rate-table price again
       if(el.dataset.f==='triadPlan'&&c.his){ c.his.ben=cignaHIS(c.triadPlan); }   // HI Select follows the Cigna deductible
       if(el.dataset.f==='chas.cancer'||el.dataset.f==='chas.hs'){ if(!c.chas.cancer&&!c.chas.hs){ var pk=S.packages[t]; pk.dropped=pk.dropped||[]; pk.dropped.push('chas'); } }
