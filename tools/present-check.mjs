@@ -92,6 +92,8 @@ const TEST = `(async function(){
   S.cur=JSON.parse(kc); presentWire(d,'best');
   ok(!!d.querySelector('.say b > i')&&/insert their situation/.test(d.querySelector('.say b > i').textContent),'(insert their situation) in bold italic');
   ok(!Array.prototype.some.call(d.body.children,function(e){ return /^(Those three are options|One word in that line|Worth knowing so you never sell|One note of the same kind as the CareGuide|The figure in that line is derived)/.test((e.textContent||'').trim())&&fr.contentWindow.getComputedStyle(e).display!=='none'; }),'author notes Jesse removed are hidden');
+  ok(/you.re waiting for confirmation that you.re aligned/.test(d.body.textContent)&&!/Stop here\. You are waiting to hear/.test(d.body.textContent),'section 3 cue: alignment wording');
+  ok(!Array.prototype.some.call(d.querySelectorAll('p.cue'),function(x){ return /This step exists because/i.test(x.textContent)&&fr.contentWindow.getComputedStyle(x).display!=='none'; }),'Q1 note hidden');
   ok(!d.querySelector('var[data-k="client.situation"]')&&d.body.textContent.indexOf('small business owners / 1099')>=0,'their situation is plain script words, no blank');
   ok(!!d.querySelector('[data-screen="lb-price"]'),'lb-price marker is a real element');
   ok(!Array.prototype.some.call(d.body.children,function(e){ return /^\s*↳/.test(e.textContent)&&fr.contentWindow.getComputedStyle(e).display!=='none'; }),'the ↳ explanation lines are hidden');
