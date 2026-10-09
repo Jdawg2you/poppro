@@ -4705,6 +4705,9 @@ function presentPendingEdits(doc){
   /* 5. Before you dial: the quote-tool screenshots can be copied straight from the Quote page */
   Array.prototype.forEach.call(doc.querySelectorAll('.prep li'),function(li){ if(li.dataset.ppQ) return; if(/^Quote-tool screenshots/.test((li.textContent||'').trim())){ li.dataset.ppQ='1';
       li.innerHTML='<b>Quote-tool screenshots</b> for one tier up and one tier down (can be done on the Quote page — <b>📋 Copy plans</b> puts all three on the clipboard).'; } });
+  /* 7. (Jesse, 9 Oct) footnote under "Why these figures": the walk-through leaves out Bill Saver and the net */
+  Array.prototype.forEach.call(doc.querySelectorAll('p'),function(p){ if(p.dataset.ppFn||!/^Why these figures/.test((p.textContent||'').trim())) return; p.dataset.ppFn='1';
+    p.insertAdjacentHTML('beforeend','*'); p.insertAdjacentHTML('afterend','<p class="pp-fn" style="font-size:12.5px;color:#555;font-style:italic;margin:6px 0 0">* CareGuide (Medical Bill Saver) negotiation and the net cash benefit paid to the client are not included in this description. For those details, use the example snapshots below or on the Quote page.</p>'); });
   /* 6. (Jesse, 9 Oct) drop the author's preface above the worked example */
   Array.prototype.forEach.call(doc.querySelectorAll('details.exp .body > p'),function(p){ if(/^My stab at it/.test((p.textContent||'').trim())) p.remove(); });
   /* 3. Section 5 doctor line: the list carries its own "Dr", and it is "they're" (or "they're all" for several) */
