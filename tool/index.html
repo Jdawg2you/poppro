@@ -3463,6 +3463,15 @@ function picOf(kind){ var html='', w=860;
   else if(kind==='example'){ var t=presentTier(), sc=presentExampleSc(); w=760;
     html='<div style="padding:14px 16px;background:#fff"><div style="font-family:Georgia,serif;font-weight:700;font-size:17px;color:#14213d;margin:0 0 8px">'+esc(sc.desc||'Example')+' — '+esc(TIER_NAME[t])+'</div>'
       +evTableHTML(0,{sc:sc,tiers:[t],neg:true,open:true,noAnchor:presentAnchor()==='none'})+'</div>'; }
+  if(kind==='plans'){ /* draw the Client View comparison: show the printout off-screen for a moment, picture its plans row */
+    var po=$('printout'), was=po.getAttribute('style')||''; buildPrintout(); var cmp=po.querySelector('.po-cmp'); if(!cmp) return Promise.reject(new Error('no packages to copy'));
+    po.setAttribute('style','display:block!important;position:fixed;left:-10000px;top:0;width:980px;background:#fff;padding:14px');
+    Array.prototype.forEach.call(po.children,function(c){ c.dataset.ppHid=c.style.display; if(c!==cmp) c.style.display='none'; });
+    /* the client's on-screen controls ("This is my plan", add dental) mean nothing in a text - leave them out */
+    var ctl=Array.prototype.slice.call(cmp.querySelectorAll('.po-choose,.po-dental,.noprint')); ctl.forEach(function(x){ x.dataset.ppHid2=x.style.display; x.style.display='none'; });
+    var restore=function(){ ctl.forEach(function(x){ x.style.display=x.dataset.ppHid2||''; delete x.dataset.ppHid2; }); Array.prototype.forEach.call(po.children,function(c){ c.style.display=c.dataset.ppHid||''; delete c.dataset.ppHid; }); po.setAttribute('style',was); };
+    return loadH2C().then(function(h2c){ return h2c(cmp,{backgroundColor:'#ffffff',scale:2,logging:false}); })
+      .then(function(cv){ restore(); return new Promise(function(ok){ cv.toBlob(function(b){ ok(b); },'image/png'); }); },function(e){ restore(); throw e; }); }
   if(!html) return Promise.reject(new Error('nothing to copy'));
   var box=document.createElement('div'); box.style.cssText='position:fixed;left:-10000px;top:0;width:'+w+'px;background:#fff;padding:0'; box.innerHTML=html; document.body.appendChild(box);
   if(kind==='example'){ Array.prototype.forEach.call(box.querySelectorAll('.evbill,.evhow,.evsrc,.evneg,.picbtn'),function(x){ x.remove(); });
@@ -4692,6 +4701,9 @@ function presentPendingEdits(doc){
       Array.prototype.forEach.call(say.childNodes,function(nd){ if(nd.nodeType===3&&/ten thousand dollars/.test(nd.textContent)&&T0['_exDedWords']) nd.textContent=nd.textContent.replace('ten thousand dollars',T0['_exDedWords']); }); }
     tv.textContent=T0['_exGrand'];
     var ad=say&&say.querySelector('var[data-k="anchor.deductible"]'); if(ad&&T0['_exDedWords']) ad.textContent=T0['_exDedWords']; }
+  /* 5. Before you dial: the quote-tool screenshots can be copied straight from the Quote page */
+  Array.prototype.forEach.call(doc.querySelectorAll('.prep li'),function(li){ if(li.dataset.ppQ) return; if(/^Quote-tool screenshots/.test((li.textContent||'').trim())){ li.dataset.ppQ='1';
+      li.innerHTML='<b>Quote-tool screenshots</b> for one tier up and one tier down (can be done on the Quote page — <b>📋 Copy plans</b> puts all three on the clipboard).'; } });
   /* 3. Section 5 doctor line: the list carries its own "Dr", and it is "they're" (or "they're all" for several) */
   Array.prototype.forEach.call(doc.querySelectorAll('var[data-k="doctor.name"]'),function(v){ var pv=v.previousSibling, nx=v.nextSibling, many=(T0['_docCount']||0)>1;
     if(pv&&pv.nodeType===3) pv.textContent=pv.textContent.replace(/Dr\.?\s*$/,'');
@@ -5333,7 +5345,7 @@ function renderBuilder(){
     +'<button type="button" data-act="reload" title="Put all three packages back to POP Pro’s recommendation" style="font:inherit;font-size:13px;font-weight:700;border-radius:999px;padding:7px 14px;cursor:pointer;border:1.5px solid var(--gold);background:#fffdf7;color:#8a6a1f;margin-right:6px">↺ Reload our recommendation</button>'
     +LINEUPS.map(function(L){ var on=(S.lineup||'mh')===L[0]; return '<button type="button" data-lineup="'+L[0]+'" style="font:inherit;font-size:13px;font-weight:600;border-radius:999px;padding:7px 14px;cursor:pointer;border:1px solid '+(on?'var(--navy)':'#d6cdb4')+';background:'+(on?'var(--navy)':'#fff')+';color:'+(on?'#fff':'var(--ink)')+'">'+L[1]+'</button>'; }).join('')+'</div>';
   lineupBar=lineupBar.replace(/<\/div>$/,presentBtn+'</div>');
-  var html=lineupBar+anchorStrip+'<div class="bh"><h3>Package builder</h3><small>'+st+' · age '+age+' · '+({i:'Individual',s:'Individual + Spouse',c:'Individual + Children',f:'Family'}[householdKey()])+' · prices from the ManhattanLife rate tables</small></div><div class="pb3">';
+  var html=lineupBar+anchorStrip+'<div class="bh" style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap"><h3>Package builder</h3><small>'+st+' · age '+age+' · '+({i:'Individual',s:'Individual + Spouse',c:'Individual + Children',f:'Family'}[householdKey()])+' · prices from the ManhattanLife rate tables</small><button type="button" class="picbtn hidein-client noprint" data-copypic="plans" style="margin-left:auto;background:#e0301e;color:#fff;border-color:#e0301e">📋 Copy plans</button></div><div class="pb3">';
   tiers.forEach(function(T){
     var t=T[0], c=effCfg(t), pk=S.packages[t]||{products:[]}, dropped=pk.dropped||[];
     var built=buildTierProducts(c,null,[]), byK={}; built.forEach(function(p){ byK[p.k]=p; });

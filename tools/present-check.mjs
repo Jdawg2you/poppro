@@ -31,6 +31,9 @@ const TEST = `(async function(){
   ok(Array.prototype.map.call(document.querySelectorAll('#stepper button'),function(b){ return b.dataset.step; }).join()==='intake,quote,present,enroll','stepper order');
   chooseTier('best'); var pb=document.querySelector('[data-act="present"]'); ok(!!pb,'Present button on the Quote step'); pb.click();
   var fr; for(var i=0;i<60;i++){ await wait(100); fr=document.getElementById('prFrame'); if(fr&&fr.contentDocument&&fr.contentDocument.querySelector('var.pp-ok')) break; }
+  var pblob2=null; goStep('quote'); await wait(200); ok(!!document.querySelector('.bh [data-copypic="plans"]'),'Copy plans button on the Package builder');
+  pblob2=await picOf('plans'); ok(pblob2&&pblob2.type==='image/png'&&pblob2.size>50000&&getComputedStyle(document.getElementById('printout')).display==='none','the three plans render to a PNG and the page is left as it was');
+  presentOpen(); for(var ii=0;ii<60;ii++){ await wait(100); fr=document.getElementById('prFrame'); if(fr&&fr.contentDocument&&fr.contentDocument.querySelector('var.pp-ok')) break; }
   ok(S.step==='present','Present step opens');
   var g8=document.querySelector('#clientStrip .grid8'); ok(getComputedStyle(g8).display==='none'&&/Pat/.test(document.getElementById('csSum').textContent),'client strip folds to one line on Present');
   document.getElementById('csCaret').click(); ok(getComputedStyle(g8).display==='grid','caret pins it open'); document.getElementById('csCaret').click(); ok(getComputedStyle(g8).display==='none','caret folds it again');
