@@ -607,6 +607,11 @@
   .ensave{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 14px;margin:0 0 12px;background:#fff8e6;border:1px solid #e6d3a3;border-radius:10px;font-size:14px;color:var(--navy)}.ensave .picbtn{margin-left:auto}#enNmh{flex-basis:100%;order:3;font-size:13.5px}#enNmh:empty{display:none}
   .brlist{list-style:none;margin:10px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:6px 18px}.brlist li{display:flex;align-items:baseline;gap:8px;padding:6px 0;border-bottom:1px dotted var(--line)}.brlist a{font-weight:700;color:var(--navy)}.brlist small{color:var(--muted);font-size:11px;white-space:nowrap}.brlist .brone{margin-left:auto;font:inherit;font-size:11.5px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:2px 9px;cursor:pointer;color:var(--navy);white-space:nowrap;flex:0 0 auto}
   .bdbroch{display:block;margin:10px 0 0;font-weight:700;color:var(--navy)}
+  @keyframes agglow{0%,100%{box-shadow:0 0 0 2px rgba(34,160,90,.35),0 0 8px rgba(34,160,90,.25)}50%{box-shadow:0 0 0 3px rgba(34,160,90,.6),0 0 16px rgba(34,160,90,.45)}}
+  #agentSetup .fld.needfill input{border-color:#22a05a;background:#f2fbf5;animation:agglow 1.8s ease-in-out infinite}
+  #agentSetup .fld.needfill label{color:#17824a}
+  #agentSetupState.needfill-sum{color:#17824a;font-weight:700}
+  @media (prefers-reduced-motion:reduce){#agentSetup .fld.needfill input{animation:none;box-shadow:0 0 0 3px rgba(34,160,90,.5)}}
   .picbar{display:flex;justify-content:flex-end;margin:10px 0 -4px}.picbtn{font:inherit;font-size:12.5px;font-weight:700;border:1px solid #c69a3c;background:#12213b;color:#fff;border-radius:999px;padding:6px 13px;cursor:pointer;box-shadow:0 1px 3px rgba(18,33,59,.25);white-space:nowrap;transition:background .15s}.picbtn:hover{background:#1c3a63}
   .en-hint{font-family:-apple-system,sans-serif;font-weight:400;font-size:12.5px;color:var(--muted)}
   .en-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px}
@@ -899,9 +904,9 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
       <div class="fld"><label>Agent</label><input id="in_agent" placeholder="Your name"></div>
       <div class="fld"><label>Agent phone</label><input id="in_aphone" placeholder="(000) 000-0000"></div>
       <div class="fld"><label>Agent email</label><input id="in_aemail" placeholder="you@agency.com"></div>
-      <div class="fld"><label>NPN <small>optional</small></label><input id="in_anpn" inputmode="numeric" placeholder="National Producer Number"></div>
-      <div class="fld"><label>Website <small>optional</small></label><input id="in_aweb" placeholder="yourwebsite.com"></div>
-      <div class="fld"><label>Booking link <small>optional</small></label><input id="in_abook" placeholder="calendly.com/you"></div>
+      <div class="fld"><label>NPN <small>used in your email signature</small></label><input id="in_anpn" inputmode="numeric" placeholder="National Producer Number"></div>
+      <div class="fld"><label>Website <small>used in client emails and the text</small></label><input id="in_aweb" placeholder="yourwebsite.com"></div>
+      <div class="fld"><label>Booking link <small>used in client emails and the text</small></label><input id="in_abook" placeholder="calendly.com/you"></div>
     </div>
     </details>
 
@@ -4148,8 +4153,14 @@ function agentOf(st){ return {agency:st.agency, agent:(st.client||{}).agent, pho
 /* Agent setup folds closed once agency, name, phone and email are all in; it opens again if any of those four is
    missing. NPN, website and booking are optional and never hold it open. (Jesse, 2026-10-08) */
 function agentSetupMissing(){ var a=[['agency',S.agency],['your name',(S.client||{}).agent],['phone',S.agentPhone],['email',S.agentEmail]]; return a.filter(function(x){ return !String(x[1]||'').trim(); }).map(function(x){ return x[0]; }); }
-function agentSetupFold(force){ var d=$('agentSetup'); if(!d) return; var miss=agentSetupMissing(); if(miss.length) d.open=true; else if(force) d.open=false;
-  var st=$('agentSetupState'); if(st) st.textContent=miss.length?'· needs '+miss.join(', '):'· complete'; }
+/* Every empty agent box glows green until it's filled (Jesse, 9 Oct) - they all end up in the emails, the text and the
+   signature, so "optional" is not how an agent should read them. The fold rule is unchanged: open until the four the
+   tool can't work without are in; the summary line keeps glowing while any of the seven is still empty. */
+var AGENT_BOXES=[['in_agency','agency'],['in_agent','your name'],['in_aphone','phone'],['in_aemail','email'],['in_anpn','NPN'],['in_aweb','website'],['in_abook','booking link']];
+function agentGlow(){ var empty=[]; AGENT_BOXES.forEach(function(b){ var el=$(b[0]); if(!el) return; var f=el.closest('.fld'), e=!String(el.value||'').trim(); if(f) f.classList.toggle('needfill',e); if(e) empty.push(b[1]); });
+  var st=$('agentSetupState'); if(st){ st.textContent=empty.length?'· fill in: '+empty.join(', '):'· complete'; st.classList.toggle('needfill-sum',!!empty.length); } return empty; }
+function agentSetupFold(force){ var d=$('agentSetup'); if(!d) return; var miss=agentSetupMissing(); if(miss.length) d.open=true; else if(force) d.open=false; agentGlow(); }
+document.addEventListener('input',function(e){ if(e.target&&e.target.closest&&e.target.closest('#agentSetup')) agentGlow(); });
 function keepAgent(ag){
   if(ag.agency && (!S.agency || S.agency==='HealthFirst')) S.agency=ag.agency;
   S.client=S.client||{}; if(ag.agent && !S.client.agent) S.client.agent=ag.agent;

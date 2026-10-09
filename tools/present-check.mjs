@@ -55,6 +55,9 @@ const TEST = `(async function(){
   ok(followTasks().some(function(x){ return x.id==='review'; }),'Enroll follow-ups always include the benefits review call');
   var ptx=postTextHTML('best'); ok(/congrats and thank you/.test(ptx)&&/is my agency; /.test(ptx)&&/underwriting/.test(ptx)&&/walk through it all/.test(ptx),'post-call text: congrats, underwriting, who holds the coverage');
   ok(/you did something great for yourself/.test(ptx)&&/Watch your inbox: I’m sending you an email with links to all your product brochures and more detail on everything[.]/.test(ptx)&&/I’m your agent for life — call or text anytime/.test(ptx),'post-call text matches the wording Jesse locked on 9 Oct');
+  var kA=[S.agentWebsite,S.agentBooking]; applySuiteAgent({website:'https://example.com',booking:'https://example.com/book'}); ok(S.agentWebsite==='https://example.com'&&S.agentBooking==='https://example.com/book','website and booking link arrive from the navigator Set up'); S.agentWebsite=kA[0]; S.agentBooking=kA[1];
+  var aw=document.getElementById('in_aweb'), kw=aw.value; aw.value=''; agentGlow(); var g1=aw.closest('.fld').classList.contains('needfill'); aw.value='x.com'; agentGlow(); var g2=aw.closest('.fld').classList.contains('needfill'); aw.value=kw; agentGlow();
+  ok(g1&&!g2,'an empty agent box glows until it is filled');
   ok(!!document.getElementById('sqDate')&&!!document.getElementById('sqTime')&&!!document.getElementById('sqPdf')&&document.querySelectorAll('#sendQuote .sqstep').length===3,'Send the quote has its three steps');
   ok(!document.querySelector('#printout .brlist')&&document.getElementById('brochBox').classList.contains('hidein-client'),'the brochure box stays off the printout and Client View');
   buildPrintout(); ok(!document.querySelector('#printout [data-copypic]')&&!/Copy (plans|example|picture)/.test(document.getElementById('printout').textContent),'no copy button inside the printout / emailed quote');
