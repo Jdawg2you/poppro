@@ -4557,6 +4557,7 @@ function presentScriptTokens(t){ var T=presentTokens(t), C=S.client||{}, I=S.int
   if(+Cu.copay>0) T['cur.copay']=m0(Cu.copay);
   /* the arithmetic: package without living benefits, the living-benefit add-back, the anchor the agent picked */
   var lbMo=(pk.products||[]).filter(function(p){ return p.k==='lbp'||p.k==='lbs'; }).reduce(function(s2,p){ return s2+(+p.monthly||0); },0)+(+pk.lb||0);
+  T['anchor.aside_obj']=(presentHasCur()&&!(+curIn().emp>0))?'those':'that one';
   var planMo=tierTotals(t).mo-lbMo, ak=presentAnchor(), anc=ak==='aca'?(+S.aca.prem>0?acaNetPrem():null):ak==='cur'||ak==='employer'?(+Cu.prem>0?+Cu.prem:null):null;
   T['plan.monthly']=fmt2(planMo); T['lb.addback']=lbMo>0?fmt2(lbMo):''; T['new.total']=fmt2(planMo+lbMo);
   T['anchor.deductible']=ak==='aca'?T['aca.deductible']:(ak==='cur'||ak==='employer')?T['cur.deductible']:'';
@@ -4602,20 +4603,6 @@ function presentMeds(doc,T){ var meds=T['_meds']||[], fill=function(el,m){ Array
   /* after "…it's $X." - split the text that follows the coupon at its first full stop */
   var tn=cv.nextSibling; if(tn&&tn.nodeType===3){ var ix=tn.textContent.indexOf('.'); if(ix>=0){ var rest=tn.splitText(ix+1); rest.parentNode.insertBefore(ul,rest); return; } }
   cv.parentNode.insertBefore(ul,cv.nextSibling); }
-/* TEMPORARY (2026-10-08): three of Jesse's wording rulings, applied on screen until Health ZONE's next version carries
-   them in the source with markers. Delete this function when it arrives; nothing else depends on it.
-   1. "So let's put that one to the side." says "those" when the today version (two plans) was spoken.
-   2. Author notes Jesse removed: the two under section 2 (the "options you pick from" aside, the 1099 flag) and the
-      EasyCare2Go "never sell one benefit twice" note and the Green Imaging "not verified" note in section 8 (the
-      50-90% claim itself is still to be verified - Jesse, tomorrow), and the "figure is derived from the saving" note
-      in section 9.
-   3. "(insert their situation)" is bold italic. */
-function presentTempEdits(doc,useCur){
-  Array.prototype.forEach.call(doc.querySelectorAll('.say'),function(x){ var tn=x.firstChild;
-    if(tn&&tn.nodeType===3&&/So let.s put (that one|those) to the side/.test(tn.textContent)) tn.textContent=tn.textContent.replace(/that one|those/,useCur?'those':'that one'); });
-  Array.prototype.forEach.call(doc.body.children,function(x){ var t=(x.textContent||'').trim(); if(/^Those three are options you pick from/.test(t)||/^One word in that line is worth a second look/.test(t)||/^Worth knowing so you never sell one benefit twice/.test(t)||/^One note of the same kind as the CareGuide one/.test(t)||/^The figure in that line is derived from the saving/.test(t)) x.classList.add('pp-off'); });
-  Array.prototype.forEach.call(doc.querySelectorAll('.say'),function(x){ if(x.dataset.ppSit) return; Array.prototype.forEach.call(x.childNodes,function(nd){ if(nd.nodeType!==3) return; var i=nd.textContent.indexOf('(insert their situation)'); if(i<0) return;
-      var rest=nd.splitText(i), after=rest.splitText('(insert their situation)'.length), b=doc.createElement('b'), it=doc.createElement('i'); it.textContent=rest.textContent; b.appendChild(it); rest.parentNode.replaceChild(b,rest); x.dataset.ppSit='1'; }); }); }
 function m0y(n){ return '$'+Math.round(+n||0).toLocaleString('en-US'); }
 function presentWire(doc,t){ if(!doc||!doc.body) return 0; var T=presentScriptTokens(t), n=0;
   if(!doc.getElementById('ppcss')){ var st=doc.createElement('style'); st.id='ppcss'; st.textContent=PRESENT_CSS; doc.head.appendChild(st); }
@@ -4661,7 +4648,6 @@ function presentWire(doc,t){ if(!doc||!doc.body) return 0; var T=presentScriptTo
   var lg=doc.querySelector('p.legend'); if(lg&&!lg.dataset.ppTags){ lg.dataset.ppTags='1'; var kids=Array.prototype.slice.call(lg.childNodes), cut=-1;
     kids.forEach(function(nd,i){ if(cut<0&&nd.nodeType===3&&/Source tags show/.test(nd.textContent)) cut=i; });
     if(cut>=0){ kids.slice(cut).forEach(function(nd){ nd.remove(); }); var prev=kids[cut-1]; if(prev&&prev.nodeName==='BR') prev.remove(); } }
-  presentTempEdits(doc,useCur);
   presentMeds(doc,T);
   var hasRx=(S.intake.medList||[]).some(function(m){ return m&&String(m.name||'').trim(); });
   Array.prototype.forEach.call(doc.querySelectorAll('[data-rx]'),function(x){ x.classList.toggle('pp-off',(x.getAttribute('data-rx')==='has')!==hasRx); });
