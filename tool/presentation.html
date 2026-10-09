@@ -104,12 +104,12 @@ Source tags show where each piece came from: <span class="who wK">KYLE</span> hi
 
 <h2><span class="n">3</span>Their reason, in their words</h2>
 
-<div class="say">Last time we talked, the thing you highlighted as most important <var data-k="client.household">to you</var> was <var data-k="client.why">&lt;their reason for calling&gt;</var>. That&rsquo;s what I went looking for.<span class="who wM">MIKE</span><span class="pinmark">1.3</span></div>
+<div class="say">Last time we talked, the thing you highlighted as most important <var data-k="client.household_to">to you</var> was <var data-k="client.why">&lt;their reason for calling&gt;</var>. That&rsquo;s what I went looking for.<span class="who wM">MIKE</span><span class="pinmark">1.3</span></div>
 <p style="margin:-4px 0 11px;font-size:12.5px;color:#1d4e79">&#8627; <b>to you</b> becomes <b>to you and your spouse</b> or <b>to you and your family</b>, from who is on the profile. The reason itself is pulled <b>from their intake</b> &mdash; their own words, read back to them, not yours.</p>
 
 <div class="do"><span class="lab">NOT SPOKEN</span>Stop here. You are waiting to hear &ldquo;yes, that&rsquo;s what matters to me.&rdquo; Do not move until you get it.</div>
 
-<div class="say">I think you&rsquo;ll be pleasantly surprised by the options I found <var data-k="client.household">for you and your family</var>. Depending on what you like, I can email you brochures afterward. Sound good? Let&rsquo;s walk through it together.<span class="who wK">KYLE</span></div>
+<div class="say">I think you&rsquo;ll be pleasantly surprised by the options I found <var data-k="client.household_for">for you and your family</var>. Depending on what you like, I can email you brochures afterward. Sound good? Let&rsquo;s walk through it together.<span class="who wK">KYLE</span></div>
 <p style="margin:-4px 0 11px;font-size:12.5px;color:#1d4e79">&#8627; <b>for you and your family</b> follows the profile too &mdash; <b>for you</b>, <b>for you and your spouse</b>, or <b>for you and your family</b>.</p>
 
 
@@ -126,12 +126,12 @@ Source tags show where each piece came from: <span class="who wK">KYLE</span> hi
 
 <div style="border:2px solid #5b3a8a;border-radius:6px;padding:12px 16px;margin:11px 0;background:#faf8fd">
 <p style="margin:0 0 8px;font-weight:700;color:#5b3a8a;font-size:11px;letter-spacing:1px">PICK THE ANCHOR &mdash; THIS NUMBER DRIVES THE CLOSE<span class="pinmark">Q2</span></p>
-<p style="margin:0 0 9px;font-size:13.5px">Click one. Whatever you pick becomes the &ldquo;you were at&rdquo; figure in the arithmetic at step 9 and in the saving, so it has to be set here rather than remembered.</p>
+<p style="margin:0 0 9px;font-size:13.5px">Click one. Whatever you pick becomes the &ldquo;you were at&rdquo; figure in the arithmetic at step 9 and in the saving, so it has to be set here rather than remembered. The one marked <b>&#9733; Suggested</b> is whichever of the two has the higher <i>yearly</i> true cost &mdash; that is the honest comparison, and your pick also sets POP Pro's own anchor.</p>
 <table style="margin:0;font-size:13.5px">
 <tr><th style="width:34px">&nbsp;</th><th>Anchor</th><th>Figure</th><th>When</th></tr>
-<tr data-anchor="aca"><td style="text-align:center;font-size:15px">&#9898;</td><td><b>Marketplace, full price</b></td><td><var data-k="aca.premium">$897</var> / <var data-k="aca.deductible">$10,000</var> ded</td><td>No coverage now, or shopping healthcare.gov</td></tr>
-<tr data-anchor="cur"><td style="text-align:center;font-size:15px">&#9898;</td><td><b>What they pay today</b></td><td><var data-k="cur.premium">$1,400</var> / <var data-k="cur.deductible">$6,000</var> ded</td><td>Already on a plan they pay for themselves</td></tr>
-<tr data-anchor="employer"><td style="text-align:center;font-size:15px">&#9898;</td><td><b>Their payroll deduction</b></td><td><var data-k="cur.deduction">&lt;deduction&gt;</var></td><td>Still at work and the employer pays little</td></tr>
+<tr data-anchor="aca"><td style="text-align:center;font-size:15px">&#9898;</td><td><b>Marketplace, full price</b> <span style="font-size:11px;color:#8a6d1f;font-weight:700">&#9733; SUGGESTED</span></td><td><var data-k="aca.premium">$897</var> / <var data-k="aca.deductible">$10,000</var> ded</td><td><b>Always shown</b> &mdash; the typed healthcare.gov figure, or POP Pro's national-average estimate</td></tr>
+<tr data-anchor="cur"><td style="text-align:center;font-size:15px">&#9898;</td><td><b>What they pay today</b></td><td><var data-k="cur.premium">$1,400</var> / <var data-k="cur.deductible">$6,000</var> ded</td><td>Only if a current premium was entered</td></tr>
+
 <tr data-anchor="none"><td style="text-align:center;font-size:15px">&#9898;</td><td><b>No anchor &mdash; context only</b></td><td>&mdash;</td><td><b>Employer was paying most of it.</b> Say it once, do not compare.</td></tr>
 </table>
 <p style="margin:9px 0 0;font-size:12.5px;color:#555">That last row matters. A subsidised employer premium is not a price they can buy, and rating against it makes everything you show look expensive. Picking it suppresses the saving line rather than printing a flattering fake one.</p>
@@ -272,7 +272,7 @@ Now compare that to where you are today. On a <var data-k="anchor.deductible">$1
 
 <h2><span class="n">9</span>Close</h2>
 
-<div class="say">So the entire package &mdash; your <var data-k="afc.name">AFC Elite</var> health plan (with Specified Disease umbrella for worst-case), <var data-k="dvh.name">DVH Select</var>, <var data-k="acc.name">ER/accident coverage</var>, <var data-k="gap.name">out-of-pocket protection</var>, and the <var data-k="his.name">Hospital Select</var> rider &mdash; comes to <var data-k="plan.monthly">$850</var> per month. That&rsquo;s locked in, <span data-saving>and you&rsquo;re saving <var data-k="savings.monthly">$550</var> vs. what you were paying. One of the biggest savings I&rsquo;ve seen this week!</span><span class="who wK">KYLE</span></div>
+<div class="say">So the entire package &mdash; your <var data-k="plan.products_spoken">AFC Elite health plan (with Specified Disease umbrella for worst-case), DVH Select, ER/accident coverage, out-of-pocket protection, and the Hospital Select rider</var> &mdash; comes to <var data-k="plan.monthly">$850</var> per month. That&rsquo;s locked in, <span data-saving>and you&rsquo;re saving <var data-k="savings.monthly">$550</var> vs. what you were paying. One of the biggest savings I&rsquo;ve seen this week!</span><span class="who wK">KYLE</span></div>
 
 <div class="tip">Build the package so the saving lands between <b>$200 and $400</b>, not as high as it will go. Mike's reasoning: a $700 saving reads as fake, and it means you left holes in the coverage you could have filled. Spend the difference on protection. <span class="pinmark">7.4</span><span class="who wM">MIKE</span></div>
 
@@ -419,6 +419,21 @@ I&rsquo;ve kept a slot open about a week out in case you want to go over anythin
 
 <p class="q">&ldquo;Can you just send me some information?&rdquo;</p>
 <p class="fff">Absolutely. What clients found is that reading it alone didn't show them what they personally qualify for. <span class="ask">I'll send it and walk you through it in five minutes &mdash; this evening or tomorrow morning?</span></p>
+
+<h2><span class="n">13</span>Three fields POP Pro cannot fill yet<span class="pinmark">6.4</span></h2>
+
+<p>Everything else in this script fills from data that already exists. These three do not, so they show red in the sandbox until you decide. Each has a cheap option and a free one.</p>
+
+<table>
+<tr><th>Key</th><th>Where it is spoken</th><th>Your options</th></tr>
+<tr><td><code>client.situation</code></td><td>Section 2 &mdash; the bracket after &ldquo;small business owners&rdquo;</td><td><b>Capture it:</b> one short free-text field on intake, two or three words. <b>Or drop it:</b> Kyle&rsquo;s sentence reads fine without the bracket, you just lose the personalisation you asked for.</td></tr>
+<tr><td><code>doctor.street</code></td><td>Section 5 &mdash; &ldquo;Dr &lt;name&gt; on &lt;street&gt;&rdquo;</td><td><b>Capture it:</b> you already have it on screen in the First Health locator when you take the screenshot, so it is a copy-paste. <b>Or drop it:</b> but the street is the whole point of Mike&rsquo;s move &mdash; clients know their doctor&rsquo;s name and not the address, which is why saying it lands.</td></tr>
+<tr><td><code>drug.cash</code></td><td>Section 7 &mdash; &ldquo;runs about $&lt;cash&gt; at the pharmacy&rdquo;</td><td>POP Pro holds the current <b>copay</b> and the <b>discount-card price</b>, not a cash price. <b>Capture it</b>, or take the reword below &mdash; it needs no new field.</td></tr>
+</table>
+
+<div class="prov">The <code>drug.cash</code> reword, if you want it &mdash; this is Mike's line, not Kyle's, so it is free to change:
+<div class="say" style="font-size:15px">Your <var data-k="drug.name">&lt;drug&gt;</var> &mdash; right now you&rsquo;re paying <var data-k="cur.copay">$&lt;copay&gt;</var> for it. With the discount card I already texted you it&rsquo;s <var data-k="drug.coupon">$&lt;coupon&gt;</var>. And the plan carries a <var data-k="afc.rx_day">$50</var>-a-day prescription benefit up to <var data-k="afc.rx_cap">$750</var> a year, so you&rsquo;re comfortably under it &mdash; and the rest of that benefit is sitting there if something unexpected gets added.</div>
+It swaps an unknown retail price for the copay they actually pay, which is arguably the better comparison anyway: it is their number, not the pharmacy&rsquo;s. Say the word and it replaces the live line.</div>
 
 <p style="margin-top:26px;color:#666;font-size:12.5px">Kyle's scripting from HealthFirst Scripts &amp; Forms.docx section 3, 30 June 2026, kept verbatim where you asked. Figures from AFC7010-FLBR_1125 page 4 (Florida, Elite), shown as examples &mdash; the live script fills them from the selected plan. Ten items still provisional; the decision log is in the build sheet.</p>
 

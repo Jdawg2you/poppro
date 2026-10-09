@@ -45,24 +45,34 @@ const TEST = `(async function(){
   document.querySelector('#prStories [data-story]').click(); ok(/Never a client/.test(document.getElementById('prPop').innerText),'a story pops with the naming rule');
   /* blanks */
   presentWire(d,'best'); var miss={}; d.querySelectorAll('var.pp-miss').forEach(function(v){ miss[v.title.replace(/^.*: /,'')]=1; });
-  var allowed=['client.situation','cur.deduction','doctor.street','client.ht','client.wt','client.email','client.phone','agent.email','agent.website','agent.booking'];
-  ['dvh','acc','gap','his'].forEach(function(k){ if(!S.packages.best.products.some(function(p){ return p.k===k&&+p.monthly>0; })) allowed.push(k+'.name'); });
+  var allowed=['client.situation','doctor.street','drug.cash','cur.copay','client.ht','client.wt','client.email','client.phone','agent.email','agent.website','agent.booking'];
   var bad=Object.keys(miss).filter(function(k){ return allowed.indexOf(k)<0; });
   ok(!bad.length,'blanks the quote can fill are filled; unexpected gaps: '+bad.join(', '));
-  var hasDvh=S.packages.best.products.some(function(p){ return p.k==='dvh'&&+p.monthly>0; }), dv=d.querySelector('var[data-k="dvh.name"]');
-  ok(hasDvh?dv.classList.contains('pp-ok'):/not in this package/.test(dv.title),'DVH: filled when in the package, flagged "not in this package" when not');
+  var ps=d.querySelector('var[data-k="plan.products_spoken"]').textContent;
+  ok(/health plan/.test(ps)&&/, and /.test(ps)&&!/Living Benefits/i.test(ps),'close lists the package in plain English: '+ps);
+  ok(d.querySelector('var[data-k="client.household_to"]').textContent==='to you'&&d.querySelector('var[data-k="client.household_for"]').textContent==='for you','household: to you / for you');
   ok(d.querySelector('var[data-k="afc.rx_cap"]').textContent==='$750','Rx cap from the brochure');
   /* anchor: radios, suggested, none hides saving */
   presentGo(3); await wait(50); var rs=d.querySelectorAll('tr[data-anchor] input[type=radio]'); var visRow=function(a){ return fr.contentWindow.getComputedStyle(d.querySelector('tr[data-anchor="'+a+'"]')).display!=='none'; };
-  ok(visRow('aca')&&visRow('cur')&&visRow('none')&&!visRow('employer'),'anchors: marketplace, today, none — no payroll row');
+  ok(visRow('aca')&&visRow('cur')&&visRow('none')&&!d.querySelector('tr[data-anchor="employer"]'),'anchors: marketplace, today, none — no payroll row');
   ok(/Suggested/.test(d.querySelector('tr[data-anchor="cur"]').innerText),'highest yearly true cost suggested (current plan here)');
   d.querySelector('tr[data-anchor="aca"]').click(); await wait(30); ok(S.intake.anchor==='aca','picking marketplace sets POP Pro anchor');
   d.querySelector('tr[data-anchor="cur"]').click(); await wait(30); ok(S.intake.anchor==='cur','picking today sets POP Pro anchor');
   var keepCur=S.cur; S.cur={}; presentWire(d,'best'); ok(!visRow('cur')&&presentAnchor()==='aca'&&d.querySelector('tr[data-anchor="aca"] input').checked,'no current premium: today row gone, marketplace selected');
   S.cur=keepCur; presentWire(d,'best');
   d.querySelector('tr[data-anchor="none"]').click(); await wait(30);
-  ok(rs[3].checked&&Array.prototype.every.call(d.querySelectorAll('[data-saving]'),function(x){ return fr.contentWindow.getComputedStyle(x).display==='none'; }),'none: radio ticked and both saving lines hidden');
+  ok(d.querySelector('tr[data-anchor="none"] input').checked&&Array.prototype.every.call(d.querySelectorAll('[data-saving]'),function(x){ return fr.contentWindow.getComputedStyle(x).display==='none'; }),'none: radio ticked and both saving lines hidden');
   d.querySelector('tr[data-anchor="cur"]').click(); await wait(30);
+  /* catastrophic: the quote page's own event card, anchor vs the chosen package, Bill Saver on, layers open */
+  S.negot.on=false; presentGo(presentPageIx('Catastrophic — walk it as layers')); await wait(60);
+  var mc=d.querySelector('[data-mount="conditions"]'), tab=mc&&mc.querySelector('.evtab');
+  ok(!!tab&&tab.classList.contains('open')&&mc.closest('details').open,'catastrophic: real event card, layers open');
+  ok(tab&&/repeat\\(2,/.test(tab.getAttribute('style'))&&tab.querySelectorAll('.c.h.anc').length===1,'two columns: their anchor and the chosen package');
+  ok(/Bill after Medical Bill Saver/.test(tab.innerText),'Bill Saver applied even with the quote-page switch off');
+  ok(fr.contentWindow.getComputedStyle(tab).display==='grid','the quote page styling reaches the frame');
+  var cs=mc.querySelector('[data-pp="cond"]'); cs.value='arm'; cs.dispatchEvent(new Event('change')); await wait(40);
+  ok(S.present.cond==='arm'&&/Broken arm|2,209/i.test(d.querySelector('[data-mount="conditions"]').innerText),'picking what happened redraws the card');
+  S.negot.on=true;
   /* prescriptions, closes */
   ok(d.querySelector('[data-rx="none"]').classList.contains('pp-off')&&!d.querySelector('[data-rx="has"]').classList.contains('pp-off'),'Rx: the has-prescriptions version is served');
   var closeIx=presentPageIx('Pick your close'); presentGo(closeIx); await wait(30);
@@ -74,6 +84,10 @@ const TEST = `(async function(){
   var sel=d.querySelector('[data-lb="lb.p.face"]'); sel.value='25000'; sel.dispatchEvent(new Event('change')); await wait(80);
   ok(effCfg('best').lb.p.face==='25000','LB in the script writes back to the package');
   sel=d.querySelector('[data-lb="lb.p.face"]'); sel.value='50000'; sel.dispatchEvent(new Event('change')); await wait(80);
+  var pkb=S.packages.best; pkb.dropped=(pkb.dropped||[]).concat(['lbp']); pbReprice(); presentWire(d,'best'); await wait(40);
+  var addB=d.querySelector('[data-lbadd="p"]'); ok(!!addB&&/\$/.test(d.querySelector('[data-mount="lb"]').innerText),'not in the package: priced live with an Add button');
+  addB.click(); await wait(80);
+  ok(S.packages.best.products.some(function(p){ return p.k==='lbp'&&+p.monthly>0; })&&/In the package/.test(d.querySelector('[data-mount="lb"]').innerText),'Add puts it on the package and shows it as in');
   /* Present ends at the close: Enroll or send the quote */
   var nav=presentNav(); presentGo(nav[nav.length-1]); await wait(30);
   ok(pages[nav[nav.length-1]].t==='Pick your close','Present ends on Pick your close');
