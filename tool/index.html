@@ -3875,7 +3875,7 @@ function buildPrintout(){
   var tfra=html; html=main;
 
   /* ---- event illustrations, page 3: the two example cards, on a page of their own ---- */
-  var showEvents=false, evs=[evTableHTML(0),evTableHTML(1)];
+  var showEvents=false, evs=[evTableHTML(0,{noBtn:true}),evTableHTML(1,{noBtn:true})];
   if(evs[0]||evs[1]) html+='<div class="po-newpage po-evpage">';
   evs.forEach(function(t,i){ if(!t) return; showEvents=true; var d=(S.ev[i]||{}).desc;
     html+='<div class="po-event"><div class="band">'+(d?'If this happens: <span class="d">'+esc(d)+'</span>':'Example '+(i+1))+negToggleHTML(i)+'</div>'+t+'</div>'; });

@@ -36,6 +36,9 @@ const TEST = `(async function(){
   var eb=document.querySelector('.evtab .evcorner [data-copypic="ev0"]'); ok(!!eb,'Copy example button sits in the corner of the Quote example table');
   var ebl=await picOf('ev0'); ok(ebl&&ebl.type==='image/png'&&ebl.size>50000,'the Quote example renders to a PNG');
   var etmp=document.createElement('div'); etmp.innerHTML=evTableHTML(0,{open:true,pic:true}); var en=etmp.querySelector('.evcorner .evname'); ok(en&&!etmp.querySelector('.evcorner button')&&en.textContent===(S.ev[0].desc||S.ev[0].label||en.textContent),'in the picture the corner names the example instead of the button');
+  buildPrintout(); ok(!document.querySelector('#printout [data-copypic]')&&!/Copy (plans|example|picture)/.test(document.getElementById('printout').textContent),'no copy button inside the printout / emailed quote');
+  var cps=Array.prototype.slice.call(document.querySelectorAll('[data-copypic]')); ok(cps.length>=3&&cps.every(function(b){ return !!b.closest('.noprint')&&!!b.closest('.hidein-client'); }),'every copy button is screen-only: hidden on print and in Client View ('+cps.length+')');
+  document.body.classList.add('client'); ok(cps.every(function(b){ return !b.offsetParent; }),'Client View shows no copy button'); document.body.classList.remove('client');
   presentOpen(); for(var ii=0;ii<60;ii++){ await wait(100); fr=document.getElementById('prFrame'); if(fr&&fr.contentDocument&&fr.contentDocument.querySelector('var.pp-ok')) break; }
   ok(S.step==='present','Present step opens');
   var g8=document.querySelector('#clientStrip .grid8'); ok(getComputedStyle(g8).display==='none'&&/Pat/.test(document.getElementById('csSum').textContent),'client strip folds to one line on Present');
