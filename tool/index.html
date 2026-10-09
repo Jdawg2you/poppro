@@ -2474,7 +2474,10 @@ function isRateDriven(nm){
       || /home health|\bhhc\b/.test(nm)
       || /specified disease/.test(nm);
 }
-function manualExtras(prev){ return (prev||[]).filter(function(p){ return !p.k && !isRateDriven(p.name); }); }
+/* The old flat placeholders (Aetna cancer $62.50, MLAC final expense $27.90...) seeded every blank quote and survived
+   every reprice; Jesse, 9 Oct: remove them. An agent's own product now comes in through Add product -> Other. */
+var LEGACY_PLACEHOLDERS=(function(){ var n={}; ['good','better','best'].forEach(function(t){ defProducts(t).forEach(function(p){ n[p.name]=1; }); }); return n; })();
+function manualExtras(prev){ return (prev||[]).filter(function(p){ return !p.k && (p.other || (!isRateDriven(p.name) && !LEGACY_PLACEHOLDERS[p.name])); }); }
 function effCfg(t){ S.cfg=S.cfg||{}; if(!S.cfg[t]) S.cfg[t]=cfgClone(TIERCFG[t]); return S.cfg[t]; }
 /* Pure builder — returns a priced products array for a config. Does not mutate state. */
 function buildTierProducts(c,byKey,extras){
@@ -2785,9 +2788,9 @@ function blankState(){
     aca:{subsidy:0,prem:0,ded:0,oop:0,med:0,visits:0,copay:0,fullded:true},
     activeTab:'best',
     packages:{
-      good:{products:defProducts('good'),dropped:[],lb:0,lbCarrier:'',lbCov:'',med:0,rxBenefit:0},
-      better:{products:defProducts('better'),dropped:[],lb:0,lbCarrier:'',lbCov:'',med:0,rxBenefit:0},
-      best:{products:defProducts('best'),dropped:[],lb:0,lbCarrier:'',lbCov:'',med:0,rxBenefit:0}
+      good:{products:[],dropped:[],lb:0,lbCarrier:'',lbCov:'',med:0,rxBenefit:0},
+      better:{products:[],dropped:[],lb:0,lbCarrier:'',lbCov:'',med:0,rxBenefit:0},
+      best:{products:[],dropped:[],lb:0,lbCarrier:'',lbCov:'',med:0,rxBenefit:0}
     },
     pension:{monthly:0,note:'e.g., IUL / tax-free retirement savings for your future',cv10:0,cv20:0,cv30:0,leg1:0,leg25:0},
     ev:[evScn('hosp'),evScn('urgent')],   // the two example cards: same builder, any scenario
@@ -5614,6 +5617,12 @@ function renderBuilder(){
           +'</div>':'')+'</div>';
     });
     (pk.products||[]).forEach(function(p,i){ if(p.k) return; sum+=+p.monthly||0;
+      if(p.other){ var ev2=function(x){ return String(x==null?'':x).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); };
+        html+='<div class="pbrow pbother"><div class="pbhead"><span class="nm">Other product<br><span style="font-size:11px;font-weight:500;color:var(--maroon)">typed in — not from the rate tables</span></span><span class="pr">'+pbMoney(p.monthly)+'</span>'
+          +'<button class="pbib" data-act="rmx" data-i="'+i+'" title="Remove" aria-label="Remove this product">✕</button></div>'
+          +'<div class="pbbody"><div class="f">Carrier, product and coverage<input data-act="oname" data-i="'+i+'" placeholder="e.g. Aetna Cancer lump sum — $30,000" value="'+ev2(p.name)+'"></div>'
+          +'<div class="f">Monthly premium<input data-act="oprice" data-i="'+i+'" inputmode="decimal" placeholder="$0.00" value="'+(+p.monthly>0?'$'+(+p.monthly).toFixed(2):'')+'"></div></div></div>';
+        return; }
       html+='<div class="pbrow"><div class="pbhead"><span class="nm">'+p.name.replace(/</g,'&lt;')+'<br><span style="font-size:11px;font-weight:500;color:var(--maroon)">typed in — not from the rate tables</span></span><span class="pr">'+pbMoney(p.monthly)+'</span>'
         +'<button class="pbib" data-act="rmx" data-i="'+i+'" title="Remove" aria-label="Remove '+p.name.replace(/"/g,'')+'">✕</button></div></div>'; });
 
@@ -5621,7 +5630,8 @@ function renderBuilder(){
     var lbMissing=addable.filter(function(sl){ return sl.k==='lbp'||sl.k==='lbs'; });
     var lbAll=lbMissing.length===(pbHasSpouse()?2:1);
     if(lbAll&&lbMissing.length>1){ addable=addable.filter(function(sl){ return sl.k!=='lbp'&&sl.k!=='lbs'; }); addable.push({k:'lb*',name:'Living benefits (each covered adult)'}); }
-    if(addable.length||unavail.length) html+='<div class="pbadd"><select data-act="add" aria-label="Add a product"><option value="">＋ Add product</option>'+addable.map(function(sl){ return '<option value="'+sl.k+'">'+sl.name+'</option>'; }).join('')
+    html+='<div class="pbadd"><select data-act="add" aria-label="Add a product"><option value="">＋ Add product</option>'+addable.map(function(sl){ return '<option value="'+sl.k+'">'+sl.name+'</option>'; }).join('')
+      +'<option value="other">Other — type in a product that isn’t listed…</option>'
       +unavail.map(function(n){ return '<option disabled>'+n+' — not sold in '+st+'</option>'; }).join('')+'</select>'
       +(unavail.length?'<div class="pbna">Not sold in '+st+': '+unavail.join(', ')+'</div>':'')+'</div>';
     totals[t]=sum;
@@ -5663,7 +5673,10 @@ function renderBuilder(){
     col.querySelectorAll('[data-act="tog"]').forEach(function(b){ b.onclick=function(){ var key=t+'|'+b.dataset.k; PB_OPEN[key]=!PB_OPEN[key]; renderBuilder(); }; });
     col.querySelectorAll('[data-act="rm"]').forEach(function(b){ b.onclick=function(){ var pk=S.packages[t]; pk.dropped=pk.dropped||[]; if(pk.dropped.indexOf(b.dataset.k)<0) pk.dropped.push(b.dataset.k); pbReprice(); }; });
     col.querySelectorAll('[data-act="rmx"]').forEach(function(b){ b.onclick=function(){ S.packages[t].products.splice(+b.dataset.i,1); pbReprice(); }; });
+    col.querySelectorAll('[data-act="oname"]').forEach(function(inp){ inp.onchange=function(){ var p=S.packages[t].products[+inp.dataset.i]; if(p){ p.name=inp.value.trim(); compute(); autosave(); } }; });
+    col.querySelectorAll('[data-act="oprice"]').forEach(function(inp){ inp.onchange=function(){ var p=S.packages[t].products[+inp.dataset.i]; if(p){ p.monthly=Math.round((parseFloat(String(inp.value).replace(/[^0-9.]/g,''))||0)*100)/100; pbReprice(); } }; });
     col.querySelectorAll('[data-act="add"]').forEach(function(sel){ sel.onchange=function(){ var k=sel.value; if(!k) return; var c=effCfg(t), pk=S.packages[t];
+      if(k==='other'){ pk.products=pk.products||[]; pk.products.push({name:'',monthly:0,other:true}); pbReprice(); setTimeout(function(){ var el=document.querySelectorAll('[data-act="oname"]'); for(var q=el.length-1;q>=0;q--){ if(!el[q].value){ el[q].focus(); break; } } },60); return; }
       pk.dropped=(pk.dropped||[]).filter(function(x){ return x!==k; });
       if(k==='sdr'&&!c.sdr) c.sdr=cfgClone(PB_DEFAULT.sdr);
       if(k==='lb*'||k==='lbp'||k==='lbs'){ c.lb=c.lb||{}; (k==='lb*'?lbPersons().map(function(pp){ return pp.k; }):[k.slice(2)]).forEach(function(w){ if(!(c.lb[w]&&c.lb[w].face)) c.lb[w]=cfgClone(PB_DEFAULT.lb); pk.dropped=pk.dropped.filter(function(x){ return x!=='lb'+w; }); PB_OPEN[t+'|lb'+w]=true; }); pbReprice(); return; }
