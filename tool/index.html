@@ -1247,7 +1247,7 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
   </div><!-- /step-quote -->
 
   <div id="step-present" class="step">
-    <div class="card pad" id="presentHost"></div>
+    <div class="card pad" id="presentHost" style="padding:14px 16px"></div>
   </div>
 
   <div id="step-enroll" class="step">
@@ -4456,7 +4456,9 @@ function presentPaginate(doc){ if(!doc||!doc.body||doc.body.dataset.pp) return; 
     PRESENT_PAGES.forEach(function(p){ if((p.sc||p.m)&&at(el,p)) cur=p.t==='_rail'?-1:pages.indexOf(p); });
     el.dataset.pg=String(cur); });
   doc.body.dataset.pp='1'; }
-function presentShowPage(doc,pg){ var set=[].concat(pg); if(!doc||!doc.body) return; Array.prototype.forEach.call(doc.body.children,function(el){ if(el.dataset.pg!=null) el.style.display=set.indexOf(+el.dataset.pg)>=0?'':'none'; }); }
+function presentShowPage(doc,pg){ var set=[].concat(pg); if(!doc||!doc.body) return; var first=true;
+  Array.prototype.forEach.call(doc.body.children,function(el){ if(el.dataset.pg==null) return; var on=set.indexOf(+el.dataset.pg)>=0; el.style.display=on?'':'none';
+    if(on&&first&&!el.classList.contains('pp-off')){ el.style.marginTop='0'; first=false; } else if(on) el.style.marginTop=''; }); }
 /* the screens Present walks through; the application screens are shown on Enroll instead */
 function presentNav(){ var out=[]; presentPages().forEach(function(p,i){ if(!p.en) out.push(i); }); return out; }
 function presentPageIx(title){ return presentPages().map(function(p){ return p.t; }).indexOf(title); }
@@ -4583,7 +4585,12 @@ function presentScriptTokens(t){ var T=presentTokens(t), C=S.client||{}, I=S.int
   return T; }
 /* where a blank can be typed into on the Apply panel, and the profile field it writes back to */
 var PRESENT_WRITEBACK={'client.legal_name':'c:pname','client.dob':'c:dob','client.phone':'i:phone','client.email':'i:email','client.wt':'i:pweight','doctor.name':'i:docs1'};
-var PRESENT_CSS='.who{display:none!important}.pp-off{display:none!important}.pp-chosen{outline:3px solid #2f7d4a;border-radius:6px}var.pp-ok{background:#fff3cf;border-radius:3px;padding:0 2px;font-style:normal}var.pp-miss{background:#fde8e8;color:#b42318;border-radius:3px;padding:0 2px;font-style:normal}'
+var PRESENT_CSS='body{padding:10px 18px 12px!important;max-width:none!important}'
+ /* tighter rhythm on the agent's screen (Jesse, 2026-10-09): less white space, more above the fold */
+ +'h2{margin:16px 0 8px!important;padding-bottom:4px!important}body>h2:first-of-type,[data-pg] h2:first-child{margin-top:4px!important}'
+ +'h3{margin:12px 0 4px!important}.say{margin:6px 0!important;padding:9px 14px!important}.do,.aside,.tip,.prov{margin:6px 0!important;padding-top:8px!important;padding-bottom:8px!important}'
+ +'p{margin:0 0 8px}.cue{margin:4px 0 6px!important}'
+ +'.who{display:none!important}.pp-off{display:none!important}.pp-chosen{outline:3px solid #2f7d4a;border-radius:6px}var.pp-ok{background:#fff3cf;border-radius:3px;padding:0 2px;font-style:normal}var.pp-miss{background:#fde8e8;color:#b42318;border-radius:3px;padding:0 2px;font-style:normal}'
  +'tr[data-anchor]{cursor:pointer}tr[data-anchor].pp-on td{background:#e8f3ea}tr[data-anchor].pp-on td:first-child:after{content:"●";color:#2f7d4a}'
  +'.pp-pick{font:inherit;font-size:12px;font-weight:700;border:1px solid #16203c;background:#fff;color:#16203c;border-radius:6px;padding:4px 10px;cursor:pointer;margin:0 0 8px}'
  +'.pp-mount select,.pp-mount textarea{font:inherit;font-size:13.5px;border:1px solid #9ab6dd;border-radius:4px;padding:4px 7px}.pp-mount textarea{width:100%;min-height:90px;box-sizing:border-box;margin-top:8px}'
