@@ -96,6 +96,16 @@ const TEST = `(async function(){
   var addB=d.querySelector('[data-lbadd="p"]'); ok(!!addB&&/\$/.test(d.querySelector('[data-mount="lb"]').innerText),'not in the package: priced live with an Add button');
   addB.click(); await wait(80);
   ok(S.packages.best.products.some(function(p){ return p.k==='lbp'&&+p.monthly>0; })&&/In the package/.test(d.querySelector('[data-mount="lb"]').innerText),'Add puts it on the package and shows it as in');
+  /* Other carrier, typed in the script, is the same setting the builder shows */
+  var cs=d.querySelector('[data-lb="lb.p.carrier"]'); cs.value='other'; cs.dispatchEvent(new Event('change')); await wait(60);
+  var fi=function(n2){ return d.querySelector('[data-lb="lb.p.'+n2+'"]'); };
+  ok(!!fi('otherName')&&!!fi('otherMonthly')&&fi('face').tagName==='INPUT','Other opens carrier / coverage / monthly in the script');
+  fi('face').value='100,000'; fi('face').dispatchEvent(new Event('change')); await wait(40);
+  fi('otherName').value='Corebridge QoL Flex'; fi('otherName').dispatchEvent(new Event('change')); await wait(40);
+  fi('otherMonthly').value='52.10'; fi('otherMonthly').dispatchEvent(new Event('change')); await wait(80);
+  var lpr=S.packages.best.products.filter(function(p){ return p.k==='lbp'; })[0];
+  ok(lpr&&lpr.monthly===52.1&&lpr.name.indexOf('$100K (Corebridge QoL Flex)')>=0&&effCfg('best').lb.p.otherName==='Corebridge QoL Flex','script Other writes the builder setting: '+(lpr&&lpr.name));
+  cs=d.querySelector('[data-lb="lb.p.carrier"]'); cs.value='americo'; cs.dispatchEvent(new Event('change')); await wait(60);
   /* Present ends at the close: Enroll or send the quote */
   var nav=presentNav(); presentGo(nav[nav.length-1]); await wait(30);
   ok(pages[nav[nav.length-1]].t==='Pick your close','Present ends on Pick your close');
@@ -110,27 +120,38 @@ const TEST = `(async function(){
   document.querySelector('#prNav [data-go="quote"]').click(); await wait(100);
   ok(S.step==='quote'&&!!document.querySelector('#step-quote #sendQuote #emailBtn')&&!document.querySelector('#step-enroll #emailBtn'),'Not today → Quote, where Send the quote now lives');
   /* Enroll in call order */
-  goStep('enroll'); var ef; for(var k2=0;k2<60;k2++){ await wait(100); ef=document.getElementById('enFrame'); if(ef.contentDocument&&ef.contentDocument.querySelector('var.pp-ok')) break; }
-  var ed=ef.contentDocument, vis=function(doc){ return Array.prototype.filter.call(doc.body.children,function(e){ return e.dataset.pg!=null&&e.style.display!=='none'; }).map(function(e){ return +e.dataset.pg; }); };
-  await wait(100); ok(!ed.querySelector('[data-mount="lifeapp"]')&&!/EVERYTHING IT WILL ASK FOR/i.test(ed.body.innerText),'no script application panel - POP Pro blocks only');
+  goStep('enroll'); await wait(300);
   var pp=document.getElementById('enPeople');
-  ok(/First name/.test(pp.innerText)&&/Last name/.test(pp.innerText)&&/Pat/.test(pp.innerText)&&/Present/.test(pp.innerText),'name split into first / last');
-  var em=pp.querySelector('[data-enw="i:email"]'); ok(!!em,'blank email is typeable'); em.value='pat@example.com'; em.dispatchEvent(new Event('change'));
-  ok(S.intake.email==='pat@example.com','typed blank writes back to the profile');
-  var ln=document.querySelector('#enPeople [data-copy="Present"]'); ok(!!ln,'last name has its own copy button');
-  var bn=document.querySelector('#enPeople [data-bene="0:name"]'); bn.value='Sam Present'; bn.dispatchEvent(new Event('change'));
-  var bp=document.querySelector('#enPeople [data-bene="0:pct"]'); bp.value='100'; bp.dispatchEvent(new Event('change'));
+  ok(!document.getElementById('enFrame')&&!document.getElementById('enScriptApp'),'no script application card - the person blocks are section 2');
+  var val=function(path){ var el=pp.querySelector('[data-enw="'+path+'"]'); return el&&el.value; };
+  ok(val('name:p:0')==='Pat'&&val('name:p:1')==='Present','first / last name are their own boxes');
+  ok(pp.querySelectorAll('.en-person').length>=1&&!pp.querySelector('details'),'blocks are open, not collapsed');
+  var em=pp.querySelector('[data-enw="i:email"]'); em.value='pat@example.com'; em.dispatchEvent(new Event('change'));
+  ok(S.intake.email==='pat@example.com','a typed box writes back to the profile');
+  var ln=pp.querySelector('[data-enw="name:p:1"]'); ln.value='Presently'; ln.dispatchEvent(new Event('change'));
+  ok(S.client.pname==='Pat Presently','editing the last name updates the profile name');
+  var tb=pp.querySelector('[data-enw="tob:tobaccoP"]'); tb.value='Yes'; tb.dispatchEvent(new Event('change')); ok(S.intake.tobaccoP===true,'tobacco Yes/No writes back');
+  var nm=pp.querySelector('[data-enl="med:p:new"]'); nm.value='Metformin'; nm.dispatchEvent(new Event('change')); pp=document.getElementById('enPeople');
+  ok(pp.querySelectorAll('[data-enl^="med:p:"]:not([data-enl$=":new"])').length===2&&S.intake.medList.some(function(m){ return m.name==='Metformin'&&m.forP; }),'medications: a row each, and a new one lands in the profile');
+  var bn=pp.querySelector('[data-bene="p:0:name"]'); bn.value='Sam Present'; bn.dispatchEvent(new Event('change'));
+  var bp=pp.querySelector('[data-bene="p:0:pct"]'); bp.value='100'; bp.dispatchEvent(new Event('change'));
   ok(S.intake.benes&&S.intake.benes[0].name==='Sam Present'&&S.intake.benes[0].pct==='100','beneficiary name and % save to the profile');
-  var nt=document.getElementById('enNotes'); nt.value='code word: bluebird'; nt.dispatchEvent(new Event('input'));
-  ok(S.intake.notes==='code word: bluebird'&&document.querySelectorAll('#step-enroll textarea#enNotes').length===1,'one Notes box, writing the profile notes');
-  ok(!!document.querySelector('[data-enprof="save"]')&&!!document.querySelector('[data-enprof="print"]'),'save / print profile at the end');
+  var mainN=document.getElementById('enNotes'); mainN.value='code word: bluebird'; mainN.dispatchEvent(new Event('input'));
+  var pn=pp.querySelector('[data-pnote="p"]'); pn.value='prefers texts after 5pm'; pn.dispatchEvent(new Event('input'));
+  ok(/code word: bluebird/.test(S.intake.notes)&&/— From the application —/.test(S.intake.notes)&&/Pat: prefers texts after 5pm/.test(S.intake.notes),'person notes land in the one main notes field as "Name: …"');
+  pn.value='prefers texts after 6pm'; pn.dispatchEvent(new Event('input'));
+  ok((S.intake.notes.match(/Pat: /g)||[]).length===1&&/after 6pm/.test(S.intake.notes),'editing a person note replaces its line, never stacks');
+  ok(/For security purposes/.test(pp.querySelector('.en-say').innerText),'security question sits beside the maiden-name box');
+  ok(['lnkMutual','lnkNLG','lnkAmerico','lnkManhattan','lnkCigna','lnkLifex'].every(function(id){ return document.getElementById(id).style.display!=='none'; }),'standard life and health links always shown');
+  ok(document.getElementById('lnkNLG').href.indexOf('nationallife.com/agent')>=0,'National Life Group agent login');
+  var order=['enLife','enPeople','enScriptEnd','enHealth'].map(function(id){ return document.getElementById(id).getBoundingClientRect().top; });
+  ok(order.every(function(v,i){ return !i||v>order[i-1]; }),'Enroll order: life → each person → wrapping up → health');
+  var fl=document.getElementById('followList').innerText;
+  ok(/Tax-Free Retirement Account/.test(fl)&&/employer/.test(fl)&&/beneficiaries are often your first referrals/.test(fl),'follow-ups: TFRA, employer, referrals');
+  ok(!/discuss Living Benefits/.test(fl),'LB on the plan: no living-benefits follow-up');
   var ef2=document.getElementById('enFrame2'); for(var k3=0;k3<40;k3++){ await wait(100); if(ef2.contentDocument&&ef2.contentDocument.querySelector('.pp-copy')) break; }
-  ok(/For security purposes/.test(ef2.contentDocument.body.innerText)&&/Text them the moment/.test(ef2.contentDocument.body.innerText),'security question and wrap-up on Enroll');
+  ok(/Text them the moment/.test(ef2.contentDocument.body.innerText)&&Array.prototype.every.call(ef2.contentDocument.body.children,function(e){ return !/^For security purposes/.test((e.innerText||'').trim())||e.classList.contains('pp-off'); }),'wrapping up on Enroll; security question moved to the maiden-name box');
   var pc=ef2.contentDocument.querySelector('.pp-copy'); ok(pc&&pc.disabled&&/email/.test(pc.nextSibling.textContent),'post-call copy dimmed, names what is missing');
-  ok(document.getElementById('lnkAmerico').style.display!=='none'&&document.getElementById('lnkMutual').style.display==='none','life links: only the carrier priced (Americo)');
-  ok(document.getElementById('lnkManhattan').style.display!=='none','health carrier links after');
-  var order=['enLife','enScriptApp','enPeople','enScriptEnd','enHealth'].map(function(id){ return document.getElementById(id).getBoundingClientRect().top; });
-  ok(order.every(function(v,i){ return !i||v>order[i-1]; }),'Enroll order: life → application → people → finish → health');
   var steps=presentApplyPlan('best').map(function(s){ return s.car.split(' ')[0]; });
   ok(steps[0]==='Americo'&&steps.indexOf('ManhattanLife')>0,'life first then ManhattanLife: '+steps.join(' > '));
   /* maiden name: memory only */

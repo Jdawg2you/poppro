@@ -586,7 +586,15 @@
   .enroll-card+.enroll-card{margin-top:12px}
   .en-person{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-top:10px;background:#fff}
   .en-person h5{margin:0;font-size:14px;color:var(--navy);display:inline}
-  .en-person summary{cursor:pointer;padding:2px 0}.en-person[open] summary{margin-bottom:6px}
+  .en-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px}
+  .en-f{display:flex;align-items:center;gap:8px;font-size:13px;border-bottom:1px dotted #e7dfcb;padding:3px 0}
+  .en-f span{flex:0 0 110px;color:var(--muted)}.en-f input,.en-f select{flex:1;min-width:0;border:1px solid var(--line);border-radius:6px;padding:5px 7px;font:inherit;font-size:13px;background:#fff}
+  .en-f.miss input,.en-f.miss select{border-color:#f0b9b9}.en-f .cp{flex:none}
+  .en-list{display:grid;grid-template-columns:1fr 1fr;gap:4px 14px}.en-f.add input{border-style:dashed}
+  .en-sec{margin-top:10px;background:#faf7ef;border-radius:8px;padding:8px 10px}.en-say{font-size:12px;color:#5b4a1f;font-style:italic;margin-top:4px}
+  .en-pnote{display:block;margin-top:10px;font-size:13px}.en-pnote span{display:block;color:var(--navy);font-weight:600;margin-bottom:3px}
+  .en-pnote textarea{width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:6px;padding:6px 8px;font:inherit;font-size:13px}
+  @media(max-width:700px){.en-grid,.en-list{grid-template-columns:1fr}}
   .en-sub{font-size:12px;font-weight:700;color:var(--navy);margin:12px 0 4px;text-transform:uppercase;letter-spacing:.05em}
   .en-brow{display:grid;grid-template-columns:2fr .6fr 1.2fr 1.2fr auto;gap:6px;margin-bottom:6px}
   .en-brow input,.en-notes textarea{border:1px solid var(--line);border-radius:6px;padding:6px 8px;font:inherit;font-size:13px;width:100%;box-sizing:border-box}
@@ -1228,15 +1236,15 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
     <div class="enroll-card" id="enLife">
       <div class="en-step"><span>1</span> Life application first</div>
       <div>
-        <a class="portalbtn maroon" id="lnkAmerico" href="#" target="_blank" rel="noopener">Living Benefits — Americo &#8599;</a>
         <a class="portalbtn green" id="lnkMutual" href="#" target="_blank" rel="noopener">Living Benefits — Mutual of Omaha &#8599;</a>
+        <a class="portalbtn" id="lnkNLG" href="https://www.nationallife.com/agent/auth/login" target="_blank" rel="noopener">Living Benefits — National Life Group &#8599;</a>
+        <a class="portalbtn maroon" id="lnkAmerico" href="#" target="_blank" rel="noopener">Living Benefits — Americo &#8599;</a>
       </div>
     </div>
-    <div class="enroll-card hidein-client" id="enScriptApp"><div class="en-step"><span>2</span> The application — from the script</div><iframe id="enFrame" title="Application script" style="width:100%;border:0;min-height:120px"></iframe></div>
     <div class="enroll-card hidein-client" id="enPeople"></div>
-    <div class="enroll-card hidein-client" id="enScriptEnd"><div class="en-step"><span>4</span> Security question, finish &amp; the text</div><iframe id="enFrame2" title="Finish script" style="width:100%;border:0;min-height:120px"></iframe></div>
+    <div class="enroll-card hidein-client" id="enScriptEnd"><div class="en-step"><span>3</span> Wrapping things up</div><iframe id="enFrame2" title="Finish script" style="width:100%;border:0;min-height:120px"></iframe></div>
     <div class="enroll-card" id="enHealth">
-      <div class="en-step"><span>5</span> Health carriers — after the call</div>
+      <div class="en-step"><span>4</span> Health carriers — after the call</div>
       <div>
         <a class="portalbtn" id="lnkManhattan" href="#" target="_blank" rel="noopener">Manhattan Life Producer Portal &#8599;</a>
         <a class="portalbtn cigna" id="lnkCigna" href="#" target="_blank" rel="noopener">Cigna PPO (USA Health / Triad) — 1Enrollment &#8599;</a>
@@ -1245,7 +1253,7 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
       </div>
     </div>
     <div class="enroll-card">
-      <div class="en-step"><span>6</span> Agent follow-ups &amp; circle-backs</div>
+      <div class="en-step"><span>5</span> Agent follow-ups &amp; circle-backs</div>
       <div class="hidein-client" style="margin-top:16px;padding-top:14px;border-top:1px solid var(--line)">
         <div class="sectitle" style="margin-bottom:4px">Agent — Items to Follow Up</div>
         <div class="note" style="padding:0 0 8px">Checked items save with the quote. Prompts appear automatically based on what you captured.</div>
@@ -2159,23 +2167,19 @@ function renderAcaNote(){
 }
 /* ===== AGENT FOLLOW-UP ITEMS (Enroll) — always-on prompts + opportunity flags ===== */
 function followTasks(){
-  var I=S.intake||{}, pk=S.packages[S.activeTab]||{products:[],lb:0}, t=[];
+  var I=S.intake||{}, tier=chosenTier()||S.activeTab, pk=S.packages[tier]||{products:[],lb:0}, t=[];
   // Highest-value opportunity first: unprotected money that's SRA-eligible
   if((+I.invest>0) && !I.invprot && I.invsra)
     t.push({id:'sra',big:true,text:'Schedule the Secure Retirement Account conversation — they have '+fmt(+I.invest)+' in investments flagged <b>unprotected</b> and <b>SRA-eligible</b>.'});
-  // Living benefits not in the package
-  if(!(+pk.lb>0))
-    t.push({id:'lb',text:'Schedule a follow-up to discuss <b>Living Benefits</b> — not included in the selected package.'});
-  // Room in the budget / savings vs ACA, and no TFRA funded
-  var pMo=(pk.products||[]).reduce(function(s,p){return s+(+p.monthly||0);},0)+(+pk.lb||0)+(+pk.med||0);
-  var vsAca=Math.max(0,(acaNetPrem()+(+S.aca.med||0))-pMo);
-  var bTop=(+I.budget)||(+I.budgetComfort)||0, vsBudget=bTop>0?Math.max(0,bTop-pMo):0;
-  var left=Math.max(vsAca,vsBudget);
-  if(left>0 && !(+((S.pension||{}).monthly)>0))
-    t.push({id:'tfra',text:'Have you discussed a <b>Tax-Free Retirement Account</b>? About '+fmt(left)+'/mo of room between this package and what they were already spending.'});
-  // Always-on
-  t.push({id:'employer',text:'Ask about their <b>employer</b> — could this open a group-plan opportunity?'});
-  t.push({id:'referrals',text:'<b>Ask for referrals.</b>'});
+  // Living benefits: only when nobody on the chosen package has it (added in the quote or later in the script)
+  var hasLB=(pk.products||[]).some(function(p){ return (p.k==='lbp'||p.k==='lbs')&&(+p.monthly||0)>0; })||(+pk.lb>0);
+  if(!hasLB) t.push({id:'lb',text:'Schedule a follow-up to discuss <b>Living Benefits</b> — not on the plan they chose.'});
+  // Always (Jesse, 2026-10-08): the TFRA conversation, with the numbers one click away
+  var pMo=(pk.products||[]).reduce(function(s2,p){return s2+(+p.monthly||0);},0)+(+pk.lb||0)+(+pk.med||0);
+  var vsAca=Math.max(0,(acaNetPrem()+(+S.aca.med||0))-pMo), bTop=(+I.budget)||(+I.budgetComfort)||0, left=Math.max(vsAca,bTop>0?Math.max(0,bTop-pMo):0);
+  t.push({id:'tfra',text:'Have you discussed a <b>Tax-Free Retirement Account</b>?'+(left>0?' About '+fmt(left)+'/mo of room between this package and what they were already spending.':'')+' <a href="#" data-goto="tfraCard">See the TFRA numbers →</a>'});
+  t.push({id:'employer',text:'Ask about their <b>employer</b> — it could open a group-plan opportunity.'});
+  t.push({id:'referrals',text:'<b>Ask for referrals.</b> Their beneficiaries are often your first referrals — if they aren’t already family on this plan.'});
   return t;
 }
 function renderFollowUps(){
@@ -2190,6 +2194,7 @@ function renderFollowUps(){
   host.querySelectorAll('input[type=checkbox]').forEach(function(cb){
     cb.onchange=function(){ S.follow[cb.dataset.id]=cb.checked; renderFollowUps(); autosave(); };
   });
+  host.querySelectorAll('[data-goto]').forEach(function(a){ a.onclick=function(e){ e.preventDefault(); var id=a.dataset.goto; goStep('quote'); setTimeout(function(){ var el=$(id); if(el) el.scrollIntoView({behavior:'smooth',block:'start'}); },80); }; });
 }
 function lbLabel(c){ return c==='other'?'Other carrier':(LB_RATES[c]?LB_RATES[c].label:c); }
 /* The classic package panel (and its Living Benefits box) is hidden in B - the builder prices living benefits as
@@ -4157,79 +4162,106 @@ function renderEnroll(){
   $('lnkCigna').href=CIGNA_URL;
   if($('lnkSparkle')){ $('lnkSparkle').href=SPARKLE.enroll; $('lnkSparkle').style.display=rows.some(function(p){ return p.k==='dvh'&&/Sparkle/.test(String(p.name||'')); })?'':'none'; }
   if(LIFEX_URL){ $('lnkLifex').href=LIFEX_URL; }
-  /* only the carriers this package actually uses: life first, health after the call */
-  var has=function(g){ return order.indexOf(g)>=0; };
-  $('lnkAmerico').style.display=has('Americo')?'':'none'; $('lnkMutual').style.display=has('Mutual of Omaha')?'':'none';
-  if($('enLife')){ var lifeOn=has('Americo')||has('Mutual of Omaha'); $('enLife').querySelector('div:last-child').style.display=lifeOn?'':'none';
-    var nl=$('enLife').querySelector('.en-none'); if(!nl){ nl=document.createElement('div'); nl.className='note en-none'; $('enLife').appendChild(nl); } nl.textContent=lifeOn?'':'No life policy in this package — go straight to the details below.'; }
-  $('lnkManhattan').style.display=has('ManhattanLife')?'':'none';
-  $('lnkCigna').style.display=rows.some(function(p){ return p.k==='base'; })&&c.base!=='lifex'?'':'none';
-  if($('lnkLifex')) $('lnkLifex').style.display=rows.some(function(p){ return p.k==='base'; })&&c.base==='lifex'?'':'none';
+  /* the standards are always on the page (Jesse, 2026-10-08): life - Mutual of Omaha, National Life Group, Americo;
+     health - Manhattan, Cigna, LifeX. Sparkle dental only when this package has it. */
+  ['lnkMutual','lnkNLG','lnkAmerico','lnkManhattan','lnkCigna','lnkLifex'].forEach(function(id){ if($(id)) $(id).style.display=''; });
   enrollScript(); enrollPeople();
 }
 /* the script's application and finish screens, filled and wired the same as on Present */
-function enrollScript(){ var t=chosenTier()||S.activeTab;
-  [['enFrame',['The application']],['enFrame2',['Security question & finish','Wrap-up — text them']]].forEach(function(x){ var fr=$(x[0]); if(!fr) return;
-    var show=function(){ var doc=fr.contentDocument; presentPaginate(doc); benLoad('afc').then(function(){ presentShowPage(doc,x[1].map(presentPageIx)); presentWire(doc,t);
+function enrollScript(){ var t=chosenTier()||S.activeTab, fr=$('enFrame2'); if(!fr) return;
+  var show=function(){ var doc=fr.contentDocument; presentPaginate(doc); benLoad('afc').then(function(){ presentShowPage(doc,['Security question & finish','Wrap-up — text them'].map(presentPageIx)); presentWire(doc,t);
+      /* the security question and its tip sit beside the maiden-name box in section 2 */
+      Array.prototype.forEach.call(doc.body.children,function(el){ var x=(el.innerText||'').trim(); if(/^For security purposes/i.test(x)||/^If they don.t know it or won.t give it/i.test(x)) el.classList.add('pp-off'); });
       fr.style.height='60px'; fr.style.height=(doc.documentElement.scrollHeight+8)+'px'; }); };
-    if(fr.dataset.loaded) show(); else { fr.onload=function(){ fr.dataset.loaded='1'; show(); }; fr.src='presentation.html'; } }); }
-/* 3. The application, one block per person (Jesse, 2026-10-08) - the "What you'll need" grid: every value from the
-   profile with a copy button, every blank typed right here and written back to the profile (S), so Save / Print
-   carry it. Primary open, spouse and each child expand. Beneficiaries: name, %, phone, DOB. One Notes box =
-   S.intake.notes, the same notes the navigator's profile and POP Pro Intake use. SSN / bank never here. */
+  if(fr.dataset.loaded) show(); else { fr.onload=function(){ fr.dataset.loaded='1'; show(); }; fr.src='presentation.html'; } }
+/* 2. The application, one open block per person (Jesse, 2026-10-08). Every field is a box: filled from the profile
+   when we have it (with a copy button), typed here when we don't - and whatever is typed writes back to the profile (S),
+   so Save / Print carry it and the navigator gets it on the next file load. Medications and conditions are a row each.
+   Beneficiaries for each adult. A notes box per person feeds the one main notes field as "Name: …". The mother's
+   maiden name is typed beside its security question and held in memory only - never saved. SSN / bank never here. */
+var EN_SECURITY='“For security purposes — and this’ll be the code word you sign the health application with — what’s your mother’s maiden name?”';
 function enSplit(n){ n=String(n||'').trim(); var i=n.indexOf(' '); return i<0?[n,'']:[n.slice(0,i),n.slice(i+1)]; }
 function enInches(v){ v=String(v||'').trim(); var m=v.match(/^(\d)\s*['′ ]\s*(\d{1,2})/); if(m) return String(+m[1]*12+(+m[2])); var n=parseInt(v,10); return n>=48&&n<=84?String(n):''; }
 function enFt(v){ var x=parseInt(v,10); return x>=48&&x<=84?Math.floor(x/12)+'′'+(x%12)+'″':''; }
-/* [label, value, writeback path] - a path makes the blank typeable; 'ro' marks a read-only summary */
-function enPersonRows(who,i){ var C=S.client||{}, I=S.intake||{}, k=(I.kids||[])[i]||{};
-  var meds=function(f){ return (I.medList||[]).filter(function(m){ return m&&m[f]&&String(m.name||'').trim(); }).map(function(m){ return m.name; }).join(', '); };
-  var conds=function(f){ return (I.conds||[]).filter(function(c2){ return c2&&c2[f]; }).map(function(c2){ return c2.name+(c2.yr?' ('+c2.yr+')':''); }).join(', '); };
-  if(who==='p'){ var nm=enSplit(C.pname); return [['First name',nm[0],'name:p:0'],['Last name',nm[1],'name:p:1'],['Date of birth',C.dob||C.date,'c:dob'],['Age',C.page||C.age,'c:page'],
-    ['Street address',C.address,'c:address'],['State',C.state,'c:state'],['ZIP',C.zip,'c:zip'],['Phone',I.phone,'i:phone'],['Email',I.email,'i:email'],
-    ['Height',enFt(I.pheight),'ht:pheight'],['Weight',I.pweight?I.pweight+' lb':'','wt:pweight'],['Tobacco',I.tobaccoP?'Yes':'No','ro'],
-    ['Medications',meds('forP'),'ro'],['Conditions',conds('forP'),'ro'],['Doctors',[I.docs1,I.docs2,I.docs3].filter(Boolean).join(', '),'ro'],['Coverage start',I.effDate,'i:effDate']]; }
-  if(who==='s'){ var sn=enSplit(C.sname); return [['First name',sn[0],'name:s:0'],['Last name',sn[1],'name:s:1'],['Date of birth',C.sdob,'c:sdob'],['Age',C.sage,'c:sage'],
-    ['Height',enFt(I.sheight),'ht:sheight'],['Weight',I.sweight?I.sweight+' lb':'','wt:sweight'],['Tobacco',I.tobaccoS?'Yes':'No','ro'],['Medications',meds('forS'),'ro'],['Conditions',conds('forS'),'ro']]; }
-  var kn=enSplit(k.n); return [['First name',kn[0],'kid:'+i+':n0'],['Last name',kn[1],'kid:'+i+':n1'],['Date of birth',k.dob,'kid:'+i+':dob'],['Age',k.age,'kid:'+i+':age'],['Sex',k.sex,'kid:'+i+':sex']]; }
+function enWho(id){ var C=S.client||{}, I=S.intake||{}; if(id==='p') return enSplit(C.pname)[0]||'Applicant'; if(id==='s') return enSplit(C.sname)[0]||'Spouse'; var k=(I.kids||[])[+id.slice(1)]||{}; return enSplit(k.n)[0]||('Child '+(+id.slice(1)+1)); }
+/* field list per person: [label, value, write path, kind] */
+function enFieldsFor(id){ var C=S.client||{}, I=S.intake||{};
+  if(id==='p'){ var nm=enSplit(C.pname); return [['First name',nm[0],'name:p:0'],['Last name',nm[1],'name:p:1'],['Date of birth',C.dob||C.date,'c:dob'],['Age',C.page||C.age,'c:page'],
+    ['Sex',I.psex,'i:psex','sex'],['Height',enFt(I.pheight),'ht:pheight'],['Weight (lb)',I.pweight,'wt:pweight'],['Tobacco',I.tobaccoP?'Yes':'No','tob:tobaccoP','yn'],
+    ['Phone',I.phone,'i:phone'],['Email',I.email,'i:email'],['Street address',C.address,'c:address'],['State',C.state,'c:state'],['ZIP',C.zip,'c:zip'],
+    ['Doctor(s)',[I.docs1,I.docs2,I.docs3].filter(Boolean).join(', '),'i:docs1'],['Coverage start',I.effDate,'i:effDate']]; }
+  if(id==='s'){ var sn=enSplit(C.sname); return [['First name',sn[0],'name:s:0'],['Last name',sn[1],'name:s:1'],['Date of birth',C.sdob,'c:sdob'],['Age',C.sage,'c:sage'],
+    ['Sex',I.ssex,'i:ssex','sex'],['Height',enFt(I.sheight),'ht:sheight'],['Weight (lb)',I.sweight,'wt:sweight'],['Tobacco',I.tobaccoS?'Yes':'No','tob:tobaccoS','yn'],
+    ['Phone',I.sphone,'i:sphone'],['Email',I.semail,'i:semail']]; }
+  var i=+id.slice(1), k=(I.kids||[])[i]||{}, kn=enSplit(k.n);
+  return [['First name',kn[0],'kid:'+i+':n0'],['Last name',kn[1],'kid:'+i+':n1'],['Date of birth',k.dob,'kid:'+i+':dob'],['Age',k.age,'kid:'+i+':age'],
+    ['Sex',k.sex,'kid:'+i+':sex','sex'],['Height',enFt(k.ht),'kid:'+i+':ht'],['Weight (lb)',k.wt,'kid:'+i+':wt']]; }
 function enWrite(path,v){ var C=S.client, I=S.intake, p=path.split(':');
-  if(p[0]==='c') C[p[1]]=v, p[1]==='dob'&&(C.date=v);
+  if(p[0]==='c'){ C[p[1]]=v; if(p[1]==='dob') C.date=v; }
   else if(p[0]==='i') I[p[1]]=v;
   else if(p[0]==='ht') I[p[1]]=enInches(v);
   else if(p[0]==='wt') I[p[1]]=String(parseInt(v,10)||'');
+  else if(p[0]==='tob') I[p[1]]=/^y/i.test(v);
   else if(p[0]==='name'){ var key=p[1]==='p'?'pname':'sname', parts=enSplit(C[key]); parts[+p[2]]=v; C[key]=(parts[0]+' '+parts[1]).trim(); }
-  else if(p[0]==='kid'){ I.kids=I.kids||[]; var kd=I.kids[+p[1]]=I.kids[+p[1]]||{}; if(p[2]==='n0'||p[2]==='n1'){ var kp=enSplit(kd.n); kp[p[2]==='n0'?0:1]=v; kd.n=(kp[0]+' '+kp[1]).trim(); } else kd[p[2]]=v; }
+  else if(p[0]==='kid'){ I.kids=I.kids||[]; var kd=I.kids[+p[1]]=I.kids[+p[1]]||{};
+    if(p[2]==='n0'||p[2]==='n1'){ var kp=enSplit(kd.n); kp[p[2]==='n0'?0:1]=v; kd.n=(kp[0]+' '+kp[1]).trim(); } else if(p[2]==='ht') kd.ht=enInches(v); else kd[p[2]]=v; }
   autosave(); }
-function enrollPeople(){ var host=$('enPeople'); if(!host) return; var C=S.client||{}, I=S.intake||{}, w=I.who||{};
-  S.present=S.present||{}; var open=S.present.enOpen||{p:true};
-  var cell=function(r){ var v=(r[1]==null?'':String(r[1])).trim();
-    if(!v&&r[2]&&r[2]!=='ro') return '<div class="pr-f miss"><span>'+esc(r[0])+'</span><input data-enw="'+r[2]+'" placeholder="add it"></div>';
-    return '<div class="pr-f'+(v?'':' miss')+'"><span>'+esc(r[0])+'</span><b>'+(v?esc(v)+'<button type="button" class="cp" data-copy="'+esc(v).replace(/"/g,'&quot;')+'">copy</button>':'—')+'</b></div>'; };
-  var block=function(id,title,rows,extra){ return '<details class="en-person" data-enp="'+id+'"'+(open[id]?' open':'')+'><summary><h5>'+esc(title)+'</h5></summary><div class="pr-fields">'+rows.map(cell).join('')+'</div>'+(extra||'')+'</details>'; };
-  var benes=I.benes||(I.beneficiary?[{name:I.beneficiary}]:[]); if(!benes.length) benes=[{}];
-  var beneHTML='<div class="en-bene"><div class="en-sub">Beneficiaries</div>'+benes.map(function(b,j){ return '<div class="en-brow">'
-      +['name','pct','phone','dob'].map(function(f){ return '<input data-bene="'+j+':'+f+'" value="'+esc(b[f]||'').replace(/"/g,'&quot;')+'" placeholder="'+{name:'Full name',pct:'%',phone:'Phone',dob:'Date of birth'}[f]+'">'; }).join('')
-      +(benes.length>1?'<button type="button" class="en-x" data-benex="'+j+'">×</button>':'')+'</div>'; }).join('')
-    +'<button type="button" class="en-add" data-beneadd="1">＋ Add a beneficiary</button><div class="note" style="padding-top:4px">Phone and date of birth only where the carrier asks for them.</div></div>'
-    +'<div class="pr-f"><span>Mother’s maiden name</span><input data-mmn="1" autocomplete="off" value="'+esc(PRESENT_MMN).replace(/"/g,'&quot;')+'" placeholder="typed here, never saved"></div>';
-  var h='<div class="en-step"><span>3</span> The application — each person</div>';
-  h+=block('p',(C.pname||'Primary applicant')+' — applicant',enPersonRows('p'),beneHTML);
-  if(w.spouse||C.sname) h+=block('s',(C.sname||'Spouse')+' — spouse',enPersonRows('s'));
-  (I.kids||[]).forEach(function(k,i){ if(k&&(k.n||k.dob||k.age)) h+=block('k'+i,(k.n||('Child '+(i+1)))+' — child',enPersonRows('k',i)); });
-  h+='<div class="en-notes"><label for="enNotes"><b>Notes</b> (anything off script, what they said, what to remember or follow up — the same notes as the client profile)</label><textarea id="enNotes" rows="4"></textarea></div>';
+/* each person's notes land in the one main notes field, under one heading, as "Name: …" */
+var EN_NOTES_HEAD='— From the application —';
+function enNotesSync(){ var I=S.intake, pn=I.personNotes||{}, base=String(I.notes||''), ix=base.indexOf(EN_NOTES_HEAD); if(ix>=0) base=base.slice(0,ix).replace(/\s+$/,'');
+  var lines=Object.keys(pn).filter(function(k){ return String(pn[k]||'').trim(); }).map(function(k){ return enWho(k)+': '+String(pn[k]).trim(); });
+  I.notes=lines.length?(base?base+'\n\n':'')+EN_NOTES_HEAD+'\n'+lines.join('\n'):base; if($('in_notes')) $('in_notes').value=I.notes; if($('enNotes')&&document.activeElement!==$('enNotes')) $('enNotes').value=I.notes; autosave(); }
+function enrollPeople(){ var host=$('enPeople'); if(!host) return; var C=S.client||{}, I=S.intake||{}, w=I.who||{}, q=function(x){ return esc(x==null?'':String(x)).replace(/"/g,'&quot;'); };
+  var cp=function(v){ return '<button type="button" class="cp" data-cpfrom="1"'+(String(v||'').trim()?'':' style="visibility:hidden"')+'>copy</button>'; };
+  var field=function(f){ var v=f[1]==null?'':String(f[1]), ctl;
+    if(f[3]==='sex') ctl='<select data-enw="'+f[2]+'"><option value=""></option>'+[['M','Male'],['F','Female']].map(function(o){ return '<option value="'+o[0]+'"'+(v===o[0]?' selected':'')+'>'+o[1]+'</option>'; }).join('')+'</select>';
+    else if(f[3]==='yn') ctl='<select data-enw="'+f[2]+'">'+['No','Yes'].map(function(o){ return '<option'+(v===o?' selected':'')+'>'+o+'</option>'; }).join('')+'</select>';
+    else ctl='<input data-enw="'+f[2]+'" value="'+q(v)+'" placeholder="add it">';
+    return '<label class="en-f'+(v.trim()?'':' miss')+'"><span>'+esc(f[0])+'</span>'+ctl+cp(v)+'</label>'; };
+  var listRows=function(title,items,kind,id){ return '<div class="en-sub">'+title+'</div><div class="en-list">'+items.map(function(x,j){ return '<label class="en-f"><input data-enl="'+kind+':'+id+':'+j+'" value="'+q(x)+'">'+cp(x)+'</label>'; }).join('')
+      +'<label class="en-f add"><input data-enl="'+kind+':'+id+':new" placeholder="+ add '+(kind==='med'?'a medication':'a condition')+'"></label></div>'; };
+  var medsOf=function(id){ if(id[0]==='k'){ var k=(I.kids||[])[+id.slice(1)]||{}; return String(k.meds||'').split(/\s*;\s*/).filter(Boolean); } var f=id==='p'?'forP':'forS'; return (I.medList||[]).filter(function(m){ return m&&m[f]&&String(m.name||'').trim(); }).map(function(m){ return m.name; }); };
+  var condsOf=function(id){ if(id[0]==='k'){ var k=(I.kids||[])[+id.slice(1)]||{}; return String(k.conds||'').split(/\s*;\s*/).filter(Boolean); } var f=id==='p'?'forP':'forS'; return (I.conds||[]).filter(function(c2){ return c2&&c2[f]; }).map(function(c2){ return c2.name+(c2.yr?' ('+c2.yr+')':''); }); };
+  var benesOf=function(id){ var key=id==='p'?'benes':'sbenes', b=I[key]||(id==='p'&&I.beneficiary?[{name:I.beneficiary}]:[]); return b.length?b:[{}]; };
+  var beneBlock=function(id){ var bs=benesOf(id); return '<div class="en-sub">Beneficiaries</div>'+bs.map(function(b,j){ return '<div class="en-brow">'
+      +['name','pct','phone','dob'].map(function(f){ return '<input data-bene="'+id+':'+j+':'+f+'" value="'+q(b[f])+'" placeholder="'+{name:'Full name',pct:'%',phone:'Phone',dob:'Date of birth'}[f]+'">'; }).join('')
+      +(bs.length>1?'<button type="button" class="en-x" data-benex="'+id+':'+j+'">×</button>':'')+'</div>'; }).join('')
+    +'<button type="button" class="en-add" data-beneadd="'+id+'">＋ Add a beneficiary</button><div class="note" style="padding-top:4px">Phone and date of birth only where the carrier asks for them.</div>'; };
+  var notesBlock=function(id){ return '<label class="en-pnote"><span>'+esc(enWho(id))+' notes</span><textarea data-pnote="'+id+'" rows="2" placeholder="anything about '+esc(enWho(id))+' — goes into the main notes">'+esc((I.personNotes||{})[id]||'')+'</textarea></label>'; };
+  var person=function(id,title,adult){ return '<div class="en-person" data-enp="'+id+'"><h5>'+esc(title)+'</h5><div class="en-grid">'+enFieldsFor(id).map(field).join('')+'</div>'
+      +listRows('Medications',medsOf(id),'med',id)+listRows('Conditions',condsOf(id),'cond',id)
+      +(adult?beneBlock(id):'')
+      +(id==='p'?'<div class="en-sec"><label class="en-f"><span>Mother’s maiden name</span><input data-mmn="1" autocomplete="off" value="'+q(PRESENT_MMN)+'" placeholder="typed here, never saved">'+cp(PRESENT_MMN)+'</label><div class="en-say">Say: '+EN_SECURITY+'<br>If they don’t know it or won’t give it, any word they’ll remember works.</div></div>':'')
+      +notesBlock(id)+'</div>'; };
+  var h='<div class="en-step"><span>2</span> The application — each person</div>';
+  h+=person('p',(C.pname||'Primary applicant')+' — applicant',true);
+  if(w.spouse||C.sname) h+=person('s',(C.sname||'Spouse')+' — spouse',true);
+  (I.kids||[]).forEach(function(k,i){ if(k&&(k.n||k.dob||k.age)) h+=person('k'+i,(k.n||('Child '+(i+1)))+' — child',false); });
+  h+='<div class="en-notes"><label for="enNotes"><b>Notes</b> (anything off script, what they said, what to remember or follow up — the same notes as the client profile; each person’s notes above land here too)</label><textarea id="enNotes" rows="5"></textarea></div>';
   h+='<div class="en-prof"><button type="button" class="btn-gold" data-enprof="save">Save profile</button><button type="button" class="btn-ghost" data-enprof="print">Print profile</button></div>';
   h+='<p class="note" style="margin:10px 0 0">SSN and bank details never go in POP Pro — enter them directly on the carrier’s application. The mother’s maiden name is held only while this page is open — never saved, printed or sent.</p>';
   host.innerHTML=h;
-  host.querySelectorAll('details[data-enp]').forEach(function(d){ d.ontoggle=function(){ S.present.enOpen=S.present.enOpen||{p:true}; S.present.enOpen[d.dataset.enp]=d.open; }; });
-  host.querySelectorAll('[data-copy]').forEach(function(b){ b.onclick=function(e){ e.preventDefault(); try{ navigator.clipboard.writeText(b.dataset.copy); b.textContent='copied'; }catch(x){} }; });
-  host.querySelectorAll('[data-enw]').forEach(function(inp){ inp.onchange=function(){ var v=inp.value.trim(); if(!v) return; enWrite(inp.dataset.enw,v); enrollPeople(); }; });
-  var saveB=function(){ I.benes=benes.filter(function(b){ return b&&(b.name||b.pct||b.phone||b.dob); }); I.beneficiary=I.benes.map(function(b){ return b.name; }).filter(Boolean).join(', '); autosave(); };
-  host.querySelectorAll('[data-bene]').forEach(function(inp){ inp.onchange=function(){ var q=inp.dataset.bene.split(':'); benes[+q[0]]=benes[+q[0]]||{}; benes[+q[0]][q[1]]=inp.value.trim(); saveB(); }; });
-  var ba=host.querySelector('[data-beneadd]'); if(ba) ba.onclick=function(){ benes.push({}); I.benes=benes; enrollPeople(); };
-  host.querySelectorAll('[data-benex]').forEach(function(b){ b.onclick=function(){ benes.splice(+b.dataset.benex,1); saveB(); I.benes=benes; enrollPeople(); }; });
-  var mm=host.querySelector('[data-mmn]'); if(mm) mm.onchange=function(){ PRESENT_MMN=mm.value.trim(); };
+  host.querySelectorAll('[data-cpfrom]').forEach(function(b){ b.onclick=function(e){ e.preventDefault(); var el=b.previousElementSibling; if(!el) return; try{ navigator.clipboard.writeText(String(el.value||'').trim()); b.textContent='copied'; }catch(x){} }; });
+  host.querySelectorAll('[data-enw]').forEach(function(inp){ inp.onchange=function(){ enWrite(inp.dataset.enw,inp.value.trim()); var c2=inp.nextElementSibling; if(c2) c2.style.visibility=inp.value.trim()?'visible':'hidden'; }; });
+  host.querySelectorAll('[data-enl]').forEach(function(inp){ inp.onchange=function(){ var q2=inp.dataset.enl.split(':'), kind=q2[0], id=q2[1], j=q2[2], v=inp.value.trim();
+    if(id[0]==='k'){ var kd=(I.kids||[])[+id.slice(1)]; var key=kind==='med'?'meds':'conds', arr=String(kd[key]||'').split(/\s*;\s*/).filter(Boolean); if(j==='new'){ if(v) arr.push(v); } else { if(v) arr[+j]=v; else arr.splice(+j,1); } kd[key]=arr.join('; '); autosave(); enrollPeople(); return; }
+    var fl=id==='p'?'forP':'forS';
+    if(kind==='med'){ var ms=(I.medList||[]).filter(function(m){ return m&&m[fl]&&String(m.name||'').trim(); });
+      if(j==='new'){ if(v){ I.medList=I.medList||[]; var o={name:v,cost:0,forP:id==='p',forS:id==='s'}; I.medList.push(o); } } else if(ms[+j]){ if(v) ms[+j].name=v; else I.medList.splice(I.medList.indexOf(ms[+j]),1); } }
+    else { var cs=(I.conds||[]).filter(function(c2){ return c2&&c2[fl]; });
+      if(j==='new'){ if(v) popAddCond(v,'','',id==='p'?'p':'s'); } else if(cs[+j]){ if(v) cs[+j].name=v.replace(/\s*\(\d{4}\)$/,''); else I.conds.splice(I.conds.indexOf(cs[+j]),1); } }
+    autosave(); enrollPeople(); }; });
+  var bset=function(id,bs){ var key=id==='p'?'benes':'sbenes'; I[key]=bs; if(id==='p') I.beneficiary=bs.map(function(b){ return b&&b.name; }).filter(Boolean).join(', '); autosave(); };
+  host.querySelectorAll('[data-bene]').forEach(function(inp){ inp.onchange=function(){ var q2=inp.dataset.bene.split(':'), bs=benesOf(q2[0]).slice(); bs[+q2[1]]=Object.assign({},bs[+q2[1]]); bs[+q2[1]][q2[2]]=inp.value.trim(); bset(q2[0],bs); }; });
+  host.querySelectorAll('[data-beneadd]').forEach(function(b){ b.onclick=function(){ var id=b.dataset.beneadd, bs=benesOf(id).slice(); bs.push({}); bset(id,bs); enrollPeople(); }; });
+  host.querySelectorAll('[data-benex]').forEach(function(b){ b.onclick=function(){ var q2=b.dataset.benex.split(':'), bs=benesOf(q2[0]).slice(); bs.splice(+q2[1],1); bset(q2[0],bs); enrollPeople(); }; });
+  host.querySelectorAll('[data-pnote]').forEach(function(ta){ ta.oninput=function(){ I.personNotes=I.personNotes||{}; I.personNotes[ta.dataset.pnote]=ta.value; enNotesSync(); }; });
+  var mm=host.querySelector('[data-mmn]'); if(mm) mm.onchange=function(){ PRESENT_MMN=mm.value.trim(); var c2=mm.nextElementSibling; if(c2) c2.style.visibility=PRESENT_MMN?'visible':'hidden'; };
   var nt=$('enNotes'); nt.value=I.notes||''; nt.oninput=function(){ S.intake.notes=nt.value; if($('in_notes')) $('in_notes').value=nt.value; autosave(); };
   host.querySelector('[data-enprof="save"]').onclick=function(){ saveQuote(); };
   host.querySelector('[data-enprof="print"]').onclick=function(){ enPrintProfile(); }; }
+/* the old [label,value] rows for the printed profile */
+function enPersonRows(who,i){ return enFieldsFor(who==='k'?'k'+i:who).map(function(f){ return [f[0],f[3]==='sex'?({M:'Male',F:'Female'}[f[1]]||''):f[1]]; }); }
 /* A printable client profile from the same blocks - never includes the maiden name, SSN or bank details. */
 function enPrintProfile(){ var C=S.client||{}, I=S.intake||{}, w=I.who||{}, sec=function(t,rows){ return '<h2>'+esc(t)+'</h2><table>'+rows.map(function(r){ return '<tr><th>'+esc(r[0])+'</th><td>'+esc(r[1]==null?'':String(r[1]))+'</td></tr>'; }).join('')+'</table>'; };
   var h=sec((C.pname||'Applicant')+' — applicant',enPersonRows('p'));
@@ -4573,16 +4605,22 @@ function presentWire(doc,t){ if(!doc||!doc.body) return 0; var T=presentScriptTo
   var ml=doc.querySelector('[data-mount="lb"]'); if(ml){ ml.classList.add('pp-mount'); var cfg=effCfg(t); cfg.lb=cfg.lb||{}; var pk=S.packages[t], prods=pk.products||[];
     var inPk=function(w){ return prods.some(function(x){ return x.k==='lb'+w&&(+x.monthly||0)>0; }); };
     ml.innerHTML='<table><tr><th></th><th>Face</th><th>Carrier</th><th>Monthly</th><th></th></tr>'+lbPersons().map(function(pp){ var w=pp.k, l=cfg.lb[w]=cfg.lb[w]&&cfg.lb[w].face?cfg.lb[w]:cfgClone(PB_DEFAULT.lb);
-        var on=inPk(w), pr=on?prods.filter(function(x){ return x.k==='lb'+w; })[0]:null, q=pLB1(pp,l), mo=on?+pr.monthly:q.price;
+        var on=inPk(w), pr=on?prods.filter(function(x){ return x.k==='lb'+w; })[0]:null, q=pLB1(pp,l), mo=on?+pr.monthly:q.price, oth=l.carrier==='other', ev=function(x){ return esc(x==null?'':String(x)).replace(/"/g,'&quot;'); };
         return '<tr><td>'+(w==='p'?'Them':'Spouse')+', age '+pp.age+'</td>'
-          +'<td><select data-lb="lb.'+w+'.face">'+['25000','50000'].map(function(f){ return '<option value="'+f+'"'+(String(l.face)===f?' selected':'')+'>$'+(+f).toLocaleString('en-US')+'</option>'; }).join('')+'</select></td>'
-          +'<td><select data-lb="lb.'+w+'.carrier">'+[['moo','Mutual of Omaha'],['americo','Americo']].map(function(o2){ return '<option value="'+o2[0]+'"'+(l.carrier===o2[0]?' selected':'')+'>'+o2[1]+'</option>'; }).join('')+'</select></td>'
+          +'<td>'+(oth?'<input data-lb="lb.'+w+'.face" inputmode="numeric" placeholder="coverage, e.g. 75000" value="'+ev(l.face)+'" style="width:120px">'
+              :'<select data-lb="lb.'+w+'.face">'+['25000','50000'].map(function(f){ return '<option value="'+f+'"'+(String(l.face)===f?' selected':'')+'>$'+(+f).toLocaleString('en-US')+'</option>'; }).join('')+'</select>')+'</td>'
+          +'<td><select data-lb="lb.'+w+'.carrier">'+[['moo','Mutual of Omaha'],['americo','Americo'],['other','Other…']].map(function(o2){ return '<option value="'+o2[0]+'"'+(l.carrier===o2[0]?' selected':'')+'>'+o2[1]+'</option>'; }).join('')+'</select>'
+            +(oth?'<div style="margin-top:4px;display:flex;gap:4px;flex-wrap:wrap"><input data-lb="lb.'+w+'.otherName" placeholder="carrier and product" value="'+ev(l.otherName)+'" style="width:150px"><input data-lb="lb.'+w+'.otherMonthly" inputmode="decimal" placeholder="monthly $" value="'+ev(l.otherMonthly)+'" style="width:90px"></div>':'')+'</td>'
           +'<td><b>'+(mo!=null?fmt2(mo):'—')+'</b>'+(q.note&&!on?'<div class="pp-lbnote">'+esc(q.note)+'</div>':'')+'</td>'
           +'<td>'+(on?'<span class="pp-in">✓ In the package</span> <button type="button" class="pp-lbx" data-lbrm="'+w+'">remove</button>'
                   :(q.price!=null?'<button type="button" class="pp-lbadd" data-lbadd="'+w+'">＋ Add</button>':''))+'</td></tr>'; }).join('')
       +'<tr><td><b>Add back</b></td><td></td><td></td><td><b>'+(T['lb.addback']||'—')+'</b></td><td></td></tr></table>';
     var redo=function(){ pbReprice(); presentWire(doc,t); presentFit(); };
-    Array.prototype.forEach.call(ml.querySelectorAll('[data-lb]'),function(sel){ sel.onchange=function(){ pbSet(cfg,sel.getAttribute('data-lb'),sel.value); redo(); }; });
+    /* the same setting the builder edits, cleaned the same way (digits only for coverage and premium) */
+    Array.prototype.forEach.call(ml.querySelectorAll('[data-lb]'),function(sel){ sel.onchange=function(){ var f=sel.getAttribute('data-lb'), v=sel.value;
+      if(/\.(face|otherMonthly)$/.test(f)) v=String(v).replace(/[^\d.]/g,'');
+      if(/\.carrier$/.test(f)&&v!=='other'){ var lc0=cfg.lb[f.split('.')[1]]; if(lc0&&['25000','50000'].indexOf(String(lc0.face))<0) lc0.face='50000'; }
+      pbSet(cfg,f,v); redo(); }; });
     Array.prototype.forEach.call(ml.querySelectorAll('[data-lbadd]'),function(b){ b.onclick=function(){ var w=b.getAttribute('data-lbadd'); pk.dropped=(pk.dropped||[]).filter(function(x){ return x!=='lb'+w; }); redo(); }; });
     Array.prototype.forEach.call(ml.querySelectorAll('[data-lbrm]'),function(b){ b.onclick=function(){ var w=b.getAttribute('data-lbrm'); pk.dropped=pk.dropped||[]; if(pk.dropped.indexOf('lb'+w)<0) pk.dropped.push('lb'+w); redo(); }; }); }
   /* notes: the same S.intake.notes the Intake step and the navigator push write */
