@@ -45,6 +45,8 @@ const TEST = `(async function(){
   ok(BL.list.every(function(b){ return buildEmail().body.indexOf(b.url)>0; }),'the quote email lists every brochure link');
   var kq=S.sendq; S.sendq={appt:'tomorrow at 6:00 pm',pdf:true}; var e1=buildEmail().body; S.sendq={}; var e2=buildEmail().body; S.sendq=kq;
   ok(/Let’s talk tomorrow at 6:00 pm[.]/.test(e1)&&/^Attached is your/m.test(e1)&&/I’ll follow up with you in the next day or two/.test(e2)&&!/Attached/.test(e2),'quote email: follow-up time and PDF-saved tick change the wording; blank falls back to the generic lines');
+  var bx=document.createElement('div'); bx.innerHTML='<p>Discounts up to 80%</p>'; picWords(bx); ok(bx.querySelectorAll('span').length===4&&bx.textContent.replace(/ /g,'')==='Discountsupto80%','picture words each get their own box (Safari spacing fix)');
+  ok(AFC_PARTNERS.every(function(p){ return AFC_PARTNER_EMAIL[p.name]; })&&(afcInPk(S.packages.best)?/partner benefits built in/.test(enrollEmail().body):true),'enrollment email carries a line for each of the six partners');
   ok(!!document.getElementById('sqAppt')&&!!document.getElementById('sqPdf')&&document.querySelectorAll('#sendQuote .sqstep').length===3,'Send the quote has its three steps');
   ok(!document.querySelector('#printout .brlist')&&document.getElementById('brochBox').classList.contains('hidein-client'),'the brochure box stays off the printout and Client View');
   buildPrintout(); ok(!document.querySelector('#printout [data-copypic]')&&!/Copy (plans|example|picture)/.test(document.getElementById('printout').textContent),'no copy button inside the printout / emailed quote');
