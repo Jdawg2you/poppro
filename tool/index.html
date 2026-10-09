@@ -4713,6 +4713,9 @@ function presentPendingEdits(doc){
   /* 7. (Jesse, 9 Oct) footnote under "Why these figures": the walk-through leaves out Bill Saver and the net */
   Array.prototype.forEach.call(doc.querySelectorAll('p'),function(p){ if(p.dataset.ppFn||!/^Why these figures/.test((p.textContent||'').trim())) return; p.dataset.ppFn='1';
     p.insertAdjacentHTML('beforeend','*'); p.insertAdjacentHTML('afterend','<p class="pp-fn" style="font-size:12.5px;color:#555;font-style:italic;margin:6px 0 0">* CareGuide (Medical Bill Saver) negotiation and the net cash benefit paid to the client are not included in this description. For those details, use the example snapshots below or on the Quote page.</p>'); });
+  /* 8. (Jesse, 9 Oct) the "need to think / talk to a spouse" line closes section 10: after the two closes, before Enroll */
+  var cl=doc.querySelector('[data-closes]'); if(cl) Array.prototype.forEach.call(doc.querySelectorAll('body > div.say'),function(x){ if(x.dataset.ppMv||!/^If they need to think/.test((x.textContent||'').trim())) return;
+    x.dataset.ppMv='1'; cl.parentNode.insertBefore(x,cl.nextSibling); if(cl.dataset.pg!=null) x.dataset.pg=cl.dataset.pg; x.style.display=cl.style.display; });
   /* 6. (Jesse, 9 Oct) drop the author's preface above the worked example */
   Array.prototype.forEach.call(doc.querySelectorAll('details.exp .body > p'),function(p){ if(/^My stab at it/.test((p.textContent||'').trim())) p.remove(); });
   /* 3. Section 5 doctor line: the list carries its own "Dr", and it is "they're" (or "they're all" for several) */
