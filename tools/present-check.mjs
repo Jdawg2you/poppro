@@ -193,7 +193,7 @@ const TEST = `(async function(){
   ok(!/GOOD|BETTER|BEST/.test(pt)&&/ESSENTIAL|Essential/.test(pt),'Client View says Essential / Complete / Comprehensive, never Good / Better / Best');
   presentBack(); await wait(600); ok(S.step==='present'&&S.present.pg===nav[nav.length-1],'Back returns to the same screen');
   /* Send the quote lives at the bottom of Quote */
-  document.querySelector('#prNav [data-go="quote"]').click(); await wait(100);
+  for(var qw=0;qw<40&&!document.querySelector('#prNav [data-go="quote"]');qw++) await wait(75); document.querySelector('#prNav [data-go="quote"]').click(); await wait(100);
   ok(S.step==='quote'&&!!document.querySelector('#step-quote #sendQuote #emailBtn')&&!document.querySelector('#step-enroll #emailBtn'),'Not today → Quote, where Send the quote now lives');
   /* Enroll in call order */
   goStep('enroll'); await wait(300);
