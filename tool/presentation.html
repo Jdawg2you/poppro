@@ -191,7 +191,7 @@ Source tags show where each piece came from: <span class="who wK">KYLE</span> hi
 <h3>Prescriptions</h3>
 <p class="cue">Two versions &mdash; the script serves whichever matches their profile.<span class="pinmark">5.3</span></p>
 
-<div class="say" data-rx="has"><b>If they listed prescriptions.</b> Your <var data-k="drug.name">&lt;drug&gt;</var> runs about <var data-k="drug.cash">$&lt;cash&gt;</var> at the pharmacy. With the coupon I already texted you it&rsquo;s <var data-k="drug.coupon">$&lt;coupon&gt;</var>. The plan carries a <var data-k="afc.rx_day">$50</var>-a-day prescription benefit up to <var data-k="afc.rx_cap">$750</var> a year, so you&rsquo;re comfortably under it &mdash; and the rest of that benefit is sitting there if something unexpected gets added.<span class="who wM">MIKE</span></div>
+<div class="say" data-rx="has"><b>If they listed prescriptions.</b> <span data-repeat="meds">Your <var data-k="drug.name">&lt;drug&gt;</var> runs about <var data-k="drug.now">$&lt;now&gt;</var> at the pharmacy. With the coupon I already texted you it&rsquo;s <var data-k="drug.coupon">$&lt;coupon&gt;</var>.</span> The plan carries a <var data-k="afc.rx_day">$50</var>-a-day prescription benefit up to <var data-k="afc.rx_cap">$750</var> a year, so you&rsquo;re comfortably under it &mdash; and the rest of that benefit is sitting there if something unexpected gets added.<span class="who wM">MIKE</span></div>
 
 <div class="say" data-rx="none"><b>If they listed none.</b> You&rsquo;re not on anything regular right now, which is the best place to be. If that changes, the plan carries a <var data-k="afc.rx_day">$50</var>-a-day prescription benefit up to <var data-k="afc.rx_cap">$750</var> a year &mdash; and I can show you how to easily get a pretty significant coupon for most meds you&rsquo;d be prescribed, so you&rsquo;re rarely paying anywhere near retail in the first place.<span class="who wJ">JESSE</span></div>
 
@@ -220,9 +220,7 @@ Now compare that to where you are today. On a <var data-k="anchor.deductible">$1
 <details class="exp"><summary>If they want to go over the big stuff &mdash; compare a real diagnosis against their anchor</summary>
 <div class="body">
 <p>The same tool section as the quote page, mirrored here, so you never have to leave the script mid-call. Pick a condition and it lines up <b>their anchor</b> against <b>the selected plan</b>, with the CareGuide treatment applied, exactly as it prints on the quote page.<span class="pinmark">5.4</span></p>
-<p style="margin:0 0 9px"><b>Condition</b> &nbsp;
-<span style="display:inline-block;border:1px solid #9ab6dd;border-radius:4px;padding:5px 11px;background:#fff;font-size:13.5px">Appendectomy &nbsp;&#9662;</span>
-<span style="font-size:12.5px;color:#555">&nbsp; same drop-list as the quote page</span></p>
+
 <div data-mount="conditions"><table style="margin:0;font-size:13.5px">
 <tr><th>&nbsp;</th><th>Their anchor<br><span style="font-weight:400">marketplace, $10,000 ded</span></th><th>The selected plan<br><span style="font-weight:400">AFC Elite package</span></th></tr>
 <tr><td>Emergency room</td><td><var>they pay it</var></td><td><var>$300</var></td></tr>
@@ -280,6 +278,8 @@ Now compare that to where you are today. On a <var data-k="anchor.deductible">$1
 
 <div class="say">Here&rsquo;s what most people do after we save them this much: take a small piece &mdash; usually <var data-k="lb.suggested">$110 to $140</var> &mdash; and protect their income with living-benefit insurance that pays YOU while you&rsquo;re alive if you get cancer, a heart attack, or stroke. Instead of losing income, the company cuts you a check &mdash; $20,000, $50,000, $100,000 depending on the event. Health takes care of the bills; living benefits take care of your income. You really need both. Want me to show you what that looks like for your age and health?<span class="who wK">KYLE</span></div>
 
+<div class="say">And that&rsquo;s only about <var data-k="lb.share">20 to 25%</var> of what you&rsquo;re already saving.<span class="who wJ">JESSE</span><span class="pinmark">7.3</span></div>
+
 <div class="aside">The figure in that line is <b>derived from the saving</b>, 20&ndash;25% of it, so it always sounds proportionate &mdash; at a <var data-k="savings.monthly">$550</var> saving it reads &ldquo;usually <var data-k="lb.suggested_low">$110</var> to <var data-k="lb.suggested_high">$140</var>&rdquo;, which also lands inside the $200&ndash;$400 target from the Top Tip. Kyle&rsquo;s static $40&ndash;$70 is gone: against a big saving it sounded like lowballing, against a small one it was half the saving. The module below still produces the exact quote.<span class="pinmark">7.2</span></div>
 
 <div class="tip">If they hesitate, this is the one that moves people: &ldquo;Think about it this way &mdash; if you had a cardiac event tomorrow and the doctor told you six months of rehab, no work, who&rsquo;s paying the mortgage? Health insurance handles the hospital. This handles the six months.&rdquo; It converts &ldquo;I don&rsquo;t need life insurance&rdquo; into &ldquo;I don&rsquo;t have six months of income.&rdquo;<span class="who wM">MIKE</span><span class="pinmark">S1</span></div>
@@ -318,23 +318,9 @@ Now compare that to where you are today. On a <var data-k="anchor.deductible">$1
 
 <div class="tip">Take the <b>life application first</b>, health second. The life app needs <i>them</i> to act &mdash; a code or an e-signature &mdash; so do that part while you still have them on the phone. The health app doesn&rsquo;t. Then collect whatever you still need beyond what is already on their profile, so the health application is quick once they are off the call.<span class="who wJ">JESSE</span><span class="pinmark">8.2</span></div>
 
-<div style="border:2px solid #1d4e79;border-radius:6px;padding:13px 16px;margin:11px 0;background:#f7faff">
-<p style="margin:0 0 8px;font-weight:700;color:#1d4e79;font-size:11px;letter-spacing:1px"><span data-mount="lifeapp"></span>ON THE LIFE APPLICATION PATH &mdash; EVERYTHING IT WILL ASK FOR</p>
-<p style="margin:0 0 9px;font-size:13.5px">Every value is <b>click-to-copy</b> &mdash; tap it and it is on your clipboard, ready to paste into the carrier form. Anything blank is a <b>field you can fill here</b>, and what you type writes back to the profile, so saving the JSON captures it everywhere.<span class="pinmark">8.2</span></p>
-<table style="margin:0;font-size:13.5px">
-<tr><th style="width:38%">The app asks for</th><th>From the profile</th><th style="width:76px">&nbsp;</th></tr>
-<tr><td>Full legal name</td><td><var data-k="client.legal_name">&lt;legal name&gt;</var></td><td><a href="#" style="font-size:11.5px;font-weight:700;color:#1d4e79;text-decoration:none">&#10697; COPY</a></td></tr>
-<tr><td>Date of birth</td><td><var data-k="client.dob">&lt;dob&gt;</var></td><td><a href="#" style="font-size:11.5px;font-weight:700;color:#1d4e79;text-decoration:none">&#10697; COPY</a></td></tr>
-<tr><td>Height and weight</td><td><var data-k="client.ht">&lt;ht&gt;</var> / <var data-k="client.wt">&lt;wt&gt;</var></td><td><a href="#" style="font-size:11.5px;font-weight:700;color:#1d4e79;text-decoration:none">&#10697; COPY</a></td></tr>
-<tr><td>Phone and email</td><td><var data-k="client.phone">&lt;phone&gt;</var> / <var data-k="client.email">&lt;email&gt;</var></td><td><a href="#" style="font-size:11.5px;font-weight:700;color:#1d4e79;text-decoration:none">&#10697; COPY</a></td></tr>
-<tr><td>Full street address</td><td style="background:#fffdf4"><span style="display:inline-block;min-width:170px;border-bottom:1px dashed #8a6d1f;color:#8a6d1f;font-size:12.5px">type it here if blank &rarr; saves to profile</span></td><td><a href="#" style="font-size:11.5px;font-weight:700;color:#1d4e79;text-decoration:none">&#10697; COPY</a></td></tr>
-<tr><td>Tobacco, prescriptions, conditions</td><td><var>already on file</var></td><td><a href="#" style="font-size:11.5px;font-weight:700;color:#1d4e79;text-decoration:none">&#10697; COPY</a></td></tr>
-<tr><td>Beneficiary</td><td><b>names only</b> &mdash; no percentages or relationships on the call</td><td>&nbsp;</td></tr>
-<tr><td>Bank details and draft date</td><td><b>never stored here</b> &mdash; read straight into the carrier form</td><td>&nbsp;</td></tr>
-</table>
-<p style="margin:9px 0 0;font-size:13.5px;background:#fff;border:1px dashed #9ab6dd;border-radius:4px;padding:9px 12px">
-<span data-mount="notes"></span><b>Notes &mdash; anything that comes up during the application.</b> Draft-date requests, a condition they mention in passing, the code word from the bridge question. This is the same field as the <b>client profile</b> notes and the POP Pro notes, not a third copy &mdash; whatever you type here is there afterwards.</p>
-</div>
+<div class="do"><span class="lab">NOT SPOKEN</span>Take the application in <b>POP Pro&rsquo;s own per-person blocks</b> &mdash; one expandable block for the applicant, the spouse and each child. Anything you type into a blank there writes back to the profile. <b>Beneficiaries:</b> name, percentage, phone and date of birth. <b>Relationships are not asked.</b> Bank details, draft date and SSN are read straight into the carrier form and never stored here.</div>
+
+<div class="do"><span class="lab">NOT SPOKEN</span><b>Notes</b> &mdash; anything off script: what they said, what to remember, what to follow up. One box, and it is the same Notes as the Script Navigator profile.</div>
 
 <div class="say">For security purposes &mdash; and this'll be the code word you sign the health application with &mdash; what's your mother's maiden name?<span class="who wM">MIKE</span></div>
 
@@ -420,20 +406,18 @@ I&rsquo;ve kept a slot open about a week out in case you want to go over anythin
 <p class="q">&ldquo;Can you just send me some information?&rdquo;</p>
 <p class="fff">Absolutely. What clients found is that reading it alone didn't show them what they personally qualify for. <span class="ask">I'll send it and walk you through it in five minutes &mdash; this evening or tomorrow morning?</span></p>
 
-<h2><span class="n">13</span>Three fields POP Pro cannot fill yet<span class="pinmark">6.4</span></h2>
+<h2><span class="n">13</span>Fields POP Pro cannot fill yet<span class="pinmark">6.4</span></h2>
 
-<p>Everything else in this script fills from data that already exists. These three do not, so they show red in the sandbox until you decide. Each has a cheap option and a free one.</p>
+<p>Everything else in this script fills from data that already exists. <b>Two</b> still do not, so they show red in the sandbox until you decide &mdash; each has a cheap option and a free one. The third is settled.</p>
 
 <table>
 <tr><th>Key</th><th>Where it is spoken</th><th>Your options</th></tr>
 <tr><td><code>client.situation</code></td><td>Section 2 &mdash; the bracket after &ldquo;small business owners&rdquo;</td><td><b>Capture it:</b> one short free-text field on intake, two or three words. <b>Or drop it:</b> Kyle&rsquo;s sentence reads fine without the bracket, you just lose the personalisation you asked for.</td></tr>
 <tr><td><code>doctor.street</code></td><td>Section 5 &mdash; &ldquo;Dr &lt;name&gt; on &lt;street&gt;&rdquo;</td><td><b>Capture it:</b> you already have it on screen in the First Health locator when you take the screenshot, so it is a copy-paste. <b>Or drop it:</b> but the street is the whole point of Mike&rsquo;s move &mdash; clients know their doctor&rsquo;s name and not the address, which is why saying it lands.</td></tr>
-<tr><td><code>drug.cash</code></td><td>Section 7 &mdash; &ldquo;runs about $&lt;cash&gt; at the pharmacy&rdquo;</td><td>POP Pro holds the current <b>copay</b> and the <b>discount-card price</b>, not a cash price. <b>Capture it</b>, or take the reword below &mdash; it needs no new field.</td></tr>
+<tr style="background:#f3f8f4"><td><code>drug.now</code> <span style="font-size:11px;color:#2f5f42;font-weight:700">SETTLED</span></td><td>Section 7 &mdash; &ldquo;runs about $&lt;now&gt; at the pharmacy&rdquo;</td><td><b>Done, no new field.</b> Was <code>drug.cash</code>, which needed a retail price nobody holds. Renamed <code>drug.now</code> &mdash; &ldquo;what they pay for it today&rdquo; &mdash; and filled from the medication's current copay, which POP Pro already has. True whether they have a copay or pay cash, which the old name was not.</td></tr>
 </table>
 
-<div class="prov">The <code>drug.cash</code> reword, if you want it &mdash; this is Mike's line, not Kyle's, so it is free to change:
-<div class="say" style="font-size:15px">Your <var data-k="drug.name">&lt;drug&gt;</var> &mdash; right now you&rsquo;re paying <var data-k="cur.copay">$&lt;copay&gt;</var> for it. With the discount card I already texted you it&rsquo;s <var data-k="drug.coupon">$&lt;coupon&gt;</var>. And the plan carries a <var data-k="afc.rx_day">$50</var>-a-day prescription benefit up to <var data-k="afc.rx_cap">$750</var> a year, so you&rsquo;re comfortably under it &mdash; and the rest of that benefit is sitting there if something unexpected gets added.</div>
-It swaps an unknown retail price for the copay they actually pay, which is arguably the better comparison anyway: it is their number, not the pharmacy&rsquo;s. Say the word and it replaces the live line.</div>
+
 
 <p style="margin-top:26px;color:#666;font-size:12.5px">Kyle's scripting from HealthFirst Scripts &amp; Forms.docx section 3, 30 June 2026, kept verbatim where you asked. Figures from AFC7010-FLBR_1125 page 4 (Florida, Elite), shown as examples &mdash; the live script fills them from the selected plan. Ten items still provisional; the decision log is in the build sheet.</p>
 

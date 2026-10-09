@@ -4443,7 +4443,7 @@ function presentScriptTokens(t){ var T=presentTokens(t), C=S.client||{}, I=S.int
   var d1=String(I.docs1||'').replace(/^\s*dr\.?\s+/i,'').replace(/\s*\(.*\)\s*$/,'').trim(); if(d1) T['doctor.name']=d1;
   /* every medication, in intake order; the first fills the sentence, the rest are listed after it (presentMeds) */
   T['_meds']=(I.medList||[]).filter(function(m){ return m&&String(m.name||'').trim(); }).map(function(m){ return {name:medBase(m.name), cash:+m.cur>0?fmt2(+m.cur):'', coupon:+medDisc(m)>0?fmt2(medDisc(m)):''}; });
-  var med=T['_meds'][0]; if(med){ T['drug.name']=med.name; if(med.coupon) T['drug.coupon']=med.coupon; if(med.cash) T['drug.cash']=med.cash; }
+  var med=T['_meds'][0]; if(med){ T['drug.name']=med.name; if(med.coupon) T['drug.coupon']=med.coupon; if(med.cash) T['drug.now']=med.cash; }
   /* the selected Affordable Choice level: engine figures, plus the brochure rows the engine does not carry */
   var afcP=(pk.products||[]).filter(function(p){ return p.k==='afc'; })[0], X=presentAfc(t);
   if(afcP){ T['afc.name']=String(afcP.name).split(' — ').pop(); T['afc.visit_amt']=m0(A.visit); T['afc.visits']=String(A.visitN||''); T['afc.er']=m0(A.er);
@@ -4472,7 +4472,7 @@ function presentScriptTokens(t){ var T=presentTokens(t), C=S.client||{}, I=S.int
   T['plan.monthly']=fmt2(planMo); T['lb.addback']=lbMo>0?fmt2(lbMo):''; T['new.total']=fmt2(planMo+lbMo);
   T['anchor.deductible']=ak==='aca'?T['aca.deductible']:(ak==='cur'||ak==='employer')?T['cur.deductible']:'';
   if(anc!=null){ T['anchor.today']=fmt2(anc); var sv=anc-planMo; T['savings.monthly']=fmt2(sv); T['saving']=fmt2(anc-planMo-lbMo);
-    if(sv>0){ var lo=Math.round(sv*0.20/10)*10, hi=Math.round(sv*0.25/10)*10; T['lb.suggested_low']=m0(lo); T['lb.suggested_high']=m0(hi); T['lb.suggested']=m0(lo)+' to '+m0(hi); } }
+    if(sv>0){ var lo=Math.round(sv*0.20/10)*10, hi=Math.round(sv*0.25/10)*10; T['lb.suggested_low']=m0(lo); T['lb.suggested_high']=m0(hi); T['lb.suggested']=m0(lo)+' to '+m0(hi); T['lb.share']='20 to 25%'; } }
   else { T['anchor.today']=''; T['savings.monthly']=''; T['saving']=''; }
   return T; }
 /* where a blank can be typed into on the Apply panel, and the profile field it writes back to */
@@ -4484,6 +4484,9 @@ var PRESENT_CSS='.pp-off{display:none!important}.pp-chosen{outline:3px solid #2f
  +'.pp-mount table{margin:6px 0 0;font-size:13.5px}.pp-copy{font:inherit;font-size:12px;font-weight:700;border:none;background:#16203c;color:#fff;border-radius:6px;padding:7px 12px;cursor:pointer;margin-top:8px}'
  +'.pp-lbadd{font:inherit;font-size:12.5px;font-weight:700;border:none;background:#2f7d4a;color:#fff;border-radius:6px;padding:5px 11px;cursor:pointer}.pp-lbx{font:inherit;font-size:11.5px;border:none;background:none;color:#8a1f12;text-decoration:underline;cursor:pointer}.pp-in{font-size:12.5px;font-weight:700;color:#2f7d4a}.pp-lbnote{font-size:11px;color:#8a5a00;max-width:220px}'
  +'.pp-medlist{margin:6px 0 6px 18px;padding:0}.pp-medlist li{margin:3px 0}'
+ +'.pp-two{display:grid!important;grid-template-columns:1fr auto 1fr;gap:14px;align-items:start}.pp-or{display:flex;align-items:center;justify-content:center;align-self:stretch;position:relative;min-width:36px}'
+ +'.pp-or:before{content:"";position:absolute;top:0;bottom:0;left:50%;border-left:2px dashed #c9a24e}.pp-or span{position:relative;background:#fff;border:2px solid #c9a24e;color:#8a6a1f;font-weight:800;font-size:12px;border-radius:999px;padding:6px 8px}'
+ +'@media(max-width:640px){.pp-two{grid-template-columns:1fr}.pp-or{min-height:40px}.pp-or:before{top:50%;bottom:auto;left:0;right:0;border-left:0;border-top:2px dashed #c9a24e}}'
  +'.pp-sug{font-size:12px;font-weight:700;color:#2f7d4a}.pp-nlab{margin-top:10px;font-size:13.5px;color:#16203c}'
  +'.pp-copy[disabled]{opacity:.45;cursor:not-allowed}.pp-need{font-size:12px;color:#b42318;margin-left:8px}var[contenteditable]{outline:1px dashed #b42318;min-width:60px;display:inline-block}';
 function presentEvCss(doc){ if(doc.getElementById('ppevcss')) return; var css='';
@@ -4497,7 +4500,7 @@ function presentFit(){ ['prFrame','enFrame','enFrame2'].forEach(function(id){ va
 /* More than one medication: the same words for each, one after another, before the sentence goes on to the plan's
    prescription benefit. A [data-repeat="meds"] block in the script (if Health ZONE adds one) is cloned per medication;
    until then the 2nd..nth are listed right after the first one's coupon sentence. */
-function presentMeds(doc,T){ var meds=T['_meds']||[], fill=function(el,m){ Array.prototype.forEach.call(el.querySelectorAll('var[data-k]'),function(v){ var k=v.getAttribute('data-k'), val=k==='drug.name'?m.name:k==='drug.cash'?m.cash:k==='drug.coupon'?m.coupon:null;
+function presentMeds(doc,T){ var meds=T['_meds']||[], fill=function(el,m){ Array.prototype.forEach.call(el.querySelectorAll('var[data-k]'),function(v){ var k=v.getAttribute('data-k'), val=k==='drug.name'?m.name:k==='drug.now'?m.cash:k==='drug.coupon'?m.coupon:null;
       if(val==null) return; if(val){ v.textContent=val; v.className='pp-ok'; v.removeAttribute('title'); } else { v.className='pp-miss'; v.title='missing: '+k; } }); };
   var rep=doc.querySelector('[data-repeat="meds"]');
   if(rep){ Array.prototype.forEach.call(doc.querySelectorAll('.pp-medclone'),function(x){ x.remove(); }); rep.style.display=meds.length?'':'none';
@@ -4506,7 +4509,7 @@ function presentMeds(doc,T){ var meds=T['_meds']||[], fill=function(el,m){ Array
   var cv=doc.querySelector('[data-rx="has"] var[data-k="drug.coupon"]'); if(!cv||meds.length<2) return;
   var ul=doc.createElement('ul'); ul.className='pp-medlist';
   meds.slice(1).forEach(function(m){ var li=doc.createElement('li'); var v=function(k,x){ return '<var data-k="'+k+'" class="'+(x?'pp-ok':'pp-miss')+'"'+(x?'':' title="missing: '+k+'"')+'>'+esc(x||k)+'</var>'; };
-    li.innerHTML='Your '+v('drug.name',m.name)+' runs about '+v('drug.cash',m.cash)+' at the pharmacy — with the coupon it’s '+v('drug.coupon',m.coupon)+'.'; ul.appendChild(li); });
+    li.innerHTML='Your '+v('drug.name',m.name)+' runs about '+v('drug.now',m.cash)+' at the pharmacy — with the coupon it’s '+v('drug.coupon',m.coupon)+'.'; ul.appendChild(li); });
   /* after "…it's $X." - split the text that follows the coupon at its first full stop */
   var tn=cv.nextSibling; if(tn&&tn.nodeType===3){ var ix=tn.textContent.indexOf('.'); if(ix>=0){ var rest=tn.splitText(ix+1); rest.parentNode.insertBefore(ul,rest); return; } }
   cv.parentNode.insertBefore(ul,cv.nextSibling); }
@@ -4544,18 +4547,14 @@ function presentWire(doc,t){ if(!doc||!doc.body) return 0; var T=presentScriptTo
   presentMeds(doc,T);
   var hasRx=(S.intake.medList||[]).some(function(m){ return m&&String(m.name||'').trim(); });
   Array.prototype.forEach.call(doc.querySelectorAll('[data-rx]'),function(x){ x.classList.toggle('pp-off',(x.getAttribute('data-rx')==='has')!==hasRx); });
-  /* two closes: pick one, the other hides */
-  var cl=S.present.close||'';
-  Array.prototype.forEach.call(doc.querySelectorAll('[data-close]'),function(x){ var me=x.getAttribute('data-close');
-    x.classList.toggle('pp-off',!!cl&&cl!==me); x.classList.toggle('pp-chosen',cl===me);
-    var b=x.querySelector('.pp-pick'); if(!b){ b=doc.createElement('button'); b.type='button'; b.className='pp-pick'; x.insertBefore(b,x.firstChild); }
-    b.textContent=cl===me?'↺ Show both closes':'Use this close'; b.onclick=function(){ S.present.close=(cl===me?'':me); autosave(); presentWire(doc,t); }; });
+  /* two closes side by side with an OR between them - the agent just reads the one they choose (Jesse, 2026-10-08) */
+  var two=doc.querySelector('[data-close="assumptive"]'); two=two&&two.parentNode;
+  if(two&&!two.querySelector('.pp-or')){ two.classList.add('pp-two'); var or=doc.createElement('div'); or.className='pp-or'; or.innerHTML='<span>OR</span>';
+    var b2=two.querySelector('[data-close="bold"]'); if(b2) two.insertBefore(or,b2); }
   /* conditions: the quote page's own event card (Jesse, 2026-10-08) - their anchor in red against the package they
      picked, Medical Bill Saver on, every layer of protection shown. Same evTableHTML the quote page draws. */
   var mc=doc.querySelector('[data-mount="conditions"]'); if(mc){ mc.classList.add('pp-mount'); presentEvCss(doc);
     var det=mc.closest('details'); if(det&&!det.dataset.ppOpened){ det.open=true; det.dataset.ppOpened='1'; }
-    /* the script's mock "Condition: Appendectomy ▾" line predates this card - "What happened" is the working picker */
-    Array.prototype.forEach.call((det||doc).querySelectorAll('p'),function(p2){ if(/same drop-list as the quote page/i.test(p2.textContent)) p2.classList.add('pp-off'); });
     var pick=S.present.cond||'ev0', sc=pick==='ev0'||pick==='ev1'?S.ev[+pick.slice(2)]:evScn(pick);
     if(!(sc&&evScnBill(sc).total>0)){ pick='hosp'; sc=evScn('hosp'); }
     var opts=[0,1].filter(function(k2){ return S.ev[k2]&&evScnBill(S.ev[k2]).total>0; }).map(function(k2){ return '<option value="ev'+k2+'"'+(pick==='ev'+k2?' selected':'')+'>Example '+(k2+1)+' from the quote — '+esc(S.ev[k2].desc||'')+'</option>'; }).join('')
@@ -4580,8 +4579,6 @@ function presentWire(doc,t){ if(!doc||!doc.body) return 0; var T=presentScriptTo
     Array.prototype.forEach.call(ml.querySelectorAll('[data-lb]'),function(sel){ sel.onchange=function(){ pbSet(cfg,sel.getAttribute('data-lb'),sel.value); redo(); }; });
     Array.prototype.forEach.call(ml.querySelectorAll('[data-lbadd]'),function(b){ b.onclick=function(){ var w=b.getAttribute('data-lbadd'); pk.dropped=(pk.dropped||[]).filter(function(x){ return x!=='lb'+w; }); redo(); }; });
     Array.prototype.forEach.call(ml.querySelectorAll('[data-lbrm]'),function(b){ b.onclick=function(){ var w=b.getAttribute('data-lbrm'); pk.dropped=pk.dropped||[]; if(pk.dropped.indexOf('lb'+w)<0) pk.dropped.push('lb'+w); redo(); }; }); }
-  /* the script's blue "everything it will ask for" panel is replaced by POP Pro's per-person blocks on Enroll */
-  var la=doc.querySelector('[data-mount="lifeapp"]'); if(la){ var box=la.closest('div'); while(box&&box.parentNode&&box.parentNode!==doc.body) box=box.parentNode; if(box&&box!==doc.body) box.classList.add('pp-off'); }
   /* notes: the same S.intake.notes the Intake step and the navigator push write */
   var mn=doc.querySelector('[data-mount="notes"]'); if(mn){ var ta=mn.querySelector('textarea');
     if(!ta){ mn.classList.add('pp-mount'); var lb=doc.createElement('div'); lb.className='pp-nlab'; lb.innerHTML='<b>Notes</b> (the same notes as the Script Navigator profile and POP Pro Intake — put anything important here)';

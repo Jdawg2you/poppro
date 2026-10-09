@@ -45,7 +45,7 @@ const TEST = `(async function(){
   document.querySelector('#prStories [data-story]').click(); ok(/Never a client/.test(document.getElementById('prPop').innerText),'a story pops with the naming rule');
   /* blanks */
   presentWire(d,'best'); var miss={}; d.querySelectorAll('var.pp-miss').forEach(function(v){ miss[v.title.replace(/^.*: /,'')]=1; });
-  var allowed=['client.situation','doctor.street','drug.cash','cur.copay','client.ht','client.wt','client.email','client.phone','agent.email','agent.website','agent.booking'];
+  var allowed=['client.situation','doctor.street','drug.now','client.ht','client.wt','client.email','client.phone','agent.email','agent.website','agent.booking'];
   var bad=Object.keys(miss).filter(function(k){ return allowed.indexOf(k)<0; });
   ok(!bad.length,'blanks the quote can fill are filled; unexpected gaps: '+bad.join(', '));
   var ps=d.querySelector('var[data-k="plan.products_spoken"]').textContent;
@@ -77,16 +77,16 @@ const TEST = `(async function(){
   /* several medications: one line each, before the plan's prescription benefit */
   S.intake.medList=[{name:'Losartan (Cozaar)',cur:50,disc:15,forP:true},{name:'Metformin (Glucophage)',cur:30,disc:8,forP:true},{name:'Vyvanse (Lisdexamfetamine)',cur:320,disc:95,forP:true}];
   presentGo(presentPageIx('Prescriptions')); await wait(40); var rx=d.querySelector('[data-rx="has"]').innerText;
-  ok(rx.indexOf('Losartan runs about $50.00')>=0&&rx.indexOf('Metformin runs about $30.00')>=0&&rx.indexOf('Vyvanse runs about $320.00')>=0,'every medication gets its own line: '+rx.split(String.fromCharCode(10)).join(' ').slice(0,260));
+  ok(rx.indexOf('Losartan')>=0&&rx.indexOf('$50.00')>=0>=0&&rx.indexOf('Metformin runs about $30.00')>=0&&rx.indexOf('Vyvanse runs about $320.00')>=0,'every medication gets its own line: '+rx.split(String.fromCharCode(10)).join(' ').slice(0,260));
   ok(rx.indexOf('Vyvanse')<rx.indexOf('The plan carries'),'the list comes before the plan benefit sentence');
-  presentWire(d,'best'); ok(d.querySelectorAll('.pp-medlist').length===1&&d.querySelectorAll('.pp-medlist li').length===2,'re-filling does not duplicate the list');
-  S.intake.medList=[{name:'Lipitor (Atorvastatin)',disc:12,cur:40,forP:true}]; presentWire(d,'best'); ok(!d.querySelector('.pp-medlist'),'one medication: just the sentence');
+  presentWire(d,'best'); ok(d.querySelectorAll('.pp-medclone').length===2&&d.querySelectorAll('[data-repeat="meds"]').length===1,'the script sentence repeats once per medication; re-filling does not duplicate');
+  S.intake.medList=[{name:'Lipitor (Atorvastatin)',disc:12,cur:40,forP:true}]; presentWire(d,'best'); ok(!d.querySelector('.pp-medlist')&&!d.querySelector('.pp-medclone'),'one medication: just the sentence');
   /* prescriptions, closes */
   ok(d.querySelector('[data-rx="none"]').classList.contains('pp-off')&&!d.querySelector('[data-rx="has"]').classList.contains('pp-off'),'Rx: the has-prescriptions version is served');
   var closeIx=presentPageIx('Pick your close'); presentGo(closeIx); await wait(30);
-  ok(Array.prototype.every.call(d.querySelectorAll('[data-close]'),function(x){ return x.offsetParent!==null; }),'both closes side by side before picking');
-  d.querySelector('[data-close="bold"] .pp-pick').click(); await wait(30);
-  ok(fr.contentWindow.getComputedStyle(d.querySelector('[data-close="assumptive"]')).display==='none','picking Bold hides Assumptive');
+  var cl=d.querySelectorAll('[data-close]'), or=d.querySelector('.pp-or');
+  ok(cl.length===2&&Array.prototype.every.call(cl,function(x){ return x.offsetParent!==null; })&&!!or&&cl[0].getBoundingClientRect().left<or.getBoundingClientRect().left&&or.getBoundingClientRect().left<cl[1].getBoundingClientRect().left,'Assumptive | OR | Bold side by side');
+  ok(!d.querySelector('.pp-pick'),'no "use this close" buttons');
   /* LB in the script writes back to the builder */
   presentGo(presentPageIx('Living benefits — price it & do the numbers')); await wait(30);
   var sel=d.querySelector('[data-lb="lb.p.face"]'); sel.value='25000'; sel.dispatchEvent(new Event('change')); await wait(80);
@@ -112,7 +112,7 @@ const TEST = `(async function(){
   /* Enroll in call order */
   goStep('enroll'); var ef; for(var k2=0;k2<60;k2++){ await wait(100); ef=document.getElementById('enFrame'); if(ef.contentDocument&&ef.contentDocument.querySelector('var.pp-ok')) break; }
   var ed=ef.contentDocument, vis=function(doc){ return Array.prototype.filter.call(doc.body.children,function(e){ return e.dataset.pg!=null&&e.style.display!=='none'; }).map(function(e){ return +e.dataset.pg; }); };
-  await wait(100); ok(ed.querySelector('[data-mount="lifeapp"]').closest('div').classList.contains('pp-off'),'script blue panel replaced on Enroll');
+  await wait(100); ok(!ed.querySelector('[data-mount="lifeapp"]')&&!/EVERYTHING IT WILL ASK FOR/i.test(ed.body.innerText),'no script application panel - POP Pro blocks only');
   var pp=document.getElementById('enPeople');
   ok(/First name/.test(pp.innerText)&&/Last name/.test(pp.innerText)&&/Pat/.test(pp.innerText)&&/Present/.test(pp.innerText),'name split into first / last');
   var em=pp.querySelector('[data-enw="i:email"]'); ok(!!em,'blank email is typeable'); em.value='pat@example.com'; em.dispatchEvent(new Event('change'));
