@@ -906,7 +906,9 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
     </details>
 
     <div class="intake-sec" id="sec_client">Client Information</div>
-    <div class="fld" style="margin-bottom:8px"><label>Why shopping / current-plan pain <small>what prompted them · what they dislike</small></label><input id="in_whyshop" placeholder="e.g. premium jumped, deductible too high, lost group plan"></div>
+    <div class="fld" style="margin-bottom:8px"><label>What matters most — their words <small>short · the one thing the plan has to do · read back to them on the presentation</small></label><input id="in_whymatters" placeholder="e.g. keep Dr. Patel · never get wiped out by a hospital bill"></div>
+    <div class="fld" style="margin-bottom:8px"><label>What prompted it / current-plan pain <small>the story, for you · not read aloud or printed</small></label><input id="in_whyshop" placeholder="e.g. premium jumped, deductible too high, lost group plan"></div>
+    <div class="fld" style="margin-bottom:8px"><label>Plan they already found <small>what they landed on and what it costs</small></label><input id="in_foundplan" placeholder="e.g. Ambetter Silver, $612/mo"></div>
     <div class="intakegrid">
       <div class="fld"><label>Primary name</label><input id="in_pname" class="keyfield" placeholder="First and Last"></div>
       <div class="fld"><label>Date of birth</label><input id="in_date" class="keyfield" placeholder="MM/DD/YYYY"></div>
@@ -2804,7 +2806,7 @@ function blankState(){
     pension:{monthly:0,note:'e.g., IUL / tax-free retirement savings for your future',cv10:0,cv20:0,cv30:0,leg1:0,leg25:0},
     ev:[evScn('hosp'),evScn('urgent')],   // the two example cards: same builder, any scenario
     negot:{on:true,pct:40,min:2500,cards:{}},   // Medical Bill Saver (CareGuide) - a conservative 40% illustration; no carrier average is published
-    intake:{who:{app:true,spouse:false,kids:false},phone:'',email:'',tobaccoP:false,tobaccoS:false,maternityP:false,maternityS:false,maternity:false,dv:false,famcancerP:false,famcancerS:false,famcancer:false,famheartP:false,famheartS:false,famheart:false,mentalP:false,mentalS:false,mental:false,surg2yrP:false,surg2yrS:false,surg2yr:false,majorcond:false,majorcondNote:'',diabetic:false,diabeticNote:'',health:'',income:0,pincome:0,sincome:0,hhManual:false,retage:'',savings:0,invest:0,invprot:false,invsra:false,invnote:'',docs1:'',docs2:'',docs3:'',keepaca:'',keepafc:'',docnote:'',medList:[],budget:0,priority:'coverage',notes:'',carrier:'',plan:'',pheight:'',pweight:'',sheight:'',sweight:'',psex:'',ssex:'',kidsNote:'',routeNote:'',docsNote:'',whyShop:'',effDate:''},
+    intake:{who:{app:true,spouse:false,kids:false},phone:'',email:'',tobaccoP:false,tobaccoS:false,maternityP:false,maternityS:false,maternity:false,dv:false,famcancerP:false,famcancerS:false,famcancer:false,famheartP:false,famheartS:false,famheart:false,mentalP:false,mentalS:false,mental:false,surg2yrP:false,surg2yrS:false,surg2yr:false,majorcond:false,majorcondNote:'',diabetic:false,diabeticNote:'',health:'',income:0,pincome:0,sincome:0,hhManual:false,retage:'',savings:0,invest:0,invprot:false,invsra:false,invnote:'',docs1:'',docs2:'',docs3:'',keepaca:'',keepafc:'',docnote:'',medList:[],budget:0,priority:'coverage',notes:'',carrier:'',plan:'',pheight:'',pweight:'',sheight:'',sweight:'',psex:'',ssex:'',kidsNote:'',routeNote:'',docsNote:'',whyShop:'',whyMatters:'',foundPlan:'',effDate:''},
     recommended:'best',
     chosen:{tier:null},   // the package the client picked - carries from the builder / Client View to Enroll
     include:{good:true,better:true,best:true},   // agent toggle — which tiers reach the client view & printout
@@ -3435,6 +3437,8 @@ function applySuiteClient(c){
      said about their health goes in the notes, below, where it can be read back. */
   if(h.effDate)  I.effDate=suiteDate(h.effDate);
   if(h.whyShop)  I.whyShop=h.whyShop;
+  if(h.whyMatters) I.whyMatters=h.whyMatters;
+  if(h.foundPlan) I.foundPlan=h.foundPlan;
 
   /* Doctors they said they want to keep. Whether keeping one is a hard requirement is
      what decides if a network plan is even on the table, so it rides in the note. */
@@ -3878,7 +3882,7 @@ function poRecapHTML(showCur,showAca){
   if(w.spouse) ppl.push((c.sname?esc(c.sname):'Spouse')+(c.sage?' ('+esc(c.sage)+')':''));
   var nk=w.kids?kidsList().length:0; if(w.kids) ppl.push(nk>1?nk+' children':nk===1?'1 child':'children');
   /* Their own reason leads - in their words, full width. */
-  if(I.whyShop&&String(I.whyShop).trim()) rows.push(['Why you are looking',esc(String(I.whyShop).trim()),'wide']);
+  if(String(I.whyMatters||'').trim()) rows.push(['What matters most to you',esc(String(I.whyMatters).trim()),'wide']);
   rows.push(['Who we are covering',ppl.join(' · ')+(c.state?' — '+esc(c.state):'')]);
 
   /* What they have today - only what we actually know; nothing is said about a plan we have no details on. */
@@ -4117,7 +4121,7 @@ function suiteFromNavProfile(P){
       incomeThis:P.income_this||"", incomeSpouse:P.sp_income||"", incomeHousehold:P.hh_income||"",
       retireAge:P.i_retire||"", spRetireAge:P.sp_retire||"", liquid:P.i_liquid||"", invest:P.asset_amt||"",
       protectable:P.asset_prot||"", invnote:P.asset_notes||"", budgetComfort:P.budget_comfort||"", budgetMax:P.budget_max||"",
-      healthNotes:P.health_notes||"", healthOther:P.health_other||"", whyShop:P.why_note||"", effDate:P.start_when||"", lastDay:P.last_day||"",
+      healthNotes:P.health_notes||"", healthOther:P.health_other||"", whyShop:P.why_note||"", whyMatters:P.why_matters||"", foundPlan:P.found_plan||"", effDate:P.start_when||"", lastDay:P.last_day||"",
       apptWhen:P.appt_when||"", apptWho:P.appt_who||"", apptNotes:P.appt_notes||"", occupation:P.occupation||"", occYears:P.occ_years||"",
       kidsHealth:P.kids_health||"", wantDental:P.want_dental||"", wantVision:P.want_vision||"", wantHearing:P.want_hearing||"",
       curCarrier:P.cur_carrier||"", curPlan:P.cur_plan||"", curPrem:P.cur_prem||"", curEmpPrem:P.cur_emp_prem||"", curTotal:P.cur_total||"",
@@ -4224,7 +4228,7 @@ function readIntake(){
   S.intake.savings=moneyVal($('in_savings').value); S.intake.invest=moneyVal($('in_invest').value); S.intake.invprot=$('in_invprot').checked; S.intake.invsra=$('in_invsra').checked; S.intake.invnote=$('in_invnote').value;
   S.intake.docs1=$('in_docs1').value; S.intake.docs2=$('in_docs2').value; S.intake.docs3=$('in_docs3').value;
   S.intake.keepaca=$('in_keepaca').value; S.intake.keepafc=$('in_keepafc').value; S.intake.docnote=$('in_docnote').value;
-  S.intake.pheight=$('in_pheight').value; S.intake.pweight=$('in_pweight').value; S.intake.sheight=$('in_sheight').value; S.intake.sweight=$('in_sweight').value; S.intake.psex=$('in_psex').value; S.intake.ssex=$('in_ssex').value; S.intake.kidsNote=$('in_kids').value; S.intake.routeNote=$('in_routenote').value; S.intake.docsNote=$('in_docsnote').value; S.intake.whyShop=$('in_whyshop').value; S.intake.effDate=$('in_effdate').value;
+  S.intake.pheight=$('in_pheight').value; S.intake.pweight=$('in_pweight').value; S.intake.sheight=$('in_sheight').value; S.intake.sweight=$('in_sweight').value; S.intake.psex=$('in_psex').value; S.intake.ssex=$('in_ssex').value; S.intake.kidsNote=$('in_kids').value; S.intake.routeNote=$('in_routenote').value; S.intake.docsNote=$('in_docsnote').value; S.intake.whyShop=$('in_whyshop').value; S.intake.whyMatters=$('in_whymatters').value; S.intake.foundPlan=$('in_foundplan').value; S.intake.effDate=$('in_effdate').value;
   S.docs.net=$('in_net').checked; S.docs.rx=$('in_rx').checked; S.docs.famcancer=!!(S.intake.famcancer||S.intake.famheart);
 }
 function captureIntake(){
@@ -4253,7 +4257,7 @@ function fillIntake(){
   $('in_diabetic').checked=!!I.diabetic; $('in_diabetic_note').value=I.diabeticNote||''; autoGrow($('in_diabetic_note'));
   $('in_docs1').value=I.docs1||''; $('in_docs2').value=I.docs2||''; $('in_docs3').value=I.docs3||'';
   $('in_keepaca').value=I.keepaca||''; $('in_keepafc').value=I.keepafc||''; $('in_docnote').value=I.docnote||'';
-  $('in_pheight').value=I.pheight||''; $('in_pweight').value=I.pweight||''; $('in_sheight').value=I.sheight||''; $('in_sweight').value=I.sweight||''; $('in_psex').value=I.psex||''; $('in_ssex').value=I.ssex||''; $('in_kids').value=I.kidsNote||''; $('in_routenote').value=I.routeNote||''; $('in_docsnote').value=I.docsNote||''; $('in_whyshop').value=I.whyShop||''; $('in_effdate').value=I.effDate||''; updateBMI('p'); updateBMI('s'); buildFlag('p'); buildFlag('s');
+  $('in_pheight').value=I.pheight||''; $('in_pweight').value=I.pweight||''; $('in_sheight').value=I.sheight||''; $('in_sweight').value=I.sweight||''; $('in_psex').value=I.psex||''; $('in_ssex').value=I.ssex||''; $('in_kids').value=I.kidsNote||''; $('in_routenote').value=I.routeNote||''; $('in_docsnote').value=I.docsNote||''; $('in_whyshop').value=I.whyShop||''; $('in_whymatters').value=I.whyMatters||''; $('in_foundplan').value=I.foundPlan||''; $('in_effdate').value=I.effDate||''; updateBMI('p'); updateBMI('s'); buildFlag('p'); buildFlag('s');
   $('in_net').checked=!!S.docs.net; $('in_rx').checked=!!S.docs.rx;
   $('in_carrier').value=I.carrier||''; $('in_plan').value=I.plan||'';
   var C=curIn(); ['prem','emp','ded','oop','copay'].forEach(function(k){ $('in_cur_'+k).value=(+C[k])?fmtMoneyStr(String(C[k])):''; });
@@ -4605,7 +4609,7 @@ function presentHas(t,cond){ if(!cond) return true; var m=String(cond).match(/^(
 /* Every blank the script can use, from the chosen package. */
 function presentTokens(t){ var c=effCfg(t), pk=S.packages[t]||{products:[]}, I=S.intake||{}, C=S.client||{}, tot=tierTotals(t), B=anchorBase(), T={};
   var first=((C.pname||'').trim().split(/\s+/)[0])||'';
-  T['client.first']=first; T['client.name']=(C.pname||'').trim(); T['client.state']=(C.state||'').toUpperCase(); T['client.why']=(I.whyShop||'').trim();
+  T['client.first']=first; T['client.name']=(C.pname||'').trim(); T['client.state']=(C.state||'').toUpperCase(); T['client.why']=presentWhy(I);
   T['agent.name']=(C.agent||'').trim(); T['agency']=S.agency||'';
   T['plan.name']=TIER_NAME[t]; T['plan.label']=(S.tabLabels||{})[t]||''; T['plan.monthly']=fmt2(tot.mo); T['plan.annual']=fmt2(tot.yr);
   var prods=(pk.products||[]).filter(function(p){ return (+p.monthly||0)>0; });
@@ -4761,6 +4765,12 @@ function presentAfc(t){ var c=effCfg(t), lvl=c.afc, d=BEN_DATA.afc, b=d?benBroch
 function presentHasCur(){ var C=curIn(); return +C.prem>0&&C.paying!==false; }
 function presentAnchor(){ S.present=S.present||{}; var k=S.present.anchor||(S.intake&&S.intake.anchor)||'aca';
   if(k==='employer'||(k==='cur'&&!presentHasCur())) k='aca'; return k; }
+/* Section 3 reads this back as "the thing you highlighted as most important to you was ___" (Jesse, 9 Oct): it must be
+   their short answer to "what's the one thing the plan has to do", never the prompted-it story. Older quotes have only
+   the story box: a short one-liner there still reads naturally; a paragraph does not, so the blank stays red and the
+   agent asks. */
+function presentWhy(I){ var m=String((I&&I.whyMatters)||'').trim(); if(m) return m.replace(/[.!\s]+$/,'');
+  var w=String((I&&I.whyShop)||'').trim(); return (w&&w.length<=80&&!/[\n.!?].+/.test(w))?w.replace(/[.!\s]+$/,''):''; }
 function presentScriptTokens(t){ var T=presentTokens(t), C=S.client||{}, I=S.intake||{}, Cu=curIn(), pk=S.packages[t]||{products:[]}, c=effCfg(t), o=evTierPack(t), A=o.afc||{};
   var m0=function(n){ return '$'+Math.round(+n||0).toLocaleString('en-US'); };
   var who=I.who||{}, hh=who.kids?'you and your family':who.spouse?'you and your spouse':'you'; T['client.household_to']='to '+hh; T['client.household_for']='for '+hh;
@@ -5168,7 +5178,7 @@ function bindInputs(){
   $('in_ssex').addEventListener('change',function(){ buildFlag('s'); captureIntake(); });
   $('in_diabetic').addEventListener('change',function(){ buildFlag('p'); buildFlag('s'); });
   document.querySelectorAll('#step-intake .chip input').forEach(function(cb){ cb.addEventListener('change',function(){ syncChips(); readIntake(); autosave(); }); });
-  ['in_pname','in_sname','in_agent','in_address','in_state','in_zip','in_page','in_sage','in_majorcond_note','in_diabetic_note','in_docs1','in_docs2','in_docs3','in_carrier','in_plan','in_visits','in_budget_comfort','in_income','in_retage','in_savings','in_invest','in_invnote','in_docnote','in_budget','in_notes','in_kids','in_routenote','in_docsnote','in_whyshop','in_effdate']
+  ['in_pname','in_sname','in_agent','in_address','in_state','in_zip','in_page','in_sage','in_majorcond_note','in_diabetic_note','in_docs1','in_docs2','in_docs3','in_carrier','in_plan','in_visits','in_budget_comfort','in_income','in_retage','in_savings','in_invest','in_invnote','in_docnote','in_budget','in_notes','in_kids','in_routenote','in_docsnote','in_whyshop','in_whymatters','in_foundplan','in_effdate']
     .forEach(function(id){ var el=$(id); if(el) el.addEventListener('input',function(){ captureIntake(); }); });
   $('in_zip').addEventListener('input',zipFillsState);
   if($('in_kidcount')) $('in_kidcount').addEventListener('change',function(){ S.intake.kidsManual=0; kidsSetCount(this.value); });
