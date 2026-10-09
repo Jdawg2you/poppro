@@ -103,6 +103,14 @@ const TEST = `(async function(){
     Array.prototype.forEach.call(d.body.children,function(e){ if(e.dataset.pg!=null&&+e.dataset.pg!==ix&&fr.contentWindow.getComputedStyle(e).display!=='none') leaks.push(pages[ix].t+' shows '+(e.innerText||'').slice(0,30)); }); }
   ok(!leaks.length,'no block shows on another screen: '+leaks.slice(0,3).join(' | '));
   presentGo(presentPageIx('Price the marketplace & pick the anchor'));
+  /* doctor line: every doctor, "they're (all) in the network" */
+  presentGo(presentPageIx('Networks & providers')); await wait(20);
+  var drLine2=function(){ return Array.prototype.filter.call(d.querySelectorAll('.say'),function(x){ return /already found/.test(x.textContent); })[0].textContent.split(String.fromCharCode(10)).join(' '); };
+  var keepDocs=S.intake.docs1; S.intake.docs1='Tonya Renee Brown, Dr Freedman, Dr. Suresh B. Indupalli - primary care dr'; presentWire(d,'best');
+  ok(drLine2().indexOf('found Dr Tonya Renee Brown, Dr Freedman and Dr Suresh B. Indupalli — they’re all in the network')>=0,'several doctors: '+drLine2().slice(0,140));
+  S.intake.docs1='Dr. Ramirez (primary care)'; presentWire(d,'best');
+  ok(drLine2().indexOf('found Dr Ramirez — they’re in the network')>=0&&drLine2().indexOf('Dr Dr')<0,'one doctor: '+drLine2().slice(0,90));
+  S.intake.docs1=keepDocs; presentWire(d,'best');
   /* catastrophic: the quote page's own event card, anchor vs the chosen package, Bill Saver on, layers open */
   S.negot.on=false; presentGo(presentPageIx('Catastrophic — walk it as layers')); await wait(60);
   var mc=d.querySelector('[data-mount="conditions"]'), tab=mc&&mc.querySelector('.evtab');
