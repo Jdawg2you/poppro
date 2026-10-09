@@ -147,8 +147,7 @@ const TEST = `(async function(){
   var lpr=S.packages.best.products.filter(function(p){ return p.k==='lbp'; })[0];
   ok(lpr&&lpr.monthly===52.1&&lpr.name.indexOf('$100K (Corebridge QoL Flex)')>=0&&effCfg('best').lb.p.otherName==='Corebridge QoL Flex','script Other writes the builder setting: '+(lpr&&lpr.name));
   cs=d.querySelector('[data-lb="lb.p.carrier"]'); cs.value='americo'; cs.dispatchEvent(new Event('change')); await wait(60);
-  /* Americo has no $100K rate yet: the person shows unpriced with a note rather than a guessed price */
-  ok(!S.packages.best.products.some(function(p){ return p.k==='lbp'&&+p.monthly>0; }),'Americo at $100K: not priced (rate not loaded), nothing guessed');
+  ok(S.packages.best.products.some(function(p){ return p.k==='lbp'&&+p.monthly>0&&/Americo/.test(p.name); }),'Americo at $100K now priced');
   var fz=d.querySelector('[data-lb="lb.p.face"]'); fz.value='50000'; fz.dispatchEvent(new Event('change')); await wait(60);
   /* Present ends at the close: Enroll or send the quote */
   var nav=presentNav(); presentGo(nav[nav.length-1]); await wait(30);
@@ -236,6 +235,10 @@ const TEST = `(async function(){
   var lr=function(a,sx,tb,f){ return lbRate('moo',a,sx,tb,f,'20').price; };
   ok(lr(40,'M',false,75000)===29.84&&lr(40,'M',false,250000)===87&&lr(55,'M',false,75000)===90.05&&lr(60,'F',true,100000)===352.8&&lr(18,'M',false,25000)===8.7,'MoO rates match the quoter: '+[lr(40,'M',false,75000),lr(40,'M',false,250000),lr(55,'M',false,75000),lr(60,'F',true,100000)].join(' / '));
   ok(lr(61,'M',false,50000)==null&&lr(17,'M',false,50000)==null,'MoO 20-year issues 18-60 only');
+  var ar=function(a,tb,f){ return lbRate('americo',a,'M',tb,f,'20').price; };
+  ok(ar(40,false,250000)===95.71&&ar(64,true,50000)===263.96&&ar(40,false,25000)===17.27&&ar(65,false,50000)!=null&&ar(19,false,50000)==null,'Americo Term 125 matches the engine; issues 20-65');
+  var p61=pLB1({k:'p',tag:'Primary',age:62,sex:'M',tob:false},{carrier:'moo',face:'100000'});
+  ok(/Americo/.test(p61.carrier)&&/issues to age 60/.test(p61.note),'age 62 on Mutual of Omaha: switches to Americo 20-year with a note ('+p61.note.slice(0,70)+')');
   ok(pLB1({k:'p',tag:'Primary',age:55,sex:'M',tob:false},{carrier:'moo',face:'100000'}).carrier==='Mutual of Omaha TLE','age 55 stays on Mutual of Omaha (no more switch to Americo after 50)');
   /* the navigator's answer travels in the push (last: a push switches POP Pro to the Intake step) */
   var nOk=d.querySelectorAll('var.pp-ok').length;
