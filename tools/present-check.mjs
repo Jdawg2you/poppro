@@ -72,12 +72,19 @@ const TEST = `(async function(){
   ok(drLine&&!/ on /.test(drLine.innerText.split('—')[0].replace(/^.*already found Dr/,''))&&!/street/i.test(drLine.innerText),'doctor line has no street: '+(drLine&&drLine.innerText.slice(0,90)));
   /* exactly one anchor block is spoken, chosen from the data */
   presentGo(presentPageIx('Price the marketplace & pick the anchor')); await wait(20);
-  var shownSay=function(){ return Array.prototype.filter.call(d.querySelectorAll('[data-anchor-say]'),function(x){ return fr.contentWindow.getComputedStyle(x.closest('.say')).display!=='none'; }).map(function(x){ return x.getAttribute('data-anchor-say'); }).join(); };
+  var shownSay=function(){ return Array.prototype.filter.call(d.querySelectorAll('[data-anchor-say]'),function(x){ return fr.contentWindow.getComputedStyle(x).display!=='none'; }).map(function(x){ return x.getAttribute('data-anchor-say'); }).join(); };
   ok(shownSay()==='cur','paying for it themselves: only the today version ('+shownSay()+')');
-  ok(Array.prototype.every.call(d.querySelectorAll('[data-anchor-say]'),function(x){ return fr.contentWindow.getComputedStyle(x).display==='none'; }),'the If-they lead-ins are hidden');
+  ok(Array.prototype.every.call(d.querySelectorAll('[data-leadin]'),function(x){ return fr.contentWindow.getComputedStyle(x).display==='none'; })&&d.querySelectorAll('[data-leadin]').length===2,'the If-they lead-ins are hidden');
   var kc=JSON.stringify(S.cur); S.cur.emp=400; presentWire(d,'best'); ok(shownSay()==='aca','employer pays part: the marketplace version ('+shownSay()+')');
   S.cur={}; presentWire(d,'best'); ok(shownSay()==='aca','no current plan: the marketplace version ('+shownSay()+')');
+  var aside=function(){ var x=Array.prototype.filter.call(d.querySelectorAll('.say'),function(y){ return /to the side/.test(y.textContent); })[0]; return x&&x.textContent; };
+  S.cur=JSON.parse(kc); S.cur.paying=true; presentWire(d,'best'); ok(/put those to the side/.test(aside()),'two plans: put those to the side');
+  S.cur.paying=false; presentWire(d,'best'); ok(/put that one to the side/.test(aside()),'one plan: put that one to the side');
+  S.cur=JSON.parse(kc); S.cur.paying=false; presentWire(d,'best'); ok(shownSay()==='aca'&&fr.contentWindow.getComputedStyle(d.querySelector('tr[data-anchor="cur"]')).display==='none','premium on file but not paying now: marketplace version, no today anchor ('+shownSay()+')');
+  S.cur.paying=true; presentWire(d,'best'); ok(shownSay()==='cur','paying now: the today version');
   S.cur=JSON.parse(kc); presentWire(d,'best');
+  ok(!!d.querySelector('.say b > i')&&/insert their situation/.test(d.querySelector('.say b > i').textContent),'(insert their situation) in bold italic');
+  ok(!Array.prototype.some.call(d.body.children,function(e){ return /^(Those three are options|One word in that line)/.test((e.textContent||'').trim())&&fr.contentWindow.getComputedStyle(e).display!=='none'; }),'section 2 author notes hidden');
   ok(!d.querySelector('var[data-k="client.situation"]')&&d.body.textContent.indexOf('small business owners / 1099')>=0,'their situation is plain script words, no blank');
   ok(!!d.querySelector('[data-screen="lb-price"]'),'lb-price marker is a real element');
   ok(!Array.prototype.some.call(d.body.children,function(e){ return /^\s*↳/.test(e.textContent)&&fr.contentWindow.getComputedStyle(e).display!=='none'; }),'the ↳ explanation lines are hidden');
@@ -110,7 +117,7 @@ const TEST = `(async function(){
   var closeIx=presentPageIx('Pick your close'); presentGo(closeIx); await wait(30);
   var cl=d.querySelectorAll('[data-close]'), or=Array.prototype.filter.call(d.querySelectorAll('[data-closes] > *'),function(x){ return !x.hasAttribute('data-close')&&/^\s*OR\s*$/i.test(x.textContent); })[0]||d.querySelector('.pp-or');
   ok(d.querySelectorAll('.pp-or').length+(d.querySelector('[data-closes]')?1:0)===1,'exactly one OR');
-  ok(cl.length===2&&Array.prototype.every.call(cl,function(x){ return x.offsetParent!==null; })&&!!or&&cl[0].getBoundingClientRect().left<or.getBoundingClientRect().left&&or.getBoundingClientRect().left<cl[1].getBoundingClientRect().left,'Assumptive | OR | Bold side by side');
+  ok(cl.length===2&&Array.prototype.every.call(cl,function(x){ return x.offsetParent!==null; })&&!!or&&cl[0].getBoundingClientRect().left<or.getBoundingClientRect().left&&or.getBoundingClientRect().left<cl[1].getBoundingClientRect().left,'Assumptive | OR | Bold side by side: '+Array.prototype.map.call(cl,function(x){ return x.getAttribute('data-close')+'@'+Math.round(x.getBoundingClientRect().left)+(x.offsetParent?'':'(hidden)'); }).join(' ')+' or='+(or?Math.round(or.getBoundingClientRect().left):'none')+' pg='+S.present.pg);
   ok(!d.querySelector('.pp-pick'),'no "use this close" buttons');
   /* LB in the script writes back to the builder */
   presentGo(presentPageIx('Living benefits — price it & do the numbers')); await wait(30);
@@ -202,7 +209,11 @@ const TEST = `(async function(){
   ok(/Zzyzxbenef/.test(ls2),'control: a saved field does reach localStorage');
   var dd=document.implementation.createHTMLDocument('t'); dd.body.innerHTML='<var data-k="client.first">X</var><var data-k="no.such">Y</var><var>$50</var>';
   var nf=presentFillFrame(dd,presentTokens('best')), vs=dd.querySelectorAll('var'); ok(nf===1&&vs[2].textContent==='$50','filler leaves unnamed text alone');
-  return {n:d.querySelectorAll('var.pp-ok').length, fails:fails};
+  /* the navigator's answer travels in the push (last: a push switches POP Pro to the Intake step) */
+  var nOk=d.querySelectorAll('var.pp-ok').length;
+  applySuiteClient({first:'Pat',last:'Present',state:'TX',age:'45',health:{curPrem:'900',curPaying:'No'}}); ok(curIn().paying===false,'navigator "No" lands as not paying');
+  applySuiteClient({first:'Pat',last:'Present',state:'TX',age:'45',health:{curPrem:'900',curPaying:'Yes'}}); ok(curIn().paying===true,'navigator "Yes" lands as paying');
+  return {n:nOk, fails:fails};
 })()`;
 
 try {

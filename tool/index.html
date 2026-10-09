@@ -985,6 +985,7 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
     </div>
     <div class="chips" style="margin-top:8px">
       <label class="chip"><input type="checkbox" id="in_cur_isaca"> This is an ACA / Marketplace plan</label>
+      <label class="chip"><input type="checkbox" id="in_cur_paying"> They're paying for this plan right now</label>
       <label class="chip tone-yellow"><input type="checkbox" id="in_cur_show"> Show current coverage on the presentation</label>
     </div>
     <div class="note" id="curNote" style="padding-top:4px"></div>
@@ -3144,6 +3145,7 @@ function applySuiteClient(c){
   var Cu=curIn();
   if(h.curPrem)    Cu.prem=suiteNum(h.curPrem);
   if(h.curEmpPrem) Cu.emp=suiteNum(h.curEmpPrem);
+  if(h.curPaying==='Yes') Cu.paying=true; else if(h.curPaying==='No') Cu.paying=false;
   if(h.curDed)     Cu.ded=suiteNum(h.curDed);
   if(h.curCopay)   Cu.copay=suiteNum(h.curCopay);
   if(h.curVisits && suiteNum(h.curVisits)>0) I.visits=suiteNum(h.curVisits);
@@ -3904,7 +3906,7 @@ function suiteFromNavProfile(P){
       surgery:yn(P.recent_stay), surgeryWhat:P.recent_what||"", hospStay:P.stay_what||"",
       hospStay2:yn(P.hosp_stay), spStayWhat:P.sp_stay_what||"", married:P.married||"", kidsCount:P.kids||"",
       losing:P.losing||"", nextSame:P.next_same||"",
-      curOop:P.cur_oop||"", curIsAca:P.cur_is_aca||"", curSubsidy:P.cur_subsidy||"", hasHsa:P.has_hsa||"",
+      curOop:P.cur_oop||"", curIsAca:P.cur_is_aca||"", curPaying:P.cur_paying||"", curSubsidy:P.cur_subsidy||"", hasHsa:P.has_hsa||"",
       pregnant:P.pregnant||"", spPregnant:P.sp_pregnant||"", planned:P.planned||"",
       empOffer:P.emp_offer||"", lifeNow:P.life_now||"", billTomorrow:P.bill_tomorrow||"", bankKind:P.bank_kind||"",
       apptDate:P.appt_date||"", apptTime:P.appt_time||"", notes:P.notes||"",
@@ -3989,7 +3991,7 @@ function readIntake(){
   S.intake.budget=moneyNum($('in_budget').value)||0; S.intake.budgetComfort=moneyNum($('in_budget_comfort').value)||0; S.intake.anchor=$('in_anchor').value||'aca';
   S.intake.visits=+$('in_visits').value||0;
   var C=curIn(); ['prem','emp','ded','oop','copay'].forEach(function(k){ C[k]=moneyVal($('in_cur_'+k).value); });
-  C.isAca=$('in_cur_isaca').checked; C.show=$('in_cur_show').checked;
+  C.isAca=$('in_cur_isaca').checked; C.show=$('in_cur_show').checked; C.paying=$('in_cur_paying').checked;
   var A=acaIn(); A.status=$('in_aca_status').value; A.show=$('in_aca_show').checked; A.fullded=$('in_aca_fullded').checked;
   S.intake.priority=$('in_priority').value; S.intake.notes=$('in_notes').value;
   S.intake.carrier=$('in_carrier').value; S.intake.plan=$('in_plan').value;
@@ -4031,7 +4033,9 @@ function fillIntake(){
   $('in_net').checked=!!S.docs.net; $('in_rx').checked=!!S.docs.rx;
   $('in_carrier').value=I.carrier||''; $('in_plan').value=I.plan||'';
   var C=curIn(); ['prem','emp','ded','oop','copay'].forEach(function(k){ $('in_cur_'+k).value=(+C[k])?fmtMoneyStr(String(C[k])):''; });
-  $('in_cur_isaca').checked=!!C.isAca; $('in_cur_show').checked=!!C.show; $('in_visits').value=I.visits||'';
+  $('in_cur_isaca').checked=!!C.isAca; $('in_cur_show').checked=!!C.show;
+  /* "paying right now" ticks itself when a current premium is in and nobody has said otherwise */
+  $('in_cur_paying').checked=C.paying===false?false:(C.paying===true||+C.prem>0); $('in_visits').value=I.visits||'';
   var A=acaIn(); $('in_aca_status').value=A.status||'na'; $('in_aca_show').checked=A.show!==false; $('in_aca_fullded').checked=A.fullded!==false;
   $('in_pincome').value=I.pincome?fmtMoneyStr(String(I.pincome)):''; $('in_sincome').value=I.sincome?fmtMoneyStr(String(I.sincome)):'';
   $('in_income').value=I.income?fmtMoneyStr(String(I.income)):''; $('in_retage').value=I.retage||''; $('in_savings').value=I.savings?fmtMoneyStr(String(I.savings)):''; $('in_invest').value=I.invest?fmtMoneyStr(String(I.invest)):''; $('in_invprot').checked=!!I.invprot; $('in_invsra').checked=!!I.invsra; $('in_invnote').value=I.invnote||'';
@@ -4512,7 +4516,7 @@ function presentAfc(t){ var c=effCfg(t), lvl=c.afc, d=BEN_DATA.afc, b=d?benBroch
 /* Two real anchors (Jesse, 2026-10-08): the marketplace (typed, or POP Pro's national-average estimate) and what they
    pay today (only when a current premium was entered). "No anchor - context only" hides the saving. No payroll row.
    Picking aca/cur also sets POP Pro's own anchor, so the quote and Client View compare against the same thing. */
-function presentHasCur(){ return +curIn().prem>0; }
+function presentHasCur(){ var C=curIn(); return +C.prem>0&&C.paying!==false; }
 function presentAnchor(){ S.present=S.present||{}; var k=S.present.anchor||(S.intake&&S.intake.anchor)||'aca';
   if(k==='employer'||(k==='cur'&&!presentHasCur())) k='aca'; return k; }
 function presentScriptTokens(t){ var T=presentTokens(t), C=S.client||{}, I=S.intake||{}, Cu=curIn(), pk=S.packages[t]||{products:[]}, c=effCfg(t), o=evTierPack(t), A=o.afc||{};
@@ -4597,6 +4601,17 @@ function presentMeds(doc,T){ var meds=T['_meds']||[], fill=function(el,m){ Array
   /* after "…it's $X." - split the text that follows the coupon at its first full stop */
   var tn=cv.nextSibling; if(tn&&tn.nodeType===3){ var ix=tn.textContent.indexOf('.'); if(ix>=0){ var rest=tn.splitText(ix+1); rest.parentNode.insertBefore(ul,rest); return; } }
   cv.parentNode.insertBefore(ul,cv.nextSibling); }
+/* TEMPORARY (2026-10-08): three of Jesse's wording rulings, applied on screen until Health ZONE's next version carries
+   them in the source with markers. Delete this function when it arrives; nothing else depends on it.
+   1. "So let's put that one to the side." says "those" when the today version (two plans) was spoken.
+   2. The two author notes under section 2 (the "options you pick from" aside and the 1099 flag) are hidden.
+   3. "(insert their situation)" is bold italic. */
+function presentTempEdits(doc,useCur){
+  Array.prototype.forEach.call(doc.querySelectorAll('.say'),function(x){ var tn=x.firstChild;
+    if(tn&&tn.nodeType===3&&/So let.s put (that one|those) to the side/.test(tn.textContent)) tn.textContent=tn.textContent.replace(/that one|those/,useCur?'those':'that one'); });
+  Array.prototype.forEach.call(doc.body.children,function(x){ var t=(x.textContent||'').trim(); if(/^Those three are options you pick from/.test(t)||/^One word in that line is worth a second look/.test(t)) x.classList.add('pp-off'); });
+  Array.prototype.forEach.call(doc.querySelectorAll('.say'),function(x){ if(x.dataset.ppSit) return; Array.prototype.forEach.call(x.childNodes,function(nd){ if(nd.nodeType!==3) return; var i=nd.textContent.indexOf('(insert their situation)'); if(i<0) return;
+      var rest=nd.splitText(i), after=rest.splitText('(insert their situation)'.length), b=doc.createElement('b'), it=doc.createElement('i'); it.textContent=rest.textContent; b.appendChild(it); rest.parentNode.replaceChild(b,rest); x.dataset.ppSit='1'; }); }); }
 function m0y(n){ return '$'+Math.round(+n||0).toLocaleString('en-US'); }
 function presentWire(doc,t){ if(!doc||!doc.body) return 0; var T=presentScriptTokens(t), n=0;
   if(!doc.getElementById('ppcss')){ var st=doc.createElement('style'); st.id='ppcss'; st.textContent=PRESENT_CSS; doc.head.appendChild(st); }
@@ -4631,20 +4646,18 @@ function presentWire(doc,t){ if(!doc||!doc.body) return 0; var T=presentScriptTo
      no current premium, or an employer paying part of it -> the marketplace version. The "If they…" lead-in is
      the author's cue for choosing, so it is hidden once the choice is made for the agent. */
   var useCur=presentHasCur()&&!(+curIn().emp>0);
-  Array.prototype.forEach.call(doc.querySelectorAll('[data-anchor-say]'),function(x){ var blk=x.closest('.say')||x, me=x.getAttribute('data-anchor-say');
-    blk.classList.toggle('pp-off',(me==='cur')!==useCur); if(x!==blk) x.classList.add('pp-off'); });
+  Array.prototype.forEach.call(doc.querySelectorAll('[data-anchor-say]'),function(x){ x.classList.toggle('pp-off',(x.getAttribute('data-anchor-say')==='cur')!==useCur);
+    Array.prototype.forEach.call(x.querySelectorAll('[data-leadin]'),function(l){ l.classList.add('pp-off'); }); });
   Array.prototype.forEach.call(doc.querySelectorAll('[data-render="enroll"]'),function(x){ x.classList.add('pp-off'); });
-  /* the doctor's street is not said (Jesse, 2026-10-08): drop "on <street>" from the line */
-  Array.prototype.forEach.call(doc.querySelectorAll('var[data-k="doctor.street"]'),function(v){ if(v.dataset.ppGone) return; v.dataset.ppGone='1';
-    var pv=v.previousSibling; if(pv&&pv.nodeType===3) pv.textContent=pv.textContent.replace(/\s+on\s*$/,''); v.classList.add('pp-off'); });
   /* source tags stay in Health ZONE's file (its history); the agent's screen drops them and the legend line about them */
   /* "↳ …" lines explain how a blank fills - notes for the script's author, not words for the call (Jesse, 2026-10-08) */
-  Array.prototype.forEach.call(doc.body.children,function(x){ if(/^\s*↳/.test(x.textContent||'')) x.classList.add('pp-off'); });
+  Array.prototype.forEach.call(doc.querySelectorAll('[data-author="note"]'),function(x){ x.classList.add('pp-off'); });
   /* the build note under the title is for Jesse's review copy, not the agent's screen */
   Array.prototype.forEach.call(doc.querySelectorAll('p.sub0'),function(x){ x.classList.add('pp-off'); });
   var lg=doc.querySelector('p.legend'); if(lg&&!lg.dataset.ppTags){ lg.dataset.ppTags='1'; var kids=Array.prototype.slice.call(lg.childNodes), cut=-1;
     kids.forEach(function(nd,i){ if(cut<0&&nd.nodeType===3&&/Source tags show/.test(nd.textContent)) cut=i; });
     if(cut>=0){ kids.slice(cut).forEach(function(nd){ nd.remove(); }); var prev=kids[cut-1]; if(prev&&prev.nodeName==='BR') prev.remove(); } }
+  presentTempEdits(doc,useCur);
   presentMeds(doc,T);
   var hasRx=(S.intake.medList||[]).some(function(m){ return m&&String(m.name||'').trim(); });
   Array.prototype.forEach.call(doc.querySelectorAll('[data-rx]'),function(x){ x.classList.toggle('pp-off',(x.getAttribute('data-rx')==='has')!==hasRx); });
@@ -4807,6 +4820,9 @@ function bindInputs(){
   $('c_date').addEventListener('input',function(){ this.value=fmtDate(this.value); markValid(this,dateOK(this.value)); compute(); });
   $('in_priority').addEventListener('change',function(){ readIntake(); autosave(); });
   medFdaLoad();
+  /* "paying right now": ticks itself as a premium is typed, until the agent sets it by hand */
+  $('in_cur_paying').addEventListener('change',function(){ this.dataset.touched='1'; captureIntake(); });
+  $('in_cur_prem').addEventListener('input',function(){ var b=$('in_cur_paying'); if(!b.dataset.touched&&curIn().paying!==false&&moneyNum(this.value)>0&&!b.checked){ b.checked=true; captureIntake(); } });
   /* every money box on the page reads $1,234.00 once you leave it (the numbers underneath are read with moneyNum) */
   var moneyLeave=function(e){ var el=e.target; if(!el||!el.matches) return;
     if(!el.matches('.curmoney,.money2,#in_income,#in_pincome,#in_sincome,#in_invest,[data-ov]:not([placeholder="type %"])')) return;
