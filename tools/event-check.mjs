@@ -29,7 +29,7 @@ const TEST = `(async function(){
   /* identical controls */
   var ctl=function(i){ return Array.prototype.map.call(document.querySelectorAll('#ev'+i+'_editor [data-f]'),function(e){ return e.dataset.f; }).sort().join(','); };
   ok(ctl(0)&&ctl(0)===ctl(1), 'both cards carry the same controls');
-  ok(document.querySelectorAll('#ev0_editor [data-f=preset] option').length===12&&document.querySelectorAll('#ev1_editor [data-f=preset] option').length===12, 'both dropdowns: 11 scenarios + Custom');
+  ok(document.querySelectorAll('#ev0_editor [data-f=preset] option').length===13&&document.querySelectorAll('#ev1_editor [data-f=preset] option').length===13, 'both dropdowns: 12 scenarios + Custom');
 
   /* every scenario in both cards */
   var n=0;
@@ -109,7 +109,7 @@ try {
   await send('Page.navigate', { url: `http://127.0.0.1:${PORT}/tool/` }); await sleep(4000);
   const r = await ev(TEST);
   const bad = r.fails.concat(errs.map(e => 'page error: ' + String(e).slice(0, 160)));
-  console.log(bad.length ? `EVENTS UI FAILED ${bad.length}:\n  ` + bad.join('\n  ') : `EVENTS UI ok scenarios=${r.n} (11 per card)`);
+  console.log(bad.length ? `EVENTS UI FAILED ${bad.length}:\n  ` + bad.join('\n  ') : `EVENTS UI ok scenarios=${r.n} (12 per card)`);
   process.exitCode = bad.length ? 1 : 0;
 } catch (e) { console.log('EVENTS UI FAILED ' + e.message); process.exitCode = 1; }
 finally { try { ws && ws.close(); } catch {} chrome.kill(); await sleep(300); fs.rmSync(prof, { recursive: true, force: true }); }

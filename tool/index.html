@@ -1950,6 +1950,7 @@ var EV_SCENARIOS=[
  {id:'eradmit',label:'ER visit — admitted, 3 days',desc:'ER visit, admitted for 3 days',charge:40296,disc:24120,days:3,er:1,src:'Derived: 3 of the 5.2-day national average stay — HCUP 2022 average hospital charge ($69,847) and HCCI 2022 average commercial payment ($28,038), each × 3 ÷ 5.2 = $40,296 billed, $16,176 network price. Admissions through the ER were 59% of US stays in 2021 (HCUP Statistical Brief #311).'},
  {id:'arm',label:'Broken arm — cast, no surgery',desc:'Broken arm (cast, no surgery)',charge:2209,er:1,acc:1,src:'Shapiro et al., J Hand Microsurg 2023 — non-surgical wrist fracture, whole episode, MarketScan 2007–16'},
  {id:'armsx',label:'Broken arm — needs surgery',desc:'Broken arm with surgery',charge:6577,er:1,acc:1,surg:1,src:'Huetteman et al., J Hand Surg Am 2018 — surgical wrist fracture, $6,577–$8,181 published range (low end used), MarketScan 2009–15'},
+ {id:'append',label:'Appendicitis — ER, surgery, 2 nights',desc:'Appendicitis — ER, surgery, 2 nights in hospital',charge:41212,disc:24669,days:2,er:1,surg:1,src:'Billed: a real appendectomy bill — ER, surgery and one night — reported by KFF Health News / NPR (Jan 2020), $41,212. Network price derived at the national commercial-to-billed ratio for hospital stays (HCCI 2022 payment $28,038 ÷ HCUP 2022 charge $69,847 ≈ 40%) = $16,543. Shown as 2 nights to match the script’s worked example; the billed figure is for one night, so it is conservative.'},
  {id:'heart',label:'Heart attack',desc:'Heart attack hospitalization',charge:47666,days:5,er:1,amb:1,dx:'heart',src:'Peterson-KFF Health System Tracker 2018 (average allowed, large employer plans); 5-day average stay'},
  {id:'cancer',label:'Cancer — first year of treatment',desc:'Cancer — first year of treatment',charge:43600,dx:'cancer',src:'Mariotto et al. 2020 (NCI, SEER-Medicare) — first-year cancer cost, 2019 dollars; commercial costs are typically higher'},
  {id:'visit',label:'Doctor visit',desc:'Doctor visit',add:{visit:1},src:'Peterson-KFF Health System Tracker 2021 — average office visit'},
@@ -4731,7 +4732,7 @@ function presentWire(doc,t){ if(!doc||!doc.body) return 0; var T=presentScriptTo
      picked, Medical Bill Saver on, every layer of protection shown. Same evTableHTML the quote page draws. */
   var mc=doc.querySelector('[data-mount="conditions"]'); if(mc){ mc.classList.add('pp-mount'); presentEvCss(doc);
     var det=mc.closest('details'); if(det&&!det.dataset.ppOpened){ det.open=true; det.dataset.ppOpened='1'; }
-    var pick=S.present.cond||'ev0', sc=pick==='ev0'||pick==='ev1'?S.ev[+pick.slice(2)]:evScn(pick);
+    var pick=S.present.cond||'append', sc=pick==='ev0'||pick==='ev1'?S.ev[+pick.slice(2)]:evScn(pick);
     if(!(sc&&evScnBill(sc).total>0)){ pick='hosp'; sc=evScn('hosp'); }
     var opts=[0,1].filter(function(k2){ return S.ev[k2]&&evScnBill(S.ev[k2]).total>0; }).map(function(k2){ return '<option value="ev'+k2+'"'+(pick==='ev'+k2?' selected':'')+'>Example '+(k2+1)+' from the quote — '+esc(S.ev[k2].desc||'')+'</option>'; }).join('')
       +EV_SCENARIOS.map(function(x){ return '<option value="'+x.id+'"'+(x.id===pick?' selected':'')+'>'+esc(x.label)+'</option>'; }).join('');
