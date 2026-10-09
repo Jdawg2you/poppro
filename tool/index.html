@@ -4626,7 +4626,13 @@ function presentWire(doc,t){ if(!doc||!doc.body) return 0; var T=presentScriptTo
     r.onclick=function(){ S.present.anchor=me; if(me==='aca'||me==='cur'){ S.intake.anchor=me; if($('in_anchor')) $('in_anchor').value=me; compute(); } autosave(); presentWire(doc,t); }; });
   Array.prototype.forEach.call(doc.querySelectorAll('[data-saving]'),function(x){ x.classList.toggle('pp-off',ak==='none'); });
   /* prescriptions: serve the version that matches the profile */
-  Array.prototype.forEach.call(doc.querySelectorAll('[data-anchor-say="cur"]'),function(x){ (x.closest('.say')||x).classList.toggle('pp-off',!presentHasCur()); });
+  /* Serve exactly one of the two spoken anchor blocks (Jesse, 2026-10-08), decided from the client's own data:
+     a current premium they pay themselves -> "what they pay today" (it also names the marketplace price);
+     no current premium, or an employer paying part of it -> the marketplace version. The "If they…" lead-in is
+     the author's cue for choosing, so it is hidden once the choice is made for the agent. */
+  var useCur=presentHasCur()&&!(+curIn().emp>0);
+  Array.prototype.forEach.call(doc.querySelectorAll('[data-anchor-say]'),function(x){ var blk=x.closest('.say')||x, me=x.getAttribute('data-anchor-say');
+    blk.classList.toggle('pp-off',(me==='cur')!==useCur); if(x!==blk) x.classList.add('pp-off'); });
   Array.prototype.forEach.call(doc.querySelectorAll('[data-render="enroll"]'),function(x){ x.classList.add('pp-off'); });
   /* the doctor's street is not said (Jesse, 2026-10-08): drop "on <street>" from the line */
   Array.prototype.forEach.call(doc.querySelectorAll('var[data-k="doctor.street"]'),function(v){ if(v.dataset.ppGone) return; v.dataset.ppGone='1';

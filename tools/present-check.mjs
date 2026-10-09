@@ -70,6 +70,14 @@ const TEST = `(async function(){
   presentGo(presentPageIx('Networks & providers')); await wait(30);
   var drLine=Array.prototype.filter.call(d.querySelectorAll('.say'),function(x){ return /already found Dr/.test(x.innerText); })[0];
   ok(drLine&&!/ on /.test(drLine.innerText.split('—')[0].replace(/^.*already found Dr/,''))&&!/street/i.test(drLine.innerText),'doctor line has no street: '+(drLine&&drLine.innerText.slice(0,90)));
+  /* exactly one anchor block is spoken, chosen from the data */
+  presentGo(presentPageIx('Price the marketplace & pick the anchor')); await wait(20);
+  var shownSay=function(){ return Array.prototype.filter.call(d.querySelectorAll('[data-anchor-say]'),function(x){ return fr.contentWindow.getComputedStyle(x.closest('.say')).display!=='none'; }).map(function(x){ return x.getAttribute('data-anchor-say'); }).join(); };
+  ok(shownSay()==='cur','paying for it themselves: only the today version ('+shownSay()+')');
+  ok(Array.prototype.every.call(d.querySelectorAll('[data-anchor-say]'),function(x){ return fr.contentWindow.getComputedStyle(x).display==='none'; }),'the If-they lead-ins are hidden');
+  var kc=JSON.stringify(S.cur); S.cur.emp=400; presentWire(d,'best'); ok(shownSay()==='aca','employer pays part: the marketplace version ('+shownSay()+')');
+  S.cur={}; presentWire(d,'best'); ok(shownSay()==='aca','no current plan: the marketplace version ('+shownSay()+')');
+  S.cur=JSON.parse(kc); presentWire(d,'best');
   ok(!d.querySelector('var[data-k="client.situation"]')&&d.body.textContent.indexOf('small business owners / 1099')>=0,'their situation is plain script words, no blank');
   ok(!!d.querySelector('[data-screen="lb-price"]'),'lb-price marker is a real element');
   ok(!Array.prototype.some.call(d.body.children,function(e){ return /^\s*↳/.test(e.textContent)&&fr.contentWindow.getComputedStyle(e).display!=='none'; }),'the ↳ explanation lines are hidden');
