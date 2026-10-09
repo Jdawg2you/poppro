@@ -230,6 +230,11 @@ const TEST = `(async function(){
   ok(/Zzyzxbenef/.test(ls2),'control: a saved field does reach localStorage');
   var dd=document.implementation.createHTMLDocument('t'); dd.body.innerHTML='<var data-k="client.first">X</var><var data-k="no.such">Y</var><var>$50</var>';
   var nf=presentFillFrame(dd,presentTokens('best')), vs=dd.querySelectorAll('var'); ok(nf===1&&vs[2].textContent==='$50','filler leaves unnamed text alone');
+  /* Mutual of Omaha TLE 20-year, pulled 2026-10-09: spot checks straight from the quoter, and the new 51-60 range */
+  var lr=function(a,sx,tb,f){ return lbRate('moo',a,sx,tb,f,'20').price; };
+  ok(lr(40,'M',false,75000)===29.84&&lr(40,'M',false,250000)===87&&lr(55,'M',false,75000)===90.05&&lr(60,'F',true,100000)===352.8&&lr(18,'M',false,25000)===8.7,'MoO rates match the quoter: '+[lr(40,'M',false,75000),lr(40,'M',false,250000),lr(55,'M',false,75000),lr(60,'F',true,100000)].join(' / '));
+  ok(lr(61,'M',false,50000)==null&&lr(17,'M',false,50000)==null,'MoO 20-year issues 18-60 only');
+  ok(pLB1({k:'p',tag:'Primary',age:55,sex:'M',tob:false},{carrier:'moo',face:'100000'}).carrier==='Mutual of Omaha TLE','age 55 stays on Mutual of Omaha (no more switch to Americo after 50)');
   /* the navigator's answer travels in the push (last: a push switches POP Pro to the Intake step) */
   var nOk=d.querySelectorAll('var.pp-ok').length;
   applySuiteClient({first:'Pat',last:'Present',state:'TX',age:'45',health:{curPrem:'900',curPaying:'No'}}); ok(curIn().paying===false,'navigator "No" lands as not paying');
