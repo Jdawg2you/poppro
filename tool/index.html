@@ -4605,7 +4605,8 @@ function presentWire(doc,t){ if(!doc||!doc.body) return 0; var T=presentScriptTo
   Array.prototype.forEach.call(doc.querySelectorAll('var[data-k]'),function(v){ var k=v.getAttribute('data-k');
     if(v.dataset.ex==null) v.dataset.ex=v.textContent;   /* the example text, kept so a refill can tell the household forms apart */
     var val=T[k];
-    if(k==='client.situation'&&(val==null||val==='')) val=null;
+    /* "their situation" is said by the agent, not filled by the tool (Jesse, 2026-10-08): plain words, no blank styling */
+    if(k==='client.situation'){ v.className=String(v.className||'').replace(/\bpp-(ok|miss)\b/g,'').trim(); v.removeAttribute('title'); v.style.cssText='background:none;color:inherit;font-style:normal;border:0;padding:0;text-decoration:none'; return; }
     v.className=String(v.className||'').replace(/\bpp-(ok|miss)\b/g,'').trim();
     if(val!=null&&String(val).trim()!==''){ v.textContent=String(val); v.classList.add('pp-ok'); v.removeAttribute('title'); v.removeAttribute('contenteditable'); n++; }
     else { v.textContent=v.dataset.ex; v.classList.add('pp-miss'); v.title='missing: '+k;

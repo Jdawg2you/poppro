@@ -46,7 +46,7 @@ const TEST = `(async function(){
   document.querySelector('#prStories [data-story]').click(); ok(/Never a client/.test(document.getElementById('prPop').innerText),'a story pops with the naming rule');
   /* blanks */
   presentWire(d,'best'); var miss={}; d.querySelectorAll('var.pp-miss').forEach(function(v){ miss[v.title.replace(/^.*: /,'')]=1; });
-  var allowed=['client.situation','doctor.street','drug.now','client.ht','client.wt','client.email','client.phone','agent.email','agent.website','agent.booking'];
+  var allowed=['doctor.street','drug.now','client.ht','client.wt','client.email','client.phone','agent.email','agent.website','agent.booking'];
   var bad=Object.keys(miss).filter(function(k){ return allowed.indexOf(k)<0; });
   ok(!bad.length,'blanks the quote can fill are filled; unexpected gaps: '+bad.join(', '));
   var ps=d.querySelector('var[data-k="plan.products_spoken"]').textContent;
@@ -67,6 +67,7 @@ const TEST = `(async function(){
   ok(Array.prototype.every.call(d.querySelectorAll('.who'),function(x){ return fr.contentWindow.getComputedStyle(x).display==='none'; }),'MIKE / JESSE / KYLE tags hidden');
   ok(!/Source tags show/.test(d.body.innerText)&&/filled automatically/.test(d.querySelector('p.legend').innerText),'tag legend line removed, the rest of the legend kept');
   ok(fr.contentWindow.getComputedStyle(d.querySelector('p.sub0')).display==='none','build note under the title hidden');
+  var sit=d.querySelector('var[data-k="client.situation"]'); ok(sit&&!sit.classList.contains('pp-miss')&&!sit.classList.contains('pp-ok')&&fr.contentWindow.getComputedStyle(sit).backgroundColor.indexOf('253, 232')<0,'their situation reads as plain words, not a blank');
   ok(/Kyle.s daughter/.test(document.getElementById('prStories').innerText),'prose mentioning Kyle is untouched');
   /* every screen shows only its own blocks (a forcing style once leaked the closes onto every screen) */
   var leaks=[]; for(var pi=0;pi<presentNav().length;pi++){ var ix=presentNav()[pi]; presentGo(ix); await wait(10);
