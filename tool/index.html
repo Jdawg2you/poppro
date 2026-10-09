@@ -604,6 +604,7 @@
   .presentbtn{font:inherit;font-size:14px;font-weight:800;border-radius:999px;padding:9px 18px;cursor:pointer;border:none;background:#2f7d4a;color:#fff}.presentbtn:hover{background:#286b40}.presentbtn i{font-family:var(--serif);font-weight:700}
   .picbtn.sendbtn{display:inline-flex;align-items:center;gap:7px;font-size:13.5px;padding:9px 14px;margin:0 7px 0 0;text-decoration:none}.picbtn.sendbtn svg{background:#fff;border-radius:4px;padding:2px;box-sizing:content-box}
   .sqsteps{display:grid;gap:10px;margin-top:8px}.sqstep{display:flex;gap:12px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fffdf7}.sqn{flex:0 0 26px;height:26px;border-radius:50%;background:var(--navy);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:13px}.sqbody{flex:1;min-width:0}.sqbody b{color:var(--navy)}.sqbody small{display:block;color:var(--muted);font-size:12px;margin-top:1px}.sqwhen{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px}.sqwhen input{font:inherit;font-size:14px;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#fff}.sqclr{font:inherit;font-size:12px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:4px 10px;cursor:pointer;color:var(--muted)}.sqsay{font-size:13px;color:#2f7d4a;font-weight:700}.sqchk{font-size:13.5px;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:6px;cursor:pointer}.sqchk input{width:17px;height:17px}
+  .ensave{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 14px;margin:0 0 12px;background:#fff8e6;border:1px solid #e6d3a3;border-radius:10px;font-size:14px;color:var(--navy)}.ensave .picbtn{margin-left:auto}#enNmh{flex-basis:100%;order:3;font-size:13.5px}#enNmh:empty{display:none}
   .brlist{list-style:none;margin:10px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:6px 18px}.brlist li{display:flex;align-items:baseline;gap:8px;padding:6px 0;border-bottom:1px dotted var(--line)}.brlist a{font-weight:700;color:var(--navy)}.brlist small{color:var(--muted);font-size:11px;white-space:nowrap}.brlist .brone{margin-left:auto;font:inherit;font-size:11.5px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:2px 9px;cursor:pointer;color:var(--navy);white-space:nowrap;flex:0 0 auto}
   .bdbroch{display:block;margin:10px 0 0;font-weight:700;color:var(--navy)}
   .picbar{display:flex;justify-content:flex-end;margin:10px 0 -4px}.picbtn{font:inherit;font-size:12.5px;font-weight:700;border:1px solid #c69a3c;background:#12213b;color:#fff;border-radius:999px;padding:6px 13px;cursor:pointer;box-shadow:0 1px 3px rgba(18,33,59,.25);white-space:nowrap;transition:background .15s}.picbtn:hover{background:#1c3a63}
@@ -1269,6 +1270,7 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
   </div>
 
   <div id="step-enroll" class="step">
+    <div class="ensave hidein-client noprint" id="enSaveBar"><span><b>💾 Save Quote when you’re done</b> — it keeps everything collected here; <b>Load Quote</b> brings it all back later.</span><span id="enNmh"></span><button type="button" class="picbtn" onclick="document.getElementById('saveBtn').click()">💾 Save Quote now</button></div>
    <div class="card pad">
     <div class="sectitle"><span class="dot">●</span> Enroll</div>
     <div class="note" style="padding-top:2px">In call order: the life application first (it has the health questions), each person’s details, the finish — then the health carriers after the call.</div>
@@ -1317,6 +1319,7 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
 
 <!-- PLAN LIBRARY MODAL -->
 <aside class="bendrawer hidein-client" id="benDrawer" aria-label="Plan benefits"></aside>
+<div class="modal-backdrop" id="nmhModal"><div class="modal" style="max-width:600px"><div class="modal-head"><b id="nmhTitle">Great choice</b><button class="btn-ghost" id="nmhClose">Got it</button></div><div class="modal-body" id="nmhBody" style="font-size:14.5px;line-height:1.55"></div></div></div>
 <div class="modal-backdrop" id="howModal">
   <div class="modal">
     <div class="modal-head"><b>How to use POP Pro</b><span>Intake → Quote → Present → Enroll</span><button class="btn-ghost" id="closeHow">Done</button></div>
@@ -1349,6 +1352,7 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
       <ul>
         <li>Click <b>▶ Present <i>Comprehensive</i> Plan</b> (it names whichever plan you marked), at the top of the builder or under Send the quote.</li>
         <li>The script plays <b>screen by screen</b> with their name, numbers, doctors and medications filled in. <b>Back / Next</b> move through it; objections and stories sit at the side.</li>
+        <li><b>LifeX or Cigna plan?</b> Present is the ManhattanLife script, so choosing one of those shows a note instead: send the quote, use Enroll to collect their details, and enroll them through the carrier's link.</li>
         <li>It ends at <b>Pick your close</b>: Assumptive or Bold Step. Then either <b>they're enrolling → Enroll</b>, or <b>not today → Send the quote</b>, with the "talk it over with your spouse" line ready.</li>
       </ul>
       <h4>Not today · Send the quote</h4>
@@ -2259,7 +2263,7 @@ function brochFor(f){ var st=(S.client.state||'').toUpperCase(); if(f==='sdr') f
 /* Jesse, 9 Oct: a marked plan -> that plan's brochures; nothing marked -> every plan shown (t is then 'all') */
 function brochList(t){ t=t||chosenTier()||'all'; var tiers=t==='all'?['good','better','best'].filter(function(x){ return (S.include||{})[x]!==false&&((S.packages||{})[x]||{}).products; }):[t], seen={}, out=[], none=[];
   tiers.forEach(function(tt){ var pk=(S.packages||{})[tt]||{}, c=effCfg(tt);
-  (pk.products||[]).forEach(function(p){ if(!((+p.monthly||0)>0)) return; var f=benFileFor(p.k,c), b=f&&brochFor(f), nm=(PB_SLOTS.filter(function(x){ return x.k===p.k; })[0]||{}).name||p.name||'';
+  (pk.products||[]).forEach(function(p){ if(!((+p.monthly||0)>0)) return; var f=benFileFor(p.k,c), b=f&&brochFor(f), nm=(p.k==='base'&&tierNonMh(tt))?tierNonMh(tt).full:((PB_SLOTS.filter(function(x){ return x.k===p.k; })[0]||{}).name||p.name||'');
     if(b){ if(!seen[b.url]){ seen[b.url]=1; out.push({name:nm||b.name,form:b.form,url:b.url}); } } else if(nm&&none.indexOf(nm)<0) none.push(nm); }); });
   return {t:t,st:(S.client.state||'').toUpperCase(),list:out,none:none}; }
 function brochLines(L){ return L.list.map(function(b){ return '• '+b.name+': '+b.url; }).join('\n'); }
@@ -2335,6 +2339,7 @@ function followTasks(){
   return t;
 }
 function renderFollowUps(){
+  var nm=$('enNmh'), N=tierNonMh(chosenTier()); if(nm) nm.innerHTML=N?'Their plan is <b>'+esc(N.full)+'</b>: use the boxes below to collect their details (the life and Manhattan steps are optional), then enroll them here — <a href="'+esc(N.url())+'" target="_blank" rel="noopener">'+esc(N.lab)+' ↗</a>':'';
   var host=$('followList'); if(!host) return;
   S.follow=S.follow||{};
   var t=followTasks(), html='';
@@ -4532,7 +4537,21 @@ function renderEstimate(){
 var PRESENT_MMN='';   /* mother's maiden name: typed during the application, held in memory only, never saved */
 
 function presentTier(){ return chosenTier()||S.activeTab||'best'; }
-function presentOpen(){ if(!chosenTier()){ var t=S.activeTab||'best'; if(!confirm('No package is marked as their plan yet. Present '+TIER_NAME[t]+'?')) return; chooseTier(t); }
+/* LifeX and Cigna (Jesse, 9 Oct): Present plays the Manhattan script and Enroll is built around Manhattan, so a
+   LifeX or Cigna plan gets a note instead of the script - the quote email and Enroll's data capture still work. */
+var NONMH={lifex:{name:'LifeX',full:'LifeX $500 PPO',url:function(){ return LIFEX_URL; },lab:'LifeX — 1Enrollment client enrollment'},
+  triad:{name:'Cigna',full:'Cigna PPO (Triad)',url:function(){ return CIGNA_URL; },lab:'Cigna PPO (USA Health / Triad) — 1Enrollment'}};
+function tierNonMh(t){ var b=t&&effCfg(t).base; return (b&&NONMH[b])?NONMH[b]:null; }
+function nonMhNotice(t){ var N=tierNonMh(t); if(!N) return; var first=((S.client.pname||'').trim().split(/\s+/)[0])||'your client';
+  $('nmhTitle').textContent='Congratulations — '+first+' is going with '+N.full;
+  $('nmhBody').innerHTML='<p style="margin:0 0 10px">'+esc(first)+' should love the '+esc(N.name)+' plan. One thing to know: <b>Present</b> walks through the ManhattanLife script, so it isn’t built for '+esc(N.name)+' — present this one in your own words.</p>'
+    +'<p style="margin:0 0 6px"><b>You can still:</b></p><ul style="margin:0 0 12px;padding-left:20px">'
+    +'<li><b>Send the quote</b> — the three steps at the bottom of Quote work for any lineup, Manhattan and '+esc(N.name)+' side by side included.</li>'
+    +'<li><b>Use Enroll to collect their details</b> — names, beneficiaries and notes, all in one place. The Manhattan and life steps are there if you need them.</li>'
+    +'<li><b>Enroll them with '+esc(N.name)+'</b>: <a href="'+esc(N.url())+'" target="_blank" rel="noopener">'+esc(N.lab)+' ↗</a></li></ul>'
+    +'<p style="margin:0;padding:10px 12px;background:#fff8e6;border:1px solid #e6d3a3;border-radius:8px"><b>💾 Save Quote when you’re done.</b> It keeps everything you collected; <b>Load Quote</b> brings it all back later.</p>';
+  $('nmhModal').classList.add('open'); }
+function presentOpen(){ if(tierNonMh(chosenTier())){ nonMhNotice(chosenTier()); return; } if(!chosenTier()){ var t=S.activeTab||'best'; if(!confirm('No package is marked as their plan yet. Present '+TIER_NAME[t]+'?')) return; chooseTier(t); }
   S.present=S.present||{}; S.present.pg=S.present.pg||0; goStep('present'); }
 function presentHas(t,cond){ if(!cond) return true; var m=String(cond).match(/^(has|base):(\w+)$/); if(!m) return true;
   if(m[1]==='base') return (effCfg(t).base||'afc')===m[2];
@@ -5184,6 +5203,8 @@ function bindInputs(){
   $('resetTab').onclick=function(){ read(); pbResetTier(S.activeTab); autoPriceTiers(); renderProducts(); compute(); if(typeof renderBuilder==='function') renderBuilder(); autosave(); };   // same as the builder's ↺ Reset
   $('howBtn').onclick=function(){ $('howModal').classList.add('open'); };
   $('closeHow').onclick=function(){ $('howModal').classList.remove('open'); };
+  $('nmhClose').onclick=function(){ $('nmhModal').classList.remove('open'); };
+  $('nmhModal').onclick=function(e){ if(e.target===$('nmhModal')) $('nmhModal').classList.remove('open'); };
   $('howModal').addEventListener('click',function(e){ if(e.target===$('howModal')) $('howModal').classList.remove('open'); });
 }
 
@@ -5483,9 +5504,9 @@ function renderTfraHint(){ var el=$('tfraHint'); if(!el) return; var B=anchorBas
 /* ===== The client's choice (builder + Client View -> Enroll) ===== */
 var TIER_NAME={good:'Essential',better:'Complete',best:'Comprehensive'};
 /* "▶ Present Comprehensive Plan" - the plan's name in italics; one label for the builder's button and the one under Send the quote */
-function presentBtnLabel(){ var t=chosenTier(); return '▶ Present '+(t?'<i>'+TIER_NAME[t]+'</i> Plan':'a plan'); }
+function presentBtnLabel(){ var t=chosenTier(), N=tierNonMh(t); if(N) return 'ⓘ '+N.name+' plan — how to present it'; return '▶ Present '+(t?'<i>'+TIER_NAME[t]+'</i> Plan':'a plan'); }
 function chosenTier(){ return (S.chosen&&S.chosen.tier)||null; }
-function chooseTier(t){ S.chosen=S.chosen||{}; S.chosen.tier=(S.chosen.tier===t)?null:t; if(S.chosen.tier){ S.activeTab=t; S.include=S.include||{}; S.include[t]=true; } compute(); autosave(); }
+function chooseTier(t){ S.chosen=S.chosen||{}; S.chosen.tier=(S.chosen.tier===t)?null:t; if(S.chosen.tier&&tierNonMh(t)) setTimeout(function(){ nonMhNotice(t); },0); if(S.chosen.tier){ S.activeTab=t; S.include=S.include||{}; S.include[t]=true; } compute(); autosave(); }
 function tierHasDental(t){ return ((S.packages[t]||{}).products||[]).some(function(p){ return p.k==='dvh'&&(+p.monthly||0)>0; }); }
 function dentalPrice(t){ try{ var r=pDVH(HF_RATES,ratingAge(),householdKey(),effCfg(t).dvh,(S.client.state||'').toUpperCase()); return r&&r.price!=null?+r.price:null; }catch(e){ return null; } }
 /* Dental stays a yes/no after the choice: the three packages are compared without it, then the
