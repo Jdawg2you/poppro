@@ -2249,9 +2249,11 @@ function brochLoad(){ if(BROCH||brochTried) return Promise.resolve(BROCH); broch
 brochLoad();   /* fetch once at start, so the email and the drawer have the links when they're built */
 function brochFor(f){ var st=(S.client.state||'').toUpperCase(); if(f==='sdr') f='afc';   /* the rider is described in the Affordable Choice brochure */
   return (BROCH&&BROCH[st]&&BROCH[st][f])||null; }
-function brochList(t){ t=t||chosenTier()||S.activeTab||'best'; var pk=(S.packages||{})[t]||{}, c=effCfg(t), seen={}, out=[], none=[];
+/* Jesse, 9 Oct: a marked plan -> that plan's brochures; nothing marked -> every plan shown (t is then 'all') */
+function brochList(t){ t=t||chosenTier()||'all'; var tiers=t==='all'?['good','better','best'].filter(function(x){ return (S.include||{})[x]!==false&&((S.packages||{})[x]||{}).products; }):[t], seen={}, out=[], none=[];
+  tiers.forEach(function(tt){ var pk=(S.packages||{})[tt]||{}, c=effCfg(tt);
   (pk.products||[]).forEach(function(p){ if(!((+p.monthly||0)>0)) return; var f=benFileFor(p.k,c), b=f&&brochFor(f), nm=(PB_SLOTS.filter(function(x){ return x.k===p.k; })[0]||{}).name||p.name||'';
-    if(b){ if(!seen[b.url]){ seen[b.url]=1; out.push({name:nm||b.name,form:b.form,url:b.url}); } } else if(nm&&none.indexOf(nm)<0) none.push(nm); });
+    if(b){ if(!seen[b.url]){ seen[b.url]=1; out.push({name:nm||b.name,form:b.form,url:b.url}); } } else if(nm&&none.indexOf(nm)<0) none.push(nm); }); });
   return {t:t,st:(S.client.state||'').toUpperCase(),list:out,none:none}; }
 function brochLines(L){ return L.list.map(function(b){ return '• '+b.name+': '+b.url; }).join('\n'); }
 function brochCopy(text,btn){ var lab=btn.innerHTML; var done=function(m){ btn.innerHTML=m; setTimeout(function(){ btn.innerHTML=lab; },2200); };
@@ -2262,7 +2264,7 @@ function wireBroch(host){ host.querySelectorAll('[data-brurl]').forEach(function
 function renderBrochBox(){ var host=$('brochBox'); if(!host) return; if(!BROCH){ brochLoad().then(function(d){ if(d) renderBrochBox(); }); host.style.display='none'; return; }
   var L=brochList(); if(!L.list.length){ host.style.display='none'; return; } host.style.display='';
   host.innerHTML='<div class="bh" style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap"><div class="sectitle" style="margin:0"><span class="dot">●</span> Brochures for this plan</div>'
-    +'<small style="color:var(--muted)">ManhattanLife brochures for the <i>'+esc(TIER_NAME[L.t]||'')+'</i> plan in '+esc(L.st)+' — click to open, or copy them all.</small>'
+    +'<small style="color:var(--muted)">ManhattanLife brochures for '+(L.t==='all'?'all the plans shown (none marked yet)':'the <i>'+esc(TIER_NAME[L.t]||'')+'</i> plan')+' in '+esc(L.st)+' — click to open, or copy them all.</small>'
     +'<button type="button" class="picbtn" id="brochCopyAll" style="margin-left:auto">📋 Copy all links</button></div>'+brochListHTML(L);
   $('brochCopyAll').onclick=function(){ brochCopy(brochLines(L),this); }; wireBroch(host); }
 /* the email that goes after an enrollment - a draft for Jesse to make his own (9 Oct); the brochure links fill in */
@@ -2280,7 +2282,7 @@ function enrollEmail(){ var L=brochList(), first=((S.client.pname||'').trim().sp
 function renderEnBroch(){ var host=$('enBrochHost'); if(!host) return; if(!BROCH){ brochLoad().then(function(d){ if(d) renderEnBroch(); }); return; }
   var m=enrollEmail(); if(!m.L.list.length){ host.innerHTML=''; return; }
   host.innerHTML='<div class="sectitle" style="margin:14px 0 4px">Enrollment email — with their plan brochures</div>'
-    +'<div class="note" style="padding:0 0 8px">A draft: edit it to sound like you. The links are the <i>'+esc(TIER_NAME[m.L.t]||'')+'</i> plan’s ManhattanLife brochures for '+esc(m.L.st)+'.</div>'
+    +'<div class="note" style="padding:0 0 8px">A draft: edit it to sound like you. The links are '+(m.L.t==='all'?'every shown plan’s':'the <i>'+esc(TIER_NAME[m.L.t]||'')+'</i> plan’s')+' ManhattanLife brochures for '+esc(m.L.st)+'.</div>'
     +'<textarea id="enEmailTxt" rows="26" style="width:100%;font:inherit;font-size:13px;line-height:1.45;padding:10px;border:1px solid var(--line);border-radius:8px">'+esc('Subject: '+m.subject+'\n\n'+m.body)+'</textarea>'
     +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button type="button" class="picbtn" id="enEmailCopy">📋 Copy the email</button>'
     +'<button type="button" class="picbtn" id="enEmailGmail">Open in Gmail ↗</button><button type="button" class="picbtn" id="enEmailOutlook">Open in Outlook ↗</button></div>'
@@ -4965,7 +4967,7 @@ function buildEmail(){
   var body='Hi '+first+',\n\n'
     +'Thank you for your time today. Attached is your Healthcare Package of Protection — a side-by-side comparison of the current marketplace option that would best suit your needs and the options we recommend and spoke about previously.\n\n'
     +'The attached PDF has the full breakdown, including your out-of-pocket savings versus the current marketplace option available to you. Reply here or give me a call with any questions — I\'m happy to walk through it.\n\n'
-    +(function(){ var L=brochList(); return L.list.length?'The brochures for the '+(TIER_NAME[L.t]||'')+' plan, if you’d like the full details:\n'+brochLines(L)+'\n\n':''; })()
+    +(function(){ var L=brochList(); return L.list.length?(L.t==='all'?'The brochures for each part of these plans, if you’d like the full details:\n':'The brochures for the '+(TIER_NAME[L.t]||'')+' plan, if you’d like the full details:\n')+brochLines(L)+'\n\n':''; })()
     +sign;
   return {to:to,subject:subj,body:body};
 }

@@ -39,6 +39,8 @@ const TEST = `(async function(){
   S.chosen={tier:'best'}; compute(); await wait(200); var pbs=[document.querySelector('[data-act="present"]'),document.getElementById('presentBtn2')]; ok(pbs.every(function(b){ return b&&b.textContent.indexOf('Present Comprehensive Plan')>0&&b.querySelector('i')&&b.querySelector('i').textContent==='Comprehensive'; }),'both Present buttons read Present Comprehensive Plan with the plan in italics: '+pbs.map(function(b){ return b?b.innerHTML:'none'; }).join(' | '));
   for(var bw=0;bw<40&&!BROCH;bw++) await wait(50); compute(); var BL=brochList('best');
   ok(BL.list.length>=4&&BL.list.every(function(b){ return /^https:[/][/]drive[.]google[.]com[/]file[/]d[/][A-Za-z0-9_-]+[/]view$/.test(b.url); }),'the Comprehensive plan in TX has its ManhattanLife brochure links ('+BL.list.map(function(b){ return b.name; }).join(', ')+')');
+  var keepCh=S.chosen; S.chosen={}; var BA=brochList(); S.chosen={tier:'good'}; var BG=brochList(); S.chosen=keepCh; compute();
+  ok(BA.t==='all'&&BA.list.length>=BG.list.length&&BG.list.every(function(b){ return BA.list.some(function(x){ return x.url===b.url; }); })&&BG.t==='good','no plan marked -> brochures for every plan shown; a marked plan -> only its own');
   ok(document.getElementById('brochBox').style.display!=='none'&&document.querySelectorAll('#brochBox .brlist a').length===BL.list.length,'Quote page shows Brochures for this plan, one link each');
   ok(BL.list.every(function(b){ return buildEmail().body.indexOf(b.url)>0; }),'the quote email lists every brochure link');
   ok(!document.querySelector('#printout .brlist')&&document.getElementById('brochBox').classList.contains('hidein-client'),'the brochure box stays off the printout and Client View');
