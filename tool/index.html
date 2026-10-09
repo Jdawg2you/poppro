@@ -4630,6 +4630,9 @@ function presentWire(doc,t){ if(!doc||!doc.body) return 0; var T=presentScriptTo
   /* prescriptions: serve the version that matches the profile */
   Array.prototype.forEach.call(doc.querySelectorAll('[data-anchor-say="cur"]'),function(x){ (x.closest('.say')||x).classList.toggle('pp-off',!presentHasCur()); });
   Array.prototype.forEach.call(doc.querySelectorAll('[data-render="enroll"]'),function(x){ x.classList.add('pp-off'); });
+  /* the doctor's street is not said (Jesse, 2026-10-08): drop "on <street>" from the line */
+  Array.prototype.forEach.call(doc.querySelectorAll('var[data-k="doctor.street"]'),function(v){ if(v.dataset.ppGone) return; v.dataset.ppGone='1';
+    var pv=v.previousSibling; if(pv&&pv.nodeType===3) pv.textContent=pv.textContent.replace(/\s+on\s*$/,''); v.classList.add('pp-off'); });
   /* source tags stay in Health ZONE's file (its history); the agent's screen drops them and the legend line about them */
   /* the build note under the title is for Jesse's review copy, not the agent's screen */
   Array.prototype.forEach.call(doc.querySelectorAll('p.sub0'),function(x){ x.classList.add('pp-off'); });

@@ -45,8 +45,8 @@ const TEST = `(async function(){
   ok(document.querySelectorAll('#prStories [data-story]').length>=1,'stories in the rail');
   document.querySelector('#prStories [data-story]').click(); ok(/Never a client/.test(document.getElementById('prPop').innerText),'a story pops with the naming rule');
   /* blanks */
-  presentWire(d,'best'); var miss={}; d.querySelectorAll('var.pp-miss').forEach(function(v){ miss[v.title.replace(/^.*: /,'')]=1; });
-  var allowed=['doctor.street','drug.now','client.ht','client.wt','client.email','client.phone','agent.email','agent.website','agent.booking'];
+  presentWire(d,'best'); var miss={}; d.querySelectorAll('var.pp-miss:not(.pp-off)').forEach(function(v){ miss[v.title.replace(/^.*: /,'')]=1; });
+  var allowed=['drug.now','client.ht','client.wt','client.email','client.phone','agent.email','agent.website','agent.booking'];
   var bad=Object.keys(miss).filter(function(k){ return allowed.indexOf(k)<0; });
   ok(!bad.length,'blanks the quote can fill are filled; unexpected gaps: '+bad.join(', '));
   var ps=d.querySelector('var[data-k="plan.products_spoken"]').textContent;
@@ -67,6 +67,9 @@ const TEST = `(async function(){
   ok(Array.prototype.every.call(d.querySelectorAll('.who'),function(x){ return fr.contentWindow.getComputedStyle(x).display==='none'; }),'MIKE / JESSE / KYLE tags hidden');
   ok(!/Source tags show/.test(d.body.innerText)&&/filled automatically/.test(d.querySelector('p.legend').innerText),'tag legend line removed, the rest of the legend kept');
   ok(fr.contentWindow.getComputedStyle(d.querySelector('p.sub0')).display==='none','build note under the title hidden');
+  presentGo(presentPageIx('Networks & providers')); await wait(30);
+  var drLine=Array.prototype.filter.call(d.querySelectorAll('.say'),function(x){ return /already found Dr/.test(x.innerText); })[0];
+  ok(drLine&&!/ on /.test(drLine.innerText.split('—')[0].replace(/^.*already found Dr/,''))&&!/street/i.test(drLine.innerText),'doctor line has no street: '+(drLine&&drLine.innerText.slice(0,90)));
   var sit=d.querySelector('var[data-k="client.situation"]'); ok(sit&&!sit.classList.contains('pp-miss')&&!sit.classList.contains('pp-ok')&&fr.contentWindow.getComputedStyle(sit).backgroundColor.indexOf('253, 232')<0,'their situation reads as plain words, not a blank');
   ok(/Kyle.s daughter/.test(document.getElementById('prStories').innerText),'prose mentioning Kyle is untouched');
   /* every screen shows only its own blocks (a forcing style once leaked the closes onto every screen) */
