@@ -58,7 +58,9 @@ const TEST = `(async function(){
   /* anchor: radios, suggested, none hides saving */
   presentGo(3); await wait(50); var rs=d.querySelectorAll('tr[data-anchor] input[type=radio]'); var visRow=function(a){ return fr.contentWindow.getComputedStyle(d.querySelector('tr[data-anchor="'+a+'"]')).display!=='none'; };
   ok(visRow('aca')&&visRow('cur')&&visRow('none')&&!d.querySelector('tr[data-anchor="employer"]'),'anchors: marketplace, today, none — no payroll row');
-  ok(/Suggested/.test(d.querySelector('tr[data-anchor="cur"]').innerText),'highest yearly true cost suggested (current plan here)');
+  var star=function(a){ var sl=d.querySelector('tr[data-anchor="'+a+'"] [data-suggested-slot]'); return sl?sl.textContent:''; };
+  ok(/SUGGESTED/.test(star('cur'))&&!/SUGGESTED/.test(star('aca')),'star on the higher yearly true cost (current plan here), not hard-coded on marketplace: cur="'+star('cur')+'" aca="'+star('aca')+'"');
+  var kcs=JSON.stringify(S.cur); S.cur.prem=100; S.cur.ded=500; presentWire(d,'best'); ok(/SUGGESTED/.test(star('aca'))&&!star('cur'),'cheap current plan: star moves to marketplace'); S.cur=JSON.parse(kcs); presentWire(d,'best');
   d.querySelector('tr[data-anchor="aca"]').click(); await wait(30); ok(S.intake.anchor==='aca','picking marketplace sets POP Pro anchor');
   d.querySelector('tr[data-anchor="cur"]').click(); await wait(30); ok(S.intake.anchor==='cur','picking today sets POP Pro anchor');
   var keepCur=S.cur; S.cur={}; presentWire(d,'best'); ok(!visRow('cur')&&presentAnchor()==='aca'&&d.querySelector('tr[data-anchor="aca"] input').checked,'no current premium: today row gone, marketplace selected');
@@ -203,7 +205,7 @@ const TEST = `(async function(){
   ok(/That.s everything I need/.test(ef2.contentDocument.body.innerText)&&!/For security purposes/.test(ef2.contentDocument.body.innerText),'wrapping up starts with That is everything I need');
   ok(/Text them the moment/.test(ef2.contentDocument.body.innerText)&&Array.prototype.every.call(ef2.contentDocument.body.children,function(e){ return !/^For security purposes/.test((e.innerText||'').trim())||e.classList.contains('pp-off'); }),'wrapping up on Enroll; security question moved to the maiden-name box');
   var e2=ef2.contentDocument, ac=e2.querySelector('[data-mount="posttext"] a.cpy'), nd=e2.querySelector('[data-mount="posttext"] .needs');
-  ok(ac&&ac.classList.contains('dim')&&/still blank/.test(ac.textContent)&&!nd.classList.contains('pp-off')&&/email/.test(nd.textContent)&&/website/.test(nd.textContent)&&!e2.querySelector('.pp-copy'),'post-call: their link dim, warning names what is blank (email, website…)');
+  ok(ac&&ac.classList.contains('dim')&&/still blank/.test(ac.textContent)&&+((ac.querySelector('var[data-k="agent.blanks_n"]')||{}).textContent||0)>0&&!nd.classList.contains('pp-off')&&/email/.test(nd.textContent)&&/website/.test(nd.textContent)&&!e2.querySelector('.pp-copy'),'post-call: their link dim, warning names what is blank (email, website…)');
   S.agentEmail='j@x.com'; S.agentWebsite='optimum.com'; S.agentBooking='cal.com/j'; S.agentPhone=S.agentPhone||'555-0199'; S.client.agent=S.client.agent||'Jesse Stamm'; S.agency='Optimum';
   presentWire(e2,chosenTier()||'best'); ac=e2.querySelector('[data-mount="posttext"] a.cpy'); nd=e2.querySelector('[data-mount="posttext"] .needs');
   ok(!ac.classList.contains('dim')&&!/still blank/.test(ac.textContent)&&nd.classList.contains('pp-off'),'agent info complete: warning gone, copy live');

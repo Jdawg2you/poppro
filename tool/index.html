@@ -4581,6 +4581,7 @@ var PRESENT_CSS='.who{display:none!important}.pp-off{display:none!important}.pp-
  +'.pp-two{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:14px;align-items:start}.pp-two>*{min-width:0;max-width:none;margin:0;align-self:start}.pp-two>:not([data-close]){align-self:center}.pp-or{display:flex;align-items:center;justify-content:center;align-self:stretch;position:relative;min-width:36px}'
  +'.pp-or:before{content:"";position:absolute;top:0;bottom:0;left:50%;border-left:2px dashed #c9a24e}.pp-or span{position:relative;background:#fff;border:2px solid #c9a24e;color:#8a6a1f;font-weight:800;font-size:12px;border-radius:999px;padding:6px 8px}'
  +'@media(max-width:640px){.pp-two{grid-template-columns:1fr}.pp-or{min-height:40px}.pp-or:before{top:50%;bottom:auto;left:0;right:0;border-left:0;border-top:2px dashed #c9a24e}}'
+ +'.pp-yr{font-size:11px;color:#6b7280}'
  +'.pp-sug{font-size:12px;font-weight:700;color:#2f7d4a}.pp-nlab{margin-top:10px;font-size:13.5px;color:#16203c}'
  +'.pp-copy[disabled]{opacity:.45;cursor:not-allowed}.pp-need{font-size:12px;color:#b42318;margin-left:8px}var[contenteditable]{outline:1px dashed #b42318;min-width:60px;display:inline-block}';
 function presentEvCss(doc){ if(doc.getElementById('ppevcss')) return; var css='';
@@ -4630,8 +4631,11 @@ function presentWire(doc,t){ if(!doc||!doc.body) return 0; var T=presentScriptTo
   Array.prototype.forEach.call(doc.querySelectorAll('tr[data-anchor]'),function(r){ var me=r.getAttribute('data-anchor'), c0=r.cells[0];
     var rb=c0.querySelector('input'); if(!rb){ c0.textContent=''; rb=doc.createElement('input'); rb.type='radio'; rb.name='ppanchor'; rb.style.cssText='width:18px;height:18px;cursor:pointer'; c0.appendChild(rb); }
     rb.checked=me===ak; r.classList.toggle('pp-on',me===ak);
-    var tag=r.querySelector('.pp-sug'); if(!tag){ tag=doc.createElement('span'); tag.className='pp-sug'; r.cells[r.cells.length-1].appendChild(tag); }
-    tag.textContent=me===best?' ★ Suggested — highest yearly true cost ('+m0y(yr[me])+'/yr)':(yr[me]?' ('+m0y(yr[me])+'/yr true cost)':'');
+    var slot=r.querySelector('[data-suggested-slot]'), tag=r.querySelector('.pp-sug');
+    if(slot){ slot.textContent=me===best?'★ SUGGESTED':''; if(tag) tag.remove(); tag=null; }
+    else { if(!tag){ tag=doc.createElement('span'); tag.className='pp-sug'; r.cells[r.cells.length-1].appendChild(tag); } tag.textContent=me===best?' ★ Suggested':''; }
+    /* the yearly true cost behind the pick, so the agent can see why */
+    var yc=r.querySelector('.pp-yr'); if(!yc){ yc=doc.createElement('div'); yc.className='pp-yr'; r.cells[r.cells.length-1].appendChild(yc); } yc.textContent=yr[me]?m0y(yr[me])+'/yr true cost':'';
     r.classList.toggle('pp-off',me==='cur'&&!presentHasCur());
     r.onclick=function(){ S.present.anchor=me; if(me==='aca'||me==='cur'){ S.intake.anchor=me; if($('in_anchor')) $('in_anchor').value=me; compute(); } autosave(); presentWire(doc,t); }; });
   Array.prototype.forEach.call(doc.querySelectorAll('[data-saving]'),function(x){ x.classList.toggle('pp-off',ak==='none'); });
@@ -4706,17 +4710,16 @@ function presentWire(doc,t){ if(!doc||!doc.body) return 0; var T=presentScriptTo
   /* post-call text: the script's own COPY link and "not finished" warning, driven by the real agent info. Every field
      the text uses must be filled - name, agency, phone, email, website, booking - or the link stays dim and the warning
      names exactly what is still blank. Complete: warning hidden, link live. */
-  var mp=doc.querySelector('[data-mount="posttext"]'); if(mp){ var body=mp.querySelector('.body')||mp, cpy=mp.querySelector('a.cpy'), needs=mp.querySelector('.needs');
+  var mp=doc.querySelector('[data-mount="posttext"]'); if(mp){ var body=mp.querySelector('.body')||mp, cpy=mp.querySelector('[data-copy="posttext"]')||mp.querySelector('a.cpy'), needs=mp.querySelector('[data-needs]')||mp.querySelector('.needs');
     var need=[['agent.name','your name'],['agency','agency'],['agent.phone','phone'],['agent.email','email'],['agent.website','website'],['agent.booking','booking link']].filter(function(q){ return !String(T[q[0]]||'').trim(); }).map(function(q){ return q[1]; });
-    Array.prototype.forEach.call(mp.querySelectorAll('.pp-copy,.pp-need'),function(x){ x.remove(); });   /* the older POP Pro button, if a previous render left one */
-    if(cpy){ cpy.classList.toggle('dim',!!need.length); cpy.textContent='⧉ COPY THE TEXT'+(need.length?' — '+need.length+' field'+(need.length>1?'s':'')+' still blank':'');
+    Array.prototype.forEach.call(mp.querySelectorAll('.pp-copy,.pp-need'),function(x){ x.remove(); });
+    if(cpy){ if(cpy.dataset.orig==null) cpy.dataset.orig=cpy.innerHTML;
+      if(need.length){ cpy.innerHTML=cpy.dataset.orig; var bn=cpy.querySelector('var[data-k="agent.blanks_n"]'); if(bn){ bn.textContent=String(need.length); bn.className=''; bn.removeAttribute('title'); } }
+      else cpy.textContent='⧉ COPY THE TEXT';
+      cpy.classList.toggle('dim',!!need.length);
       cpy.onclick=function(e){ e.preventDefault(); if(need.length) return; var pEl=body.querySelector('p'); if(pEl){ copy(pEl.innerText.trim()); cpy.textContent='✓ Copied'; } }; }
-    if(needs){ needs.classList.toggle('pp-off',!need.length);
-      /* rewrite only the list after "Missing:" - the script's own wording stays */
-      var kids=Array.prototype.slice.call(needs.childNodes), at=-1; kids.forEach(function(nd,i){ if(at<0&&nd.nodeType===3&&/Missing:\s*$/.test(nd.textContent)) at=i; });
-      if(at>=0&&need.length){ var j=at+1; while(j<kids.length&&!(kids[j].nodeType===3&&/^\./.test(kids[j].textContent))){ kids[j].remove(); j++; }
-        var frag=doc.createDocumentFragment(); need.forEach(function(x,i){ if(i) frag.appendChild(doc.createTextNode(i===need.length-1?' and ':', ')); var bb=doc.createElement('b'); bb.textContent=x; frag.appendChild(bb); });
-        needs.insertBefore(frag,kids[j]||null); } } }
+    if(needs){ needs.classList.toggle('pp-off',!need.length); var nl=needs.querySelector('[data-needs-list]');
+      if(nl&&need.length){ nl.textContent=''; need.forEach(function(x,i){ if(i) nl.appendChild(doc.createTextNode(i===need.length-1?' and ':', ')); var bb=doc.createElement('b'); bb.textContent=x; nl.appendChild(bb); }); } } }
   return n; }
 /* kept for the check: fill a bare document (named fills, unknown flagged, unnamed untouched) */
 function presentFillFrame(doc,T){ if(!doc) return 0; var n=0;
