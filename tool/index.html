@@ -2867,12 +2867,11 @@ function medTypedName(label,q){
   });
   return best;
 }
-function medOption(label,q){
-  var lead=medTypedName(label,q), rest=medRow(label).filter(function(n){ return n!==lead; });
-  return rest.length ? lead+' ('+rest.join(', ')+')' : lead;
-}
+function medOption(label,q){ return medDisplay(label,q); }   /* main on the left, the other names in brackets - see MED-DUAL */
+/* A name arriving from the navigator or a file: shown with both names, main on the left. */
+function popMedDual(n){ var b=medBase(n), l=medLabel(b); return MED_CORE_LABEL[l]?medDisplay(l,b):(medFdaRow(b)?medDisplay(medFdaRow(b)[0],b):String(n||'').trim()); }
 function popMedResolve(n){
-  n=String(n||'').trim(); if(!n) return '';
+  n=medBase(n); if(!n) return '';   /* 'Atorvastatin (Lipitor)' resolves on its main name */
   var exact=medLabel(n);
   if(MED_FOR[exact]) return exact;
   if(medFdaRow(n)) return exact;
@@ -3108,19 +3107,19 @@ function applySuiteClient(c){
      navigator's medication dictionary, so popMedFlags() reads these the same way the
      navigator and the wizard do. */
   if(Array.isArray(c.meds)){
-    var had={}; (I.medList||[]).forEach(function(m){ had[String(m.name||"").toLowerCase()]=1; });
+    var had={}; (I.medList||[]).forEach(function(m){ had[popMedResolve(m.name).toLowerCase()]=1; });
     I.medList=(I.medList||[]).concat(
-      c.meds.filter(function(n){ return n && !had[String(n).toLowerCase()]; })
-            .map(function(n){ return {name:n, cost:0, aca:0, disc:0, forP:true, forS:false}; }));
+      c.meds.filter(function(n){ return n && !had[popMedResolve(n).toLowerCase()]; })
+            .map(function(n){ return {name:popMedDual(n), cost:0, aca:0, disc:0, forP:true, forS:false}; }));
   }
   /* The spouse's medications land on the same list, ticked to the spouse rather than the
      applicant. That is the distinction this form has always had a column for and the
      script could not previously supply. */
   if(Array.isArray(c.spMeds)){
-    var had2={}; (I.medList||[]).forEach(function(m){ if(m.forS) had2[String(m.name||"").toLowerCase()]=1; });
+    var had2={}; (I.medList||[]).forEach(function(m){ if(m.forS) had2[popMedResolve(m.name).toLowerCase()]=1; });
     I.medList=(I.medList||[]).concat(
-      c.spMeds.filter(function(n){ return n && !had2[String(n).toLowerCase()]; })
-              .map(function(n){ return {name:n, cost:0, aca:0, disc:0, forP:false, forS:true}; }));
+      c.spMeds.filter(function(n){ return n && !had2[popMedResolve(n).toLowerCase()]; })
+              .map(function(n){ return {name:popMedDual(n), cost:0, aca:0, disc:0, forP:false, forS:true}; }));
   }
   if(Array.isArray(c.medSkip)) I.medSkip=(I.medSkip||[]).concat(
       c.medSkip.filter(function(k){ return (I.medSkip||[]).indexOf(k)<0; }));
@@ -4760,10 +4759,10 @@ function kidsShowCount(){ var on=$('in_who_kids')&&$('in_who_kids').checked, w=$
    NOT linked to conditions - that stays the navigator's MEDS/MED_FOR, which always rank first. */
 var MED_FDA=[], MED_FDA_BY={};
 function medFdaLoad(){ return fetch('meds/fda-meds.json').then(function(r){ return r.json(); }).then(function(d){
-    MED_FDA=(d.meds||[]).map(function(r){ return {r:r, n:r[0].toLowerCase(), o:(r[1]||'').toLowerCase(), k:medKey(r[0]), k2:medKey2(r[0])}; });
-    MED_FDA_BY={}; MED_FDA.forEach(function(x){ MED_FDA_BY[x.n]=x.r; });
+    MED_FDA=(d.meds||[]).map(function(r){ return {r:r, n:r[0].toLowerCase(), o:(r[1]||'').toLowerCase(), k:medKey(r[0]), k2:medKey2(r[0]), gs:medGenShort(r[1]||r[0]).toLowerCase()}; });
+    MED_FDA_BY={}; MED_FDA.forEach(function(x){ MED_FDA_BY[x.n]=x.r; }); medFdaBrandsBuild();
     if(typeof renderMeds==='function'&&$('medList')&&(S.intake&&(S.intake.medList||[]).length)) renderMeds(); }).catch(function(){}); }
-function medFdaRow(n){ return MED_FDA_BY[String(n||'').trim().toLowerCase()]||null; }
+function medFdaRow(n){ return MED_FDA_BY[medBase(n).toLowerCase()]||null; }
 /* Core dictionary first (it lifts conditions), then the big list: exact, starts-with, other name, inside,
    then sounds-like for a misspelling. Each hit says whether it is a confident match (the word is in it). */
 function popMedSuggest(q,limit){ limit=limit||8; var t=String(q||'').trim(), lt=t.toLowerCase(); if(t.length<2) return [];
@@ -4773,7 +4772,10 @@ function popMedSuggest(q,limit){ limit=limit||8; var t=String(q||'').trim(), lt=
   var addF=function(label,other,sure){ if(core[label.toLowerCase()]) return; add(label,other,'fda',sure); };
   medSuggest(t,limit).forEach(function(h){ var sure=medRow(h).some(function(n){ return n.toLowerCase().indexOf(lt)>=0; }); add(h,'', 'core',sure); });
   if(out.length<limit&&MED_FDA.length){ var kt=medKey(t), k2=medKey2(t), sc=[];
-    MED_FDA.forEach(function(x){ var s=x.n===lt?0:x.n.indexOf(lt)===0?1+x.n.length/1000:x.o.indexOf(lt)===0?2:x.n.indexOf(lt)>0?3:x.o.indexOf(lt)>0?3.5:
+    var gseen={};
+    MED_FDA.forEach(function(x){ if(core[x.gs]&&x.n.indexOf(lt)!==0) return;   /* a salt/form variant of a core drug - the core row covers it */
+      if(!x.r[1]){ if(core[x.gs]||gseen[x.gs]) return; gseen[x.gs]=1; }       /* one row per plain generic */
+      var s=x.n===lt?0:x.n.indexOf(lt)===0?1+x.n.length/1000:x.o.indexOf(lt)===0?2:x.n.indexOf(lt)>0?3:x.o.indexOf(lt)>0?3.5:
         (kt.length>=3&&x.k.indexOf(kt)===0)?4+Math.abs(x.k.length-kt.length)/10:(k2.length>=3&&x.k2.indexOf(k2)===0)?6+Math.abs(x.k2.length-k2.length):-1;
       if(s>=0) sc.push([s,x]); });
     sc.sort(function(a,b){ return a[0]-b[0]; }).forEach(function(p){ if(out.length<limit*2) addF(p[1].r[0],p[1].r[1],p[0]<4); }); }
@@ -4781,14 +4783,39 @@ function popMedSuggest(q,limit){ limit=limit||8; var t=String(q||'').trim(), lt=
   var sure=out.filter(function(h){ return h.sure; });
   return (sure.length?sure:out.slice(0,4)).slice(0,limit); }
 
+/* ===== Both names, main on the left (MED-DUAL) =====
+   Jesse, 2026-10-08: the main medicine on the left and the other name(s) in brackets - the word the agent
+   typed is always visible, and what is SAVED is exactly what the list showed, both names. Main = the core
+   list's label (MED_FOR, the navigator sync and every resolver read the part before the bracket), or the
+   brand on the big list with its generic in brackets. Same block in POP Pro, the navigator and the wizard. */
+var MED_SALT=/\b(hydrochloride|hcl|hydrobromide|sulfate|sodium|disodium|potassium|calcium|magnesium|dimesylate|mesylate|besylate|maleate|tartrate|bitartrate|succinate|acetate|citrate|bromide|fumarate|phosphate|saccharate|aspartate|hyclate|monohydrate|dihydrate|trihydrate|anhydrous|propionate|dipropionate|furoate|xinafoate|disoproxil|alafenamide|medoxomil|valerate|nitrate|lactate|gluconate|tromethamine|olamine|erbumine|cilexetil|axetil|pivoxil|monobasic|dibasic|oral|tablets?|capsules?|chewable|er|xr|sr|dr|xl|odt|extended[- ]release|delayed[- ]release|for oral suspension|suspension|solution)\b/gi;
+var MED_CORE_LABEL=(function(){ var m={}; MEDS.forEach(function(r){ m[r[0]]=1; }); return m; })();
+var MED_FDA_BRANDS={};
+function medCap(s){ s=String(s||''); return s.charAt(0).toUpperCase()+s.slice(1); }
+function medGenShort(g){ var seen={}, out=[];
+  String(g||'').split(/,|\band\b|\//i).forEach(function(p){ var x=p.replace(MED_SALT,'').replace(/\s+/g,' ').trim(); if(!x) return;
+    var k=x.toLowerCase(); if(!seen[k]){ seen[k]=1; out.push(medCap(x)); } });
+  return out.join(', '); }
+function medBase(n){ return String(n||'').replace(/\s*\(.*\)\s*$/,'').trim(); }
+function medDisplay(label,typed){ label=String(label||'').trim(); if(!label) return '';
+  var t=String(typed||'').trim().toLowerCase();
+  if(MED_CORE_LABEL[label]){ var rest=(MED_ALIASES[label]||[]).slice();
+    if(t) rest.sort(function(a,b){ var sa=a.toLowerCase().indexOf(t)===0?0:a.toLowerCase().indexOf(t)>0?1:2, sb=b.toLowerCase().indexOf(t)===0?0:b.toLowerCase().indexOf(t)>0?1:2; return sa-sb; });
+    return label+(rest.length?' ('+rest.map(medCap).join(', ')+')':''); }
+  var r=(typeof medFdaRow==='function')?medFdaRow(label):null; if(!r) return label;
+  if(r[1]){ var g=medGenShort(r[1]); return r[0]+(g&&g.toLowerCase()!==r[0].toLowerCase()?' ('+g+')':''); }
+  var bs=MED_FDA_BRANDS[medGenShort(r[0]).toLowerCase()]||[];
+  return r[0]+(bs.length?' ('+bs.slice(0,2).join(', ')+(bs.length>2?', …':'')+')':''); }
+function medFdaBrandsBuild(){ MED_FDA_BRANDS={}; MED_FDA.forEach(function(x){ if(x.r[1]){ var k=medGenShort(x.r[1]).toLowerCase(); (MED_FDA_BRANDS[k]=MED_FDA_BRANDS[k]||[]).push(x.r[0]); } }); }
+
 /* Medication type-ahead on each medication row — same dictionary as the navigator (medSuggest). */
 function medTypeahead(inp,onPick){ var box=document.createElement('div'); box.className='medsug'; inp.parentNode.insertBefore(box,inp.nextSibling);
   var hide=function(){ setTimeout(function(){ box.style.display='none'; },150); };
   var pickIt=function(v){ inp.value=v; box.style.display='none'; onPick(v); };
   inp.addEventListener('input',function(){ var q=inp.value.trim(); var hits=q.length>=2?popMedSuggest(q,8):[];
     var exact=hits.some(function(h){ return h.label.toLowerCase()===q.toLowerCase(); });
-    var html=hits.map(function(h,j){ var lab=h.src==='core'?medOption(h.label,q):esc(h.label)+(h.other?' <small>('+esc(h.other)+')</small>':'');
-      return '<button type="button" data-med="'+esc(h.label).replace(/"/g,'&quot;')+'"'+(j===0&&h.sure?' class="hl"':'')+'>'+(h.sure?'':'<small>did you mean</small> ')+lab+'</button>'; }).join('');
+    var html=hits.map(function(h,j){ var full=medDisplay(h.label,q), lab=esc(full);   /* saved exactly as shown: both names (MED-DUAL) */
+      return '<button type="button" data-med="'+esc(full).replace(/"/g,'&quot;')+'"'+(j===0&&h.sure?' class="hl"':'')+'>'+(h.sure?'':'<small>did you mean</small> ')+lab+'</button>'; }).join('');
     /* anything can be added as typed - the agent is never forced to pick from the list */
     if(q.length>=2&&!exact) html+='<button type="button" class="typed" data-med="'+esc(q).replace(/"/g,'&quot;')+'">+ Add “'+esc(q)+'” as typed</button>';
     box.innerHTML=html; box.style.display=html?'block':'none';
