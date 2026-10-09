@@ -1312,35 +1312,55 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
 <aside class="bendrawer hidein-client" id="benDrawer" aria-label="Plan benefits"></aside>
 <div class="modal-backdrop" id="howModal">
   <div class="modal">
-    <div class="modal-head"><b>How to use POP Pro</b><span>Intake → Quote → Enroll</span><button class="btn-ghost" id="closeHow">Done</button></div>
+    <div class="modal-head"><b>How to use POP Pro</b><span>Intake → Quote → Present → Enroll</span><button class="btn-ghost" id="closeHow">Done</button></div>
     <div class="modal-body howbody">
-      <p>There are two ways to fill in the Intake. Pick one — everything after it is the same.</p>
-      <h4>Option A · Run the call in the Script Navigator</h4>
+      <h4>Once · Your agent information</h4>
       <ul>
-        <li>Click <b>Open the Script Navigator</b> at the top of the Intake and select <b>Health Discovery</b>.</li>
-        <li>Follow the script card by card, capturing the answers as you go.</li>
-        <li>At the end, click <b>Push client to MyPOP Pro</b>. Everything you captured — who's covered, medications, conditions, doctors, current plan, income and budget — lands in this Intake.</li>
-        <li>Look it over and fill anything the call didn't cover.</li>
+        <li>Open <b>Agent Information</b> on the Intake and fill in your <b>agency, name, phone and email</b>. The box folds away once all four are in, and opens again if one goes missing.</li>
+        <li><b>Website</b> and <b>booking link</b> are optional but worth it: they go into the client emails and the text. Your <b>NPN</b> is kept for you only and never goes into notes.</li>
       </ul>
-      <h4>Option B · Use this tool on its own</h4>
+      <h4>1 · Intake: two ways to fill it in</h4>
       <ul>
-        <li>Work down the Intake and fill in each section: who needs coverage, client and spouse, children, medications, conditions, health &amp; routing, doctors, current insurance, the ACA, finances, and budget.</li>
-        <li>Medications suggest their conditions — confirm each one. The <b>ACA</b> section estimates the bronze plan from state, ages, household and income; type the real numbers from <b>HealthSherpa</b> over the estimates.</li>
+        <li><b>Run the call in the Script Navigator.</b> Click <b>Open the Script Navigator</b>, choose <b>Health Discovery</b>, follow it card by card, then <b>Push client to MyPOP Pro</b>. Who's covered, medications, conditions, doctors, current plan, income, budget and call notes all land here. A saved Navigator profile file loads the same way.</li>
+        <li><b>Or use this tool on its own</b>: work down the sections from top to bottom.</li>
+        <li><b>Shortcuts as you type:</b> date of birth <i>63078</i> becomes 06/30/1978 and works out the age, height <i>52</i> becomes 5′2″, and money tidies to $1,234.00.</li>
+        <li><b>Medications:</b> type any name, brand or generic. Both names show, and each one suggests a condition for you to confirm.</li>
+        <li><b>Current insurance:</b> tick <b>They're paying for this plan right now</b> when it's real. That decides whether the presentation compares against <i>what they pay today</i> or against <i>the marketplace</i>. The ACA section estimates the marketplace plan; type the real HealthSherpa numbers over the estimates.</li>
       </ul>
-      <h4>Then · Build the quote</h4>
+      <h4>2 · Quote</h4>
       <ul>
-        <li>Click <b>Build Quote</b>. POP Pro builds Good, Better and Best from the Intake.</li>
-        <li>Refine the product selection in the package builder: open a row to change its options, add or remove products, or type over a price. <b>↺ Reload our recommendation</b> starts over.</li>
-        <li>Click <b>Client View</b> for the presentation — it hides everything meant only for you. Any ACA figure you didn't type shows <b>est.</b></li>
+        <li>Click <b>Build Quote</b>. POP Pro builds three packages. You see them as <b>Good / Better / Best</b>; the client sees <b>Essential / Complete / Comprehensive</b>.</li>
+        <li><b>Package builder:</b> open a row to change its options, add or remove products, or type over a price. <b>ⓘ</b> slides out that product's benefits for their state, with a link to the full brochure. ↺ <b>Reload our recommendation</b> starts over. If a row can't be priced, it tells you which option to change.</li>
+        <li><b>Living benefits:</b> Mutual of Omaha (ages 18–60) or Americo (20–65), from $25K to $250K over 20 years. Above 60 it switches to Americo for you. For any other carrier, choose <b>Other</b> and type the carrier, amount and monthly price.</li>
+        <li><b>Mark their plan:</b> click <b>Choose this plan</b> on the package they're leaning toward. It carries into Present, Enroll, the brochures and the emails.</li>
+        <li><b>Examples:</b> pick a real event (appendicitis, a hospital stay, a broken arm and more) to show what each plan pays and what they <b>NET</b>. Medical Bill Saver is on by default.</li>
+        <li><b>Copy as a picture</b> to paste straight into a text: <b>📋 Copy plans</b> (the three packages), <b>📋 Copy example</b> (on each example) and <b>📋 Copy partner benefits</b>.</li>
+        <li><b>Brochures for this plan</b> at the bottom lists each product's brochure for their state. Open one, copy one link, or copy them all.</li>
+        <li><b>Client View</b> hides everything meant only for you. None of the copy buttons show there, on the printout or in an email.</li>
       </ul>
-      <h4>Then · Enroll</h4>
+      <h4>3 · Present</h4>
       <ul>
-        <li>The <b>Enroll</b> step has what you need to get started with the client: the carrier portals to apply, and the plan they chose.</li>
-        <li><b>Email to client</b> (Gmail, Outlook or your mail app) writes the letter for you; <b>Print / PDF Quote</b> makes the copy to attach or hand over.</li>
-        <li><b>Agent — Items to Follow Up</b> lists what to do next, based on what you captured; ticks save with the quote.</li>
-        <li>The printable <b>client profile</b> lives in the Script Navigator — print it from there.</li>
+        <li>Click <b>▶ Present <i>Comprehensive</i> Plan</b> (it names whichever plan you marked), at the top of the builder or under Send the quote.</li>
+        <li>The script plays <b>screen by screen</b> with their name, numbers, doctors and medications filled in. <b>Back / Next</b> move through it; objections and stories sit at the side.</li>
+        <li>It ends at <b>Pick your close</b>: Assumptive or Bold Step. Then either <b>they're enrolling → Enroll</b>, or <b>not today → Send the quote</b>, with the "talk it over with your spouse" line ready.</li>
       </ul>
-      <p style="color:var(--muted);font-size:12px;margin-top:10px"><b>Save Quote</b> downloads the quote as a file; <b>Load Quote</b> opens it again later.</p>
+      <h4>Not today · Send the quote</h4>
+      <ul>
+        <li>At the bottom of Quote: <b>Gmail</b>, <b>Outlook</b> or <b>Email to client</b> (your mail app) writes the email for you, with their plan's brochure links. Then <b>Print / PDF Quote</b>, save the PDF and attach it.</li>
+      </ul>
+      <h4>4 · Enroll, in call order</h4>
+      <ul>
+        <li><b>1–2 Life application first:</b> the carrier links, then one box per person (first/last name, beneficiaries with name, %, phone and date of birth, and their own notes) to copy into the application.</li>
+        <li><b>3 Wrapping things up:</b> the security code word for the health application. It is held on screen only and never saved anywhere.</li>
+        <li><b>4 Health carriers:</b> ManhattanLife, Cigna and LifeX links.</li>
+        <li><b>5 Follow-ups:</b> what to do next (TFRA, their employer, referrals, living benefits if they skipped it), the <b>enrollment email</b> with their brochures (copy it, or open it in Gmail or Outlook), and <b>Copy all links</b>. The <b>text to send</b> is in the wrap-up: copy it the moment you hang up.</li>
+        <li><b>Notes:</b> there is one Notes box, the same one as on the Intake. Per-person notes add to it.</li>
+      </ul>
+      <h4>Never in the tool</h4>
+      <ul>
+        <li>No <b>Social Security number</b>, <b>bank routing or account number</b>, or draft date. Those go straight into the carrier's application. A driver's licence number is fine.</li>
+      </ul>
+      <p style="color:var(--muted);font-size:12px;margin-top:10px"><b>Save Quote</b> downloads the quote as a file and <b>Load Quote</b> opens it again later. The printable client profile lives in the Script Navigator: print it from there.</p>
     </div>
   </div>
 </div>
