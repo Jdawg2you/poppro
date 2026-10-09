@@ -2247,21 +2247,26 @@ function renderBrochBox(){ var host=$('brochBox'); if(!host) return; if(!BROCH){
   $('brochCopyAll').onclick=function(){ brochCopy(brochLines(L),this); }; wireBroch(host); }
 /* the email that goes after an enrollment - a draft for Jesse to make his own (9 Oct); the brochure links fill in */
 function enrollEmail(){ var L=brochList(), first=((S.client.pname||'').trim().split(/\s+/)[0])||'there', agent=(S.client.agent||'').trim(), agency=(S.agency||'').trim();
+  var fam=householdKey()!=='i', book=String(S.agentBooking||'').trim(), site=String(S.agentWebsite||'').trim();
+  var hasLife=((S.packages[L.t]||{}).products||[]).some(function(p){ return (p.k==='lbp'||p.k==='lbs')&&(+p.monthly||0)>0; });
   var body='Hi '+first+',\n\n'
-    +'Thank you for applying today — it was a pleasure working with you.\n\n'
-    +'So you have everything in one place, here are the brochures for each part of your plan:\n'+brochLines(L)+'\n\n'
-    +'I’ll be in touch as soon as everything is approved. In the meantime, I’m your point of contact — call or text me any time with questions.\n\n'
-    +'Best,\n'+(agent||agency)+(agent&&agency?'\n'+agency:'')+(S.agentPhone?'\n'+S.agentPhone:'')+(S.agentEmail?'\n'+S.agentEmail:'');
-  return {to:(S.intake&&S.intake.email)||'',subject:'Your new coverage — your plan brochures',body:body,L:L}; }
+    +'Congratulations, and thank you for applying today! It was a real pleasure working with you — you’ve done something good for yourself'+(fam?' and your family':'')+'.\n\n'
+    +'Here’s what happens next. This is an underwritten plan, which just means it isn’t a plan everyone can get: the carrier reviews your application to confirm you qualify, and that’s exactly why the price is what it is. The review usually takes 3–5 business days, sometimes 7–10 depending on the product. The moment it’s approved, I’ll email you your temporary ID card and your benefit book.'+(hasLife?' Your life coverage is reviewed on its own, and I’ll keep you posted on that one too.':'')+'\n\n'
+    +(L.list.length?'So you have everything in one place, here are the brochures for each part of your plan:\n'+brochLines(L)+'\n\n':'')
+    +'I’ll be reaching out over the next few days with an update.'+(book?' If anything comes up before then, you can book a time to reconnect here: '+book+' — or just call or text me.':' If anything comes up before then, just call or text me.')+'\n\n'
+    +'And know that I’m your agent for life. Insurance can be a lot to navigate, and that’s my job — whenever you have a question, a claim or a change in your life, I’m the person to call.\n\n'
+    +'Best,\n'+(agent||agency)+(agent&&agency?'\n'+agency:'')+(S.agentPhone?'\n'+S.agentPhone:'')+(S.agentEmail?'\n'+S.agentEmail:'')+(site?'\n'+site:'');
+  return {to:(S.intake&&S.intake.email)||'',subject:'Your new coverage! (+ your plan brochures)',body:body,L:L}; }
 function renderEnBroch(){ var host=$('enBrochHost'); if(!host) return; if(!BROCH){ brochLoad().then(function(d){ if(d) renderEnBroch(); }); return; }
   var m=enrollEmail(); if(!m.L.list.length){ host.innerHTML=''; return; }
   host.innerHTML='<div class="sectitle" style="margin:14px 0 4px">Enrollment email — with their plan brochures</div>'
     +'<div class="note" style="padding:0 0 8px">A draft: edit it to sound like you. The links are the <i>'+esc(TIER_NAME[m.L.t]||'')+'</i> plan’s ManhattanLife brochures for '+esc(m.L.st)+'.</div>'
-    +'<textarea id="enEmailTxt" rows="12" style="width:100%;font:inherit;font-size:13px;line-height:1.45;padding:10px;border:1px solid var(--line);border-radius:8px">'+esc('Subject: '+m.subject+'\n\n'+m.body)+'</textarea>'
+    +'<textarea id="enEmailTxt" rows="26" style="width:100%;font:inherit;font-size:13px;line-height:1.45;padding:10px;border:1px solid var(--line);border-radius:8px">'+esc('Subject: '+m.subject+'\n\n'+m.body)+'</textarea>'
     +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button type="button" class="picbtn" id="enEmailCopy">📋 Copy the email</button>'
     +'<button type="button" class="picbtn" id="enEmailGmail">Open in Gmail ↗</button><button type="button" class="picbtn" id="enEmailOutlook">Open in Outlook ↗</button></div>'
-    +'<div style="margin-top:12px"><b style="font-size:13px;color:var(--navy)">The links on their own</b>'+brochListHTML(m.L)+'</div>';
+    +'<div style="margin-top:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap"><b style="font-size:13px;color:var(--navy)">The links on their own</b><button type="button" class="picbtn" id="enCopyAll" style="margin-left:auto">📋 Copy all links</button></div>'+brochListHTML(m.L);
   $('enEmailCopy').onclick=function(){ brochCopy($('enEmailTxt').value,this); };
+  $('enCopyAll').onclick=function(){ brochCopy(brochLines(m.L),this); };
   /* Gmail gets the email as the agent edited it: a first "Subject:" line becomes the subject */
   var edited=function(){ var v=$('enEmailTxt').value, su=m.subject, mm=v.match(/^Subject:(.*)\n+/); if(mm){ su=mm[1].trim(); v=v.slice(mm[0].length); } return {su:su,body:v}; };
   $('enEmailGmail').onclick=function(){ var e=edited(); window.open('https://mail.google.com/mail/?view=cm&fs=1&to='+encodeURIComponent(m.to)+'&su='+encodeURIComponent(e.su)+'&body='+encodeURIComponent(e.body),'_blank','noopener'); };
