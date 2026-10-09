@@ -599,7 +599,25 @@
   .enroll-card+.enroll-card{margin-top:12px}
   .en-person{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-top:10px;background:#fff}
   .en-person h5{margin:0;font-size:14px;color:var(--navy);display:inline}
-  .agentsetup summary{cursor:pointer;list-style:revert}.agentsetup:not([open]){margin-bottom:10px}
+  .agentsetup summary{cursor:pointer;list-style:revert}
+  /* Eight boxes at two columns is four rows of chrome above the client's own details. Four across
+     puts the whole agent block in two rows. (Jesse, 2026-10-09) */
+  .intakegrid.agentgrid{grid-template-columns:repeat(4,1fr)}
+  @media(max-width:1100px){.intakegrid.agentgrid{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:620px){.intakegrid.agentgrid{grid-template-columns:1fr}}
+  .goatgrab{margin-top:12px;border:1px solid #e6d6ae;background:#fefcf7;border-radius:10px;padding:12px 14px}
+  .goatgrab b{font-size:12.5px;color:var(--navy)}
+  .goatgrab p{font-size:12px;color:var(--muted);line-height:1.55;margin:5px 0 0}
+  .goatgrab .freetag{font-size:10.5px;font-weight:700;color:#a8853a;letter-spacing:.06em}
+  .gsteps{margin:8px 0 0;padding:0;list-style:none;counter-reset:gs}
+  .gsteps li{counter-increment:gs;position:relative;padding-left:23px;font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:4px}
+  .gsteps li:before{content:counter(gs);position:absolute;left:0;top:1px;width:16px;height:16px;border-radius:50%;
+    background:#c9a24e;color:#16203c;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center}
+  .goatbtn{display:inline-block;margin-top:10px;background:#c9a24e;border:1.5px solid #c9a24e;color:#16203c;
+    font-size:12.5px;font-weight:700;line-height:20px;padding:8px 14px;border-radius:9px;text-decoration:none}
+  .goatskip{display:block;margin-top:9px;background:none;border:0;padding:0;cursor:pointer;
+    font:inherit;font-size:11.5px;color:#2c4a7c;text-decoration:underline}
+  .agentsetup:not([open]) .goatgrab{display:none}.agentsetup:not([open]){margin-bottom:10px}
   .afc-picbtn{position:absolute;right:0;top:16px}@media(max-width:820px){.afc-picbtn{position:static;margin:0 0 8px}}
   .presentbtn{font:inherit;font-size:14px;font-weight:800;border-radius:999px;padding:9px 18px;cursor:pointer;border:none;background:#2f7d4a;color:#fff}.presentbtn:hover{background:#286b40}.presentbtn i{font-family:var(--serif);font-weight:700}
   .picbtn.sendbtn{display:inline-flex;align-items:center;gap:7px;font-size:13.5px;padding:9px 14px;margin:0 7px 0 0;text-decoration:none}.picbtn.sendbtn svg{background:#fff;border-radius:4px;padding:2px;box-sizing:content-box}
@@ -928,14 +946,27 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
 
     <details id="agentSetup" class="agentsetup">
     <summary class="intake-sec">Agent Information <span class="secnote">— set once; appears on every page</span> <span class="secnote" id="agentSetupState"></span></summary>
-    <div class="intakegrid" style="grid-template-columns:repeat(2,1fr)">
+    <div class="intakegrid agentgrid">
       <div class="fld"><label>Agency</label><input id="in_agency" placeholder="HealthFirst"></div>
       <div class="fld"><label>Agent</label><input id="in_agent" placeholder="Your name"></div>
       <div class="fld"><label>Agent phone</label><input id="in_aphone" placeholder="(000) 000-0000"></div>
       <div class="fld"><label>Agent email</label><input id="in_aemail" placeholder="you@agency.com"></div>
-      <div class="fld"><label>NPN <small>used in your email signature</small></label><input id="in_anpn" inputmode="numeric" placeholder="National Producer Number"></div>
-      <div class="fld"><label>Website <small>used in client emails and the text</small></label><input id="in_aweb" placeholder="yourwebsite.com"></div>
-      <div class="fld"><label>Booking link <small>used in client emails and the text</small></label><input id="in_abook" placeholder="calendly.com/you"></div>
+      <div class="fld"><label>NPN <small>in your signature</small></label><input id="in_anpn" inputmode="numeric" placeholder="National Producer Number"></div>
+      <div class="fld"><label>Website <small>in emails + text</small></label><input id="in_aweb" placeholder="yourwebsite.com"></div>
+      <div class="fld"><label>Digital business card <small>in emails + text</small></label><input id="in_acard" placeholder="yourcard.com/you"></div>
+      <div class="fld"><label>Booking link <small>in emails + text</small></label><input id="in_abook" placeholder="calendly.com/you"></div>
+    </div>
+    <div class="goatgrab" id="goatGrab">
+      <b>Don&rsquo;t have the last three yet? All three are free.</b> <span class="freetag">NO COST</span>
+      <p>One GOAT account gives you an agent website, a digital business card, and a booking calendar clients can use to book themselves.</p>
+      <ol class="gsteps">
+        <li>Create your free account</li>
+        <li>Fill in your agent profile</li>
+        <li>Open <b>Settings</b></li>
+        <li>Switch on your <b>website</b>, <b>digital business card</b> and <b>calendar</b>, then paste the three links here</li>
+      </ol>
+      <a class="goatbtn" href="https://goatleads.com/registration/new?affiliate_id=66c4aa379e0123651ad2f0e6" target="_blank" rel="noopener">Create my free GOAT account &rarr;</a>
+      <button type="button" class="goatskip" id="goatSkip">I&rsquo;m not using GOAT &mdash; fold this away anyway</button>
     </div>
     </details>
 
@@ -3310,7 +3341,7 @@ function applySuiteAgent(ag){
   /* NPN belongs to the agent setup (Jesse, 2026-10-08), not the client's notes; an old "Agent NPN" note line is removed */
   if(ag.npn){ S.agentNPN=String(ag.npn); S.intake=S.intake||{};
     S.intake.notes=String(S.intake.notes||"").split("\n").filter(function(l){ return l.indexOf("Agent NPN ")!==0; }).join("\n").replace(/^\n+|\n+$/g,""); }
-  if(ag.website) S.agentWebsite=String(ag.website); if(ag.booking) S.agentBooking=String(ag.booking);
+  if(ag.website) S.agentWebsite=String(ag.website); if(ag.card) S.agentCard=String(ag.card); if(ag.booking) S.agentBooking=String(ag.booking);
 }
 
 function applySuiteClient(c){
@@ -4182,14 +4213,24 @@ function suiteFromNavProfile(P){
 }
 /* The agent's own details (agency, name, phone, email) belong to whoever is running the tool, not to a
    file. A loaded file keeps them unless it carries its own - loading a client never wipes the agent. */
-function agentOf(st){ return {agency:st.agency, agent:(st.client||{}).agent, phone:st.agentPhone, email:st.agentEmail, npn:st.agentNPN, web:st.agentWebsite, book:st.agentBooking}; }
+function agentOf(st){ return {agency:st.agency, agent:(st.client||{}).agent, phone:st.agentPhone, email:st.agentEmail, npn:st.agentNPN, web:st.agentWebsite, card:st.agentCard, book:st.agentBooking}; }
 /* Agent setup folds closed once agency, name, phone and email are all in; it opens again if any of those four is
    missing. NPN, website and booking are optional and never hold it open. (Jesse, 2026-10-08) */
-function agentSetupMissing(){ var a=[['agency',S.agency],['your name',(S.client||{}).agent],['phone',S.agentPhone],['email',S.agentEmail]]; return a.filter(function(x){ return !String(x[1]||'').trim(); }).map(function(x){ return x[0]; }); }
+/* Jesse, 2026-10-09: the fold now waits for ALL of them, not the four the tool cannot run without.
+   Every one of these ends up in the emails, the text and the signature, so a folded box with three
+   empty links in it was hiding work the agent still had to do. The opt-out exists because without
+   it an agent who will never use GOAT can never fold this box, and a nag nobody can satisfy stops
+   being read at all - including when it is telling them their phone number is missing. */
+function goatSkipped(){ try{ return localStorage.getItem('pp_goat_skip')==='1'; }catch(e){ return false; } }
+function agentSetupMissing(){
+  var core=[['agency',S.agency],['your name',(S.client||{}).agent],['phone',S.agentPhone],['email',S.agentEmail],['NPN',S.agentNPN]];
+  var links=[['website',S.agentWebsite],['digital business card',S.agentCard],['booking link',S.agentBooking]];
+  var a=goatSkipped()?core:core.concat(links);
+  return a.filter(function(x){ return !String(x[1]||'').trim(); }).map(function(x){ return x[0]; }); }
 /* Every empty agent box glows green until it's filled (Jesse, 9 Oct) - they all end up in the emails, the text and the
    signature, so "optional" is not how an agent should read them. The fold rule is unchanged: open until the four the
    tool can't work without are in; the summary line keeps glowing while any of the seven is still empty. */
-var AGENT_BOXES=[['in_agency','agency'],['in_agent','your name'],['in_aphone','phone'],['in_aemail','email'],['in_anpn','NPN'],['in_aweb','website'],['in_abook','booking link']];
+var AGENT_BOXES=[['in_agency','agency'],['in_agent','your name'],['in_aphone','phone'],['in_aemail','email'],['in_anpn','NPN'],['in_aweb','website'],['in_acard','digital business card'],['in_abook','booking link']];
 function agentGlow(){ var empty=[]; AGENT_BOXES.forEach(function(b){ var el=$(b[0]); if(!el) return; var f=el.closest('.fld'), e=!String(el.value||'').trim(); if(f) f.classList.toggle('needfill',e); if(e) empty.push(b[1]); });
   var st=$('agentSetupState'); if(st){ st.textContent=empty.length?'· fill in: '+empty.join(', '):'· complete'; st.classList.toggle('needfill-sum',!!empty.length); } return empty; }
 function agentSetupFold(force){ var d=$('agentSetup'); if(!d) return; var miss=agentSetupMissing(); if(miss.length) d.open=true; else if(force) d.open=false; agentGlow(); }
@@ -4199,7 +4240,7 @@ function keepAgent(ag){
   S.client=S.client||{}; if(ag.agent && !S.client.agent) S.client.agent=ag.agent;
   if(ag.phone && !S.agentPhone) S.agentPhone=ag.phone;
   if(ag.email && !S.agentEmail) S.agentEmail=ag.email;
-  if(ag.npn && !S.agentNPN) S.agentNPN=ag.npn; if(ag.web && !S.agentWebsite) S.agentWebsite=ag.web; if(ag.book && !S.agentBooking) S.agentBooking=ag.book; }
+  if(ag.npn && !S.agentNPN) S.agentNPN=ag.npn; if(ag.web && !S.agentWebsite) S.agentWebsite=ag.web; if(ag.card && !S.agentCard) S.agentCard=ag.card; if(ag.book && !S.agentBooking) S.agentBooking=ag.book; }
 function loadFile(file){
   var rd=new FileReader();
   rd.onload=function(){
@@ -4251,7 +4292,7 @@ function restore(){ try{ var s=localStorage.getItem('hf_pop_last'); if(s){ var r
 /* ========== INTAKE + RECOMMENDATION ENGINE ========== */
 function readIntake(){
   S.intake=S.intake||{};
-  S.agency=($('in_agency').value||'').trim()||'HealthFirst'; S.agentPhone=$('in_aphone').value; S.agentEmail=$('in_aemail').value; S.agentNPN=($('in_anpn').value||'').trim(); S.agentWebsite=($('in_aweb').value||'').trim(); S.agentBooking=($('in_abook').value||'').trim(); agentSetupFold();
+  S.agency=($('in_agency').value||'').trim()||'HealthFirst'; S.agentPhone=$('in_aphone').value; S.agentEmail=$('in_aemail').value; S.agentNPN=($('in_anpn').value||'').trim(); S.agentWebsite=($('in_aweb').value||'').trim(); S.agentCard=($('in_acard').value||'').trim(); S.agentBooking=($('in_abook').value||'').trim(); agentSetupFold();
   S.intake.who={app:$('in_who_app').checked,spouse:$('in_who_spouse').checked,kids:$('in_who_kids').checked};
   S.intake.phone=$('in_phone').value; S.intake.email=$('in_email').value;
   S.intake.tobaccoP=$('in_tobacco_p').checked; S.intake.tobaccoS=$('in_tobacco_s').checked;
@@ -4290,7 +4331,7 @@ function fillIntake(){
   if(typeof renderKids==='function') setTimeout(renderKids,0);
   var I=S.intake||{}; var w=I.who||{app:true};
   $('in_who_app').checked=w.app!==false; $('in_who_spouse').checked=!!w.spouse; $('in_who_kids').checked=!!w.kids;
-  $('in_agency').value=(S.agency&&S.agency!=='HealthFirst')?S.agency:(S.agency||''); $('in_aphone').value=S.agentPhone||''; $('in_aemail').value=S.agentEmail||''; $('in_anpn').value=S.agentNPN||''; $('in_aweb').value=S.agentWebsite||''; $('in_abook').value=S.agentBooking||''; agentSetupFold(true);
+  $('in_agency').value=(S.agency&&S.agency!=='HealthFirst')?S.agency:(S.agency||''); $('in_aphone').value=S.agentPhone||''; $('in_aemail').value=S.agentEmail||''; $('in_anpn').value=S.agentNPN||''; $('in_aweb').value=S.agentWebsite||''; $('in_acard').value=S.agentCard||''; $('in_abook').value=S.agentBooking||''; agentSetupFold(true);
   $('in_pname').value=S.client.pname||''; $('in_sname').value=S.client.sname||''; $('in_agent').value=S.client.agent||'';
   $('in_state').value=S.client.state||''; $('in_zip').value=S.client.zip||''; $('in_page').value=S.client.page||''; $('in_sage').value=S.client.sage||''; $('in_date').value=S.client.date||''; $('in_sdob').value=S.client.sdob||''; $('in_address').value=S.client.address||'';
   $('in_phone').value=I.phone||''; $('in_email').value=I.email||'';
@@ -4883,7 +4924,7 @@ function presentScriptTokens(t){ var T=presentTokens(t), C=S.client||{}, I=S.int
   var m0=function(n){ return '$'+Math.round(+n||0).toLocaleString('en-US'); };
   var who=I.who||{}, hh=who.kids?'you and your family':who.spouse?'you and your spouse':'you'; T['client.household_to']='to '+hh; T['client.household_for']='for '+hh;
   T['agent.first']=((C.agent||'').trim().split(/\s+/)[0])||''; T['agent.phone']=S.agentPhone||''; T['agent.email']=S.agentEmail||'';
-  T['agent.website']=S.agentWebsite||''; T['agent.booking']=S.agentBooking||'';
+  T['agent.website']=S.agentWebsite||''; T['agent.card']=S.agentCard||''; T['agent.booking']=S.agentBooking||'';
   T['client.legal_name']=(C.pname||'').trim(); T['client.dob']=C.dob||C.date||''; T['client.phone']=I.phone||''; T['client.email']=I.email||'';
   var ht=parseInt(I.pheight,10); T['client.ht']=ht>=48&&ht<=84?Math.floor(ht/12)+'′'+(ht%12)+'″':''; T['client.wt']=I.pweight?String(I.pweight)+' lb':'';
   if(+S.aca.prem>0){ T['aca.premium']=m0(acaNetPrem()); T['aca.deductible']=m0(S.aca.ded); }
@@ -5301,7 +5342,8 @@ function bindInputs(){
   $('in_agency').addEventListener('input',function(){ captureIntake(); $('brandName').textContent=S.agency||'HealthFirst'; });
   $('in_aphone').addEventListener('input',function(){ this.value=fmtPhone(this.value); markValid(this,phoneOK(this.value)); captureIntake(); });
   $('in_aemail').addEventListener('input',function(){ markValid(this,emailOK(this.value)); captureIntake(); });
-  ['in_anpn','in_aweb','in_abook'].forEach(function(id){ $(id).addEventListener('input',function(){ captureIntake(); }); });
+  ['in_anpn','in_aweb','in_acard','in_abook'].forEach(function(id){ $(id).addEventListener('input',function(){ captureIntake(); }); });
+  if($('goatSkip')) $('goatSkip').onclick=function(){ try{ localStorage.setItem('pp_goat_skip','1'); }catch(e){} agentSetupFold(true); };
   $('c_date').addEventListener('input',function(){ this.value=fmtDate(this.value); markValid(this,dateOK(this.value)); compute(); });
   $('in_priority').addEventListener('change',function(){ readIntake(); autosave(); });
   medFdaLoad();

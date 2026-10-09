@@ -24,7 +24,17 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  applySuiteAgent({npn:'7654321'}); R.npnToSetup=S.agentNPN==='7654321'&&!/NPN/.test(S.intake.notes);
  R.setupOpenWhenMissing=$('agentSetup').open+' '+$('agentSetupState').textContent;
  $('in_agent').value='Jesse Stamm'; $('in_aphone').value='5550100'; $('in_aemail').value='j@x.com'; $('in_agency').value='Optimum'; captureIntake(); goStep('quote'); goStep('intake'); await w(100);
+ /* The fold used to wait on these four. It now waits on all eight (Jesse, 2026-10-09), so the
+    four alone must NOT fold it - that is the regression this line guards. */
+ R.stillOpenOnFourOfEight=$('agentSetup').open+' '+$('agentSetupState').textContent;
+ $('in_anpn').value='7654321'; $('in_aweb').value='x.com'; $('in_acard').value='x.com/card'; $('in_abook').value='x.com/book';
+ captureIntake(); goStep('quote'); goStep('intake'); await w(100);
  R.setupFoldedWhenComplete=!$('agentSetup').open+' '+$('agentSetupState').textContent;
+ $('in_aweb').value=''; $('in_acard').value=''; $('in_abook').value=''; captureIntake();
+ R.reopensWhenLinksGone=$('agentSetup').open;
+ $('goatSkip').click(); await w(50); R.foldsAfterGoatSkip=!$('agentSetup').open;
+ try{ localStorage.removeItem('pp_goat_skip'); }catch(e){}
+ $('in_aweb').value='x.com'; $('in_acard').value='x.com/card'; $('in_abook').value='x.com/book'; captureIntake();
  $('in_aemail').value=''; captureIntake(); R.reopensWhenEmailGone=$('agentSetup').open;
  var d=$('in_date'); d.focus(); d.value='63078'; d.dispatchEvent(new Event('input')); d.dispatchEvent(new Event('change')); R.dob=d.value+' age '+$('in_page').value;
  var b=$('in_budget'); b.focus(); b.value='1250'; b.dispatchEvent(new Event('input')); b.dispatchEvent(new Event('change',{bubbles:true})); await w(50); R.budget=b.value+' -> '+S.intake.budget;
@@ -33,10 +43,14 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  
  ok(R.billSaverOnOldSave,'Bill Saver ticked on an older quote'); ok(R.npnToSetup,'NPN goes to setup, out of the notes');
  ok(/^true · fill in: your name, phone, email/.test(R.setupOpenWhenMissing),'setup open while basics are missing: '+R.setupOpenWhenMissing);
- ok(/^true · (complete|fill in: NPN, website, booking link)$/.test(R.setupFoldedWhenComplete),'setup folds when complete: '+R.setupFoldedWhenComplete); ok(R.reopensWhenEmailGone,'setup reopens when email goes');
+ ok(/^true · fill in: NPN, website, digital business card, booking link$/.test(R.stillOpenOnFourOfEight),'setup stays open on four of eight: '+R.stillOpenOnFourOfEight);
+ ok(/^true · complete$/.test(R.setupFoldedWhenComplete),'setup folds when all eight are in: '+R.setupFoldedWhenComplete);
+ ok(R.reopensWhenLinksGone,'setup reopens when the links go');
+ ok(R.foldsAfterGoatSkip,'setup folds after the GOAT opt-out');
+ ok(R.reopensWhenEmailGone,'setup reopens when email goes');
  ok(/^06\\/30\\/1978 age \\d\\d$/.test(R.dob),'DOB 63078: '+R.dob); ok(R.budget==='$1,250.00 -> 1250','budget: '+R.budget);
  ok(R.curDed==='$6,000.00 -> 6000','deductible: '+R.curDed); ok(R.income==='$85,000.00 -> 85000','income: '+R.income);
- return {n:9, fails:fails}; })()`;
+ return {n:13, fails:fails}; })()`;
 
 try {
   let l; for (let i = 0; i < 60 && !l; i++) { await sleep(150); l = await fetch(`http://127.0.0.1:${DBG}/json/list`).then(r => r.json()).catch(() => null); }
