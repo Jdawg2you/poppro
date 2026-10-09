@@ -616,9 +616,10 @@
   .cele-float{position:fixed;bottom:12vh;pointer-events:none;z-index:9999;animation:celefloat 2.4s cubic-bezier(.2,.7,.3,1) forwards;filter:drop-shadow(0 4px 8px rgba(0,0,0,.18))}
   @keyframes celefloat{0%{transform:translateY(0) scale(.4) rotate(-8deg);opacity:0}15%{opacity:1;transform:translateY(-8vh) scale(1.1) rotate(6deg)}100%{transform:translateY(-70vh) scale(1) rotate(-4deg);opacity:0}}
   @keyframes celefade{0%{opacity:0}20%{opacity:1}100%{opacity:0}}
-  .cele-banner{position:fixed;left:50%;top:38%;transform:translate(-50%,-50%);z-index:10000;pointer-events:none;background:#12213b;color:#fff;border:2px solid #c69a3c;border-radius:18px;padding:18px 30px;font-family:var(--serif);font-size:30px;font-weight:700;box-shadow:0 18px 60px rgba(0,0,0,.35);animation:celebanner 3.4s ease forwards;text-align:center}
+  .cele-banner{position:fixed;left:50%;top:38%;transform:translate(-50%,-50%);z-index:10000;pointer-events:none;background:#12213b;color:#fff;border:2px solid #c69a3c;border-radius:18px;padding:18px 30px;font-family:var(--serif);font-size:clamp(20px,2.6vw,32px);font-weight:700;box-shadow:0 18px 60px rgba(0,0,0,.35);animation:celebanner 6.2s ease forwards;text-align:center;max-width:94vw;width:max-content;line-height:1.3}
+  .cele-banner .cele-l1,.cele-banner .cele-l2{display:block}.cele-banner .cele-who{white-space:nowrap;color:#f3d48a}
   .cele-banner small{display:block;font-family:-apple-system,sans-serif;font-size:14px;font-weight:600;color:#e9d6a6;margin-top:4px}
-  @keyframes celebanner{0%{opacity:0;transform:translate(-50%,-50%) scale(.6)}12%{opacity:1;transform:translate(-50%,-50%) scale(1.06)}20%{transform:translate(-50%,-50%) scale(1)}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-60%) scale(.98)}}
+  @keyframes celebanner{0%{opacity:0;transform:translate(-50%,-50%) scale(.6)}8%{opacity:1;transform:translate(-50%,-50%) scale(1.06)}14%{transform:translate(-50%,-50%) scale(1)}85%{opacity:1}100%{opacity:0;transform:translate(-50%,-60%) scale(.98)}}
   @media print{.cele-canvas,.cele-float,.cele-banner{display:none!important}}
   .picbar{display:flex;justify-content:flex-end;margin:10px 0 -4px}.picbtn{font:inherit;font-size:12.5px;font-weight:700;border:1px solid #c69a3c;background:#12213b;color:#fff;border-radius:999px;padding:6px 13px;cursor:pointer;box-shadow:0 1px 3px rgba(18,33,59,.25);white-space:nowrap;transition:background .15s}.picbtn:hover{background:#1c3a63}
   .en-hint{font-family:-apple-system,sans-serif;font-weight:400;font-size:12.5px;color:var(--muted)}
@@ -4613,6 +4614,13 @@ function presentTier(){ return chosenTier()||S.activeTab||'best'; }
 /* ===== Celebrations (Jesse, 9 Oct) ===== the wins get a moment: "They're enrolling" sets off a full-page confetti storm,
    choosing a plan floats a thumbs-up. Drawn on a throwaway canvas that ignores clicks and removes itself; reduced
    motion gets a short, still version. Never on the printout. */
+/* "Let's get Syed his Package of Protection!" - a family lists everyone (Jesse, 9 Oct) */
+function enrollCheer(){ var C=S.client||{}, I=S.intake||{}, w=I.who||{}, names=[];
+  var p=enSplit(C.pname)[0]; if(p) names.push(p); if(w.spouse||C.sname){ var sp=enSplit(C.sname)[0]; if(sp) names.push(sp); }
+  if(w.kids) (I.kids||[]).forEach(function(k){ var kn=enSplit(k&&k.n)[0]; if(kn) names.push(kn); });
+  var who=names.length>1?names.slice(0,-1).join(', ')+' &amp; '+names[names.length-1]:(names[0]||'them');
+  var pro=names.length>1?'their':(I.psex==='M'?'his':I.psex==='F'?'her':'their');
+  return '<span class="cele-l1">🎉 Let’s get <span class="cele-who">'+esc(who).replace(/&amp;amp;/g,'&amp;')+'</span></span><span class="cele-l2">'+pro+' Package of Protection!</span>'; }
 function celebrate(kind,label){ try{
   var still=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
   if(kind==='thumbs'){ var n=still?1:5;
@@ -4621,7 +4629,7 @@ function celebrate(kind,label){ try{
       document.body.appendChild(e); setTimeout(function(){ e.remove(); },2600+i*120); })(i);
     return; }
   /* confetti a go-go */
-  if(label){ var b=document.createElement('div'); b.className='cele-banner'; b.innerHTML=label; document.body.appendChild(b); setTimeout(function(){ b.remove(); },3600); }
+  if(label){ var b=document.createElement('div'); b.className='cele-banner'; b.innerHTML=label; document.body.appendChild(b); setTimeout(function(){ b.remove(); },6400); }
   if(still) return;
   var cv=document.createElement('canvas'), W=innerWidth, H=innerHeight, dpr=Math.min(2,window.devicePixelRatio||1);
   cv.className='cele-canvas'; cv.width=W*dpr; cv.height=H*dpr; document.body.appendChild(cv); var x=cv.getContext('2d'); x.scale(dpr,dpr);
@@ -4629,16 +4637,16 @@ function celebrate(kind,label){ try{
   var burst=function(x0,y0,ang,spread,n,sp){ for(var i=0;i<n;i++){ var a=ang+(Math.random()-.5)*spread, v=sp*(0.55+Math.random()*0.75);
       P.push({x:x0,y:y0,vx:Math.cos(a)*v,vy:Math.sin(a)*v,r:Math.random()*6.28,vr:(Math.random()-.5)*.35,w:6+Math.random()*8,h:4+Math.random()*7,c:COL[i%COL.length],
         e:Math.random()<.07?EMO[(Math.random()*EMO.length)|0]:null,s:Math.random()<.35,wob:Math.random()*6.28,life:1}); } };
-  burst(0,H,-1.05,0.9,170,19); burst(W,H,-2.09,0.9,170,19);                                  /* two cannons from the bottom corners */
-  setTimeout(function(){ burst(W/2,H*0.35,-1.57,6.28,160,13); },450);                        /* a starburst in the middle */
-  setTimeout(function(){ for(var k=0;k<5;k++) burst(Math.random()*W,-10,1.57,1.2,40,4); },900);  /* then it rains */
+  burst(0,H,-1.05,0.9,170,16); burst(W,H,-2.09,0.9,170,16);                                  /* two cannons from the bottom corners */
+  setTimeout(function(){ burst(W/2,H*0.35,-1.57,6.28,160,11); },500);                        /* a starburst in the middle */
+  [1000,2200,3400].forEach(function(ms){ setTimeout(function(){ for(var k=0;k<5;k++) burst(Math.random()*W,-10,1.57,1.2,34,3); },ms); });  /* then it rains, in waves */
   var t0=performance.now();
   (function step(now){ var dt=Math.min(32,now-(step.l||now))/16.7; step.l=now; x.clearRect(0,0,W,H);
-    P.forEach(function(p){ p.vy+=0.32*dt; p.vx*=0.985; p.vy*=0.985; p.x+=p.vx*dt+Math.sin(p.wob+=0.1*dt)*0.6; p.y+=p.vy*dt; p.r+=p.vr*dt; if(now-t0>3200) p.life-=0.02*dt;
+    P.forEach(function(p){ p.vy+=0.2*dt; p.vx*=0.985; p.vy*=0.982; p.x+=p.vx*dt+Math.sin(p.wob+=0.1*dt)*0.6; p.y+=p.vy*dt; p.r+=p.vr*dt; if(now-t0>6000) p.life-=0.014*dt;
       x.save(); x.globalAlpha=Math.max(0,p.life); x.translate(p.x,p.y); x.rotate(p.r);
       if(p.e){ x.font='22px serif'; x.fillText(p.e,-11,8); } else { x.fillStyle=p.c; if(p.s){ x.beginPath(); x.arc(0,0,p.w/2.4,0,6.28); x.fill(); } else { x.scale(1,Math.cos(p.wob)); x.fillRect(-p.w/2,-p.h/2,p.w,p.h); } }
       x.restore(); });
-    if(now-t0<5200) requestAnimationFrame(step); else cv.remove(); })(t0);
+    if(now-t0<9000) requestAnimationFrame(step); else cv.remove(); })(t0);
 }catch(e){} }
 /* LifeX and Cigna (Jesse, 9 Oct): Present plays the Manhattan script and Enroll is built around Manhattan, so a
    LifeX or Cigna plan gets a note instead of the script - the quote email and Enroll's data capture still work. */
@@ -4794,7 +4802,7 @@ function presentGo(pg){ var pages=presentPages(), nav=presentNav(), t=presentTie
     +(nx?'<button type="button" class="go" data-go="1">Next: '+esc(nx.next||nx.t)+' →</button>'
         :'<span style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" data-go="quote">Not today — send the quote ↩</button><button type="button" class="go" data-go="enroll">They’re in — Enroll them →</button></span>');
   $('prNav').querySelectorAll('[data-go]').forEach(function(b){ b.onclick=function(){ var g=b.dataset.go;
-    if(g==='enroll'){ var fn=enSplit(S.client.pname)[0]; celebrate('confetti','🎉 They’re in!'+(fn?'<small>Welcome aboard, '+esc(fn)+'</small>':'')); goStep('enroll'); }
+    if(g==='enroll'){ celebrate('confetti',enrollCheer()); goStep('enroll'); }
     else if(g==='quote'){ goStep('quote'); setTimeout(function(){ var q=$('sendQuote'); if(q) q.scrollIntoView({behavior:'smooth',block:'start'}); },60); }
     else presentGo(nav[pos+(+g)]); }; });
   window.scrollTo(0,0); }

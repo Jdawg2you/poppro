@@ -62,6 +62,7 @@ const TEST = `(async function(){
   var hasLbP=(S.packages[chosenTier()||S.activeTab].products||[]).some(function(p){ return p.k==='lbp'&&+p.monthly>0; });
   ok(enFieldsFor('p').some(function(f){ return f[0]==='Living benefits policy #'; })===hasLbP,'living-benefits policy # appears in the applicant block exactly when they have living benefits');
   enWrite('i:lbPolicyP','LB12345'); ok(S.intake.lbPolicyP==='LB12345','the policy # saves with the quote'); S.intake.lbPolicyP='';
+  ok(/Let’s get .*Package of Protection!/.test(enrollCheer())&&!/They’re in/.test(enrollCheer()),'the Enroll banner says Let’s get <names> their Package of Protection');
   ok(!!document.getElementById('sqDate')&&!!document.getElementById('sqTime')&&!!document.getElementById('sqPdf')&&document.querySelectorAll('#sendQuote .sqstep').length===3,'Send the quote has its three steps');
   ok(!document.querySelector('#printout .brlist')&&document.getElementById('brochBox').classList.contains('hidein-client'),'the brochure box stays off the printout and Client View');
   buildPrintout(); ok(!document.querySelector('#printout [data-copypic]')&&!/Copy (plans|example|picture)/.test(document.getElementById('printout').textContent),'no copy button inside the printout / emailed quote');
