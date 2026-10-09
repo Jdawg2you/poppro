@@ -43,6 +43,9 @@ const TEST = `(async function(){
   ok(BA.t==='all'&&BA.list.length>=BG.list.length&&BG.list.every(function(b){ return BA.list.some(function(x){ return x.url===b.url; }); })&&BG.t==='good','no plan marked -> brochures for every plan shown; a marked plan -> only its own');
   ok(document.getElementById('brochBox').style.display!=='none'&&document.querySelectorAll('#brochBox .brlist a').length===BL.list.length,'Quote page shows Brochures for this plan, one link each');
   ok(BL.list.every(function(b){ return buildEmail().body.indexOf(b.url)>0; }),'the quote email lists every brochure link');
+  var kq=S.sendq; S.sendq={appt:'tomorrow at 6:00 pm',pdf:true}; var e1=buildEmail().body; S.sendq={}; var e2=buildEmail().body; S.sendq=kq;
+  ok(/Let’s talk tomorrow at 6:00 pm[.]/.test(e1)&&/^Attached is your/m.test(e1)&&/I’ll follow up with you in the next day or two/.test(e2)&&!/Attached/.test(e2),'quote email: follow-up time and PDF-saved tick change the wording; blank falls back to the generic lines');
+  ok(!!document.getElementById('sqAppt')&&!!document.getElementById('sqPdf')&&document.querySelectorAll('#sendQuote .sqstep').length===3,'Send the quote has its three steps');
   ok(!document.querySelector('#printout .brlist')&&document.getElementById('brochBox').classList.contains('hidein-client'),'the brochure box stays off the printout and Client View');
   buildPrintout(); ok(!document.querySelector('#printout [data-copypic]')&&!/Copy (plans|example|picture)/.test(document.getElementById('printout').textContent),'no copy button inside the printout / emailed quote');
   var cps=Array.prototype.slice.call(document.querySelectorAll('[data-copypic]')); ok(cps.length>=3&&cps.every(function(b){ return !!b.closest('.noprint')&&!!b.closest('.hidein-client'); }),'every copy button is screen-only: hidden on print and in Client View ('+cps.length+')');

@@ -603,6 +603,7 @@
   .afc-picbtn{position:absolute;right:0;top:16px}@media(max-width:820px){.afc-picbtn{position:static;margin:0 0 8px}}
   .presentbtn{font:inherit;font-size:14px;font-weight:800;border-radius:999px;padding:9px 18px;cursor:pointer;border:none;background:#2f7d4a;color:#fff}.presentbtn:hover{background:#286b40}.presentbtn i{font-family:var(--serif);font-weight:700}
   .picbtn.sendbtn{display:inline-flex;align-items:center;gap:7px;font-size:13.5px;padding:9px 14px;margin:0 7px 0 0;text-decoration:none}.picbtn.sendbtn svg{background:#fff;border-radius:4px;padding:2px;box-sizing:content-box}
+  .sqsteps{display:grid;gap:10px;margin-top:8px}.sqstep{display:flex;gap:12px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fffdf7}.sqn{flex:0 0 26px;height:26px;border-radius:50%;background:var(--navy);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:13px}.sqbody{flex:1;min-width:0}.sqbody b{color:var(--navy)}.sqbody small{display:block;color:var(--muted);font-size:12px;margin-top:1px}#sqAppt{margin-top:6px;width:100%;max-width:440px;font:inherit;font-size:14px;padding:8px 10px;border:1px solid var(--line);border-radius:8px}.sqchk{font-size:13.5px;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:6px;cursor:pointer}.sqchk input{width:17px;height:17px}
   .brlist{list-style:none;margin:10px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:6px 18px}.brlist li{display:flex;align-items:baseline;gap:8px;padding:6px 0;border-bottom:1px dotted var(--line)}.brlist a{font-weight:700;color:var(--navy)}.brlist small{color:var(--muted);font-size:11px;white-space:nowrap}.brlist .brone{margin-left:auto;font:inherit;font-size:11.5px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:2px 9px;cursor:pointer;color:var(--navy);white-space:nowrap;flex:0 0 auto}
   .bdbroch{display:block;margin:10px 0 0;font-weight:700;color:var(--navy)}
   .picbar{display:flex;justify-content:flex-end;margin:10px 0 -4px}.picbtn{font:inherit;font-size:12.5px;font-weight:700;border:1px solid #c69a3c;background:#12213b;color:#fff;border-radius:999px;padding:6px 13px;cursor:pointer;box-shadow:0 1px 3px rgba(18,33,59,.25);white-space:nowrap;transition:background .15s}.picbtn:hover{background:#1c3a63}
@@ -1244,14 +1245,20 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
   <div class="card pad hidein-client" id="sendQuote">
     <div class="sectitle"><span class="dot">●</span> Send the quote</div>
     <div class="note" style="padding-top:2px">Not enrolling today? Send them this quote — email it, or print / save it as a PDF.</div>
-      <div style="margin-top:4px;display:flex;flex-wrap:wrap;align-items:center;gap:8px 0">
+      <div class="sqsteps">
+        <div class="sqstep"><span class="sqn">1</span><div class="sqbody"><b>When is your follow-up?</b> <small>Optional — the email names it. Leave it blank and the email says you’ll follow up in the next day or two.</small>
+          <input type="text" id="sqAppt" placeholder="e.g. tomorrow at 6:00 pm  ·  Thursday 10/10 at 11 am" autocomplete="off"></div></div>
+        <div class="sqstep"><span class="sqn">2</span><div class="sqbody"><b>Print / save the PDF to attach.</b> <small>Save it, then tick the box — the email says “attached” only once you have.</small>
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:6px"><button class="picbtn sendbtn" id="printBtn2">&#128424; Print / PDF Quote</button><label class="sqchk"><input type="checkbox" id="sqPdf"> PDF saved — I’ll attach it</label></div></div></div>
+        <div class="sqstep"><span class="sqn">3</span><div class="sqbody"><b>Send it from your email.</b>
+          <div style="margin-top:6px;display:flex;flex-wrap:wrap;align-items:center;gap:8px 0">
         <a class="picbtn sendbtn" id="gmailBtn" href="#" target="_blank" rel="noopener"><svg width="16" height="13" viewBox="0 0 256 193" xmlns="http://www.w3.org/2000/svg" style="flex:0 0 auto"><path fill="#4285F4" d="M58.182 192.05V93.14L27.507 65.077 0 49.504v125.09c0 9.658 7.825 17.455 17.455 17.455z"/><path fill="#34A853" d="M197.818 192.05h40.727c9.659 0 17.455-7.826 17.455-17.455V49.505l-31.156 17.837-27.026 25.798z"/><path fill="#EA4335" d="M58.182 93.14L128 145.504l69.818-52.364V17.504L128 69.868 58.182 17.504z"/><path fill="#FBBC04" d="M197.818 17.504V93.14L256 49.504V26.31c0-21.585-24.64-33.89-41.89-20.945z"/><path fill="#C5221F" d="M0 49.504l58.182 43.636V17.504L41.89 5.366C24.61-7.58 0 4.726 0 26.31z"/></svg> Email to client — Gmail</a>
         <a class="picbtn sendbtn" id="outlookBtn" href="#" target="_blank" rel="noopener"><svg width="15" height="15" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="flex:0 0 auto"><path fill="#0078D4" d="M7.88 12.04q0 .45-.11.87-.1.41-.32.74-.21.33-.53.53-.31.2-.74.2t-.75-.2-.53-.53-.32-.74-.1-.87q0-.46.1-.88.11-.41.32-.74.21-.33.53-.52.32-.2.75-.2t.74.2q.32.19.53.52.22.33.32.74.11.42.11.88zM24 12v9.38q0 .46-.33.8-.33.32-.8.32H7.13q-.46 0-.8-.33-.32-.33-.32-.8V18H1q-.41 0-.7-.3-.3-.29-.3-.7V7q0-.41.3-.7Q.58 6 1 6h6V2.62q0-.46.33-.8.33-.32.8-.32h14.74q.46 0 .8.33.33.33.33.8zM6.5 7.87q-.03-.5-.32-.87H1v9.5h5.5v-.87q-.03-.05-.06-.08l-.02-.02q-.63-.55-1.03-1.34-.4-.79-.4-1.68 0-.9.4-1.68.4-.79 1.03-1.35l.02-.02.06-.07V7.87zm16.5 5.6L24 12l-1-.53v9.91q.53-.06.53-.6z"/></svg> Email to client — Outlook</a>
         <a class="picbtn sendbtn" id="emailBtn" href="#">✉️ Email to client</a>
-        <button class="picbtn sendbtn" id="printBtn2">&#128424; Print / PDF Quote</button>
         <button type="button" class="presentbtn noprint" id="presentBtn2" onclick="presentOpen()" style="margin-left:auto">▶ Present a plan</button>
+          </div></div></div>
       </div>
-      <div class="note hidein-client" style="padding-top:10px;font-size:13.5px;line-height:1.5">“Email to client” uses your computer’s default mail app; “Gmail” / “Outlook” open the web compose window with everything filled in (no setup needed). Then click “Print Quote,” save the PDF, and attach it. (Email to client also copies the letter to your clipboard as a backup.)</div>
+      <div class="note hidein-client" style="padding-top:10px;font-size:13.5px;line-height:1.5">“Gmail” / “Outlook” open the web compose window with everything filled in (no setup needed); “Email to client” uses your computer’s default mail app and also copies the letter to your clipboard as a backup. Attach the PDF you saved in step 2.</div>
   </div>
   <div class="card pad hidein-client noprint" id="brochBox" style="display:none"></div>
 
@@ -1346,7 +1353,7 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
       </ul>
       <h4>Not today · Send the quote</h4>
       <ul>
-        <li>At the bottom of Quote: <b>Gmail</b>, <b>Outlook</b> or <b>Email to client</b> (your mail app) writes the email for you, with their plan's brochure links. Then <b>Print / PDF Quote</b>, save the PDF and attach it.</li>
+        <li>At the bottom of Quote, three steps. <b>1</b> Type the follow-up time if you set one ("tomorrow at 6:00 pm"); the email names it, and if it's blank the email says you'll follow up in the next day or two. <b>2</b> <b>Print / PDF Quote</b>, save it, and tick <b>PDF saved</b> so the email says "attached". <b>3</b> <b>Gmail</b>, <b>Outlook</b> or <b>Email to client</b> writes the email: the plan you landed on, what it saves on premiums plus the deductible they'd avoid, their brochure links, your booking link and your signature with your National Producer Number.</li>
       </ul>
       <h4>4 · Enroll, in call order</h4>
       <ul>
@@ -2277,7 +2284,7 @@ function enrollEmail(){ var L=brochList(), first=((S.client.pname||'').trim().sp
     +(L.list.length?'So you have everything in one place, here are the brochures for each part of your plan:\n'+brochLines(L)+'\n\n':'')
     +'I’ll be reaching out over the next few days with an update.'+(book?' If anything comes up before then, you can book a time to reconnect here: '+book+' — or just call or text me.':' If anything comes up before then, just call or text me.')+'\n\n'
     +'And know that I’m your agent for life. Insurance can be a lot to navigate, and that’s my job — whenever you have a question, a claim or a change in your life, I’m the person to call.\n\n'
-    +'Best,\n'+(agent||agency)+(agent&&agency?'\n'+agency:'')+(S.agentPhone?'\n'+S.agentPhone:'')+(S.agentEmail?'\n'+S.agentEmail:'')+(site?'\n'+site:'');
+    +'Best,\n'+(agent||agency)+(agent&&agency?'\n'+agency:'')+(S.agentPhone?'\n'+S.agentPhone:'')+(S.agentEmail?'\n'+S.agentEmail:'')+(site?'\n'+site:'')+(String(S.agentNPN||'').trim()?'\nNational Producer Number: '+String(S.agentNPN).trim():'');
   return {to:(S.intake&&S.intake.email)||'',subject:'Your new coverage! (+ your plan brochures)',body:body,L:L}; }
 function renderEnBroch(){ var host=$('enBrochHost'); if(!host) return; if(!BROCH){ brochLoad().then(function(d){ if(d) renderEnBroch(); }); return; }
   var m=enrollEmail(); if(!m.L.list.length){ host.innerHTML=''; return; }
@@ -3710,6 +3717,7 @@ function compute(){
   if($('popScoreBody')) renderPopScore();
   if($('afcPartners')){ var ap=renderAfcPartnersHTML(false); $('afcPartners').innerHTML=ap; }
   renderBrochBox();
+  (function(){ var a=$('sqAppt'), p=$('sqPdf'), Q=S.sendq||{}; if(a&&document.activeElement!==a) a.value=Q.appt||''; if(p) p.checked=!!Q.pdf; })();   /* a loaded quote brings its own steps */
   if(S.step==='enroll') renderEnroll();
   autosave();
 }
@@ -4957,18 +4965,34 @@ function goStep(s){
 
 function buildEmail(){
   read();
-  var to=(S.intake&&S.intake.email)||'';
+  var to=(S.intake&&S.intake.email)||'', Q=S.sendq||{};
   var first=((S.client.pname||'').trim().split(/\s+/)[0])||'there';
-  var agent=(S.client.agent||'').trim();
-  var agency=(S.agency||'HealthFirst').trim();
-  var today=new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
-  var subj='Your Healthcare Package of Protection by '+agency+(agent?(', '+agent):'');
-  var sign='Best,\n'+(agent||agency)+(agent&&agency?('\n'+agency):'')+'\n'+today;
+  var agent=(S.client.agent||'').trim(), agency=(S.agency||'').trim(), book=String(S.agentBooking||'').trim(), site=String(S.agentWebsite||'').trim();
+  var m0=function(n){ return '$'+Math.round(+n||0).toLocaleString('en-US'); };
+  var subj='Your Healthcare Package of Protection'+(first!=='there'?', '+first:'');
+  /* what we compare against (Jesse's anchor), how many plans, and the marked plan */
+  var B=anchorBase(), ap=B?(B.k==='aca'?'the marketplace plan':'your current plan'):'';
+  var n=['good','better','best'].filter(function(x){ return (S.include||{})[x]!==false&&((S.packages||{})[x]||{}).products; }).length;
+  var opts=n>=3?'the three options':n===2?'the two options':'the plan';
+  var ch=chosenTier(), save='';
+  if(ch){ save='The '+TIER_NAME[ch]+' plan is the one we landed on';
+    var tt=tierTotals(ch), prem=tt.mo-(+tt.pk.med||0), mo=B?(+B.premOnly||0)-prem:0;
+    /* premiums alone, then the deductible they would not carry: one person's, as the examples count it (Jesse, 9 Oct) */
+    var EA=B?evAnchor():null, ded=EA&&EA.ded?+EA.ded:(B&&B.k==='cur'?+curIn().ded||0:0);
+    if(mo>=1){ save+=', and its premiums alone will save you about '+m0(mo)+' a month — '+m0(mo*12)+' over a year.';
+      if(ded>0) save+=' Not to mention you wouldn’t have '+(B.k==='aca'?'the marketplace plan’s':'your current plan’s')+' '+m0(ded)+' deductible, so for the year you have the potential of saving about '+m0(mo*12+ded)+' on your basic coverage alone if anything out of the ordinary happens.'; }
+    else save+='.'+(ded>0&&B?' And you wouldn’t be carrying '+(B.k==='aca'?'the marketplace plan’s':'your current plan’s')+' '+m0(ded)+' deductible.':''); }
+  var L=brochList();
   var body='Hi '+first+',\n\n'
-    +'Thank you for your time today. Attached is your Healthcare Package of Protection — a side-by-side comparison of the current marketplace option that would best suit your needs and the options we recommend and spoke about previously.\n\n'
-    +'The attached PDF has the full breakdown, including your out-of-pocket savings versus the current marketplace option available to you. Reply here or give me a call with any questions — I\'m happy to walk through it.\n\n'
-    +(function(){ var L=brochList(); return L.list.length?(L.t==='all'?'The brochures for each part of these plans, if you’d like the full details:\n':'The brochures for the '+(TIER_NAME[L.t]||'')+' plan, if you’d like the full details:\n')+brochLines(L)+'\n\n':''; })()
-    +sign;
+    +'Thanks for your time today. As promised, here’s everything to look over.\n\n'
+    +(Q.pdf?'Attached is your Healthcare Package of Protection. It puts ':'Your Healthcare Package of Protection puts ')
+    +(ap?ap+' side by side with '+opts+' we talked through':opts+' we talked through side by side')+', and shows what each one costs you per month and what happens in a real hospital stay.'+(save?' '+save:'')+'\n\n'
+    +(L.list.length?(L.t==='all'?'The brochures for each part of these plans, if you’d like the full details:\n':'The brochures for the '+(TIER_NAME[L.t]||'')+' plan, if you’d like the full details:\n')+brochLines(L)+'\n\n':'')
+    +(String(Q.appt||'').trim()
+      ?'Let’s talk '+String(Q.appt).trim()+'. I’ll answer any questions and we can get your application in then.'+(book?' If that time no longer works, grab another one here: '+book:'')
+      :'I’ll follow up with you in the next day or two to answer any questions and get your application in.'+(book?' If you’d rather pick a time that suits you, grab one here: '+book:''))+'\n\n'
+    +'Reply here, or call or text me any time.\n\n'
+    +(agent||agency)+(agent&&agency?'\n'+agency:'')+(S.agentPhone?'\n'+S.agentPhone:'')+(S.agentEmail?'\n'+S.agentEmail:'')+(site?'\n'+site:'')+(String(S.agentNPN||'').trim()?'\nNational Producer Number: '+String(S.agentNPN).trim():'');
   return {to:to,subject:subj,body:body};
 }
 
@@ -5103,6 +5127,9 @@ function bindInputs(){
   $('outlookBtn').onclick=function(e){ e.preventDefault(); var m=buildEmail();
     window.open('https://outlook.office.com/mail/deeplink/compose?to='+encodeURIComponent(m.to)+'&subject='+encodeURIComponent(m.subject)+'&body='+encodeURIComponent(m.body),'_blank','noopener');
   };
+  /* Send the quote, steps 1-2: the follow-up time and "PDF saved" shape the email (Jesse, 9 Oct) */
+  (function(){ var a=$('sqAppt'), p=$('sqPdf'); if(!a||!p) return; S.sendq=S.sendq||{}; a.value=S.sendq.appt||''; p.checked=!!S.sendq.pdf;
+    a.oninput=function(){ S.sendq=S.sendq||{}; S.sendq.appt=a.value; autosave(); }; p.onchange=function(){ S.sendq=S.sendq||{}; S.sendq.pdf=p.checked; autosave(); }; })();
   $('printBtn2').onclick=function(){ buildPrintout(); var prev=document.title; document.title=printDocName(); window.print(); setTimeout(function(){ document.title=prev; },800); };
   $('addProd').onclick=function(){ S.packages[S.activeTab].products.push({name:'',monthly:0,manual:true}); renderProducts(); compute();
     var sels=document.querySelectorAll('#prodlist select.pick'); if(sels.length) sels[sels.length-1].focus(); };
