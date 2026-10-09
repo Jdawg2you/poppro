@@ -147,6 +147,9 @@ const TEST = `(async function(){
   var lpr=S.packages.best.products.filter(function(p){ return p.k==='lbp'; })[0];
   ok(lpr&&lpr.monthly===52.1&&lpr.name.indexOf('$100K (Corebridge QoL Flex)')>=0&&effCfg('best').lb.p.otherName==='Corebridge QoL Flex','script Other writes the builder setting: '+(lpr&&lpr.name));
   cs=d.querySelector('[data-lb="lb.p.carrier"]'); cs.value='americo'; cs.dispatchEvent(new Event('change')); await wait(60);
+  /* Americo has no $100K rate yet: the person shows unpriced with a note rather than a guessed price */
+  ok(!S.packages.best.products.some(function(p){ return p.k==='lbp'&&+p.monthly>0; }),'Americo at $100K: not priced (rate not loaded), nothing guessed');
+  var fz=d.querySelector('[data-lb="lb.p.face"]'); fz.value='50000'; fz.dispatchEvent(new Event('change')); await wait(60);
   /* Present ends at the close: Enroll or send the quote */
   var nav=presentNav(); presentGo(nav[nav.length-1]); await wait(30);
   ok(pages[nav[nav.length-1]].t==='Pick your close','Present ends on Pick your close');
