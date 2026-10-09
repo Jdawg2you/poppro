@@ -32,6 +32,8 @@ const TEST = `(async function(){
   chooseTier('best'); var pb=document.querySelector('[data-act="present"]'); ok(!!pb,'Present button on the Quote step'); pb.click();
   var fr; for(var i=0;i<60;i++){ await wait(100); fr=document.getElementById('prFrame'); if(fr&&fr.contentDocument&&fr.contentDocument.querySelector('var.pp-ok')) break; }
   ok(S.step==='present','Present step opens');
+  var g8=document.querySelector('#clientStrip .grid8'); ok(getComputedStyle(g8).display==='none'&&/Pat/.test(document.getElementById('csSum').textContent),'client strip folds to one line on Present');
+  document.getElementById('csCaret').click(); ok(getComputedStyle(g8).display==='grid','caret pins it open'); document.getElementById('csCaret').click(); ok(getComputedStyle(g8).display==='none','caret folds it again');
   ok(/^Presenting the Comprehensive plan to Pat$/.test(document.querySelector('.pr-top h3').innerText)&&!!document.querySelector('.pr-top h3 .pr-plan'),'title: Presenting the *Comprehensive* plan to Pat'); var d=fr.contentDocument;
   /* screens */
   var pages=presentPages(), shown=function(){ return Array.prototype.filter.call(d.body.children,function(e){ return e.style.display!=='none'&&e.dataset.pg!=null; }); };

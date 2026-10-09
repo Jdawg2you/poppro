@@ -57,6 +57,17 @@
   .fld label{display:block;font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
   .fld input{width:100%;padding:8px 9px;border:1px solid var(--line);border-radius:8px;background:#fbfaf6;font:inherit}
   .clientbar .fld label{color:#b7c3da}
+  /* Present step: the strip folds to one line for room; hover the header or the strip to open it, the caret pins it */
+  .cs-sum{display:none;align-items:center;justify-content:space-between;gap:10px;color:#dbe3f1;font-size:13px}
+  .cs-sum #csSum{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #csCaret{flex:none;background:#22406b;border:1px solid #38578a;color:#fff;border-radius:8px;width:30px;height:26px;cursor:pointer;font-size:13px}
+  body.step-present .clientbar{padding:8px 18px}
+  body.step-present .cs-sum{display:flex}
+  body.step-present .clientbar:not(.pinned) .grid8,body.step-present .clientbar:not(.pinned) .note{display:none}
+  body.step-present .brandbar:hover + .clientbar .grid8,body.step-present .clientbar:hover .grid8{display:grid}
+  body.step-present .brandbar:hover + .clientbar .grid8{margin-top:8px}body.step-present .clientbar:hover .grid8{margin-top:8px}
+  body.step-present .clientbar.pinned #csCaret{transform:rotate(180deg)}
+  body.step-present .clientbar.pinned .grid8{margin-top:8px}
   .clientbar .fld input{background:#22406b;border-color:#38578a;color:#fff}
   .clientbar .fld input::placeholder{color:#8fa1c2}
   .tabs{display:flex;border-bottom:2px solid var(--line)}
@@ -832,6 +843,7 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
   </div>
 
   <div class="clientbar" id="clientStrip">
+    <div class="cs-sum noprint"><span id="csSum"></span><button type="button" id="csCaret" aria-expanded="false" title="Show the client details (or hover the header)">▾</button></div>
     <div class="grid8">
       <div class="fld"><label>Primary name</label><input id="c_pname" readonly></div>
       <div class="fld"><label>Spouse name</label><input id="c_sname" readonly></div>
@@ -4733,11 +4745,17 @@ function presentShow(where){ S.present=S.present||{}; S.present.returning=true; 
   setTimeout(function(){ var el=where==='cmp'?document.querySelector('#printout .po-cmp'):where==='ev'?document.querySelector('#printout .po-evpage'):document.querySelector('#printout .po-head');
     if(el){ var r=el.getBoundingClientRect(); document.scrollingElement.scrollTop+=r.top-20; } },60); }
 function presentBack(){ var b=$('presentBack'); if(b) b.style.display='none'; if(S.present) S.present.returning=false; setView('agent'); goStep('present'); }
+function clientStripSum(){ var el=$('csSum'), cs=$('clientStrip'); if(!el||!cs) return; var C=S.client||{};
+  var who=[C.pname,C.sname].filter(function(x){ return String(x||'').trim(); }).join(' & ')||'No client yet';
+  var ages=[C.page,C.sage].filter(Boolean).join(' / ');
+  el.textContent=[who,[C.state,C.zip].filter(Boolean).join(' '),ages?'ages '+ages:'',C.dob||C.date?'DOB '+(C.dob||C.date):'',C.agent?'Agent '+C.agent:''].filter(Boolean).join('  ·  ');
+  cs.classList.toggle('pinned',!!(S.present&&S.present.stripOpen)); var cb=$('csCaret'); if(cb) cb.setAttribute('aria-expanded',String(!!(S.present&&S.present.stripOpen))); }
 function goStep(s){
   S.step=s;
   document.querySelectorAll('.step').forEach(function(el){el.classList.toggle('on',el.id==='step-'+s);});
   document.querySelectorAll('#stepper button').forEach(function(b){b.classList.toggle('on',b.dataset.step===s);});
   var cs=$('clientStrip'); if(cs) cs.style.display=(s==='intake')?'none':'';
+  document.body.classList.toggle('step-present',s==='present'); clientStripSum();
   if(s==='intake') fillIntake();
   if(s==='enroll') renderEnroll();
   if(s==='present') renderPresent();
@@ -4828,6 +4846,7 @@ function bindInputs(){
   $('c_date').addEventListener('input',function(){ this.value=fmtDate(this.value); markValid(this,dateOK(this.value)); compute(); });
   $('in_priority').addEventListener('change',function(){ readIntake(); autosave(); });
   medFdaLoad();
+  $('csCaret').onclick=function(){ S.present=S.present||{}; S.present.stripOpen=!S.present.stripOpen; clientStripSum(); autosave(); };
   /* "paying right now": ticks itself as a premium is typed, until the agent sets it by hand */
   $('in_cur_paying').addEventListener('change',function(){ this.dataset.touched='1'; captureIntake(); });
   $('in_cur_prem').addEventListener('input',function(){ var b=$('in_cur_paying'); if(!b.dataset.touched&&curIn().paying!==false&&moneyNum(this.value)>0&&!b.checked){ b.checked=true; captureIntake(); } });
