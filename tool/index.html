@@ -125,6 +125,7 @@
   .savegrid.green .c.l{font-weight:600}
   .savegrid.green .c.money{text-align:center;font-weight:800;color:var(--green);font-family:var(--serif);font-variant-numeric:tabular-nums}
   .plainband{background:var(--navy);color:#fff;font-family:var(--serif);font-weight:700;padding:10px 14px;border-radius:10px;letter-spacing:.02em;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+  .plainband .bandr{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-left:auto}.picbtn.onnavy{font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;letter-spacing:0;background:#c69a3c;color:#12213b;border-color:#d8b25a;box-shadow:none}.picbtn.onnavy:hover{background:#d8b25a}
   .plainband .desc{background:#22406b;border:1px solid #38578a;color:#fff;border-radius:8px;padding:4px 10px;font-family:-apple-system,sans-serif;font-weight:400;font-size:13px}
   .claim{border:1px solid var(--line);border-top:none;border-radius:0 0 10px 10px;overflow:hidden}
   .moneypair{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--line2)}
@@ -1222,13 +1223,13 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
   </div>
 
   <div class="card pad">
-    <div class="plainband">Example 1 <span class="desc" id="ev0_desc_h"></span></div>
+    <div class="plainband">Example 1 <span class="bandr"><span class="desc" id="ev0_desc_h"></span><button type="button" class="picbtn onnavy hidein-client noprint" data-copypic="ev0">📋 Copy example</button></span></div>
     <div class="claim hidein-client" id="ev0_editor"></div>
     <div id="evOut0" class="evwrap"></div>
   </div>
 
   <div class="card pad">
-    <div class="plainband">Example 2 <span class="desc" id="ev1_desc_h"></span></div>
+    <div class="plainband">Example 2 <span class="bandr"><span class="desc" id="ev1_desc_h"></span><button type="button" class="picbtn onnavy hidein-client noprint" data-copypic="ev1">📋 Copy example</button></span></div>
     <div class="claim hidein-client" id="ev1_editor"></div>
     <div id="evOut1" class="evwrap"></div>
   </div>
@@ -5268,7 +5269,7 @@ function evTableHTML(i,opt){ var O=opt||{}, tiers=O.tiers?EV_TIERS.filter(functi
   var cols=(A?1:0)+res.length, h='<div class="evbill"><span>This event costs</span>'+(billed?'<b class="was">'+fmt2(billed)+'</b><i class="arr">→</i>':'')+'<b>'+fmt2(bill)+'</b>'+(billed?'<em>network price — every plan pays this, not the sticker price</em>':'')+(negB!=null?'<i class="arr">→</i><b class="neg">'+fmt2(negB)+'</b><em>with Medical Bill Saver (CareGuide), Manhattan packages</em>':'')+'<small>'+head+'</small>'+(negA(bill)?'<small class="printonly negfine">Medical Bill Saver (CareGuide): illustrated at '+S.negot.pct+'% off the network price on the Manhattan packages; CareGuide states savings are not guaranteed.</small>':'')+'</div>'+((O.neg||negOn(i))&&!negA(bill)?'<div class="evneg off">Medical Bill Saver is for bills over '+fmt(+S.negot.min||2500)+' — this one is not negotiated.</div>':'')+(negA(bill)?'<div class="evneg"><b>Medical Bill Saver (CareGuide) is on.</b><span class="ex"> On the Manhattan packages, ManhattanLife’s care-negotiation service (CareGuide) works the bill down before you pay it — illustrated here at '+S.negot.pct+'%. The plan still pays its full benefits, so more of that money stays with you.</span><span class="printonly" style="display:none"> CareGuide negotiates the bill down; the plan still pays in full.</span><small>Illustration: assumes a '+S.negot.pct+'% reduction. CareGuide states savings are not guaranteed.</small></div>':'')+'<div class="evtab'+((O.open||(S.evOpen||{})[i])?' open':'')+'" style="grid-template-columns:var(--evlab,minmax(120px,1.1fr)) repeat('+cols+',1fr)">';
   /* the corner: on Quote it holds the picture button; in the picture itself it names the example instead */
   var exName=sc.desc||sc.label||(EV_SCENARIOS.filter(function(x){ return x.id===sc.id; })[0]||{}).desc||'';
-  h+='<div class="c l evcorner">'+(O.pic?(exName?'<b class="evname">'+esc(exName)+'</b>':''):(!O.sc&&!O.noBtn?'<button type="button" class="picbtn evpic hidein-client noprint" data-copypic="ev'+i+'">📋 Copy example</button>':''))+'</div>'+(A?'<div class="c h anc">'+A.lab+'</div>':'')+res.map(function(x){ return '<div class="c h">'+x.T[1]+'</div>'; }).join('');
+  h+='<div class="c l evcorner">'+(O.pic?(exName?'<b class="evname">'+esc(exName)+'</b>':''):'')+'</div>'+(A?'<div class="c h anc">'+A.lab+'</div>':'')+res.map(function(x){ return '<div class="c h">'+x.T[1]+'</div>'; }).join('');
   h+='<div class="c l evtog" data-evtog="'+i+'" role="button" tabindex="0"><span class="car">▸</span> Your plan pays<small class="noprint">click to see why</small></div>'+(A?'<div class="c anc">'+fmt2(Math.max(0,bill-aOwe))+'<small>toward the bill</small></div>':'')
     +res.map(function(x){ return '<div class="c">'+(x.o.unknown&&!x.r.pays?'—':fmt2(x.r.pays+(x.o.major?Math.max(0,bill-x.r.owe0):0)))+'<small>'+(x.o.major?'plan + cash benefits':'paid to you')+'</small></div>'; }).join('');
   /* Itemised: what each benefit pays and why - behind the caret on screen, always shown in print. */

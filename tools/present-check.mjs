@@ -33,7 +33,7 @@ const TEST = `(async function(){
   var fr; for(var i=0;i<60;i++){ await wait(100); fr=document.getElementById('prFrame'); if(fr&&fr.contentDocument&&fr.contentDocument.querySelector('var.pp-ok')) break; }
   var pblob2=null; goStep('quote'); await wait(200); ok(!!document.querySelector('.bh [data-copypic="plans"]'),'Copy plans button on the Package builder');
   pblob2=await picOf('plans'); ok(pblob2&&pblob2.type==='image/png'&&pblob2.size>50000&&getComputedStyle(document.getElementById('printout')).display==='none','the three plans render to a PNG and the page is left as it was');
-  var eb=document.querySelector('.evtab .evcorner [data-copypic="ev0"]'); ok(!!eb,'Copy example button sits in the corner of the Quote example table');
+  var eb=document.querySelector('.plainband [data-copypic="ev0"]'); ok(!!eb&&!document.querySelector('.evtab [data-copypic]'),'Copy example sits top right in the Example header bar, not in the table');
   var ebl=await picOf('ev0'); ok(ebl&&ebl.type==='image/png'&&ebl.size>50000,'the Quote example renders to a PNG');
   var etmp=document.createElement('div'); etmp.innerHTML=evTableHTML(0,{open:true,pic:true}); var en=etmp.querySelector('.evcorner .evname'); ok(en&&!etmp.querySelector('.evcorner button')&&en.textContent===(S.ev[0].desc||S.ev[0].label||en.textContent),'in the picture the corner names the example instead of the button');
   buildPrintout(); ok(!document.querySelector('#printout [data-copypic]')&&!/Copy (plans|example|picture)/.test(document.getElementById('printout').textContent),'no copy button inside the printout / emailed quote');
