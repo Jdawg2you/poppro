@@ -118,6 +118,8 @@ const TEST = `(async function(){
   S.negot.on=false; presentGo(presentPageIx('Catastrophic — walk it as layers')); await wait(60);
   var mc=d.querySelector('[data-mount="conditions"]'), tab=mc&&mc.querySelector('.evtab');
   ok(!!tab&&tab.classList.contains('open')&&mc.closest('details').open,'catastrophic: real event card, layers open');
+  ok(!!mc.querySelector('.evtab .c.l .pp-exbtn'),'Copy example button in the table corner');
+  var exb=await picOf('example'); ok(exb&&exb.type==='image/png'&&exb.size>50000,'the example renders to a PNG ('+(exb&&exb.size)+' bytes)');
   ok(mc.querySelector('[data-pp="cond"]').value==='append'&&/Appendicitis/.test(mc.innerText),'catastrophic card opens on appendicitis - the story in the script');
   ok(tab&&/repeat\\(2,/.test(tab.getAttribute('style'))&&tab.querySelectorAll('.c.h.anc').length===1,'two columns: their anchor and the chosen package');
   ok(/Bill after Medical Bill Saver/.test(tab.innerText),'Bill Saver applied even with the quote-page switch off');

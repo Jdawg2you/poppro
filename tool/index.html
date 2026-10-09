@@ -3455,8 +3455,18 @@ function anyAfcShown(forPrint){
    loaded from cdnjs on first use only. One picture per copy - the clipboard holds one image at a time. */
 var H2C_URL='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
 function loadH2C(){ if(window.html2canvas) return Promise.resolve(window.html2canvas); return new Promise(function(ok,no){ var sc=document.createElement('script'); sc.src=H2C_URL; sc.onload=function(){ ok(window.html2canvas); }; sc.onerror=function(){ no(new Error('could not load html2canvas')); }; document.head.appendChild(sc); }); }
-function picOf(kind){ var html=kind==='partners'?renderAfcPartnersHTML(true):''; if(!html) return Promise.reject(new Error('nothing to copy'));
-  var box=document.createElement('div'); box.style.cssText='position:fixed;left:-10000px;top:0;width:860px;background:#fff;padding:0'; box.innerHTML=html; document.body.appendChild(box);
+/* 'example': the script's catastrophic comparison - their anchor vs the chosen package, every benefit line open -
+   with a one-line heading naming what happened, since the table alone does not say. */
+function presentExampleSc(){ var pick=(S.present&&S.present.cond)||'append'; var sc=pick==='ev0'||pick==='ev1'?S.ev[+pick.slice(2)]:evScn(pick); return (sc&&evScnBill(sc).total>0)?sc:evScn('append'); }
+function picOf(kind){ var html='', w=860;
+  if(kind==='partners') html=renderAfcPartnersHTML(true);
+  else if(kind==='example'){ var t=presentTier(), sc=presentExampleSc(); w=760;
+    html='<div style="padding:14px 16px;background:#fff"><div style="font-family:Georgia,serif;font-weight:700;font-size:17px;color:#14213d;margin:0 0 8px">'+esc(sc.desc||'Example')+' — '+esc(TIER_NAME[t])+'</div>'
+      +evTableHTML(0,{sc:sc,tiers:[t],neg:true,open:true,noAnchor:presentAnchor()==='none'})+'</div>'; }
+  if(!html) return Promise.reject(new Error('nothing to copy'));
+  var box=document.createElement('div'); box.style.cssText='position:fixed;left:-10000px;top:0;width:'+w+'px;background:#fff;padding:0'; box.innerHTML=html; document.body.appendChild(box);
+  if(kind==='example'){ Array.prototype.forEach.call(box.querySelectorAll('.evbill,.evhow,.evsrc,.evneg,.picbtn'),function(x){ x.remove(); });
+    Array.prototype.forEach.call(box.querySelectorAll('.evtog small,.evtog .car'),function(x){ x.remove(); }); }
   return loadH2C().then(function(h2c){ return h2c(box.firstElementChild||box,{backgroundColor:'#ffffff',scale:2,logging:false}); })
     .then(function(cv){ box.remove(); return new Promise(function(ok){ cv.toBlob(function(b){ ok(b); },'image/png'); }); },function(e){ box.remove(); throw e; }); }
 function copyPicture(kind,btn){ var label=btn&&btn.textContent; var say=function(t){ if(btn){ btn.textContent=t; setTimeout(function(){ btn.textContent=label; },2500); } };
@@ -4624,7 +4634,7 @@ var PRESENT_CSS='body{padding:10px 18px 12px!important;max-width:none!important}
  +'.pp-two{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:14px;align-items:start}.pp-two>*{min-width:0;max-width:none;margin:0;align-self:start}.pp-two>:not([data-close]){align-self:center}.pp-or{display:flex;align-items:center;justify-content:center;align-self:stretch;position:relative;min-width:36px}'
  +'.pp-or:before{content:"";position:absolute;top:0;bottom:0;left:50%;border-left:2px dashed #c9a24e}.pp-or span{position:relative;background:#fff;border:2px solid #c9a24e;color:#8a6a1f;font-weight:800;font-size:12px;border-radius:999px;padding:6px 8px}'
  +'@media(max-width:640px){.pp-two{grid-template-columns:1fr}.pp-or{min-height:40px}.pp-or:before{top:50%;bottom:auto;left:0;right:0;border-left:0;border-top:2px dashed #c9a24e}}'
- +'.pp-yr{font-size:11px;color:#6b7280}[data-screen="bonus"]{display:flex;align-items:center}.pp-picbtn{margin-left:auto;font:inherit;font-size:12.5px;font-weight:700;border:1px solid #c9a24e;background:#fff8e6;color:#7a5a12;border-radius:999px;padding:6px 12px;cursor:pointer}'
+ +'.pp-yr{font-size:11px;color:#6b7280}.pp-exbtn{font:inherit;font-size:12.5px;font-weight:800;border:none;background:#e0301e;color:#fff;border-radius:999px;padding:7px 14px;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.2)}[data-screen="bonus"]{display:flex;align-items:center}.pp-picbtn{margin-left:auto;font:inherit;font-size:12.5px;font-weight:700;border:1px solid #c9a24e;background:#fff8e6;color:#7a5a12;border-radius:999px;padding:6px 12px;cursor:pointer}'
  +'.pp-sug{font-size:12px;font-weight:700;color:#2f7d4a}.pp-nlab{margin-top:10px;font-size:13.5px;color:#16203c}'
  +'.pp-copy[disabled]{opacity:.45;cursor:not-allowed}.pp-need{font-size:12px;color:#b42318;margin-left:8px}var[contenteditable]{outline:1px dashed #b42318;min-width:60px;display:inline-block}';
 function presentEvCss(doc){ if(doc.getElementById('ppevcss')) return; var css='';
@@ -4738,7 +4748,9 @@ function presentWire(doc,t){ if(!doc||!doc.body) return 0; var T=presentScriptTo
       +EV_SCENARIOS.map(function(x){ return '<option value="'+x.id+'"'+(x.id===pick?' selected':'')+'>'+esc(x.label)+'</option>'; }).join('');
     mc.innerHTML='<div class="pp-evpick"><b>What happened</b> <select data-pp="cond">'+opts+'</select></div>'
       +(evTableHTML(0,{sc:sc,tiers:[t],neg:true,open:true,noAnchor:presentAnchor()==='none'})||'<p>Enter a bill on the quote page first.</p>');
-    mc.querySelector('[data-pp="cond"]').onchange=function(e){ S.present.cond=e.target.value; autosave(); presentWire(doc,t); presentFit(); }; }
+    mc.querySelector('[data-pp="cond"]').onchange=function(e){ S.present.cond=e.target.value; autosave(); presentWire(doc,t); presentFit(); };
+    var corner=mc.querySelector('.evtab .c.l'); if(corner&&!corner.querySelector('.pp-exbtn')){ var xb=doc.createElement('button'); xb.type='button'; xb.className='pp-exbtn'; xb.textContent='📋 Copy example';
+      xb.onclick=function(){ copyPicture('example',xb); }; corner.appendChild(xb); } }
   /* living benefits: priced live from the same rate tables as the builder (pLB1). Add puts that person on the package
      exactly as the builder's "+ Add product" does; if the quote already has it, it shows as in the package. */
   var ml=doc.querySelector('[data-mount="lb"]'); if(ml){ ml.classList.add('pp-mount'); var cfg=effCfg(t); cfg.lb=cfg.lb||{}; var pk=S.packages[t], prods=pk.products||[];
