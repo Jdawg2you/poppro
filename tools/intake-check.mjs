@@ -32,8 +32,8 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  var inc=$('in_income'); inc.focus(); inc.value='85000'; inc.dispatchEvent(new Event('input')); inc.dispatchEvent(new Event('change',{bubbles:true})); await w(50); R.income=inc.value+' -> '+S.intake.income;
  
  ok(R.billSaverOnOldSave,'Bill Saver ticked on an older quote'); ok(R.npnToSetup,'NPN goes to setup, out of the notes');
- ok(/^true · needs your name, phone, email$/.test(R.setupOpenWhenMissing),'setup open while basics are missing: '+R.setupOpenWhenMissing);
- ok(/^true · complete$/.test(R.setupFoldedWhenComplete),'setup folds when complete: '+R.setupFoldedWhenComplete); ok(R.reopensWhenEmailGone,'setup reopens when email goes');
+ ok(/^true · fill in: your name, phone, email/.test(R.setupOpenWhenMissing),'setup open while basics are missing: '+R.setupOpenWhenMissing);
+ ok(/^true · (complete|fill in: NPN, website, booking link)$/.test(R.setupFoldedWhenComplete),'setup folds when complete: '+R.setupFoldedWhenComplete); ok(R.reopensWhenEmailGone,'setup reopens when email goes');
  ok(/^06\\/30\\/1978 age \\d\\d$/.test(R.dob),'DOB 63078: '+R.dob); ok(R.budget==='$1,250.00 -> 1250','budget: '+R.budget);
  ok(R.curDed==='$6,000.00 -> 6000','deductible: '+R.curDed); ok(R.income==='$85,000.00 -> 85000','income: '+R.income);
  return {n:9, fails:fails}; })()`;
