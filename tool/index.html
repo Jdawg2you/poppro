@@ -748,7 +748,9 @@
 .pbbody{border-top:1px solid #eef1f6;padding:10px 12px;display:flex;flex-direction:column;gap:8px;background:#fbfaf6;border-radius:0 0 10px 10px}
 .pbbody .f{display:flex;flex-direction:column;gap:3px;font-size:11.5px;font-weight:600;color:var(--muted)}
 .pbbody select{font:inherit;font-size:13px;padding:6px 8px;border:1px solid #d6cdb4;border-radius:7px;background:#fff;color:var(--ink)}
-.pbbody .two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pbbody .two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
+.pbbody select,.pbbody .f input{width:100%;min-width:0;box-sizing:border-box}
+.pbbody .f input{font:inherit;font-size:13px;font-weight:400;padding:6px 8px;border:1px solid #d6cdb4;border-radius:7px;background:#fff;color:var(--ink)}
 .pbbody label.ck{display:flex;gap:7px;align-items:center;font-size:13px;font-weight:600;color:var(--ink)}
 .pbnote{font-size:11.5px;color:var(--maroon);padding:0 12px 8px}
 .pbadd{margin:2px 10px 0;display:flex}
@@ -4713,15 +4715,17 @@ function presentWire(doc,t){ if(!doc||!doc.body) return 0; var T=presentScriptTo
     ml.innerHTML='<table><tr><th></th><th>Face</th><th>Carrier</th><th>Monthly</th><th></th></tr>'+lbPersons().map(function(pp){ var w=pp.k, l=cfg.lb[w]=cfg.lb[w]&&cfg.lb[w].face?cfg.lb[w]:cfgClone(PB_DEFAULT.lb);
         var on=inPk(w), pr=on?prods.filter(function(x){ return x.k==='lb'+w; })[0]:null, q=pLB1(pp,l), mo=on?+pr.monthly:q.price, oth=l.carrier==='other', ev=function(x){ return esc(x==null?'':String(x)).replace(/"/g,'&quot;'); };
         return '<tr><td>'+(w==='p'?'Them':'Spouse')+', age '+pp.age+'</td>'
-          +'<td>'+(oth?'<input data-lb="lb.'+w+'.face" inputmode="numeric" placeholder="coverage, e.g. 75000" value="'+ev(l.face)+'" style="width:120px">'
+          +'<td>'+(oth?'<input data-lb="lb.'+w+'.face" inputmode="numeric" placeholder="$75,000" value="'+(+l.face?'$'+(+l.face).toLocaleString('en-US'):'')+'" style="width:110px">'
               :'<select data-lb="lb.'+w+'.face">'+['25000','50000','75000','100000','250000'].map(function(f){ return '<option value="'+f+'"'+(String(l.face)===f?' selected':'')+'>$'+(+f).toLocaleString('en-US')+'</option>'; }).join('')+'</select>')+'</td>'
           +'<td><select data-lb="lb.'+w+'.carrier">'+[['moo','Mutual of Omaha'],['americo','Americo'],['other','Other…']].map(function(o2){ return '<option value="'+o2[0]+'"'+(l.carrier===o2[0]?' selected':'')+'>'+o2[1]+'</option>'; }).join('')+'</select>'
-            +(oth?'<div style="margin-top:4px;display:flex;gap:4px;flex-wrap:wrap"><input data-lb="lb.'+w+'.otherName" placeholder="carrier and product" value="'+ev(l.otherName)+'" style="width:150px"><input data-lb="lb.'+w+'.otherMonthly" inputmode="decimal" placeholder="monthly $" value="'+ev(l.otherMonthly)+'" style="width:90px"></div>':'')+'</td>'
+            +(oth?'<div style="margin-top:4px;display:flex;gap:4px;flex-wrap:wrap"><input data-lb="lb.'+w+'.otherName" placeholder="carrier and product" value="'+ev(l.otherName)+'" style="width:150px"><input data-lb="lb.'+w+'.otherMonthly" inputmode="decimal" placeholder="$0.00 a month" value="'+(+l.otherMonthly?'$'+(+l.otherMonthly).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}):'')+'" style="width:100px"></div>':'')+'</td>'
           +'<td><b>'+(mo!=null?fmt2(mo):'—')+'</b>'+(q.note&&!on?'<div class="pp-lbnote">'+esc(q.note)+'</div>':'')+'</td>'
           +'<td>'+(on?'<span class="pp-in">✓ In the package</span> <button type="button" class="pp-lbx" data-lbrm="'+w+'">remove</button>'
                   :(q.price!=null?'<button type="button" class="pp-lbadd" data-lbadd="'+w+'">＋ Add</button>':''))+'</td></tr>'; }).join('')
       +'<tr><td><b>Add back</b></td><td></td><td></td><td><b>'+(T['lb.addback']||'—')+'</b></td><td></td></tr></table>';
-    var redo=function(){ pbReprice(); presentWire(doc,t); presentFit(); };
+    /* redraw after the click lands and put the cursor back where the agent went (same as the builder) */
+    var redo=function(){ setTimeout(function(){ var ae=doc.activeElement, af=ae&&ae.getAttribute&&ae.getAttribute('data-lb');
+      pbReprice(); presentWire(doc,t); presentFit(); if(af){ var nx=doc.querySelector('[data-lb="'+af+'"]'); if(nx){ nx.focus(); try{ nx.setSelectionRange(nx.value.length,nx.value.length); }catch(x){} } } },0); };
     /* the same setting the builder edits, cleaned the same way (digits only for coverage and premium) */
     Array.prototype.forEach.call(ml.querySelectorAll('[data-lb]'),function(sel){ sel.onchange=function(){ var f=sel.getAttribute('data-lb'), v=sel.value;
       if(/\.(face|otherMonthly)$/.test(f)) v=String(v).replace(/[^\d.]/g,'');
@@ -4990,10 +4994,11 @@ function pbControls(k,c){
   if(k==='lbp'||k==='lbs'){ var w=k.slice(2), lc=c.lb[w], pp=lbPersons().filter(function(x){ return x.k===w; })[0], rr=pp?pLB1(pp,lc):null;
     var fb=(rr&&rr.note)?'<div style="font-size:12px;color:var(--maroon);font-weight:600">'+rr.note+'</div>':'';
     var oth=lc.carrier==='other', ev=function(x){ return String(x==null?'':x).replace(/"/g,'&quot;'); };
-    return fb+'<div class="two">'+(oth?'<div class="f">Coverage<input data-f="lb.'+w+'.face" inputmode="numeric" placeholder="e.g. 75000" value="'+ev(lc.face)+'"></div>'
+    var cov=+String(lc.face||'').replace(/[^\d.]/g,'')||0, mon=+String(lc.otherMonthly||'').replace(/[^\d.]/g,'')||0;
+    return fb+'<div class="two">'+(oth?'<div class="f">Coverage<input data-f="lb.'+w+'.face" inputmode="numeric" placeholder="$75,000" value="'+(cov?'$'+cov.toLocaleString('en-US'):'')+'"></div>'
         :'<div class="f">Coverage<select data-f="lb.'+w+'.face">'+pbOpts([['25000','$25,000'],['50000','$50,000'],['75000','$75,000'],['100000','$100,000'],['250000','$250,000']],lc.face)+'</select></div>')
       +'<div class="f">Carrier<select data-f="lb.'+w+'.carrier">'+pbOpts([['moo','Mutual of Omaha'],['americo','Americo'],['other','Other…']],lc.carrier||'moo')+'</select></div></div>'
-    +(oth?'<div class="two"><div class="f">Carrier name<input data-f="lb.'+w+'.otherName" placeholder="carrier and product" value="'+ev(lc.otherName)+'"></div><div class="f">Monthly premium<input data-f="lb.'+w+'.otherMonthly" inputmode="decimal" placeholder="$ from their quote" value="'+ev(lc.otherMonthly)+'"></div></div>'
+    +(oth?'<div class="two"><div class="f">Carrier name<input data-f="lb.'+w+'.otherName" placeholder="carrier and product" value="'+ev(lc.otherName)+'"></div><div class="f">Monthly premium<input data-f="lb.'+w+'.otherMonthly" inputmode="decimal" placeholder="$0.00 a month" value="'+(mon?'$'+mon.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}):'')+'"></div></div>'
         +'<div style="font-size:11.5px;color:var(--muted)">Other carrier: type the coverage and monthly premium from that carrier’s own quote.</div>'
         :'<div style="font-size:11.5px;color:var(--muted)">20-year term with living benefits for this person. $75K, $100K and $250K are priced for Mutual of Omaha; Americo is $25K / $50K until its higher faces are loaded. 30-year isn’t loaded yet — use Other for anything else.</div>'); }
   if(k==='hhc') return '<div class="f">Plan<select data-f="hhc">'+pbOpts([['Classic','Classic'],['Premier','Premier'],['Deluxe','Deluxe']],c.hhc)+'</select></div>';
@@ -5372,7 +5377,11 @@ function renderBuilder(){
       var kk=el.closest('.pbbody').dataset.k, pr=(S.packages[t].products||[]).filter(function(x){ return x.k===kk; })[0]; if(pr) delete pr.manual;   // new options → rate-table price again
       if(el.dataset.f==='triadPlan'&&c.his){ c.his.ben=cignaHIS(c.triadPlan); }   // HI Select follows the Cigna deductible
       if(el.dataset.f==='chas.cancer'||el.dataset.f==='chas.hs'){ if(!c.chas.cancer&&!c.chas.hs){ var pk=S.packages[t]; pk.dropped=pk.dropped||[]; pk.dropped.push('chas'); } }
-      pbReprice(); }; });
+      /* redraw after the click lands, then put the cursor back where the agent went - otherwise finishing one box and
+         clicking the next loses the next one (Jesse, 2026-10-09: "Other" carrier boxes) */
+      setTimeout(function(){ var ae=document.activeElement, af=ae&&ae.dataset&&ae.dataset.f, ac=ae&&ae.closest&&ae.closest('.pbcol'), at=ac&&ac.dataset.t;
+        pbReprice();
+        if(af&&at){ var nx=document.querySelector('.pbcol[data-t="'+at+'"] [data-f="'+af+'"]'); if(nx){ nx.focus(); if(nx.select&&nx.tagName==='INPUT') try{ nx.setSelectionRange(nx.value.length,nx.value.length); }catch(x){} } } },0); }; });
   });
   host.querySelectorAll('[data-act="base"]').forEach(function(sel){ sel.onchange=function(){ var t=sel.closest('.pbcol').dataset.t; var c=effCfg(t); c.base=sel.value;
       if(sel.value==='lifex') c.lifexPlan='$500 PPO'; if(sel.value==='triad'){ c.triadPlan=c.triadPlan||'3500'; c.his=c.his||{amb:1,outp:0}; c.his.ben=cignaHIS(c.triadPlan); }
