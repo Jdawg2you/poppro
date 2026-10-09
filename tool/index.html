@@ -603,7 +603,7 @@
   .afc-picbtn{position:absolute;right:0;top:16px}@media(max-width:820px){.afc-picbtn{position:static;margin:0 0 8px}}
   .presentbtn{font:inherit;font-size:14px;font-weight:800;border-radius:999px;padding:9px 18px;cursor:pointer;border:none;background:#2f7d4a;color:#fff}.presentbtn:hover{background:#286b40}.presentbtn i{font-family:var(--serif);font-weight:700}
   .picbtn.sendbtn{display:inline-flex;align-items:center;gap:7px;font-size:13.5px;padding:9px 14px;margin:0 7px 0 0;text-decoration:none}.picbtn.sendbtn svg{background:#fff;border-radius:4px;padding:2px;box-sizing:content-box}
-  .sqsteps{display:grid;gap:10px;margin-top:8px}.sqstep{display:flex;gap:12px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fffdf7}.sqn{flex:0 0 26px;height:26px;border-radius:50%;background:var(--navy);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:13px}.sqbody{flex:1;min-width:0}.sqbody b{color:var(--navy)}.sqbody small{display:block;color:var(--muted);font-size:12px;margin-top:1px}#sqAppt{margin-top:6px;width:100%;max-width:440px;font:inherit;font-size:14px;padding:8px 10px;border:1px solid var(--line);border-radius:8px}.sqchk{font-size:13.5px;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:6px;cursor:pointer}.sqchk input{width:17px;height:17px}
+  .sqsteps{display:grid;gap:10px;margin-top:8px}.sqstep{display:flex;gap:12px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fffdf7}.sqn{flex:0 0 26px;height:26px;border-radius:50%;background:var(--navy);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:13px}.sqbody{flex:1;min-width:0}.sqbody b{color:var(--navy)}.sqbody small{display:block;color:var(--muted);font-size:12px;margin-top:1px}.sqwhen{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px}.sqwhen input{font:inherit;font-size:14px;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#fff}.sqclr{font:inherit;font-size:12px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:4px 10px;cursor:pointer;color:var(--muted)}.sqsay{font-size:13px;color:#2f7d4a;font-weight:700}.sqchk{font-size:13.5px;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:6px;cursor:pointer}.sqchk input{width:17px;height:17px}
   .brlist{list-style:none;margin:10px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:6px 18px}.brlist li{display:flex;align-items:baseline;gap:8px;padding:6px 0;border-bottom:1px dotted var(--line)}.brlist a{font-weight:700;color:var(--navy)}.brlist small{color:var(--muted);font-size:11px;white-space:nowrap}.brlist .brone{margin-left:auto;font:inherit;font-size:11.5px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:2px 9px;cursor:pointer;color:var(--navy);white-space:nowrap;flex:0 0 auto}
   .bdbroch{display:block;margin:10px 0 0;font-weight:700;color:var(--navy)}
   .picbar{display:flex;justify-content:flex-end;margin:10px 0 -4px}.picbtn{font:inherit;font-size:12.5px;font-weight:700;border:1px solid #c69a3c;background:#12213b;color:#fff;border-radius:999px;padding:6px 13px;cursor:pointer;box-shadow:0 1px 3px rgba(18,33,59,.25);white-space:nowrap;transition:background .15s}.picbtn:hover{background:#1c3a63}
@@ -1246,10 +1246,10 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
     <div class="sectitle"><span class="dot">●</span> Send the quote</div>
     <div class="note" style="padding-top:2px">Not enrolling today? Send them this quote — email it, or print / save it as a PDF.</div>
       <div class="sqsteps">
-        <div class="sqstep"><span class="sqn">1</span><div class="sqbody"><b>When is your follow-up?</b> <small>Optional — the email names it. Leave it blank and the email says you’ll follow up in the next day or two.</small>
-          <input type="text" id="sqAppt" placeholder="e.g. tomorrow at 6:00 pm  ·  Thursday 10/10 at 11 am" autocomplete="off"></div></div>
-        <div class="sqstep"><span class="sqn">2</span><div class="sqbody"><b>Print / save the PDF to attach.</b> <small>Save it, then tick the box — the email says “attached” only once you have.</small>
-          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:6px"><button class="picbtn sendbtn" id="printBtn2">&#128424; Print / PDF Quote</button><label class="sqchk"><input type="checkbox" id="sqPdf"> PDF saved — I’ll attach it</label></div></div></div>
+        <div class="sqstep"><span class="sqn">1</span><div class="sqbody"><b>When is your follow-up?</b> <small>Optional — pick it in the <b>client’s</b> time zone<span id="sqTz"></span>; the email says it the way you’d say it (“tomorrow, Thursday, at 6:00 pm your time”). Leave it blank and the email says you’ll follow up in the next day or two.</small>
+          <div class="sqwhen"><input type="date" id="sqDate"><input type="time" id="sqTime" step="900"><button type="button" class="sqclr" id="sqClr" title="Clear the follow-up">Clear</button><span class="sqsay" id="sqSay"></span></div></div></div>
+        <div class="sqstep"><span class="sqn">2</span><div class="sqbody"><b>Print / save the PDF quote.</b> <small>Save it, then tick the box — the email says “attached” only once you have.</small>
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:6px"><button class="picbtn sendbtn" id="printBtn2">&#128424; Print / Save PDF Quote</button><label class="sqchk"><input type="checkbox" id="sqPdf"> PDF saved — I’ll attach it to the email below</label></div></div></div>
         <div class="sqstep"><span class="sqn">3</span><div class="sqbody"><b>Send it from your email.</b>
           <div style="margin-top:6px;display:flex;flex-wrap:wrap;align-items:center;gap:8px 0">
         <a class="picbtn sendbtn" id="gmailBtn" href="#" target="_blank" rel="noopener"><svg width="16" height="13" viewBox="0 0 256 193" xmlns="http://www.w3.org/2000/svg" style="flex:0 0 auto"><path fill="#4285F4" d="M58.182 192.05V93.14L27.507 65.077 0 49.504v125.09c0 9.658 7.825 17.455 17.455 17.455z"/><path fill="#34A853" d="M197.818 192.05h40.727c9.659 0 17.455-7.826 17.455-17.455V49.505l-31.156 17.837-27.026 25.798z"/><path fill="#EA4335" d="M58.182 93.14L128 145.504l69.818-52.364V17.504L128 69.868 58.182 17.504z"/><path fill="#FBBC04" d="M197.818 17.504V93.14L256 49.504V26.31c0-21.585-24.64-33.89-41.89-20.945z"/><path fill="#C5221F" d="M0 49.504l58.182 43.636V17.504L41.89 5.366C24.61-7.58 0 4.726 0 26.31z"/></svg> Email to client — Gmail</a>
@@ -1353,7 +1353,7 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
       </ul>
       <h4>Not today · Send the quote</h4>
       <ul>
-        <li>At the bottom of Quote, three steps. <b>1</b> Type the follow-up time if you set one ("tomorrow at 6:00 pm"); the email names it, and if it's blank the email says you'll follow up in the next day or two. <b>2</b> <b>Print / PDF Quote</b>, save it, and tick <b>PDF saved</b> so the email says "attached". <b>3</b> <b>Gmail</b>, <b>Outlook</b> or <b>Email to client</b> writes the email: the plan you landed on, what it saves on premiums plus the deductible they'd avoid, their brochure links, your booking link and your signature with your National Producer Number.</li>
+        <li>At the bottom of Quote, three steps. <b>1</b> Pick the follow-up date and time, in the <b>client's</b> time zone; the email says it naturally ("tomorrow, Thursday, at 6:00 pm your time"), and if it's blank the email says you'll follow up in the next day or two. <b>2</b> <b>Print / Save PDF Quote</b>, save it, and tick <b>PDF saved</b> so the email says "attached". <b>3</b> <b>Gmail</b>, <b>Outlook</b> or <b>Email to client</b> writes the email: the plan you landed on, what it saves on premiums plus the deductible they'd avoid, their brochure links, your booking link and your signature with your National Producer Number.</li>
       </ul>
       <h4>4 · Enroll, in call order</h4>
       <ul>
@@ -2268,6 +2268,12 @@ function brochCopy(text,btn){ var lab=btn.innerHTML; var done=function(m){ btn.i
 function brochListHTML(L){ return '<ul class="brlist">'+L.list.map(function(b){ return '<li><a href="'+esc(b.url)+'" target="_blank" rel="noopener">'+esc(b.name)+' ↗</a><small>'+esc(b.form)+'</small><button type="button" class="brone" data-brurl="'+esc(b.url)+'" title="Copy this link">Copy link</button></li>'; }).join('')+'</ul>'
   +(L.none.length?'<div class="note" style="padding:6px 0 0">No brochure link on file for: '+esc(L.none.join(', '))+'.</div>':''); }
 function wireBroch(host){ host.querySelectorAll('[data-brurl]').forEach(function(b){ b.onclick=function(){ brochCopy(b.dataset.brurl,b); }; }); }
+/* Send the quote steps 1-2 on screen: the picked follow-up, how the email will say it, the client's state, the PDF tick */
+var TZ_BY_ST={HI:'Hawaii',AK:'Alaska',WA:'Pacific',OR:'Pacific',CA:'Pacific',NV:'Pacific',ID:'Mountain/Pacific',MT:'Mountain',WY:'Mountain',UT:'Mountain',CO:'Mountain',AZ:'Arizona',NM:'Mountain',ND:'Central/Mountain',SD:'Central/Mountain',NE:'Central/Mountain',KS:'Central/Mountain',OK:'Central',TX:'Central/Mountain',MN:'Central',IA:'Central',MO:'Central',AR:'Central',LA:'Central',WI:'Central',IL:'Central',MS:'Central',AL:'Central',TN:'Central/Eastern',KY:'Eastern/Central',IN:'Eastern/Central',MI:'Eastern/Central',FL:'Eastern/Central'};
+function sqSync(){ var d=$('sqDate'), tm=$('sqTime'), p=$('sqPdf'), Q=S.sendq||{}; if(!d) return;
+  if(document.activeElement!==d) d.value=Q.date||''; if(document.activeElement!==tm) tm.value=Q.time||''; if(p) p.checked=!!Q.pdf;
+  var st=(S.client.state||'').toUpperCase(); if($('sqTz')) $('sqTz').textContent=st?' — '+st+(', '+(TZ_BY_ST[st]||'Eastern')+' time'):'';
+  if($('sqSay')) $('sqSay').textContent=sqPhrase(Q)?'→ “Let’s talk '+sqPhrase(Q)+'.”':''; }
 function renderBrochBox(){ var host=$('brochBox'); if(!host) return; if(!BROCH){ brochLoad().then(function(d){ if(d) renderBrochBox(); }); host.style.display='none'; return; }
   var L=brochList(); if(!L.list.length){ host.style.display='none'; return; } host.style.display='';
   host.innerHTML='<div class="bh" style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap"><div class="sectitle" style="margin:0"><span class="dot">●</span> Brochures for this plan</div>'
@@ -3737,7 +3743,7 @@ function compute(){
   if($('popScoreBody')) renderPopScore();
   if($('afcPartners')){ var ap=renderAfcPartnersHTML(false); $('afcPartners').innerHTML=ap; }
   renderBrochBox();
-  (function(){ var a=$('sqAppt'), p=$('sqPdf'), Q=S.sendq||{}; if(a&&document.activeElement!==a) a.value=Q.appt||''; if(p) p.checked=!!Q.pdf; })();   /* a loaded quote brings its own steps */
+  sqSync();   /* a loaded quote brings its own steps */
   if(S.step==='enroll') renderEnroll();
   autosave();
 }
@@ -4983,6 +4989,15 @@ function goStep(s){
   autosave(); window.scrollTo(0,0);
 }
 
+/* the follow-up as you'd say it: "later today at 6:00 pm", "tomorrow, Thursday, at 6:00 pm", "Thursday at 6:00 pm"
+   (within a week), "Thursday, October 17, at 6:00 pm". Picked in the client's time zone, so it ends "your time". */
+function sqPhrase(Q){ Q=Q||{}; if(!Q.date) return ''; var p=String(Q.date).split('-'); if(p.length!==3) return '';
+  var d=new Date(+p[0],+p[1]-1,+p[2]), now=new Date(), t0=new Date(now.getFullYear(),now.getMonth(),now.getDate()), days=Math.round((d-t0)/864e5);
+  var wd=d.toLocaleDateString('en-US',{weekday:'long'}), md=d.toLocaleDateString('en-US',{month:'long',day:'numeric'});
+  var tm=''; if(Q.time){ var h=+Q.time.split(':')[0], mi=Q.time.split(':')[1]; tm=(h%12||12)+':'+mi+' '+(h<12?'am':'pm'); }
+  var when=days===0?(tm?'later today':'today'):days===1?'tomorrow, '+wd+(tm?',':''):(days>1&&days<7)?wd:wd+', '+md+(tm?',':'');
+  if(days<0) when=wd+', '+md+(tm?',':'');
+  return when+(tm?' at '+tm+' your time':''); }
 function buildEmail(){
   read();
   var to=(S.intake&&S.intake.email)||'', Q=S.sendq||{};
@@ -5008,8 +5023,8 @@ function buildEmail(){
     +(Q.pdf?'Attached is your Healthcare Package of Protection. It puts ':'Your Healthcare Package of Protection puts ')
     +(ap?ap+' side by side with '+opts+' we talked through':opts+' we talked through side by side')+', and shows what each one costs you per month and what happens in a real hospital stay.'+(save?' '+save:'')+'\n\n'
     +(L.list.length?(L.t==='all'?'The brochures for each part of these plans, if you’d like the full details:\n':'The brochures for the '+(TIER_NAME[L.t]||'')+' plan, if you’d like the full details:\n')+brochLines(L)+'\n\n':'')
-    +(String(Q.appt||'').trim()
-      ?'Let’s talk '+String(Q.appt).trim()+'. I’ll answer any questions and we can get your application in then.'+(book?' If that time no longer works, grab another one here: '+book:'')
+    +(sqPhrase(Q)
+      ?'Let’s talk '+sqPhrase(Q)+'. I’ll answer any questions and we can get your application in then.'+(book?' If that time no longer works, grab another one here: '+book:'')
       :'I’ll follow up with you in the next day or two to answer any questions and get your application in.'+(book?' If you’d rather pick a time that suits you, grab one here: '+book:''))+'\n\n'
     +'Reply here, or call or text me any time.\n\n'
     +(agent||agency)+(agent&&agency?'\n'+agency:'')+(S.agentPhone?'\n'+S.agentPhone:'')+(S.agentEmail?'\n'+S.agentEmail:'')+(site?'\n'+site:'')+(String(S.agentNPN||'').trim()?'\nNational Producer Number: '+String(S.agentNPN).trim():'');
@@ -5148,8 +5163,10 @@ function bindInputs(){
     window.open('https://outlook.office.com/mail/deeplink/compose?to='+encodeURIComponent(m.to)+'&subject='+encodeURIComponent(m.subject)+'&body='+encodeURIComponent(m.body),'_blank','noopener');
   };
   /* Send the quote, steps 1-2: the follow-up time and "PDF saved" shape the email (Jesse, 9 Oct) */
-  (function(){ var a=$('sqAppt'), p=$('sqPdf'); if(!a||!p) return; S.sendq=S.sendq||{}; a.value=S.sendq.appt||''; p.checked=!!S.sendq.pdf;
-    a.oninput=function(){ S.sendq=S.sendq||{}; S.sendq.appt=a.value; autosave(); }; p.onchange=function(){ S.sendq=S.sendq||{}; S.sendq.pdf=p.checked; autosave(); }; })();
+  (function(){ var d=$('sqDate'), tm=$('sqTime'), p=$('sqPdf'); if(!d||!p) return;
+    var put=function(){ S.sendq=S.sendq||{}; S.sendq.date=d.value; S.sendq.time=tm.value; autosave(); sqSync(); };
+    d.oninput=d.onchange=put; tm.oninput=tm.onchange=put; $('sqClr').onclick=function(){ d.value=''; tm.value=''; put(); };
+    p.onchange=function(){ S.sendq=S.sendq||{}; S.sendq.pdf=p.checked; autosave(); }; sqSync(); })();
   $('printBtn2').onclick=function(){ buildPrintout(); var prev=document.title; document.title=printDocName(); window.print(); setTimeout(function(){ document.title=prev; },800); };
   $('addProd').onclick=function(){ S.packages[S.activeTab].products.push({name:'',monthly:0,manual:true}); renderProducts(); compute();
     var sels=document.querySelectorAll('#prodlist select.pick'); if(sels.length) sels[sels.length-1].focus(); };
