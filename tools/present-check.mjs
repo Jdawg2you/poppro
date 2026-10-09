@@ -71,8 +71,16 @@ const TEST = `(async function(){
   ok(/Bill after Medical Bill Saver/.test(tab.innerText),'Bill Saver applied even with the quote-page switch off');
   ok(fr.contentWindow.getComputedStyle(tab).display==='grid','the quote page styling reaches the frame');
   var cs=mc.querySelector('[data-pp="cond"]'); cs.value='arm'; cs.dispatchEvent(new Event('change')); await wait(40);
+  ok(!Array.prototype.some.call(d.querySelectorAll('p'),function(p2){ return /same drop-list as the quote page/.test(p2.textContent)&&fr.contentWindow.getComputedStyle(p2).display!=='none'; }),'the mock "Condition" line is gone - only the working picker');
   ok(S.present.cond==='arm'&&/Broken arm|2,209/i.test(d.querySelector('[data-mount="conditions"]').innerText),'picking what happened redraws the card');
   S.negot.on=true;
+  /* several medications: one line each, before the plan's prescription benefit */
+  S.intake.medList=[{name:'Losartan (Cozaar)',cur:50,disc:15,forP:true},{name:'Metformin (Glucophage)',cur:30,disc:8,forP:true},{name:'Vyvanse (Lisdexamfetamine)',cur:320,disc:95,forP:true}];
+  presentGo(presentPageIx('Prescriptions')); await wait(40); var rx=d.querySelector('[data-rx="has"]').innerText;
+  ok(rx.indexOf('Losartan runs about $50.00')>=0&&rx.indexOf('Metformin runs about $30.00')>=0&&rx.indexOf('Vyvanse runs about $320.00')>=0,'every medication gets its own line: '+rx.split(String.fromCharCode(10)).join(' ').slice(0,260));
+  ok(rx.indexOf('Vyvanse')<rx.indexOf('The plan carries'),'the list comes before the plan benefit sentence');
+  presentWire(d,'best'); ok(d.querySelectorAll('.pp-medlist').length===1&&d.querySelectorAll('.pp-medlist li').length===2,'re-filling does not duplicate the list');
+  S.intake.medList=[{name:'Lipitor (Atorvastatin)',disc:12,cur:40,forP:true}]; presentWire(d,'best'); ok(!d.querySelector('.pp-medlist'),'one medication: just the sentence');
   /* prescriptions, closes */
   ok(d.querySelector('[data-rx="none"]').classList.contains('pp-off')&&!d.querySelector('[data-rx="has"]').classList.contains('pp-off'),'Rx: the has-prescriptions version is served');
   var closeIx=presentPageIx('Pick your close'); presentGo(closeIx); await wait(30);
@@ -104,10 +112,18 @@ const TEST = `(async function(){
   /* Enroll in call order */
   goStep('enroll'); var ef; for(var k2=0;k2<60;k2++){ await wait(100); ef=document.getElementById('enFrame'); if(ef.contentDocument&&ef.contentDocument.querySelector('var.pp-ok')) break; }
   var ed=ef.contentDocument, vis=function(doc){ return Array.prototype.filter.call(doc.body.children,function(e){ return e.dataset.pg!=null&&e.style.display!=='none'; }).map(function(e){ return +e.dataset.pg; }); };
-  ok(vis(ed).length&&vis(ed).every(function(x){ return x===presentPageIx('The application'); }),'Enroll shows the script application panel');
-  ok(/LIFE APPLICATION PATH/i.test(ed.body.innerText),'life application panel on Enroll');
-  var ta=ed.querySelector('[data-mount="notes"]').parentNode.querySelector('textarea'); ta.value='code word: bluebird'; ta.dispatchEvent(new Event('input'));
-  ok(S.intake.notes==='code word: bluebird'&&/Notes/.test(ed.querySelector('.pp-nlab').innerText),'notes write to S.intake.notes, labelled');
+  await wait(100); ok(ed.querySelector('[data-mount="lifeapp"]').closest('div').classList.contains('pp-off'),'script blue panel replaced on Enroll');
+  var pp=document.getElementById('enPeople');
+  ok(/First name/.test(pp.innerText)&&/Last name/.test(pp.innerText)&&/Pat/.test(pp.innerText)&&/Present/.test(pp.innerText),'name split into first / last');
+  var em=pp.querySelector('[data-enw="i:email"]'); ok(!!em,'blank email is typeable'); em.value='pat@example.com'; em.dispatchEvent(new Event('change'));
+  ok(S.intake.email==='pat@example.com','typed blank writes back to the profile');
+  var ln=document.querySelector('#enPeople [data-copy="Present"]'); ok(!!ln,'last name has its own copy button');
+  var bn=document.querySelector('#enPeople [data-bene="0:name"]'); bn.value='Sam Present'; bn.dispatchEvent(new Event('change'));
+  var bp=document.querySelector('#enPeople [data-bene="0:pct"]'); bp.value='100'; bp.dispatchEvent(new Event('change'));
+  ok(S.intake.benes&&S.intake.benes[0].name==='Sam Present'&&S.intake.benes[0].pct==='100','beneficiary name and % save to the profile');
+  var nt=document.getElementById('enNotes'); nt.value='code word: bluebird'; nt.dispatchEvent(new Event('input'));
+  ok(S.intake.notes==='code word: bluebird'&&document.querySelectorAll('#step-enroll textarea#enNotes').length===1,'one Notes box, writing the profile notes');
+  ok(!!document.querySelector('[data-enprof="save"]')&&!!document.querySelector('[data-enprof="print"]'),'save / print profile at the end');
   var ef2=document.getElementById('enFrame2'); for(var k3=0;k3<40;k3++){ await wait(100); if(ef2.contentDocument&&ef2.contentDocument.querySelector('.pp-copy')) break; }
   ok(/For security purposes/.test(ef2.contentDocument.body.innerText)&&/Text them the moment/.test(ef2.contentDocument.body.innerText),'security question and wrap-up on Enroll');
   var pc=ef2.contentDocument.querySelector('.pp-copy'); ok(pc&&pc.disabled&&/email/.test(pc.nextSibling.textContent),'post-call copy dimmed, names what is missing');
@@ -115,11 +131,10 @@ const TEST = `(async function(){
   ok(document.getElementById('lnkManhattan').style.display!=='none','health carrier links after');
   var order=['enLife','enScriptApp','enPeople','enScriptEnd','enHealth'].map(function(id){ return document.getElementById(id).getBoundingClientRect().top; });
   ok(order.every(function(v,i){ return !i||v>order[i-1]; }),'Enroll order: life → application → people → finish → health');
-  ok(/primary/.test(document.getElementById('enPeople').innerText),'each person card');
   var steps=presentApplyPlan('best').map(function(s){ return s.car.split(' ')[0]; });
   ok(steps[0]==='Americo'&&steps.indexOf('ManhattanLife')>0,'life first then ManhattanLife: '+steps.join(' > '));
   /* maiden name: memory only */
-  var mm=document.querySelector('#enPeople [data-en="mmn"]'); ok(!!mm,'maiden-name box on Enroll');
+  var mm=document.querySelector('#enPeople [data-mmn]'); ok(!!mm,'maiden-name box on Enroll');
   if(mm){ mm.value='Zzyzxmaiden'; mm.dispatchEvent(new Event('change')); await wait(50); }
   autosave(); await wait(50); var ls=''; for(var j=0;j<localStorage.length;j++){ ls+=localStorage.getItem(localStorage.key(j)); }
   ok(PRESENT_MMN==='Zzyzxmaiden'&&!/Zzyzxmaiden/.test(JSON.stringify(S))&&!/Zzyzxmaiden/.test(ls),'maiden name held, never saved');

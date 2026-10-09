@@ -585,7 +585,15 @@
   .en-step span{display:inline-block;background:var(--navy);color:#fff;border-radius:6px;min-width:24px;text-align:center;margin-right:6px;font-family:inherit;font-size:14px}
   .enroll-card+.enroll-card{margin-top:12px}
   .en-person{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-top:10px;background:#fff}
-  .en-person h5{margin:0 0 6px;font-size:14px;color:var(--navy)}
+  .en-person h5{margin:0;font-size:14px;color:var(--navy);display:inline}
+  .en-person summary{cursor:pointer;padding:2px 0}.en-person[open] summary{margin-bottom:6px}
+  .en-sub{font-size:12px;font-weight:700;color:var(--navy);margin:12px 0 4px;text-transform:uppercase;letter-spacing:.05em}
+  .en-brow{display:grid;grid-template-columns:2fr .6fr 1.2fr 1.2fr auto;gap:6px;margin-bottom:6px}
+  .en-brow input,.en-notes textarea{border:1px solid var(--line);border-radius:6px;padding:6px 8px;font:inherit;font-size:13px;width:100%;box-sizing:border-box}
+  .en-x{border:none;background:none;font-size:18px;color:var(--maroon);cursor:pointer}.en-add{font:inherit;font-size:12.5px;font-weight:700;border:1px dashed var(--line);background:#fff;border-radius:6px;padding:5px 10px;cursor:pointer}
+  .en-notes{margin-top:12px}.en-notes label{display:block;font-size:13px;color:var(--navy);margin-bottom:4px}
+  .en-prof{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+  @media(max-width:700px){.en-brow{grid-template-columns:1fr 1fr}}
   #presentBack{position:fixed;right:18px;bottom:18px;z-index:9998;font:inherit;font-weight:800;font-size:14px;background:var(--navy);color:#fff;border:none;border-radius:999px;padding:12px 18px;box-shadow:0 6px 18px rgba(0,0,0,.25);cursor:pointer;display:none}
   @media print{#presentBack{display:none!important}}
   body.client .discl{display:none!important}
@@ -4159,28 +4167,73 @@ function enrollScript(){ var t=chosenTier()||S.activeTab;
     var show=function(){ var doc=fr.contentDocument; presentPaginate(doc); benLoad('afc').then(function(){ presentShowPage(doc,x[1].map(presentPageIx)); presentWire(doc,t);
       fr.style.height='60px'; fr.style.height=(doc.documentElement.scrollHeight+8)+'px'; }); };
     if(fr.dataset.loaded) show(); else { fr.onload=function(){ fr.dataset.loaded='1'; show(); }; fr.src='presentation.html'; } }); }
-/* 3. each person on the application, from POP Pro's intake: click any value to copy it */
+/* 3. The application, one block per person (Jesse, 2026-10-08) - the "What you'll need" grid: every value from the
+   profile with a copy button, every blank typed right here and written back to the profile (S), so Save / Print
+   carry it. Primary open, spouse and each child expand. Beneficiaries: name, %, phone, DOB. One Notes box =
+   S.intake.notes, the same notes the navigator's profile and POP Pro Intake use. SSN / bank never here. */
+function enSplit(n){ n=String(n||'').trim(); var i=n.indexOf(' '); return i<0?[n,'']:[n.slice(0,i),n.slice(i+1)]; }
+function enInches(v){ v=String(v||'').trim(); var m=v.match(/^(\d)\s*['′ ]\s*(\d{1,2})/); if(m) return String(+m[1]*12+(+m[2])); var n=parseInt(v,10); return n>=48&&n<=84?String(n):''; }
+function enFt(v){ var x=parseInt(v,10); return x>=48&&x<=84?Math.floor(x/12)+'′'+(x%12)+'″':''; }
+/* [label, value, writeback path] - a path makes the blank typeable; 'ro' marks a read-only summary */
+function enPersonRows(who,i){ var C=S.client||{}, I=S.intake||{}, k=(I.kids||[])[i]||{};
+  var meds=function(f){ return (I.medList||[]).filter(function(m){ return m&&m[f]&&String(m.name||'').trim(); }).map(function(m){ return m.name; }).join(', '); };
+  var conds=function(f){ return (I.conds||[]).filter(function(c2){ return c2&&c2[f]; }).map(function(c2){ return c2.name+(c2.yr?' ('+c2.yr+')':''); }).join(', '); };
+  if(who==='p'){ var nm=enSplit(C.pname); return [['First name',nm[0],'name:p:0'],['Last name',nm[1],'name:p:1'],['Date of birth',C.dob||C.date,'c:dob'],['Age',C.page||C.age,'c:page'],
+    ['Street address',C.address,'c:address'],['State',C.state,'c:state'],['ZIP',C.zip,'c:zip'],['Phone',I.phone,'i:phone'],['Email',I.email,'i:email'],
+    ['Height',enFt(I.pheight),'ht:pheight'],['Weight',I.pweight?I.pweight+' lb':'','wt:pweight'],['Tobacco',I.tobaccoP?'Yes':'No','ro'],
+    ['Medications',meds('forP'),'ro'],['Conditions',conds('forP'),'ro'],['Doctors',[I.docs1,I.docs2,I.docs3].filter(Boolean).join(', '),'ro'],['Coverage start',I.effDate,'i:effDate']]; }
+  if(who==='s'){ var sn=enSplit(C.sname); return [['First name',sn[0],'name:s:0'],['Last name',sn[1],'name:s:1'],['Date of birth',C.sdob,'c:sdob'],['Age',C.sage,'c:sage'],
+    ['Height',enFt(I.sheight),'ht:sheight'],['Weight',I.sweight?I.sweight+' lb':'','wt:sweight'],['Tobacco',I.tobaccoS?'Yes':'No','ro'],['Medications',meds('forS'),'ro'],['Conditions',conds('forS'),'ro']]; }
+  var kn=enSplit(k.n); return [['First name',kn[0],'kid:'+i+':n0'],['Last name',kn[1],'kid:'+i+':n1'],['Date of birth',k.dob,'kid:'+i+':dob'],['Age',k.age,'kid:'+i+':age'],['Sex',k.sex,'kid:'+i+':sex']]; }
+function enWrite(path,v){ var C=S.client, I=S.intake, p=path.split(':');
+  if(p[0]==='c') C[p[1]]=v, p[1]==='dob'&&(C.date=v);
+  else if(p[0]==='i') I[p[1]]=v;
+  else if(p[0]==='ht') I[p[1]]=enInches(v);
+  else if(p[0]==='wt') I[p[1]]=String(parseInt(v,10)||'');
+  else if(p[0]==='name'){ var key=p[1]==='p'?'pname':'sname', parts=enSplit(C[key]); parts[+p[2]]=v; C[key]=(parts[0]+' '+parts[1]).trim(); }
+  else if(p[0]==='kid'){ I.kids=I.kids||[]; var kd=I.kids[+p[1]]=I.kids[+p[1]]||{}; if(p[2]==='n0'||p[2]==='n1'){ var kp=enSplit(kd.n); kp[p[2]==='n0'?0:1]=v; kd.n=(kp[0]+' '+kp[1]).trim(); } else kd[p[2]]=v; }
+  autosave(); }
 function enrollPeople(){ var host=$('enPeople'); if(!host) return; var C=S.client||{}, I=S.intake||{}, w=I.who||{};
-  var ft=function(v){ var x=parseInt(v,10); return x>=48&&x<=84?Math.floor(x/12)+'′'+(x%12)+'″':''; };
-  var meds=function(k){ return (I.medList||[]).filter(function(m){ return m&&m[k]&&String(m.name||'').trim(); }).map(function(m){ return m.name; }).join(', '); };
-  var conds=function(k){ return (I.conds||[]).filter(function(c2){ return c2&&c2[k]; }).map(function(c2){ return c2.name+(c2.yr?' ('+c2.yr+')':''); }).join(', '); };
-  var row=function(l,v){ v=(v==null?'':String(v)).trim(); return '<div class="pr-f'+(v?'':' miss')+'"><span>'+esc(l)+'</span><b>'+(v?esc(v)+'<button type="button" class="cp" data-copy="'+esc(v).replace(/"/g,'&quot;')+'">copy</button>':'—')+'</b></div>'; };
-  var h='<div class="en-step"><span>3</span> Each person — what the applications ask for</div>';
-  h+='<div class="en-person"><h5>'+esc(C.pname||'Primary applicant')+' — primary</h5><div class="pr-fields">'
-    +row('Full name',C.pname)+row('Date of birth',C.dob||C.date)+row('Age',C.page||C.age)+row('Sex',I.psex)+row('Height',ft(I.pheight))+row('Weight',I.pweight?I.pweight+' lb':'')
-    +row('Tobacco',I.tobaccoP?'Yes':'No')+row('Address',C.address)+row('ZIP',C.zip)+row('Phone',I.phone)+row('Email',I.email)
-    +row('Medications',meds('forP'))+row('Conditions',conds('forP'))+row('Doctors',[I.docs1,I.docs2,I.docs3].filter(Boolean).join(', '))+row('Coverage start',I.effDate)
-    +'<div class="pr-f"><span>Beneficiaries (names only)</span><input data-en="beneficiary" value="'+esc(I.beneficiary||'').replace(/"/g,'&quot;')+'" placeholder="names only"></div>'
-    +'<div class="pr-f"><span>Mother’s maiden name</span><input data-en="mmn" autocomplete="off" value="'+esc(PRESENT_MMN).replace(/"/g,'&quot;')+'" placeholder="typed here, never saved"></div></div></div>';
-  if(w.spouse||C.sname) h+='<div class="en-person"><h5>'+esc(C.sname||'Spouse')+' — spouse</h5><div class="pr-fields">'
-    +row('Full name',C.sname)+row('Date of birth',C.sdob)+row('Age',C.sage)+row('Sex',I.ssex)+row('Height',ft(I.sheight))+row('Weight',I.sweight?I.sweight+' lb':'')
-    +row('Tobacco',I.tobaccoS?'Yes':'No')+row('Medications',meds('forS'))+row('Conditions',conds('forS'))+'</div></div>';
-  (I.kids||[]).filter(function(k){ return k&&(k.n||k.dob||k.age); }).forEach(function(k,i){ h+='<div class="en-person"><h5>'+esc(k.n||('Child '+(i+1)))+' — child</h5><div class="pr-fields">'
-    +row('Full name',k.n)+row('Date of birth',k.dob)+row('Age',k.age)+row('Sex',k.sex)+'</div></div>'; });
-  h+='<p class="note" style="margin:10px 0 0">SSN and bank details never go in POP Pro — enter them directly on the carrier’s application. The mother’s maiden name is held only while this page is open.</p>';
+  S.present=S.present||{}; var open=S.present.enOpen||{p:true};
+  var cell=function(r){ var v=(r[1]==null?'':String(r[1])).trim();
+    if(!v&&r[2]&&r[2]!=='ro') return '<div class="pr-f miss"><span>'+esc(r[0])+'</span><input data-enw="'+r[2]+'" placeholder="add it"></div>';
+    return '<div class="pr-f'+(v?'':' miss')+'"><span>'+esc(r[0])+'</span><b>'+(v?esc(v)+'<button type="button" class="cp" data-copy="'+esc(v).replace(/"/g,'&quot;')+'">copy</button>':'—')+'</b></div>'; };
+  var block=function(id,title,rows,extra){ return '<details class="en-person" data-enp="'+id+'"'+(open[id]?' open':'')+'><summary><h5>'+esc(title)+'</h5></summary><div class="pr-fields">'+rows.map(cell).join('')+'</div>'+(extra||'')+'</details>'; };
+  var benes=I.benes||(I.beneficiary?[{name:I.beneficiary}]:[]); if(!benes.length) benes=[{}];
+  var beneHTML='<div class="en-bene"><div class="en-sub">Beneficiaries</div>'+benes.map(function(b,j){ return '<div class="en-brow">'
+      +['name','pct','phone','dob'].map(function(f){ return '<input data-bene="'+j+':'+f+'" value="'+esc(b[f]||'').replace(/"/g,'&quot;')+'" placeholder="'+{name:'Full name',pct:'%',phone:'Phone',dob:'Date of birth'}[f]+'">'; }).join('')
+      +(benes.length>1?'<button type="button" class="en-x" data-benex="'+j+'">×</button>':'')+'</div>'; }).join('')
+    +'<button type="button" class="en-add" data-beneadd="1">＋ Add a beneficiary</button><div class="note" style="padding-top:4px">Phone and date of birth only where the carrier asks for them.</div></div>'
+    +'<div class="pr-f"><span>Mother’s maiden name</span><input data-mmn="1" autocomplete="off" value="'+esc(PRESENT_MMN).replace(/"/g,'&quot;')+'" placeholder="typed here, never saved"></div>';
+  var h='<div class="en-step"><span>3</span> The application — each person</div>';
+  h+=block('p',(C.pname||'Primary applicant')+' — applicant',enPersonRows('p'),beneHTML);
+  if(w.spouse||C.sname) h+=block('s',(C.sname||'Spouse')+' — spouse',enPersonRows('s'));
+  (I.kids||[]).forEach(function(k,i){ if(k&&(k.n||k.dob||k.age)) h+=block('k'+i,(k.n||('Child '+(i+1)))+' — child',enPersonRows('k',i)); });
+  h+='<div class="en-notes"><label for="enNotes"><b>Notes</b> (anything off script, what they said, what to remember or follow up — the same notes as the client profile)</label><textarea id="enNotes" rows="4"></textarea></div>';
+  h+='<div class="en-prof"><button type="button" class="btn-gold" data-enprof="save">Save profile</button><button type="button" class="btn-ghost" data-enprof="print">Print profile</button></div>';
+  h+='<p class="note" style="margin:10px 0 0">SSN and bank details never go in POP Pro — enter them directly on the carrier’s application. The mother’s maiden name is held only while this page is open — never saved, printed or sent.</p>';
   host.innerHTML=h;
-  host.querySelectorAll('[data-copy]').forEach(function(b){ b.onclick=function(){ try{ navigator.clipboard.writeText(b.dataset.copy); b.textContent='copied'; }catch(e){} }; });
-  host.querySelectorAll('[data-en]').forEach(function(inp){ inp.onchange=function(){ if(inp.dataset.en==='mmn') PRESENT_MMN=inp.value.trim(); else { S.intake[inp.dataset.en]=inp.value.trim(); autosave(); } }; }); }
+  host.querySelectorAll('details[data-enp]').forEach(function(d){ d.ontoggle=function(){ S.present.enOpen=S.present.enOpen||{p:true}; S.present.enOpen[d.dataset.enp]=d.open; }; });
+  host.querySelectorAll('[data-copy]').forEach(function(b){ b.onclick=function(e){ e.preventDefault(); try{ navigator.clipboard.writeText(b.dataset.copy); b.textContent='copied'; }catch(x){} }; });
+  host.querySelectorAll('[data-enw]').forEach(function(inp){ inp.onchange=function(){ var v=inp.value.trim(); if(!v) return; enWrite(inp.dataset.enw,v); enrollPeople(); }; });
+  var saveB=function(){ I.benes=benes.filter(function(b){ return b&&(b.name||b.pct||b.phone||b.dob); }); I.beneficiary=I.benes.map(function(b){ return b.name; }).filter(Boolean).join(', '); autosave(); };
+  host.querySelectorAll('[data-bene]').forEach(function(inp){ inp.onchange=function(){ var q=inp.dataset.bene.split(':'); benes[+q[0]]=benes[+q[0]]||{}; benes[+q[0]][q[1]]=inp.value.trim(); saveB(); }; });
+  var ba=host.querySelector('[data-beneadd]'); if(ba) ba.onclick=function(){ benes.push({}); I.benes=benes; enrollPeople(); };
+  host.querySelectorAll('[data-benex]').forEach(function(b){ b.onclick=function(){ benes.splice(+b.dataset.benex,1); saveB(); I.benes=benes; enrollPeople(); }; });
+  var mm=host.querySelector('[data-mmn]'); if(mm) mm.onchange=function(){ PRESENT_MMN=mm.value.trim(); };
+  var nt=$('enNotes'); nt.value=I.notes||''; nt.oninput=function(){ S.intake.notes=nt.value; if($('in_notes')) $('in_notes').value=nt.value; autosave(); };
+  host.querySelector('[data-enprof="save"]').onclick=function(){ saveQuote(); };
+  host.querySelector('[data-enprof="print"]').onclick=function(){ enPrintProfile(); }; }
+/* A printable client profile from the same blocks - never includes the maiden name, SSN or bank details. */
+function enPrintProfile(){ var C=S.client||{}, I=S.intake||{}, w=I.who||{}, sec=function(t,rows){ return '<h2>'+esc(t)+'</h2><table>'+rows.map(function(r){ return '<tr><th>'+esc(r[0])+'</th><td>'+esc(r[1]==null?'':String(r[1]))+'</td></tr>'; }).join('')+'</table>'; };
+  var h=sec((C.pname||'Applicant')+' — applicant',enPersonRows('p'));
+  var bn=(I.benes||[]).filter(function(b){ return b&&b.name; }); if(bn.length) h+=sec('Beneficiaries',bn.map(function(b){ return [b.name,[b.pct?b.pct+'%':'',b.phone,b.dob].filter(Boolean).join(' · ')]; }));
+  if(w.spouse||C.sname) h+=sec((C.sname||'Spouse')+' — spouse',enPersonRows('s'));
+  (I.kids||[]).forEach(function(k,i){ if(k&&(k.n||k.dob||k.age)) h+=sec((k.n||'Child '+(i+1))+' — child',enPersonRows('k',i)); });
+  if(I.notes) h+='<h2>Notes</h2><p style="white-space:pre-wrap">'+esc(I.notes)+'</p>';
+  var wdw=window.open('','_blank'); if(!wdw) return;
+  wdw.document.write('<!doctype html><meta charset="utf-8"><title>Client profile — '+esc(C.pname||'')+'</title><style>body{font:14px -apple-system,Helvetica,Arial,sans-serif;max-width:760px;margin:24px auto;padding:0 16px;color:#1a1a1a}h1{font-size:20px;border-bottom:3px solid #16203c;padding-bottom:6px}h2{font-size:15px;margin:20px 0 6px;color:#16203c}table{width:100%;border-collapse:collapse}th{text-align:left;width:34%;color:#555;font-weight:600}th,td{padding:4px 6px;border-bottom:1px solid #eee;vertical-align:top}</style><h1>Client profile — '+esc(C.pname||'')+'</h1>'+h+'<p style="color:#777;font-size:12px;margin-top:20px">SSN, bank details and the mother’s maiden name are never stored or printed here.</p><script>setTimeout(function(){print()},300)<\/script>');
+  wdw.document.close(); }
 function estTierMonthly(tier,bandIdx,state){
   var pk=S.packages[tier]; if(!pk) return null;
   var total=(+pk.lb||0)+(+pk.med||0); var afcApplied=false, grounded=false;
@@ -4388,8 +4441,9 @@ function presentScriptTokens(t){ var T=presentTokens(t), C=S.client||{}, I=S.int
   if(+S.aca.prem>0){ T['aca.premium']=m0(acaNetPrem()); T['aca.deductible']=m0(S.aca.ded); }
   if(+Cu.prem>0){ T['cur.premium']=m0(Cu.prem); if(+Cu.ded>0) T['cur.deductible']=m0(Cu.ded); if(+Cu.emp>0) T['cur.deduction']=m0(Cu.prem)+' a month'; }
   var d1=String(I.docs1||'').replace(/^\s*dr\.?\s+/i,'').replace(/\s*\(.*\)\s*$/,'').trim(); if(d1) T['doctor.name']=d1;
-  var med=(I.medList||[]).filter(function(m){ return m&&String(m.name||'').trim(); })[0];
-  if(med){ T['drug.name']=medBase(med.name); if(+medDisc(med)>0) T['drug.coupon']=fmt2(medDisc(med)); if(+med.cur>0) T['drug.cash']=fmt2(+med.cur); }
+  /* every medication, in intake order; the first fills the sentence, the rest are listed after it (presentMeds) */
+  T['_meds']=(I.medList||[]).filter(function(m){ return m&&String(m.name||'').trim(); }).map(function(m){ return {name:medBase(m.name), cash:+m.cur>0?fmt2(+m.cur):'', coupon:+medDisc(m)>0?fmt2(medDisc(m)):''}; });
+  var med=T['_meds'][0]; if(med){ T['drug.name']=med.name; if(med.coupon) T['drug.coupon']=med.coupon; if(med.cash) T['drug.cash']=med.cash; }
   /* the selected Affordable Choice level: engine figures, plus the brochure rows the engine does not carry */
   var afcP=(pk.products||[]).filter(function(p){ return p.k==='afc'; })[0], X=presentAfc(t);
   if(afcP){ T['afc.name']=String(afcP.name).split(' — ').pop(); T['afc.visit_amt']=m0(A.visit); T['afc.visits']=String(A.visitN||''); T['afc.er']=m0(A.er);
@@ -4429,6 +4483,7 @@ var PRESENT_CSS='.pp-off{display:none!important}.pp-chosen{outline:3px solid #2f
  +'.pp-mount select,.pp-mount textarea{font:inherit;font-size:13.5px;border:1px solid #9ab6dd;border-radius:4px;padding:4px 7px}.pp-mount textarea{width:100%;min-height:90px;box-sizing:border-box;margin-top:8px}'
  +'.pp-mount table{margin:6px 0 0;font-size:13.5px}.pp-copy{font:inherit;font-size:12px;font-weight:700;border:none;background:#16203c;color:#fff;border-radius:6px;padding:7px 12px;cursor:pointer;margin-top:8px}'
  +'.pp-lbadd{font:inherit;font-size:12.5px;font-weight:700;border:none;background:#2f7d4a;color:#fff;border-radius:6px;padding:5px 11px;cursor:pointer}.pp-lbx{font:inherit;font-size:11.5px;border:none;background:none;color:#8a1f12;text-decoration:underline;cursor:pointer}.pp-in{font-size:12.5px;font-weight:700;color:#2f7d4a}.pp-lbnote{font-size:11px;color:#8a5a00;max-width:220px}'
+ +'.pp-medlist{margin:6px 0 6px 18px;padding:0}.pp-medlist li{margin:3px 0}'
  +'.pp-sug{font-size:12px;font-weight:700;color:#2f7d4a}.pp-nlab{margin-top:10px;font-size:13.5px;color:#16203c}'
  +'.pp-copy[disabled]{opacity:.45;cursor:not-allowed}.pp-need{font-size:12px;color:#b42318;margin-left:8px}var[contenteditable]{outline:1px dashed #b42318;min-width:60px;display:inline-block}';
 function presentEvCss(doc){ if(doc.getElementById('ppevcss')) return; var css='';
@@ -4439,6 +4494,22 @@ function presentEvCss(doc){ if(doc.getElementById('ppevcss')) return; var css=''
   Array.prototype.forEach.call(document.querySelectorAll('link[rel="stylesheet"][href*="fonts.googleapis"]'),function(l){ var c=doc.createElement('link'); c.rel='stylesheet'; c.href=l.href; doc.head.appendChild(c); }); }
 /* refit the script frames after their content changes height */
 function presentFit(){ ['prFrame','enFrame','enFrame2'].forEach(function(id){ var fr=$(id); if(fr&&fr.contentDocument&&fr.offsetParent){ fr.style.height='60px'; fr.style.height=(fr.contentDocument.documentElement.scrollHeight+8)+'px'; } }); }
+/* More than one medication: the same words for each, one after another, before the sentence goes on to the plan's
+   prescription benefit. A [data-repeat="meds"] block in the script (if Health ZONE adds one) is cloned per medication;
+   until then the 2nd..nth are listed right after the first one's coupon sentence. */
+function presentMeds(doc,T){ var meds=T['_meds']||[], fill=function(el,m){ Array.prototype.forEach.call(el.querySelectorAll('var[data-k]'),function(v){ var k=v.getAttribute('data-k'), val=k==='drug.name'?m.name:k==='drug.cash'?m.cash:k==='drug.coupon'?m.coupon:null;
+      if(val==null) return; if(val){ v.textContent=val; v.className='pp-ok'; v.removeAttribute('title'); } else { v.className='pp-miss'; v.title='missing: '+k; } }); };
+  var rep=doc.querySelector('[data-repeat="meds"]');
+  if(rep){ Array.prototype.forEach.call(doc.querySelectorAll('.pp-medclone'),function(x){ x.remove(); }); rep.style.display=meds.length?'':'none';
+    if(meds[0]) fill(rep,meds[0]); var after=rep; meds.slice(1).forEach(function(m){ var c=rep.cloneNode(true); c.classList.add('pp-medclone'); c.removeAttribute('data-repeat'); fill(c,m); after.parentNode.insertBefore(c,after.nextSibling); after=c; }); return; }
+  var old=doc.querySelector('.pp-medlist'); if(old) old.remove();
+  var cv=doc.querySelector('[data-rx="has"] var[data-k="drug.coupon"]'); if(!cv||meds.length<2) return;
+  var ul=doc.createElement('ul'); ul.className='pp-medlist';
+  meds.slice(1).forEach(function(m){ var li=doc.createElement('li'); var v=function(k,x){ return '<var data-k="'+k+'" class="'+(x?'pp-ok':'pp-miss')+'"'+(x?'':' title="missing: '+k+'"')+'>'+esc(x||k)+'</var>'; };
+    li.innerHTML='Your '+v('drug.name',m.name)+' runs about '+v('drug.cash',m.cash)+' at the pharmacy — with the coupon it’s '+v('drug.coupon',m.coupon)+'.'; ul.appendChild(li); });
+  /* after "…it's $X." - split the text that follows the coupon at its first full stop */
+  var tn=cv.nextSibling; if(tn&&tn.nodeType===3){ var ix=tn.textContent.indexOf('.'); if(ix>=0){ var rest=tn.splitText(ix+1); rest.parentNode.insertBefore(ul,rest); return; } }
+  cv.parentNode.insertBefore(ul,cv.nextSibling); }
 function m0y(n){ return '$'+Math.round(+n||0).toLocaleString('en-US'); }
 function presentWire(doc,t){ if(!doc||!doc.body) return 0; var T=presentScriptTokens(t), n=0;
   if(!doc.getElementById('ppcss')){ var st=doc.createElement('style'); st.id='ppcss'; st.textContent=PRESENT_CSS; doc.head.appendChild(st); }
@@ -4470,6 +4541,7 @@ function presentWire(doc,t){ if(!doc||!doc.body) return 0; var T=presentScriptTo
   Array.prototype.forEach.call(doc.querySelectorAll('[data-saving]'),function(x){ x.classList.toggle('pp-off',ak==='none'); });
   /* prescriptions: serve the version that matches the profile */
   Array.prototype.forEach.call(doc.querySelectorAll('div.say'),function(x){ if(/^If they are on something now/i.test((x.innerText||'').trim())) x.classList.toggle('pp-off',!presentHasCur()); });
+  presentMeds(doc,T);
   var hasRx=(S.intake.medList||[]).some(function(m){ return m&&String(m.name||'').trim(); });
   Array.prototype.forEach.call(doc.querySelectorAll('[data-rx]'),function(x){ x.classList.toggle('pp-off',(x.getAttribute('data-rx')==='has')!==hasRx); });
   /* two closes: pick one, the other hides */
@@ -4482,6 +4554,8 @@ function presentWire(doc,t){ if(!doc||!doc.body) return 0; var T=presentScriptTo
      picked, Medical Bill Saver on, every layer of protection shown. Same evTableHTML the quote page draws. */
   var mc=doc.querySelector('[data-mount="conditions"]'); if(mc){ mc.classList.add('pp-mount'); presentEvCss(doc);
     var det=mc.closest('details'); if(det&&!det.dataset.ppOpened){ det.open=true; det.dataset.ppOpened='1'; }
+    /* the script's mock "Condition: Appendectomy ▾" line predates this card - "What happened" is the working picker */
+    Array.prototype.forEach.call((det||doc).querySelectorAll('p'),function(p2){ if(/same drop-list as the quote page/i.test(p2.textContent)) p2.classList.add('pp-off'); });
     var pick=S.present.cond||'ev0', sc=pick==='ev0'||pick==='ev1'?S.ev[+pick.slice(2)]:evScn(pick);
     if(!(sc&&evScnBill(sc).total>0)){ pick='hosp'; sc=evScn('hosp'); }
     var opts=[0,1].filter(function(k2){ return S.ev[k2]&&evScnBill(S.ev[k2]).total>0; }).map(function(k2){ return '<option value="ev'+k2+'"'+(pick==='ev'+k2?' selected':'')+'>Example '+(k2+1)+' from the quote — '+esc(S.ev[k2].desc||'')+'</option>'; }).join('')
@@ -4506,6 +4580,8 @@ function presentWire(doc,t){ if(!doc||!doc.body) return 0; var T=presentScriptTo
     Array.prototype.forEach.call(ml.querySelectorAll('[data-lb]'),function(sel){ sel.onchange=function(){ pbSet(cfg,sel.getAttribute('data-lb'),sel.value); redo(); }; });
     Array.prototype.forEach.call(ml.querySelectorAll('[data-lbadd]'),function(b){ b.onclick=function(){ var w=b.getAttribute('data-lbadd'); pk.dropped=(pk.dropped||[]).filter(function(x){ return x!=='lb'+w; }); redo(); }; });
     Array.prototype.forEach.call(ml.querySelectorAll('[data-lbrm]'),function(b){ b.onclick=function(){ var w=b.getAttribute('data-lbrm'); pk.dropped=pk.dropped||[]; if(pk.dropped.indexOf('lb'+w)<0) pk.dropped.push('lb'+w); redo(); }; }); }
+  /* the script's blue "everything it will ask for" panel is replaced by POP Pro's per-person blocks on Enroll */
+  var la=doc.querySelector('[data-mount="lifeapp"]'); if(la){ var box=la.closest('div'); while(box&&box.parentNode&&box.parentNode!==doc.body) box=box.parentNode; if(box&&box!==doc.body) box.classList.add('pp-off'); }
   /* notes: the same S.intake.notes the Intake step and the navigator push write */
   var mn=doc.querySelector('[data-mount="notes"]'); if(mn){ var ta=mn.querySelector('textarea');
     if(!ta){ mn.classList.add('pp-mount'); var lb=doc.createElement('div'); lb.className='pp-nlab'; lb.innerHTML='<b>Notes</b> (the same notes as the Script Navigator profile and POP Pro Intake — put anything important here)';
