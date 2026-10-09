@@ -60,7 +60,8 @@ const TEST = `(async function(){
   ok(visRow('aca')&&visRow('cur')&&visRow('none')&&!d.querySelector('tr[data-anchor="employer"]'),'anchors: marketplace, today, none — no payroll row');
   var star=function(a){ var sl=d.querySelector('tr[data-anchor="'+a+'"] [data-suggested-slot]'); return sl?sl.textContent:''; };
   ok(/SUGGESTED/.test(star('cur'))&&!/SUGGESTED/.test(star('aca')),'star on the higher yearly true cost (current plan here), not hard-coded on marketplace: cur="'+star('cur')+'" aca="'+star('aca')+'"');
-  var kcs=JSON.stringify(S.cur); S.cur.prem=100; S.cur.ded=500; presentWire(d,'best'); ok(/SUGGESTED/.test(star('aca'))&&!star('cur'),'cheap current plan: star moves to marketplace'); S.cur=JSON.parse(kcs); presentWire(d,'best');
+  var kcs=JSON.stringify(S.cur); S.cur.prem=100; S.cur.ded=500; presentWire(d,'best'); ok(/SUGGESTED/.test(star('aca'))&&!star('cur'),'cheap current plan: star moves to marketplace');
+  ok(((d.querySelector('tr[data-anchor="aca"] [data-truecost-slot]')||{}).textContent||'').indexOf('/yr true cost')>0&&!d.querySelector('.pp-yr'),'yearly true cost in the script slot, nothing injected'); S.cur=JSON.parse(kcs); presentWire(d,'best');
   d.querySelector('tr[data-anchor="aca"]').click(); await wait(30); ok(S.intake.anchor==='aca','picking marketplace sets POP Pro anchor');
   d.querySelector('tr[data-anchor="cur"]').click(); await wait(30); ok(S.intake.anchor==='cur','picking today sets POP Pro anchor');
   var keepCur=S.cur; S.cur={}; presentWire(d,'best'); ok(!visRow('cur')&&presentAnchor()==='aca'&&d.querySelector('tr[data-anchor="aca"] input').checked,'no current premium: today row gone, marketplace selected');

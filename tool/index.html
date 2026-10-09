@@ -4635,7 +4635,8 @@ function presentWire(doc,t){ if(!doc||!doc.body) return 0; var T=presentScriptTo
     if(slot){ slot.textContent=me===best?'★ SUGGESTED':''; if(tag) tag.remove(); tag=null; }
     else { if(!tag){ tag=doc.createElement('span'); tag.className='pp-sug'; r.cells[r.cells.length-1].appendChild(tag); } tag.textContent=me===best?' ★ Suggested':''; }
     /* the yearly true cost behind the pick, so the agent can see why */
-    var yc=r.querySelector('.pp-yr'); if(!yc){ yc=doc.createElement('div'); yc.className='pp-yr'; r.cells[r.cells.length-1].appendChild(yc); } yc.textContent=yr[me]?m0y(yr[me])+'/yr true cost':'';
+    var yc=r.querySelector('[data-truecost-slot]')||r.querySelector('.pp-yr'); if(!yc&&me!=='none'){ yc=doc.createElement('div'); yc.className='pp-yr'; r.cells[r.cells.length-1].appendChild(yc); }
+    if(yc) yc.textContent=yr[me]?m0y(yr[me])+'/yr true cost':'';
     r.classList.toggle('pp-off',me==='cur'&&!presentHasCur());
     r.onclick=function(){ S.present.anchor=me; if(me==='aca'||me==='cur'){ S.intake.anchor=me; if($('in_anchor')) $('in_anchor').value=me; compute(); } autosave(); presentWire(doc,t); }; });
   Array.prototype.forEach.call(doc.querySelectorAll('[data-saving]'),function(x){ x.classList.toggle('pp-off',ak==='none'); });
