@@ -51,6 +51,8 @@ const TEST = `(async function(){
   ok(!bad.length,'blanks the quote can fill are filled; unexpected gaps: '+bad.join(', '));
   var ps=d.querySelector('var[data-k="plan.products_spoken"]').textContent;
   ok(/health plan/.test(ps)&&/, and /.test(ps)&&!/Living Benefits/i.test(ps),'close lists the package in plain English: '+ps);
+  var hasSdr=S.packages.best.products.some(function(p){ return p.k==='sdr'&&+p.monthly>0; });
+  ok(/Specified Disease/.test(ps)===hasSdr,'Specified Disease named only when the rider is on the plan ('+hasSdr+'): '+ps);
   ok(d.querySelector('var[data-k="client.household_to"]').textContent==='to you'&&d.querySelector('var[data-k="client.household_for"]').textContent==='for you','household: to you / for you');
   ok(d.querySelector('var[data-k="afc.rx_cap"]').textContent==='$750','Rx cap from the brochure');
   /* anchor: radios, suggested, none hides saving */

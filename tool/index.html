@@ -4542,7 +4542,8 @@ function presentScriptTokens(t){ var T=presentTokens(t), C=S.client||{}, I=S.int
   /* the close: "your <list> — comes to $X per month". Living benefits are left out; the pivot adds them next. */
   var spoken=[], his=null;
   (pk.products||[]).filter(function(x){ return (+x.monthly||0)>0&&x.k!=='lbp'&&x.k!=='lbs'; }).forEach(function(x){ var full=String(x.name||''), head=full.split(' — ')[0], tail=full.split(' — ').pop();
-    if(x.k==='afc') spoken.unshift(tail+' health plan (with Specified Disease umbrella for worst-case)');
+    if(x.k==='afc') spoken.unshift(tail+' health plan');
+    else if(x.k==='sdr') spoken.push('the Specified Disease rider for the worst case');   /* only when it is actually on the plan */
     else if(x.k==='base') spoken.unshift((c.base==='lifex'?'LifeX':'Cigna PPO')+' health plan');
     else if(x.k==='dvh') spoken.push(head);
     else if(x.k==='acc') spoken.push('ER/accident coverage');
