@@ -1380,7 +1380,7 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
       <h4>4 · Enroll, in call order</h4>
       <ul>
         <li><b>1–2 Life application first:</b> the carrier links, then one box per person (first/last name, beneficiaries with name, %, phone and date of birth, and their own notes) to copy into the application.</li>
-        <li><b>3 Wrapping things up:</b> the security code word for the health application. It is held on screen only and never saved anywhere.</li>
+        <li><b>3 Wrapping things up:</b> the security code word for the health application (their mother’s maiden name or any word they’ll remember). It saves with the quote.</li>
         <li><b>4 Health carriers:</b> ManhattanLife, Cigna and LifeX links.</li>
         <li><b>5 Follow-ups:</b> what to do next (TFRA, their employer, referrals, living benefits if they skipped it), the <b>enrollment email</b> with their brochures (copy it, or open it in Gmail or Outlook), and <b>Copy all links</b>. The <b>text to send</b> is in the wrap-up: copy it the moment you hang up.</li>
         <li><b>Notes:</b> there is one Notes box, the same one as on the Intake. Per-person notes add to it.</li>
@@ -2370,7 +2370,7 @@ function renderEnBroch(){ var host=$('enBrochHost'); if(!host) return; if(!BROCH
     +'<div class="note" style="padding:0 0 8px">A draft: edit it to sound like you. The links are '+(m.L.t==='all'?'every shown plan’s':'the <i>'+esc(TIER_NAME[m.L.t]||'')+'</i> plan’s')+' ManhattanLife brochures for '+esc(m.L.st)+'.</div>'
     +'<textarea id="enEmailTxt" rows="26" style="width:100%;font:inherit;font-size:13px;line-height:1.45;padding:10px;border:1px solid var(--line);border-radius:8px">'+esc('Subject: '+m.subject+'\n\n'+m.body)+'</textarea>'
     +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button type="button" class="picbtn" id="enEmailCopy">📋 Copy the email</button>'
-    +'<button type="button" class="picbtn" id="enEmailGmail">Open in Gmail ↗</button><button type="button" class="picbtn" id="enEmailOutlook">Open in Outlook ↗</button>'+(afcInPk(S.packages[m.L.t])?'<button type="button" class="picbtn" data-copypic="partners" title="Paste it into the email under the partner benefits">📋 Copy partner benefits picture</button>':'')+'</div>'
+    +'<button type="button" class="picbtn" id="enEmailGmail">Open in Gmail ↗</button><button type="button" class="picbtn" id="enEmailOutlook">Open in Outlook ↗</button>'+(afcInPk(S.packages[m.L.t])?'<button type="button" class="picbtn noprint" data-copypic="partners" title="Paste it into the email under the partner benefits">📋 Copy partner benefits picture</button>':'')+'</div>'
     +'<div style="margin-top:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap"><b style="font-size:13px;color:var(--navy)">The links on their own</b><button type="button" class="picbtn" id="enCopyAll" style="margin-left:auto">📋 Copy all links</button></div>'+brochListHTML(m.L);
   $('enEmailCopy').onclick=function(){ brochCopy($('enEmailTxt').value,this); };
   $('enCopyAll').onclick=function(){ brochCopy(brochLines(m.L),this); };
@@ -4463,7 +4463,10 @@ function enrollScript(){ var t=chosenTier()||S.activeTab, fr=$('enFrame2'); if(!
          breaks the never-saved rule, so it is left out until the source is corrected. */
       var txt=function(el){ if(!el) return ''; var c2=el.cloneNode(true); Array.prototype.forEach.call(c2.querySelectorAll('.who,.pinmark'),function(x){ x.remove(); }); return c2.textContent.replace(/\s+/g,' ').trim(); };
       EN_SAY=txt(doc.querySelector('[data-render="enroll"] .say')); var tip=txt(doc.querySelector('[data-render="enroll"] .tip'));
-      EN_TIP=/notes?\b/i.test(tip)&&!/never saved/i.test(tip)?'':tip;   /* never render a tip that sends the code word to the notes */
+      EN_TIP=/notes?\b/i.test(tip)&&!/never saved/i.test(tip)?'':tip;
+      /* Jesse, 9 Oct: the code word now saves with the quote - the source's "never saved ... ask them again" line is
+         rewritten on screen until Health ZONE's source carries it (pending item 12). */
+      EN_TIP=EN_TIP.replace(/Type it in the box beside this question[\s\S]*$/,'Type it in the box beside this question — it saves with the quote, so it’s still there if the health application goes in on another day.');
       var sy=document.querySelector('#enPeople .en-say'); if(sy){ sy.textContent=''; if(EN_SAY) sy.appendChild(document.createTextNode('Say: “'+EN_SAY+'”')); if(EN_TIP){ var tp=document.createElement('div'); tp.className='en-tip'; tp.textContent=EN_TIP; sy.appendChild(tp); } }
       fr.style.height='60px'; fr.style.height=(doc.documentElement.scrollHeight+8)+'px'; }); };
   if(fr.dataset.loaded) show(); else { fr.onload=function(){ fr.dataset.loaded='1'; show(); }; fr.src='presentation.html'; } }
@@ -4530,14 +4533,14 @@ function enrollPeople(){ var host=$('enPeople'); if(!host) return; var C=S.clien
   var person=function(id,title,adult){ return '<div class="en-person" data-enp="'+id+'"><h5>'+esc(title)+'</h5><div class="en-grid">'+enFieldsFor(id).map(field).join('')+'</div>'
       +listRows('Medications',medsOf(id),'med',id)+listRows('Conditions',condsOf(id),'cond',id)
       +(adult?beneBlock(id):'')
-      +(id==='p'?'<div class="en-sec"><label class="en-f"><span>Mother’s maiden name</span><input data-mmn="1" autocomplete="off" value="'+q(PRESENT_MMN)+'" placeholder="typed here, never saved">'+cp(PRESENT_MMN)+'</label><div class="en-say">'+(EN_SAY?esc('Say: “'+EN_SAY+'”'):'')+(EN_TIP?'<div class="en-tip">'+esc(EN_TIP)+'</div>':'')+'</div></div>':'')
+      +(id==='p'?'<div class="en-sec"><label class="en-f"><span>Mother’s maiden name</span><input data-mmn="1" autocomplete="off" value="'+q(mmnV())+'" placeholder="or any code word they’ll remember">'+cp(mmnV())+'</label><div class="en-say">'+(EN_SAY?esc('Say: “'+EN_SAY+'”'):'')+(EN_TIP?'<div class="en-tip">'+esc(EN_TIP)+'</div>':'')+'</div></div>':'')
       +notesBlock(id)+'</div>'; };
   var h='<div class="en-step"><span>2</span> Information for your life application <small class="en-hint">(complete below and copy into the application — it’s all stored on the client profile and goes into your follow-up system / CRM)</small></div>';
   h+=person('p',(C.pname||'Primary applicant')+' — applicant',true);
   if(w.spouse||C.sname) h+=person('s',(C.sname||'Spouse')+' — spouse',true);
   (I.kids||[]).forEach(function(k,i){ if(k&&(k.n||k.dob||k.age)) h+=person('k'+i,(k.n||('Child '+(i+1)))+' — child',false); });
   h+='<div class="en-prof"><button type="button" class="btn-gold" data-enprof="save">Save profile</button><button type="button" class="btn-ghost" data-enprof="print">Print profile</button></div>';
-  h+='<p class="note" style="margin:10px 0 0">SSN and bank details never go in POP Pro — enter them directly on the carrier’s application. The mother’s maiden name is held only while this page is open — never saved, printed or sent.</p>';
+  h+='<p class="note" style="margin:10px 0 0">SSN and bank details never go in POP Pro — enter them directly on the carrier’s application. The mother’s maiden name (or code word) saves with the quote.</p>';
   host.innerHTML=h;
   host.querySelectorAll('[data-cpfrom]').forEach(function(b){ b.onclick=function(e){ e.preventDefault(); var el=b.previousElementSibling; if(!el) return; try{ navigator.clipboard.writeText(String(el.value||'').trim()); b.textContent='copied'; }catch(x){} }; });
   host.querySelectorAll('[data-enw]').forEach(function(inp){ inp.onchange=function(){ var path=inp.dataset.enw; enWrite(path,inp.value.trim());
@@ -4555,7 +4558,7 @@ function enrollPeople(){ var host=$('enPeople'); if(!host) return; var C=S.clien
   host.querySelectorAll('[data-beneadd]').forEach(function(b){ b.onclick=function(){ var id=b.dataset.beneadd, bs=benesOf(id).slice(); bs.push({}); bset(id,bs); enrollPeople(); }; });
   host.querySelectorAll('[data-benex]').forEach(function(b){ b.onclick=function(){ var q2=b.dataset.benex.split(':'), bs=benesOf(q2[0]).slice(); bs.splice(+q2[1],1); bset(q2[0],bs); enrollPeople(); }; });
   host.querySelectorAll('[data-pnote]').forEach(function(ta){ ta.oninput=function(){ I.personNotes=I.personNotes||{}; I.personNotes[ta.dataset.pnote]=ta.value; enNotesSync(); }; });
-  var mm=host.querySelector('[data-mmn]'); if(mm) mm.onchange=function(){ PRESENT_MMN=mm.value.trim(); var c2=mm.nextElementSibling; if(c2) c2.style.visibility=PRESENT_MMN?'visible':'hidden'; };
+  var mm=host.querySelector('[data-mmn]'); if(mm) mm.onchange=function(){ S.intake.mmn=mm.value.trim(); autosave(); var c2=mm.nextElementSibling; if(c2) c2.style.visibility=S.intake.mmn?'visible':'hidden'; };
   /* the one Notes box sits at the bottom of Enroll - the same field as the bottom of Intake (Jesse, 2026-10-08) */
   var nh=$('enNotesHost'); if(nh&&!$('enNotes')) nh.innerHTML='<div class="en-notes"><label for="enNotes"><b>Notes</b> (anything off script, what they said, what to remember or follow up — the same notes as the bottom of Intake; each person’s notes above land here too)</label><textarea id="enNotes" rows="6"></textarea></div>';
   var nt=$('enNotes'); if(nt){ if(document.activeElement!==nt) nt.value=I.notes||''; nt.oninput=function(){ S.intake.notes=nt.value; if($('in_notes')) $('in_notes').value=nt.value; autosave(); }; }
@@ -4610,7 +4613,9 @@ function renderEstimate(){
    The script itself is tool/presentation.html (Health ZONE), paged by PRESENT_PAGES.
    =================================================================================== */
 /* (the script is tool/presentation.html, paged by PRESENT_PAGES below) */
-var PRESENT_MMN='';   /* mother's maiden name: typed during the application, held in memory only, never saved */
+/* Mother's maiden name / code word: saved with the quote like any other field (Jesse, 9 Oct: "there's nothing special
+   about a mother's maiden name ... especially when we use fake words"). SSN and bank details still never go in. */
+function mmnV(){ return String(((S||{}).intake||{}).mmn||''); }
 
 function presentTier(){ return chosenTier()||S.activeTab||'best'; }
 /* ===== Celebrations (Jesse, 9 Oct) ===== the wins get a moment: "They're enrolling" sets off a full-page confetti storm,
@@ -4725,7 +4730,7 @@ function presentFields(){ var C=S.client||{}, I=S.intake||{}, ft=function(v){ va
     ['Phone',I.phone,'i:phone'],['Email',I.email,'i:email'],['Height',ft(I.pheight)],['Weight',I.pweight],['Tobacco',I.tobaccoP?'Yes':'No'],
     ['Spouse',C.sname?(C.sname+(C.sdob?' · '+C.sdob:'')):''],['Children',kids],
     ['Medications',(I.medList||[]).map(function(m){ return m&&m.name; }).filter(Boolean).join(', ')],['Doctors',[I.docs1,I.docs2,I.docs3].filter(Boolean).join(', ')],
-    ['Coverage start',I.effDate,'i:effDate'],['Beneficiary',I.beneficiary,'i:beneficiary'],['Mother’s maiden name',PRESENT_MMN,'mmn']]; }
+    ['Coverage start',I.effDate,'i:effDate'],['Beneficiary',I.beneficiary,'i:beneficiary'],['Mother’s maiden name',mmnV(),'mmn']]; }
 /* The script, one screen at a time (Jesse, 2026-10-08): like the navigator flipping cards, each screen fits above
    the fold, the rail stays beside it, and Next says what comes next. Screens are cut at the script's own headings or
    at the first words of a block (m), so Health ZONE can edit wording without breaking the cut; a marker that is not

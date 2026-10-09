@@ -294,11 +294,12 @@ const TEST = `(async function(){
   ok(!nd.classList.contains('pp-off')&&nd.textContent.split(String.fromCharCode(10)).join(' ').indexOf('Missing: booking link.')>=0,'one field blank: warning lists just that one ('+nd.textContent.slice(150,230)+')');
   var steps=presentApplyPlan('best').map(function(s){ return s.car.split(' ')[0]; });
   ok(steps[0]==='Americo'&&steps.indexOf('ManhattanLife')>0,'life first then ManhattanLife: '+steps.join(' > '));
-  /* maiden name: memory only */
+  /* maiden name / code word: saved with the quote */
   var mm=document.querySelector('#enPeople [data-mmn]'); ok(!!mm,'maiden-name box on Enroll');
   if(mm){ mm.value='Zzyzxmaiden'; mm.dispatchEvent(new Event('change')); await wait(50); }
   autosave(); await wait(50); var ls=''; for(var j=0;j<localStorage.length;j++){ ls+=localStorage.getItem(localStorage.key(j)); }
-  ok(PRESENT_MMN==='Zzyzxmaiden'&&!/Zzyzxmaiden/.test(JSON.stringify(S))&&!/Zzyzxmaiden/.test(ls),'maiden name held, never saved');
+  ok(S.intake.mmn==='Zzyzxmaiden'&&/Zzyzxmaiden/.test(ls),'maiden name / code word saves with the quote (Jesse, 9 Oct)');
+  var tipEl=document.querySelector('#enPeople .en-tip'); ok(!tipEl||!/never saved/.test(tipEl.textContent),'the code-word tip no longer says never saved');
   S.intake.beneficiary='Zzyzxbenef'; autosave(); await wait(50); var ls2=''; for(var j2=0;j2<localStorage.length;j2++){ ls2+=localStorage.getItem(localStorage.key(j2)); }
   ok(/Zzyzxbenef/.test(ls2),'control: a saved field does reach localStorage');
   var dd=document.implementation.createHTMLDocument('t'); dd.body.innerHTML='<var data-k="client.first">X</var><var data-k="no.such">Y</var><var>$50</var>';
