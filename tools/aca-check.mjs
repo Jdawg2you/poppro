@@ -147,7 +147,7 @@ if (mode === 'engine') {
   { const a = html.indexOf('var EV_SCENARIOS=['), b = html.indexOf('];', a); const blk = html.slice(a, b);
     const labels = [...blk.matchAll(/label:'([^']+)'/g)].map(m => m[1]);
     const want = ['Hospital stay (national average)', 'ER visit — admitted, 3 days', 'Broken arm — cast, no surgery', 'Broken arm — needs surgery', 'Heart attack', 'Cancer — first year of treatment', 'Doctor visit', 'Urgent care visit', 'ER visit (not admitted)', 'MRI', 'Outpatient knee surgery'];
-    ok(labels.length === 11 && want.every(w => labels.includes(w)), 'one scenario list for both cards, all 11 scenarios (' + labels.length + ')');
+    ok(labels.length === 12 && want.every(w => labels.includes(w)), 'one scenario list for both cards, all 12 scenarios (appendicitis added 9 Oct) (' + labels.length + ')');
     ok(/src:'Derived: 3 of the 5\.2-day/.test(blk), 'ER-admitted 3-day stay cites how it was derived'); }
   ok(/ev:\[evScn\('hosp'\),evScn\('urgent'\)\]/.test(html), 'new cases start with hospital stay on top and urgent care below');
   { const a = html.indexOf('var showEvents=false'), b = html.indexOf('/* ---- last page', a), blk = html.slice(a, b);

@@ -1483,6 +1483,10 @@ var ML_OFFERED={
    portal group it wins; elsewhere the older HF_RATES tables still price. Loaded after start-up,
    so the first render may use HF_RATES for a moment and re-prices when this arrives. */
 var PR=null;
+/* Packages wait for the full ManhattanLife rate file (Health ZONE + Jesse, 9 Oct): built before it lands, Out-of-Pocket,
+   dental and Cancer/Heart/Stroke had no rate in most states and silently dropped out of every package for a second or
+   two - read as "not sold in Texas". 'loading' until it arrives; 'failed' if it errors or takes more than 10 seconds. */
+var PR_STATE='loading';
 function prGroup(pid,st){
   var p=PR&&PR.products[pid]; if(!p) return null;
   for(var i=0;i<p.groups.length;i++){ if(p.groups[i].states.indexOf(st)>=0) return p.groups[i]; }
@@ -1516,8 +1520,10 @@ function loadBaseRates(){
   });
 }
 function loadPortalRates(){
+  var give=setTimeout(function(){ if(PR_STATE==='loading'){ PR_STATE='failed'; try{ autoPriceTiers(); fill(); compute(); }catch(e){} } },10000);
+  var fail=function(){ clearTimeout(give); if(PR_STATE!=='ok'){ PR_STATE='failed'; try{ autoPriceTiers(); fill(); compute(); }catch(e){} } };
   fetch('rates/portal-rates.json',{cache:'no-cache'}).then(function(r){ return r.ok?r.json():null; }).then(function(j){
-    if(!j) return; PR=j;
+    if(!j){ fail(); return; } clearTimeout(give); PR=j; PR_STATE='ok';
     try{ autoPriceTiers(); fill(); compute(); }catch(e){}
     /* DVH Select for states the portal pull missed, read from each state's own brochure. */
     fetch('rates/dvh-brochure-rates.json',{cache:'no-cache'}).then(function(r){ return r.ok?r.json():null; }).then(function(b){
@@ -1525,7 +1531,7 @@ function loadPortalRates(){
       (b.groups||[]).forEach(function(g){ if(!prGroup(301,g.states[0])) p.groups.push(g); });
       try{ autoPriceTiers(); fill(); compute(); }catch(e){}
     }).catch(function(){});
-  }).catch(function(){});
+  }).catch(fail);
 }
 function notLoaded(key,label,st){
   return (ML_OFFERED[key]||'').split(' ').indexOf(st)<0
@@ -2527,6 +2533,7 @@ function syncRateBasis(){
 }
 function autoPriceTiers(){
   if(typeof HF_RATES==='undefined'||typeof TIERCFG==='undefined') return;
+  if(PR_STATE==='loading') return;   /* loadPortalRates builds the packages the moment the rates arrive */
   if(!(S.client.state||'').trim()||!ratingAge()) return;
   // SDR escalation is intentionally NOT auto-applied — it is offered as a priced suggestion.
   ['good','better','best'].forEach(function(t){
@@ -5562,6 +5569,7 @@ function renderBuilder(){
   var host=$('sec_builder'); if(!host) return;
   var st=(S.client.state||'').toUpperCase(), age=ratingAge();
   if(!st||!age){ host.innerHTML='<div class="bh"><h3>Package builder</h3><small>Enter the client’s state and age on the Intake to build packages.</small></div>'; return; }
+  if(PR_STATE==='loading'){ host.innerHTML='<div class="bh"><h3>Package builder</h3><small>Loading the ManhattanLife rates… the packages appear in a moment.</small></div>'; return; }
   // Version B structure (2026-09-29): saved quotes from before it carry old per-package settings (SDR in
   // every tier, a flat $45 life line). Reset those once so every package starts from the core four.
   if(S.cfgVersion!=='B-core4-v2'){ S.cfgVersion='B-core4-v2'; S.cfg={}; ['good','better','best'].forEach(function(t){ var pk=S.packages[t]; if(!pk) return; pk.lb=0; pk.lbCarrier=''; pk.lbCov=''; pk.dropped=(pk.dropped||[]).filter(function(k){ return k==='dvh'; }); }); setTimeout(pbReprice,0); }
@@ -5579,7 +5587,8 @@ function renderBuilder(){
     +'<button type="button" data-act="reload" title="Put all three packages back to POP Pro’s recommendation" style="font:inherit;font-size:13px;font-weight:700;border-radius:999px;padding:7px 14px;cursor:pointer;border:1.5px solid var(--gold);background:#fffdf7;color:#8a6a1f;margin-right:6px">↺ Reload our recommendation</button>'
     +LINEUPS.map(function(L){ var on=(S.lineup||'mh')===L[0]; return '<button type="button" data-lineup="'+L[0]+'" style="font:inherit;font-size:13px;font-weight:600;border-radius:999px;padding:7px 14px;cursor:pointer;border:1px solid '+(on?'var(--navy)':'#d6cdb4')+';background:'+(on?'var(--navy)':'#fff')+';color:'+(on?'#fff':'var(--ink)')+'">'+L[1]+'</button>'; }).join('')+'</div>';
   lineupBar=lineupBar.replace(/<\/div>$/,presentBtn+'</div>');
-  var html=lineupBar+anchorStrip+'<div class="bh" style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap"><h3>Package builder</h3><small>'+st+' · age '+age+' · '+({i:'Individual',s:'Individual + Spouse',c:'Individual + Children',f:'Family'}[householdKey()])+' · prices from the ManhattanLife rate tables</small><button type="button" class="picbtn hidein-client noprint" data-copypic="plans" style="margin-left:auto">📋 Copy plans</button></div><div class="pb3">';
+  var html=(PR_STATE==='failed'?'<div class="hidein-client noprint" style="margin:0 0 10px;padding:10px 14px;border:1px solid #f1b4ad;background:#fdecea;color:#b42318;border-radius:10px;font-weight:700">The full ManhattanLife rate file didn’t load, so some products (Out-of-Pocket, dental, Cancer/Heart/Stroke) can’t be priced in many states. <a href="#" onclick="location.reload();return false" style="color:#b42318">Refresh the page</a> before you quote.</div>':'')
+    +lineupBar+anchorStrip+'<div class="bh" style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap"><h3>Package builder</h3><small>'+st+' · age '+age+' · '+({i:'Individual',s:'Individual + Spouse',c:'Individual + Children',f:'Family'}[householdKey()])+' · prices from the ManhattanLife rate tables</small><button type="button" class="picbtn hidein-client noprint" data-copypic="plans" style="margin-left:auto">📋 Copy plans</button></div><div class="pb3">';
   tiers.forEach(function(T){
     var t=T[0], c=effCfg(t), pk=S.packages[t]||{products:[]}, dropped=pk.dropped||[];
     var built=buildTierProducts(c,null,[]), byK={}; built.forEach(function(p){ byK[p.k]=p; });

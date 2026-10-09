@@ -51,6 +51,7 @@ const TEST = `(async function(){
   var kb=S.cfg&&S.cfg.good?S.cfg.good.base:undefined; ok(!tierNonMh('best')&&NONMH.lifex&&NONMH.triad&&!!document.getElementById('enSaveBar'),'Manhattan plans present normally; LifeX/Cigna have a notice; Enroll carries the Save Quote reminder');
   var lbB=lbSummary('best'); ok(!lbB.length||(/includes living benefits/.test(buildEmail().body)||/can include living benefits/.test(buildEmail().body)),'quote email mentions living benefits when the plan carries them');
   ok(!lbB.length||lbB.every(function(x){ return enrollEmail().body.indexOf(x.who+' — ')>0; }),'enrollment email lists each person’s living-benefit coverage');
+  ok(PR_STATE==='ok'&&(S.packages.best.products||[]).some(function(p){ return p.k==='gap'&&+p.monthly>0; }),'full rates loaded before packages are built: Out-of-Pocket prices in TX');
   ok(!!document.getElementById('sqDate')&&!!document.getElementById('sqTime')&&!!document.getElementById('sqPdf')&&document.querySelectorAll('#sendQuote .sqstep').length===3,'Send the quote has its three steps');
   ok(!document.querySelector('#printout .brlist')&&document.getElementById('brochBox').classList.contains('hidein-client'),'the brochure box stays off the printout and Client View');
   buildPrintout(); ok(!document.querySelector('#printout [data-copypic]')&&!/Copy (plans|example|picture)/.test(document.getElementById('printout').textContent),'no copy button inside the printout / emailed quote');
