@@ -4609,6 +4609,14 @@ function presentScriptTokens(t){ var T=presentTokens(t), C=S.client||{}, I=S.int
   /* who the living-benefit add-back is for: both adults, just the applicant, or just the spouse (by first name) */
   var lbOn=function(w){ return (pk.products||[]).some(function(x){ return x.k==='lb'+w&&(+x.monthly||0)>0; }); };
   T['lb.who']=lbOn('p')&&lbOn('s')?'the two of you':lbOn('s')?(enSplit((S.client||{}).sname)[0]||'your spouse'):lbOn('p')?'you':'';
+  /* The worked appendicitis example is spoken from the SAME calculation as the card (Jesse, 2026-10-09: "the narrative
+     does not match the example"): the four Affordable Choice layers, then whatever else this package pays for that
+     stay, and the anchor's PER-PERSON deductible - an event happens to one person, as the card already shows. */
+  try{ var apSc=evScn('append'), apBill=evScnBill(apSc).total, apR=evEvent(apSc,Object.assign({},evTierPack(t),{negotPct:(+(S.negot||{}).pct>0&&apBill>(+((S.negot||{}).min)||2500))?S.negot.pct:0}));
+    var extra={}; (apR.parts||[]).forEach(function(pp){ if(/^Affordable Choice/.test(pp.lab)) return; var nm=String(pp.lab).split(' — ')[0]; extra[nm]=(extra[nm]||0)+(+pp.v||0); });
+    var en=Object.keys(extra).filter(function(k){ return extra[k]>0; }).map(function(k){ return 'your '+k+' adds '+m0(extra[k]); });
+    T['_exMore']=en.length?en.slice(0,-1).join(', ')+(en.length>1?' and ':'')+en[en.length-1]:''; T['_exGrand']=m0(apR.pays); }catch(e){}
+  var EA=evAnchor(); if(EA&&EA.ded){ T['anchor.deductible']=m0(EA.ded); T['_exDedWords']=m0(EA.ded); }
   T['anchor.aside_obj']=(presentHasCur()&&!(+curIn().emp>0))?'those':'that one';
   var planMo=tierTotals(t).mo-lbMo, ak=presentAnchor(), anc=ak==='aca'?(+S.aca.prem>0?acaNetPrem():null):ak==='cur'||ak==='employer'?(+Cu.prem>0?+Cu.prem:null):null;
   T['plan.monthly']=fmt2(planMo); T['lb.addback']=lbMo>0?fmt2(lbMo):''; T['new.total']=fmt2(planMo+lbMo);
@@ -4673,6 +4681,15 @@ function presentPendingEdits(doc){
     if(tn&&tn.nodeType===3&&/^Stop here\. You are waiting to hear/.test(tn.textContent)){ x.dataset.ppEd='1';
       tn.textContent='Pause — you’re waiting for confirmation that you’re aligned. That may be total agreement or something close to it. They need to feel heard, and that you’re delivering what they asked for.'; } });
   Array.prototype.forEach.call(doc.querySelectorAll('p.cue'),function(x){ if(/^This step exists because you asked where the price gets said/i.test((x.textContent||'').trim())) x.classList.add('pp-off'); });
+  /* 4. Section 7 worked example: say the other layers this package pays, the grand total the card shows, and the
+        per-person deductible instead of the fixed "ten thousand dollars" */
+  var tv=doc.querySelector('var[data-k="example.total"]'); if(tv&&T0['_exGrand']){ var say=tv.closest('.say');
+    if(say&&!say.dataset.ppEx){ say.dataset.ppEx='1';
+      Array.prototype.slice.call(say.childNodes).some(function(nd){ if(nd.nodeType===3&&/So before we even count the surgery/.test(nd.textContent)&&T0['_exMore']){
+        var ins=doc.createElement('span'); ins.className='pp-exmore'; ins.textContent='And '+T0['_exMore']+' for that same stay. '; nd.parentNode.insertBefore(ins,nd); return true; } return false; });
+      Array.prototype.forEach.call(say.childNodes,function(nd){ if(nd.nodeType===3&&/ten thousand dollars/.test(nd.textContent)&&T0['_exDedWords']) nd.textContent=nd.textContent.replace('ten thousand dollars',T0['_exDedWords']); }); }
+    tv.textContent=T0['_exGrand'];
+    var ad=say&&say.querySelector('var[data-k="anchor.deductible"]'); if(ad&&T0['_exDedWords']) ad.textContent=T0['_exDedWords']; }
   /* 3. Section 5 doctor line: the list carries its own "Dr", and it is "they're" (or "they're all" for several) */
   Array.prototype.forEach.call(doc.querySelectorAll('var[data-k="doctor.name"]'),function(v){ var pv=v.previousSibling, nx=v.nextSibling, many=(T0['_docCount']||0)>1;
     if(pv&&pv.nodeType===3) pv.textContent=pv.textContent.replace(/Dr\.?\s*$/,'');
