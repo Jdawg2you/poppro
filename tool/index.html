@@ -5037,11 +5037,11 @@ function postTextHTML(t){ var E=function(x){ return String(x==null?'':x).replace
   t=t||chosenTier()||S.activeTab||'best'; var first=enSplit(S.client.pname)[0]||'there', fam=householdKey()!=='i', N=tierNonMh(t);
   var agent=(S.client.agent||'').trim(), agency=(S.agency||'').trim(), book=String(S.agentBooking||'').trim(), site=String(S.agentWebsite||'').trim();
   var LB=lbSummary(t), lifeCars=[]; LB.forEach(function(x){ if(lifeCars.indexOf(x.carrier)<0) lifeCars.push(x.carrier); });
-  var health=N?N.name:'ManhattanLife', cars=health+(lifeCars.length?' (with '+lifeCars.join(' and ')+' for life)':'');
+  var health=N?N.name:'ManhattanLife', cars=health+(lifeCars.length?' (with '+lifeCars.join(' and ')+' for living benefits)':'');
   var L=[];
   L.push('Hi '+E(first)+', congrats and thank you for applying today — you did something great for yourself'+(fam?' and your family':'')+'!');
-  L.push('Next: the carrier reviews your application (that’s underwriting) — usually 3–5 business days. Once you’re approved I’ll send your ID card and benefit book, and we’ll set a quick call to walk through it all.'+(LB.length?' Your life coverage is reviewed separately; I’ll keep you posted.':''));
-  if(afcInPk(S.packages[t])) L.push('Your plan also includes free partner perks — PPO network, Rx discounts, telemedicine and more. Details by email.');
+  L.push('Next: the carrier reviews your application (that’s underwriting) — usually 3–5 business days. Once you’re approved I’ll send your ID card and benefit book, and we’ll set a quick call to walk through it all.'+(LB.length?' Your living benefits coverage is reviewed separately; I’ll keep you posted.':''));
+  if(afcInPk(S.packages[t])) L.push('Your plan also includes free partner perks — Rx discounts, telemedicine, Green Imaging, DirectLabs and CareGuide. Details by email.');
   L.push(E(agency||'My agency')+' is my agency; '+E(cars)+' holds your coverage. I’m your agent for life — call or text anytime'+(book?', or book a time here: '+E(book):'.'));
   L.push(E(agent||agency)+(agent&&agency?' · '+E(agency):'')+(S.agentPhone||S.agentEmail?'<br>'+E([S.agentPhone,S.agentEmail].filter(Boolean).join(' · ')):'')+(site?'<br>'+E(site):''));
   return L.join('<br><br>'); }
