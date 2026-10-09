@@ -586,6 +586,7 @@
   .enroll-card+.enroll-card{margin-top:12px}
   .en-person{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-top:10px;background:#fff}
   .en-person h5{margin:0;font-size:14px;color:var(--navy);display:inline}
+  .en-hint{font-family:-apple-system,sans-serif;font-weight:400;font-size:12.5px;color:var(--muted)}
   .en-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px}
   .en-f{display:flex;align-items:center;gap:8px;font-size:13px;border-bottom:1px dotted #e7dfcb;padding:3px 0}
   .en-f span{flex:0 0 110px;color:var(--muted)}.en-f input,.en-f select{flex:1;min-width:0;border:1px solid var(--line);border-radius:6px;padding:5px 7px;font:inherit;font-size:13px;background:#fff}
@@ -1234,7 +1235,7 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
     <div class="note" style="padding-top:2px">In call order: the life application first (it has the health questions), each person’s details, the finish — then the health carriers after the call.</div>
     <div id="enrollSummary" style="margin:14px 0"></div>
     <div class="enroll-card" id="enLife">
-      <div class="en-step"><span>1</span> Life application first</div>
+      <div class="en-step"><span>1</span> Open your life application <small class="en-hint">— use the information below</small></div>
       <div>
         <a class="portalbtn green" id="lnkMutual" href="#" target="_blank" rel="noopener">Living Benefits — Mutual of Omaha &#8599;</a>
         <a class="portalbtn" id="lnkNLG" href="https://www.nationallife.com/agent/auth/login" target="_blank" rel="noopener">Living Benefits — National Life Group &#8599;</a>
@@ -4233,7 +4234,7 @@ function enrollPeople(){ var host=$('enPeople'); if(!host) return; var C=S.clien
       +(adult?beneBlock(id):'')
       +(id==='p'?'<div class="en-sec"><label class="en-f"><span>Mother’s maiden name</span><input data-mmn="1" autocomplete="off" value="'+q(PRESENT_MMN)+'" placeholder="typed here, never saved">'+cp(PRESENT_MMN)+'</label><div class="en-say">Say: '+EN_SECURITY+'<br>If they don’t know it or won’t give it, any word they’ll remember works.</div></div>':'')
       +notesBlock(id)+'</div>'; };
-  var h='<div class="en-step"><span>2</span> The application — each person</div>';
+  var h='<div class="en-step"><span>2</span> Information for your life application <small class="en-hint">(complete below and copy into the application — it’s all stored on the client profile and goes into your follow-up system / CRM)</small></div>';
   h+=person('p',(C.pname||'Primary applicant')+' — applicant',true);
   if(w.spouse||C.sname) h+=person('s',(C.sname||'Spouse')+' — spouse',true);
   (I.kids||[]).forEach(function(k,i){ if(k&&(k.n||k.dob||k.age)) h+=person('k'+i,(k.n||('Child '+(i+1)))+' — child',false); });
@@ -4522,7 +4523,7 @@ var PRESENT_CSS='.pp-off{display:none!important}.pp-chosen{outline:3px solid #2f
  +'.pp-mount table{margin:6px 0 0;font-size:13.5px}.pp-copy{font:inherit;font-size:12px;font-weight:700;border:none;background:#16203c;color:#fff;border-radius:6px;padding:7px 12px;cursor:pointer;margin-top:8px}'
  +'.pp-lbadd{font:inherit;font-size:12.5px;font-weight:700;border:none;background:#2f7d4a;color:#fff;border-radius:6px;padding:5px 11px;cursor:pointer}.pp-lbx{font:inherit;font-size:11.5px;border:none;background:none;color:#8a1f12;text-decoration:underline;cursor:pointer}.pp-in{font-size:12.5px;font-weight:700;color:#2f7d4a}.pp-lbnote{font-size:11px;color:#8a5a00;max-width:220px}'
  +'.pp-medlist{margin:6px 0 6px 18px;padding:0}.pp-medlist li{margin:3px 0}'
- +'.pp-two{display:grid!important;grid-template-columns:1fr auto 1fr;gap:14px;align-items:start}.pp-or{display:flex;align-items:center;justify-content:center;align-self:stretch;position:relative;min-width:36px}'
+ +'.pp-two{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:start}.pp-or{display:flex;align-items:center;justify-content:center;align-self:stretch;position:relative;min-width:36px}'
  +'.pp-or:before{content:"";position:absolute;top:0;bottom:0;left:50%;border-left:2px dashed #c9a24e}.pp-or span{position:relative;background:#fff;border:2px solid #c9a24e;color:#8a6a1f;font-weight:800;font-size:12px;border-radius:999px;padding:6px 8px}'
  +'@media(max-width:640px){.pp-two{grid-template-columns:1fr}.pp-or{min-height:40px}.pp-or:before{top:50%;bottom:auto;left:0;right:0;border-left:0;border-top:2px dashed #c9a24e}}'
  +'.pp-sug{font-size:12px;font-weight:700;color:#2f7d4a}.pp-nlab{margin-top:10px;font-size:13.5px;color:#16203c}'

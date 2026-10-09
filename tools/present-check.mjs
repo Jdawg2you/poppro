@@ -63,6 +63,11 @@ const TEST = `(async function(){
   d.querySelector('tr[data-anchor="none"]').click(); await wait(30);
   ok(d.querySelector('tr[data-anchor="none"] input').checked&&Array.prototype.every.call(d.querySelectorAll('[data-saving]'),function(x){ return fr.contentWindow.getComputedStyle(x).display==='none'; }),'none: radio ticked and both saving lines hidden');
   d.querySelector('tr[data-anchor="cur"]').click(); await wait(30);
+  /* every screen shows only its own blocks (a forcing style once leaked the closes onto every screen) */
+  var leaks=[]; for(var pi=0;pi<presentNav().length;pi++){ var ix=presentNav()[pi]; presentGo(ix); await wait(10);
+    Array.prototype.forEach.call(d.body.children,function(e){ if(e.dataset.pg!=null&&+e.dataset.pg!==ix&&fr.contentWindow.getComputedStyle(e).display!=='none') leaks.push(pages[ix].t+' shows '+(e.innerText||'').slice(0,30)); }); }
+  ok(!leaks.length,'no block shows on another screen: '+leaks.slice(0,3).join(' | '));
+  presentGo(presentPageIx('Price the marketplace & pick the anchor'));
   /* catastrophic: the quote page's own event card, anchor vs the chosen package, Bill Saver on, layers open */
   S.negot.on=false; presentGo(presentPageIx('Catastrophic — walk it as layers')); await wait(60);
   var mc=d.querySelector('[data-mount="conditions"]'), tab=mc&&mc.querySelector('.evtab');
@@ -150,6 +155,8 @@ const TEST = `(async function(){
   ok(/Tax-Free Retirement Account/.test(fl)&&/employer/.test(fl)&&/beneficiaries are often your first referrals/.test(fl),'follow-ups: TFRA, employer, referrals');
   ok(!/discuss Living Benefits/.test(fl),'LB on the plan: no living-benefits follow-up');
   var ef2=document.getElementById('enFrame2'); for(var k3=0;k3<40;k3++){ await wait(100); if(ef2.contentDocument&&ef2.contentDocument.querySelector('.pp-copy')) break; }
+  ok(!Array.prototype.some.call(ef2.contentDocument.querySelectorAll('[data-close]'),function(x){ return ef2.contentWindow.getComputedStyle(x).display!=='none'&&x.closest('body>*').style.display!=='none'; })&&!/Assumptive Sale Close/.test(ef2.contentDocument.body.innerText),'no closes under Wrapping things up');
+  ok(/That.s everything I need/.test(ef2.contentDocument.body.innerText),'wrapping up starts with That is everything I need');
   ok(/Text them the moment/.test(ef2.contentDocument.body.innerText)&&Array.prototype.every.call(ef2.contentDocument.body.children,function(e){ return !/^For security purposes/.test((e.innerText||'').trim())||e.classList.contains('pp-off'); }),'wrapping up on Enroll; security question moved to the maiden-name box');
   var pc=ef2.contentDocument.querySelector('.pp-copy'); ok(pc&&pc.disabled&&/email/.test(pc.nextSibling.textContent),'post-call copy dimmed, names what is missing');
   var steps=presentApplyPlan('best').map(function(s){ return s.car.split(' ')[0]; });
