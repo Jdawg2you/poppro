@@ -98,6 +98,9 @@ const TEST = `(async function(){
   ok(!!d.querySelector('[data-screen="lb-price"]'),'lb-price marker is a real element');
   ok(!Array.prototype.some.call(d.body.children,function(e){ return /^\s*↳/.test(e.textContent)&&fr.contentWindow.getComputedStyle(e).display!=='none'; }),'the ↳ explanation lines are hidden');
   ok(/Kyle.s daughter/.test(document.getElementById('prStories').innerText),'prose mentioning Kyle is untouched');
+  /* copy-as-picture: section 8 button, and the picture itself */
+  ok(!!d.querySelector('[data-screen="bonus"] .pp-picbtn'),'Copy "Bonus Benefits" button in section 8');
+  var pblob=await picOf('partners'); ok(pblob&&pblob.type==='image/png'&&pblob.size>50000,'partner benefits render to a PNG ('+(pblob&&pblob.size)+' bytes)');
   /* every screen shows only its own blocks (a forcing style once leaked the closes onto every screen) */
   var leaks=[]; for(var pi=0;pi<presentNav().length;pi++){ var ix=presentNav()[pi]; presentGo(ix); await wait(10);
     Array.prototype.forEach.call(d.body.children,function(e){ if(e.dataset.pg!=null&&+e.dataset.pg!==ix&&fr.contentWindow.getComputedStyle(e).display!=='none') leaks.push(pages[ix].t+' shows '+(e.innerText||'').slice(0,30)); }); }

@@ -599,6 +599,7 @@
   .en-person{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-top:10px;background:#fff}
   .en-person h5{margin:0;font-size:14px;color:var(--navy);display:inline}
   .agentsetup summary{cursor:pointer;list-style:revert}.agentsetup:not([open]){margin-bottom:10px}
+  .picbar{display:flex;justify-content:flex-end;margin:10px 0 -4px}.picbtn{font:inherit;font-size:12.5px;font-weight:700;border:1px solid #c9a24e;background:#fff8e6;color:#7a5a12;border-radius:999px;padding:6px 12px;cursor:pointer}
   .en-hint{font-family:-apple-system,sans-serif;font-weight:400;font-size:12.5px;color:var(--muted)}
   .en-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px}
   .en-f{display:flex;align-items:center;gap:8px;font-size:13px;border-bottom:1px dotted #e7dfcb;padding:3px 0}
@@ -3447,6 +3448,22 @@ function anyAfcShown(forPrint){
   var inc=S.include||{};
   return ['good','better','best'].some(function(t){ var pk=S.packages[t]; return pk && tierTotals(t).mo>0 && inc[t]!==false && afcInPk(pk); });
 }
+/* ===== Copy a picture to the clipboard (Jesse, 2026-10-09) =====
+   The partner-benefits panel is drawn to a PNG and put on the clipboard, so ⌘V in Messages / iMessage / WhatsApp pastes
+   the picture itself. Drawn off-screen at a fixed width so it looks the same whatever the window size. html2canvas is
+   loaded from cdnjs on first use only. One picture per copy - the clipboard holds one image at a time. */
+var H2C_URL='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+function loadH2C(){ if(window.html2canvas) return Promise.resolve(window.html2canvas); return new Promise(function(ok,no){ var sc=document.createElement('script'); sc.src=H2C_URL; sc.onload=function(){ ok(window.html2canvas); }; sc.onerror=function(){ no(new Error('could not load html2canvas')); }; document.head.appendChild(sc); }); }
+function picOf(kind){ var html=kind==='partners'?renderAfcPartnersHTML(true):''; if(!html) return Promise.reject(new Error('nothing to copy'));
+  var box=document.createElement('div'); box.style.cssText='position:fixed;left:-10000px;top:0;width:860px;background:#fff;padding:0'; box.innerHTML=html; document.body.appendChild(box);
+  return loadH2C().then(function(h2c){ return h2c(box.firstElementChild||box,{backgroundColor:'#ffffff',scale:2,logging:false}); })
+    .then(function(cv){ box.remove(); return new Promise(function(ok){ cv.toBlob(function(b){ ok(b); },'image/png'); }); },function(e){ box.remove(); throw e; }); }
+function copyPicture(kind,btn){ var label=btn&&btn.textContent; var say=function(t){ if(btn){ btn.textContent=t; setTimeout(function(){ btn.textContent=label; },2500); } };
+  if(!(navigator.clipboard&&window.ClipboardItem)){ say('Copying pictures isn’t supported in this browser'); return; }
+  /* the ClipboardItem is created inside the click, with the picture still being drawn - Safari needs that */
+  var item=new ClipboardItem({'image/png':picOf(kind)});
+  navigator.clipboard.write([item]).then(function(){ say('✓ Copied — paste it into the text'); },function(e){ say('Couldn’t copy: '+(e&&e.message||e)); }); }
+document.addEventListener('click',function(e){ var b=e.target.closest&&e.target.closest('[data-copypic]'); if(b){ e.preventDefault(); copyPicture(b.getAttribute('data-copypic'),b); } });
 function renderAfcPartnersHTML(forPrint){
   if(!anyAfcShown(forPrint)) return '';
   var sans="font-family:'Helvetica Neue',Arial,sans-serif";
@@ -3584,7 +3601,7 @@ function compute(){
   if($('acaEstNote')) renderAcaNote();
   if($('lbRows')) renderLB(false);
   if($('popScoreBody')) renderPopScore();
-  if($('afcPartners')) $('afcPartners').innerHTML=renderAfcPartnersHTML(false);
+  if($('afcPartners')){ var ap=renderAfcPartnersHTML(false); $('afcPartners').innerHTML=ap?'<div class="picbar hidein-client noprint"><button type="button" class="picbtn" data-copypic="partners">📋 Copy picture — paste it straight into a text</button></div>'+ap:''; }
   if(S.step==='enroll') renderEnroll();
   autosave();
 }
@@ -4606,7 +4623,7 @@ var PRESENT_CSS='body{padding:10px 18px 12px!important;max-width:none!important}
  +'.pp-two{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:14px;align-items:start}.pp-two>*{min-width:0;max-width:none;margin:0;align-self:start}.pp-two>:not([data-close]){align-self:center}.pp-or{display:flex;align-items:center;justify-content:center;align-self:stretch;position:relative;min-width:36px}'
  +'.pp-or:before{content:"";position:absolute;top:0;bottom:0;left:50%;border-left:2px dashed #c9a24e}.pp-or span{position:relative;background:#fff;border:2px solid #c9a24e;color:#8a6a1f;font-weight:800;font-size:12px;border-radius:999px;padding:6px 8px}'
  +'@media(max-width:640px){.pp-two{grid-template-columns:1fr}.pp-or{min-height:40px}.pp-or:before{top:50%;bottom:auto;left:0;right:0;border-left:0;border-top:2px dashed #c9a24e}}'
- +'.pp-yr{font-size:11px;color:#6b7280}'
+ +'.pp-yr{font-size:11px;color:#6b7280}[data-screen="bonus"]{display:flex;align-items:center}.pp-picbtn{margin-left:auto;font:inherit;font-size:12.5px;font-weight:700;border:1px solid #c9a24e;background:#fff8e6;color:#7a5a12;border-radius:999px;padding:6px 12px;cursor:pointer}'
  +'.pp-sug{font-size:12px;font-weight:700;color:#2f7d4a}.pp-nlab{margin-top:10px;font-size:13.5px;color:#16203c}'
  +'.pp-copy[disabled]{opacity:.45;cursor:not-allowed}.pp-need{font-size:12px;color:#b42318;margin-left:8px}var[contenteditable]{outline:1px dashed #b42318;min-width:60px;display:inline-block}';
 function presentEvCss(doc){ if(doc.getElementById('ppevcss')) return; var css='';
@@ -4699,6 +4716,9 @@ function presentWire(doc,t){ if(!doc||!doc.body) return 0; var T=presentScriptTo
     kids.forEach(function(nd,i){ if(cut<0&&nd.nodeType===3&&/Source tags show/.test(nd.textContent)) cut=i; });
     if(cut>=0){ kids.slice(cut).forEach(function(nd){ nd.remove(); }); var prev=kids[cut-1]; if(prev&&prev.nodeName==='BR') prev.remove(); } }
   T0=T; presentPendingEdits(doc);
+  /* section 8: copy the partner-benefits picture from the script (same picture as the Quote page) */
+  var bh=doc.querySelector('[data-screen="bonus"]'); if(bh&&!bh.querySelector('.pp-picbtn')){ var pbn=doc.createElement('button'); pbn.type='button'; pbn.className='pp-picbtn'; pbn.textContent='📋 Copy “Bonus Benefits”';
+    pbn.onclick=function(){ copyPicture('partners',pbn); }; bh.appendChild(pbn); }
   presentMeds(doc,T);
   var hasRx=(S.intake.medList||[]).some(function(m){ return m&&String(m.name||'').trim(); });
   Array.prototype.forEach.call(doc.querySelectorAll('[data-rx]'),function(x){ x.classList.toggle('pp-off',(x.getAttribute('data-rx')==='has')!==hasRx); });
