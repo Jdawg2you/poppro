@@ -2374,6 +2374,8 @@ function followTasks(){
   var pMo=(pk.products||[]).reduce(function(s2,p){return s2+(+p.monthly||0);},0)+(+pk.lb||0)+(+pk.med||0);
   var vsAca=Math.max(0,(acaNetPrem()+(+S.aca.med||0))-pMo), bTop=(+I.budget)||(+I.budgetComfort)||0, left=Math.max(vsAca,bTop>0?Math.max(0,bTop-pMo):0);
   t.push({id:'tfra',text:'Have you discussed a <b>Tax-Free Retirement Account</b>?'+(left>0?' About '+fmt(left)+'/mo of room between this package and what they were already spending.':'')+' <a href="#" data-goto="tfraCard">See the TFRA numbers →</a>'});
+  // Always (Jesse, 9 Oct): book the benefits review once it's approved - the ID card, benefit book and how to use it all
+  t.push({id:'review',big:true,text:'Schedule a <b>benefits review call</b> for after approval — walk them through their ID card, benefit book and how to use the partner benefits.'});
   t.push({id:'employer',text:'Ask about their <b>employer</b> — it could open a group-plan opportunity.'});
   t.push({id:'referrals',text:'<b>Ask for referrals.</b> Their beneficiaries are often your first referrals — if they aren’t already family on this plan.'});
   return t;
@@ -5016,7 +5018,8 @@ function presentWire(doc,t){ if(!doc||!doc.body) return 0; var T=presentScriptTo
   /* post-call text: the script's own COPY link and "not finished" warning, driven by the real agent info. Every field
      the text uses must be filled - name, agency, phone, email, website, booking - or the link stays dim and the warning
      names exactly what is still blank. Complete: warning hidden, link live. */
-  var mp=doc.querySelector('[data-mount="posttext"]'); if(mp){ var body=mp.querySelector('.body')||mp, cpy=mp.querySelector('[data-copy="posttext"]')||mp.querySelector('a.cpy'), needs=mp.querySelector('[data-needs]')||mp.querySelector('.needs');
+  var mp=doc.querySelector('[data-mount="posttext"]'); if(mp){ var body0=mp.querySelector('.body')||mp, pt0=body0.querySelector('p'); if(pt0) pt0.innerHTML=postTextHTML(t);
+    var body=mp.querySelector('.body')||mp, cpy=mp.querySelector('[data-copy="posttext"]')||mp.querySelector('a.cpy'), needs=mp.querySelector('[data-needs]')||mp.querySelector('.needs');
     var need=[['agent.name','your name'],['agency','agency'],['agent.phone','phone'],['agent.email','email'],['agent.website','website'],['agent.booking','booking link']].filter(function(q){ return !String(T[q[0]]||'').trim(); }).map(function(q){ return q[1]; });
     Array.prototype.forEach.call(mp.querySelectorAll('.pp-copy,.pp-need'),function(x){ x.remove(); });
     if(cpy){ if(cpy.dataset.orig==null) cpy.dataset.orig=cpy.innerHTML;
@@ -5027,6 +5030,21 @@ function presentWire(doc,t){ if(!doc||!doc.body) return 0; var T=presentScriptTo
     if(needs){ needs.classList.toggle('pp-off',!need.length); var nl=needs.querySelector('[data-needs-list]');
       if(nl&&need.length){ nl.textContent=''; need.forEach(function(x,i){ if(i) nl.appendChild(doc.createTextNode(i===need.length-1?' and ':', ')); var bb=doc.createElement('b'); bb.textContent=x; nl.appendChild(bb); }); } } }
   return n; }
+/* The text sent the moment they hang up (Jesse, 9 Oct): the enrollment email's points, compressed for a phone -
+   congratulations, what underwriting means and how long, the partner benefits in one line, who actually holds the
+   coverage (Optimum is the agency, not the insurer - from his life-policy recap), the booking link, agent for life. */
+function postTextHTML(t){ var E=function(x){ return String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;'); };
+  t=t||chosenTier()||S.activeTab||'best'; var first=enSplit(S.client.pname)[0]||'there', fam=householdKey()!=='i', N=tierNonMh(t);
+  var agent=(S.client.agent||'').trim(), agency=(S.agency||'').trim(), book=String(S.agentBooking||'').trim(), site=String(S.agentWebsite||'').trim();
+  var LB=lbSummary(t), lifeCars=[]; LB.forEach(function(x){ if(lifeCars.indexOf(x.carrier)<0) lifeCars.push(x.carrier); });
+  var health=N?N.name:'ManhattanLife', cars=health+(lifeCars.length?' (with '+lifeCars.join(' and ')+' for life)':'');
+  var L=[];
+  L.push('Hi '+E(first)+', congrats and thank you for applying today — you did something great for yourself'+(fam?' and your family':'')+'!');
+  L.push('Next: the carrier reviews your application (that’s underwriting) — usually 3–5 business days. Once you’re approved I’ll send your ID card and benefit book, and we’ll set a quick call to walk through it all.'+(LB.length?' Your life coverage is reviewed separately; I’ll keep you posted.':''));
+  if(afcInPk(S.packages[t])) L.push('Your plan also includes free partner perks — PPO network, Rx discounts, telemedicine and more. Details by email.');
+  L.push(E(agency||'My agency')+' is my agency; '+E(cars)+' holds your coverage. I’m your agent for life — call or text anytime'+(book?', or book a time here: '+E(book):'.'));
+  L.push(E(agent||agency)+(agent&&agency?' · '+E(agency):'')+(S.agentPhone||S.agentEmail?'<br>'+E([S.agentPhone,S.agentEmail].filter(Boolean).join(' · ')):'')+(site?'<br>'+E(site):''));
+  return L.join('<br><br>'); }
 /* kept for the check: fill a bare document (named fills, unknown flagged, unnamed untouched) */
 function presentFillFrame(doc,T){ if(!doc) return 0; var n=0;
   Array.prototype.forEach.call(doc.querySelectorAll('var[data-k]'),function(v){ var k=v.getAttribute('data-k'), val=T[k];

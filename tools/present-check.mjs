@@ -52,6 +52,8 @@ const TEST = `(async function(){
   var lbB=lbSummary('best'); ok(!lbB.length||(/includes living benefits/.test(buildEmail().body)||/can include living benefits/.test(buildEmail().body)),'quote email mentions living benefits when the plan carries them');
   ok(!lbB.length||lbB.every(function(x){ return enrollEmail().body.indexOf(x.who+' — ')>0; }),'enrollment email lists each person’s living-benefit coverage');
   ok(PR_STATE==='ok'&&(S.packages.best.products||[]).some(function(p){ return p.k==='gap'&&+p.monthly>0; }),'full rates loaded before packages are built: Out-of-Pocket prices in TX');
+  ok(followTasks().some(function(x){ return x.id==='review'; }),'Enroll follow-ups always include the benefits review call');
+  var ptx=postTextHTML('best'); ok(/congrats and thank you/.test(ptx)&&/is my agency; /.test(ptx)&&/underwriting/.test(ptx)&&/walk through it all/.test(ptx),'post-call text: congrats, underwriting, who holds the coverage');
   ok(!!document.getElementById('sqDate')&&!!document.getElementById('sqTime')&&!!document.getElementById('sqPdf')&&document.querySelectorAll('#sendQuote .sqstep').length===3,'Send the quote has its three steps');
   ok(!document.querySelector('#printout .brlist')&&document.getElementById('brochBox').classList.contains('hidein-client'),'the brochure box stays off the printout and Client View');
   buildPrintout(); ok(!document.querySelector('#printout [data-copypic]')&&!/Copy (plans|example|picture)/.test(document.getElementById('printout').textContent),'no copy button inside the printout / emailed quote');
@@ -146,6 +148,7 @@ const TEST = `(async function(){
   var spz=Array.prototype.filter.call(d.querySelectorAll('div.say'),function(x){ return /^If they need to think/.test(x.textContent.trim()); }), clz=d.querySelector('[data-closes]');
   ok(spz.length===1&&clz.nextElementSibling===spz[0]&&spz[0].dataset.pg===clz.dataset.pg,'the think-it-over line sits right after the two closes, on the same screen');
   var lgd=d.querySelector('p.legend'); ok(lgd&&/Red/.test(lgd.textContent)&&/filled automatically/.test(lgd.textContent)&&!/waiting on your answer/.test(lgd.textContent)&&!/Source tags/.test(lgd.textContent),'the key reads blue = filled, red = flagged');
+  var ptp=d.querySelector('[data-mount="posttext"] p'); ok(ptp&&/is my agency; /.test(ptp.textContent),'the wrap-up text in Present is the new one (and is what Copy copies)');
   ok(!/My stab at it/.test(d.body.textContent)&&/Let me do a real one/.test(d.body.textContent),'the 5.2 preface is gone, the example words stay');
   /* catastrophic: the quote page's own event card, anchor vs the chosen package, Bill Saver on, layers open */
   S.negot.on=false; presentGo(presentPageIx('Catastrophic — walk it as layers')); await wait(60);
