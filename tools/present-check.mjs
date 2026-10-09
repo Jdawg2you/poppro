@@ -63,6 +63,8 @@ const TEST = `(async function(){
   ok(enFieldsFor('p').some(function(f){ return f[0]==='Living benefits policy #'; })===hasLbP,'living-benefits policy # appears in the applicant block exactly when they have living benefits');
   enWrite('i:lbPolicyP','LB12345'); ok(S.intake.lbPolicyP==='LB12345','the policy # saves with the quote'); S.intake.lbPolicyP='';
   ok(/Let’s get .*Package of Protection!/.test(enrollCheer())&&!/They’re in/.test(enrollCheer()),'the Enroll banner says Let’s get <names> their Package of Protection');
+  goStep('enroll'); await wait(200); CELE_GOLD_PENDING=false; goldFinale(); window.dispatchEvent(new Event('focus')); await wait(2500);
+  ok(document.querySelectorAll('#followList .fu-glow').length>0,'enrollment email: gold confetti, then the open follow-ups glow'); document.querySelectorAll('.cele-banner,.cele-canvas').forEach(function(e){ e.remove(); }); goStep('quote'); await wait(200);
   ok(!!document.getElementById('sqDate')&&!!document.getElementById('sqTime')&&!!document.getElementById('sqPdf')&&document.querySelectorAll('#sendQuote .sqstep').length===3,'Send the quote has its three steps');
   ok(!document.querySelector('#printout .brlist')&&document.getElementById('brochBox').classList.contains('hidein-client'),'the brochure box stays off the printout and Client View');
   buildPrintout(); ok(!document.querySelector('#printout [data-copypic]')&&!/Copy (plans|example|picture)/.test(document.getElementById('printout').textContent),'no copy button inside the printout / emailed quote');

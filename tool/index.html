@@ -612,6 +612,8 @@
   #agentSetup .fld.needfill label{color:#17824a}
   #agentSetupState.needfill-sum{color:#17824a;font-weight:700}
   @media (prefers-reduced-motion:reduce){#agentSetup .fld.needfill input{animation:none;box-shadow:0 0 0 3px rgba(34,160,90,.5)}}
+  @keyframes fuglow{0%,100%{box-shadow:0 0 0 2px rgba(198,154,60,.35)}50%{box-shadow:0 0 0 4px rgba(198,154,60,.75),0 0 18px rgba(198,154,60,.5)}}
+  .fitem.fu-glow{border-radius:8px;background:#fff8e6;animation:fuglow 1.4s ease-in-out infinite}
   .cele-canvas{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:9999}
   .cele-float{position:fixed;bottom:12vh;pointer-events:none;z-index:9999;animation:celefloat 2.4s cubic-bezier(.2,.7,.3,1) forwards;filter:drop-shadow(0 4px 8px rgba(0,0,0,.18))}
   @keyframes celefloat{0%{transform:translateY(0) scale(.4) rotate(-8deg);opacity:0}15%{opacity:1;transform:translateY(-8vh) scale(1.1) rotate(6deg)}100%{transform:translateY(-70vh) scale(1) rotate(-4deg);opacity:0}}
@@ -2374,8 +2376,8 @@ function renderEnBroch(){ var host=$('enBrochHost'); if(!host) return; if(!BROCH
   $('enCopyAll').onclick=function(){ brochCopy(brochLines(m.L),this); };
   /* Gmail gets the email as the agent edited it: a first "Subject:" line becomes the subject */
   var edited=function(){ var v=$('enEmailTxt').value, su=m.subject, mm=v.match(/^Subject:(.*)\n+/); if(mm){ su=mm[1].trim(); v=v.slice(mm[0].length); } return {su:su,body:v}; };
-  $('enEmailGmail').onclick=function(){ var e=edited(); window.open('https://mail.google.com/mail/?view=cm&fs=1&to='+encodeURIComponent(m.to)+'&su='+encodeURIComponent(e.su)+'&body='+encodeURIComponent(e.body),'_blank','noopener'); };
-  $('enEmailOutlook').onclick=function(){ var e=edited(); window.open('https://outlook.office.com/mail/deeplink/compose?to='+encodeURIComponent(m.to)+'&subject='+encodeURIComponent(e.su)+'&body='+encodeURIComponent(e.body),'_blank','noopener'); };
+  $('enEmailGmail').onclick=function(){ var e=edited(); goldFinale(); window.open('https://mail.google.com/mail/?view=cm&fs=1&to='+encodeURIComponent(m.to)+'&su='+encodeURIComponent(e.su)+'&body='+encodeURIComponent(e.body),'_blank','noopener'); };
+  $('enEmailOutlook').onclick=function(){ var e=edited(); goldFinale(); window.open('https://outlook.office.com/mail/deeplink/compose?to='+encodeURIComponent(m.to)+'&subject='+encodeURIComponent(e.su)+'&body='+encodeURIComponent(e.body),'_blank','noopener'); };
   wireBroch(host); }
 /* ===== AGENT FOLLOW-UP ITEMS (Enroll) — always-on prompts + opportunity flags ===== */
 function followTasks(){
@@ -4615,6 +4617,18 @@ function presentTier(){ return chosenTier()||S.activeTab||'best'; }
    choosing a plan floats a thumbs-up. Drawn on a throwaway canvas that ignores clicks and removes itself; reduced
    motion gets a short, still version. Never on the printout. */
 /* "Let's get Syed his Package of Protection!" - a family lists everyone (Jesse, 9 Oct) */
+/* The enrollment email going out (Jesse, 9 Oct): not "case closed" yet, but a very good sign - gold confetti, "another
+   one for the books", then straight to the follow-ups so they get done. Gmail/Outlook open a new tab, so it waits
+   for the agent to come back to this one (or fires after a moment if the tab never left). */
+var CELE_GOLD_PENDING=false;
+function goldFinale(){ if(CELE_GOLD_PENDING) return; CELE_GOLD_PENDING=true;
+  var fire=function(){ if(!CELE_GOLD_PENDING) return; CELE_GOLD_PENDING=false; document.removeEventListener('visibilitychange',vis); window.removeEventListener('focus',fire);
+    celebrate('gold','<span class="cele-l1">🏆 Another one for the books!</span><span class="cele-l2" style="font-size:.62em;color:#f3d48a">Now make your follow-up tight ↓</span>');
+    setTimeout(function(){ var fl=$('followList'); if(!fl) return; fl.scrollIntoView({behavior:'smooth',block:'center'});
+      var open=fl.querySelectorAll('.fitem:not(.done)'); open.forEach(function(x){ x.classList.add('fu-glow'); }); setTimeout(function(){ open.forEach(function(x){ x.classList.remove('fu-glow'); }); },7000); },2200); };
+  var vis=function(){ if(document.visibilityState==='visible') setTimeout(fire,350); };
+  document.addEventListener('visibilitychange',vis); window.addEventListener('focus',fire);
+  setTimeout(function(){ if(document.hasFocus()) fire(); },1500); }
 function enrollCheer(){ var C=S.client||{}, I=S.intake||{}, w=I.who||{}, names=[];
   var p=enSplit(C.pname)[0]; if(p) names.push(p); if(w.spouse||C.sname){ var sp=enSplit(C.sname)[0]; if(sp) names.push(sp); }
   if(w.kids) (I.kids||[]).forEach(function(k){ var kn=enSplit(k&&k.n)[0]; if(kn) names.push(kn); });
@@ -4629,11 +4643,12 @@ function celebrate(kind,label){ try{
       document.body.appendChild(e); setTimeout(function(){ e.remove(); },2600+i*120); })(i);
     return; }
   /* confetti a go-go */
-  if(label){ var b=document.createElement('div'); b.className='cele-banner'; b.innerHTML=label; document.body.appendChild(b); setTimeout(function(){ b.remove(); },6400); }
+  if(label){ var b=document.createElement('div'); b.className='cele-banner'; if(kind==='gold') b.style.top='20%'; b.innerHTML=label; document.body.appendChild(b); setTimeout(function(){ b.remove(); },6400); }
   if(still) return;
   var cv=document.createElement('canvas'), W=innerWidth, H=innerHeight, dpr=Math.min(2,window.devicePixelRatio||1);
   cv.className='cele-canvas'; cv.width=W*dpr; cv.height=H*dpr; document.body.appendChild(cv); var x=cv.getContext('2d'); x.scale(dpr,dpr);
-  var COL=['#12213b','#c69a3c','#2f7d4a','#e0301e','#3b82f6','#ec4899','#facc15','#22c55e','#a855f7'], EMO=['🎉','✨','⭐','💛','🥳'], P=[];
+  var gold=kind==='gold', COL=gold?['#c69a3c','#e9c46a','#f3d48a','#b8860b','#fff3c4','#d4a537','#a67c00']:['#12213b','#c69a3c','#2f7d4a','#e0301e','#3b82f6','#ec4899','#facc15','#22c55e','#a855f7'],
+      EMO=gold?['🏆','✨','⭐','💛']:['🎉','✨','⭐','💛','🥳'], P=[];
   var burst=function(x0,y0,ang,spread,n,sp){ for(var i=0;i<n;i++){ var a=ang+(Math.random()-.5)*spread, v=sp*(0.55+Math.random()*0.75);
       P.push({x:x0,y:y0,vx:Math.cos(a)*v,vy:Math.sin(a)*v,r:Math.random()*6.28,vr:(Math.random()-.5)*.35,w:6+Math.random()*8,h:4+Math.random()*7,c:COL[i%COL.length],
         e:Math.random()<.07?EMO[(Math.random()*EMO.length)|0]:null,s:Math.random()<.35,wob:Math.random()*6.28,life:1}); } };
