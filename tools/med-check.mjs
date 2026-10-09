@@ -31,7 +31,14 @@ const TEST = `(async function(){
   await type('adderall'); await type('Brand New Med 5mg'); var sv=await type('vivanse'); await type('lipitor');
   ok(/did you mean Vyvanse/.test(sv)&&/Add .vivanse. as typed/.test(sv),'misspelling: suggests Vyvanse and offers as-typed');
   var L=S.intake.medList.map(function(m){ return m.name; });
-  ok(L.join('|')==='Vyvanse|Adderall XR|Brand New Med 5mg|vivanse|Atorvastatin','saved names: '+L.join('|'));
+  ok(L.join('|')==='Vyvanse (Lisdexamfetamine)|Adderall XR (Dextroamphetamine, Amphetamine)|Brand New Med 5mg|vivanse|Atorvastatin (Lipitor)','saved with both names, main on the left: '+L.join('|'));
+  /* typing the other name: the main name leads and the typed one is first in the brackets */
+  ok(medDisplay('Metoprolol','toprol')==='Metoprolol (Toprol, Lopressor)','typed alias first in brackets: '+medDisplay('Metoprolol','toprol'));
+  ok(popMedResolve('Atorvastatin (Lipitor)')==='Atorvastatin'&&medKind({name:'Vyvanse (Lisdexamfetamine)'})==='g','a saved dual name still resolves and prices');
+  /* a name pushed from the navigator is the same drug, not a second row */
+  var before=S.intake.medList.length; applySuiteClient({first:'M',last:'C',state:'TX',age:'45',meds:['Atorvastatin','Lisinopril'],kids:[],health:{}});
+  var names=S.intake.medList.map(function(m){ return m.name; });
+  ok(names.filter(function(n){ return /^Atorvastatin/.test(n); }).length===1&&names.indexOf('Lisinopril (Zestril, Prinivil)')>=0,'navigator push: no duplicate, new one lands with both names: '+names.join('|'));
   var K=S.intake.medList.map(function(m){ return medKind(m); });
   ok(K[0]==='g'&&K[1]==='g'&&K[2]===null&&K[4]==='g','kinds Vyvanse g, Adderall XR g, typed unknown, Atorvastatin g: '+K.join());
   ok(medKind({name:'Eliquis'})==='b'&&medKind({name:'Jardiance'})==='b'&&medKind({name:'Wegovy'})==='b','brand-only drugs stay brand');
