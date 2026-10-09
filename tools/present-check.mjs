@@ -31,7 +31,8 @@ const TEST = `(async function(){
   ok(Array.prototype.map.call(document.querySelectorAll('#stepper button'),function(b){ return b.dataset.step; }).join()==='intake,quote,present,enroll','stepper order');
   chooseTier('best'); var pb=document.querySelector('[data-act="present"]'); ok(!!pb,'Present button on the Quote step'); pb.click();
   var fr; for(var i=0;i<60;i++){ await wait(100); fr=document.getElementById('prFrame'); if(fr&&fr.contentDocument&&fr.contentDocument.querySelector('var.pp-ok')) break; }
-  ok(S.step==='present','Present step opens'); var d=fr.contentDocument;
+  ok(S.step==='present','Present step opens');
+  ok(/^Presenting the Comprehensive plan to Pat$/.test(document.querySelector('.pr-top h3').innerText)&&!!document.querySelector('.pr-top h3 .pr-plan'),'title: Presenting the *Comprehensive* plan to Pat'); var d=fr.contentDocument;
   /* screens */
   var pages=presentPages(), shown=function(){ return Array.prototype.filter.call(d.body.children,function(e){ return e.style.display!=='none'&&e.dataset.pg!=null; }); };
   ok(presentNav().length>=15,'script cut into screens ('+presentNav().length+')');
@@ -63,6 +64,10 @@ const TEST = `(async function(){
   d.querySelector('tr[data-anchor="none"]').click(); await wait(30);
   ok(d.querySelector('tr[data-anchor="none"] input').checked&&Array.prototype.every.call(d.querySelectorAll('[data-saving]'),function(x){ return fr.contentWindow.getComputedStyle(x).display==='none'; }),'none: radio ticked and both saving lines hidden');
   d.querySelector('tr[data-anchor="cur"]').click(); await wait(30);
+  ok(Array.prototype.every.call(d.querySelectorAll('.who'),function(x){ return fr.contentWindow.getComputedStyle(x).display==='none'; }),'MIKE / JESSE / KYLE tags hidden');
+  ok(!/Source tags show/.test(d.body.innerText)&&/filled automatically/.test(d.querySelector('p.legend').innerText),'tag legend line removed, the rest of the legend kept');
+  ok(fr.contentWindow.getComputedStyle(d.querySelector('p.sub0')).display==='none','build note under the title hidden');
+  ok(/Kyle.s daughter/.test(document.getElementById('prStories').innerText),'prose mentioning Kyle is untouched');
   /* every screen shows only its own blocks (a forcing style once leaked the closes onto every screen) */
   var leaks=[]; for(var pi=0;pi<presentNav().length;pi++){ var ix=presentNav()[pi]; presentGo(ix); await wait(10);
     Array.prototype.forEach.call(d.body.children,function(e){ if(e.dataset.pg!=null&&+e.dataset.pg!==ix&&fr.contentWindow.getComputedStyle(e).display!=='none') leaks.push(pages[ix].t+' shows '+(e.innerText||'').slice(0,30)); }); }
@@ -136,14 +141,25 @@ const TEST = `(async function(){
   ok(S.intake.email==='pat@example.com','a typed box writes back to the profile');
   var ln=pp.querySelector('[data-enw="name:p:1"]'); ln.value='Presently'; ln.dispatchEvent(new Event('change'));
   ok(S.client.pname==='Pat Presently','editing the last name updates the profile name');
+  /* smart fields */
+  ok(smartDOB('63078')==='06/30/1978'&&smartDOB('6/30/78')==='06/30/1978'&&smartDOB('06301978')==='06/30/1978'&&smartDOB('9214')===''&&smartDOB('13/40/90')==='','smart DOB: 63078 / 6/30/78 / 06301978 -> 06/30/1978; 4 digits and nonsense refused');
+  ok(smartHeight('52')==='62'&&smartHeight('511')==='71'&&smartHeight("5'2")==='62'&&smartHeight('5 2')==='62'&&smartHeight('99')==='','smart height: 52 -> 5ft2, 511 -> 5ft11');
+  var db=pp.querySelector('[data-enw="c:dob"]'); db.value='63078'; db.dispatchEvent(new Event('change')); pp=document.getElementById('enPeople');
+  ok(pp.querySelector('[data-enw="c:dob"]').value==='06/30/1978'&&+S.client.page>=47,'Enroll DOB becomes 06/30/1978 and fills the age ('+S.client.page+')');
+  var hb=pp.querySelector('[data-enw="ht:pheight"]'); hb.value='52'; hb.dispatchEvent(new Event('change')); pp=document.getElementById('enPeople');
+  ok(S.intake.pheight==='62'&&/5.2/.test(pp.querySelector('[data-enw="ht:pheight"]').value),'Enroll height 52 -> 5ft2in');
   var tb=pp.querySelector('[data-enw="tob:tobaccoP"]'); tb.value='Yes'; tb.dispatchEvent(new Event('change')); ok(S.intake.tobaccoP===true,'tobacco Yes/No writes back');
   var nm=pp.querySelector('[data-enl="med:p:new"]'); nm.value='Metformin'; nm.dispatchEvent(new Event('change')); pp=document.getElementById('enPeople');
   ok(pp.querySelectorAll('[data-enl^="med:p:"]:not([data-enl$=":new"])').length===2&&S.intake.medList.some(function(m){ return m.name==='Metformin'&&m.forP; }),'medications: a row each, and a new one lands in the profile');
   var bn=pp.querySelector('[data-bene="p:0:name"]'); bn.value='Sam Present'; bn.dispatchEvent(new Event('change'));
   var bp=pp.querySelector('[data-bene="p:0:pct"]'); bp.value='100'; bp.dispatchEvent(new Event('change'));
   ok(S.intake.benes&&S.intake.benes[0].name==='Sam Present'&&S.intake.benes[0].pct==='100','beneficiary name and % save to the profile');
+  /* Enroll's Notes box mirrors the Intake notes both ways (it is the same field) */
+  goStep('intake'); await wait(100); $('in_notes').value='from the navigator: wants low deductible'; $('in_notes').dispatchEvent(new Event('input')); goStep('enroll'); await wait(200);
+  ok(document.getElementById('enNotes').value==='from the navigator: wants low deductible','Intake notes show in the Enroll notes box');
   var mainN=document.getElementById('enNotes'); mainN.value='code word: bluebird'; mainN.dispatchEvent(new Event('input'));
   var pn=pp.querySelector('[data-pnote="p"]'); pn.value='prefers texts after 5pm'; pn.dispatchEvent(new Event('input'));
+  goStep('intake'); await wait(100); ok(/Pat: prefers texts/.test($('in_notes').value),'Enroll notes and person notes show back on the Intake notes'); goStep('enroll'); await wait(200); pp=document.getElementById('enPeople');
   ok(/code word: bluebird/.test(S.intake.notes)&&/— From the application —/.test(S.intake.notes)&&/Pat: prefers texts after 5pm/.test(S.intake.notes),'person notes land in the one main notes field as "Name: …"');
   pn.value='prefers texts after 6pm'; pn.dispatchEvent(new Event('input'));
   ok((S.intake.notes.match(/Pat: /g)||[]).length===1&&/after 6pm/.test(S.intake.notes),'editing a person note replaces its line, never stacks');

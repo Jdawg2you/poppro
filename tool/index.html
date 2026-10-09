@@ -544,6 +544,7 @@
   body.client #step-intake,body.client #step-quote,body.client #step-present,body.client #step-enroll,body.client #sendQuote,body.client #stepper,body.client #benDrawer{display:none!important}
   /* ===== Present mode (agent-only; never on Client View or the printout) ===== */
   .pr-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+  .pr-top h3 .pr-plan{font-style:italic;font-weight:800;color:var(--gold-brand,#b0872f);font-size:1.12em}
   .pr-top h3{margin:0;font-family:var(--serif);color:var(--navy);font-size:22px}.pr-top small{display:block;color:var(--muted);font-size:13px;margin-top:2px}
   .pr-prog{display:flex;gap:4px;margin:6px 0 14px;flex-wrap:wrap}
   .pr-prog button{font:inherit;font-size:12px;font-weight:700;border:1px solid var(--line);background:#fff;color:var(--muted);border-radius:999px;padding:5px 11px;cursor:pointer}
@@ -586,6 +587,7 @@
   .enroll-card+.enroll-card{margin-top:12px}
   .en-person{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-top:10px;background:#fff}
   .en-person h5{margin:0;font-size:14px;color:var(--navy);display:inline}
+  .agentsetup summary{cursor:pointer;list-style:revert}.agentsetup:not([open]){margin-bottom:10px}
   .en-hint{font-family:-apple-system,sans-serif;font-weight:400;font-size:12.5px;color:var(--muted)}
   .en-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px}
   .en-f{display:flex;align-items:center;gap:8px;font-size:13px;border-bottom:1px dotted #e7dfcb;padding:3px 0}
@@ -593,6 +595,7 @@
   .en-f.miss input,.en-f.miss select{border-color:#f0b9b9}.en-f .cp{flex:none}
   .en-list{display:grid;grid-template-columns:1fr 1fr;gap:4px 14px}.en-f.add input{border-style:dashed}
   .en-sec{margin-top:10px;background:#faf7ef;border-radius:8px;padding:8px 10px}.en-say{font-size:12px;color:#5b4a1f;font-style:italic;margin-top:4px}
+  .en-tip{font-style:normal;color:var(--muted);margin-top:3px}
   .en-pnote{display:block;margin-top:10px;font-size:13px}.en-pnote span{display:block;color:var(--navy);font-weight:600;margin-bottom:3px}
   .en-pnote textarea{width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:6px;padding:6px 8px;font:inherit;font-size:13px}
   @media(max-width:700px){.en-grid,.en-list{grid-template-columns:1fr}}
@@ -866,13 +869,18 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
       <label class="kidcount" id="kidCountWrap" style="display:none">How many? <select id="in_kidcount"><option value="">—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option></select></label>
     </div>
 
-    <div class="intake-sec">Agent Information <span class="secnote">— set once; appears on every page</span></div>
+    <details id="agentSetup" class="agentsetup">
+    <summary class="intake-sec">Agent Information <span class="secnote">— set once; appears on every page</span> <span class="secnote" id="agentSetupState"></span></summary>
     <div class="intakegrid" style="grid-template-columns:repeat(2,1fr)">
       <div class="fld"><label>Agency</label><input id="in_agency" placeholder="HealthFirst"></div>
       <div class="fld"><label>Agent</label><input id="in_agent" placeholder="Your name"></div>
       <div class="fld"><label>Agent phone</label><input id="in_aphone" placeholder="(000) 000-0000"></div>
       <div class="fld"><label>Agent email</label><input id="in_aemail" placeholder="you@agency.com"></div>
+      <div class="fld"><label>NPN <small>optional</small></label><input id="in_anpn" inputmode="numeric" placeholder="National Producer Number"></div>
+      <div class="fld"><label>Website <small>optional</small></label><input id="in_aweb" placeholder="yourwebsite.com"></div>
+      <div class="fld"><label>Booking link <small>optional</small></label><input id="in_abook" placeholder="calendly.com/you"></div>
     </div>
+    </details>
 
     <div class="intake-sec" id="sec_client">Client Information</div>
     <div class="fld" style="margin-bottom:8px"><label>Why shopping / current-plan pain <small>what prompted them · what they dislike</small></label><input id="in_whyshop" placeholder="e.g. premium jumped, deductible too high, lost group plan"></div>
@@ -1020,8 +1028,8 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
 
     <div class="intake-sec" id="sec_budget">Budget &amp; Notes</div>
     <div class="intakegrid" style="grid-template-columns:1fr 1fr 1fr 1.3fr">
-      <div class="fld"><label>Comfortable monthly budget</label><input id="in_budget_comfort" type="number" step="0.01" placeholder="e.g., 700"></div>
-      <div class="fld"><label>Max monthly <small>the top of what they’d spend</small></label><input id="in_budget" type="number" step="0.01" placeholder="e.g., 1000"></div>
+      <div class="fld"><label>Comfortable monthly budget</label><input id="in_budget_comfort" class="money2" inputmode="decimal" placeholder="e.g., $700.00"></div>
+      <div class="fld"><label>Max monthly <small>the top of what they’d spend</small></label><input id="in_budget" class="money2" inputmode="decimal" placeholder="e.g., $1,000.00"></div>
       <div class="fld"><label>Anchor against</label><select id="in_anchor" class="selfld">
         <option value="aca">ACA bronze</option>
         <option value="cur">Current plan</option>
@@ -1325,6 +1333,25 @@ var copyArr=function(a){return (a||[]).map(function(x){return {name:x.name,month
 /* input masking + validation */
 function fmtPhone(v){ var d=(v||'').replace(/\D/g,'').slice(0,10); if(d.length>6) return '('+d.slice(0,3)+') '+d.slice(3,6)+'-'+d.slice(6); if(d.length>3) return '('+d.slice(0,3)+') '+d.slice(3); if(d.length>0) return '('+d; return ''; }
 function fmtDate(v){ var d=(v||'').replace(/\D/g,'').slice(0,8); if(d.length>=5) return d.slice(0,2)+'/'+d.slice(2,4)+'/'+d.slice(4); if(d.length>=3) return d.slice(0,2)+'/'+d.slice(2); return d; }
+/* Smart date of birth (Jesse, 2026-10-08): 63078 -> 06/30/1978, 6/30/78 -> 06/30/1978, 06301978 -> 06/30/1978.
+   Digits are month, day, year: 5 = MDDYY, 6 = MMDDYY, 7 = MDDYYYY, 8 = MMDDYYYY. Four digits split two ways (9/2/14
+   or 9/21/04), so they are left alone rather than guessed. A two-digit year is this century only if it is not ahead of
+   this year. Returns '' when it cannot be read. */
+function smartDOB(v){ v=String(v||'').trim(); if(!v) return ''; var now=new Date(), cy=now.getFullYear()%100;
+  var make=function(m,d,y){ y=String(y); if(y.length===2) y=String((+y<=cy?2000:1900)+(+y)); else if(y.length!==4) return ''; y=+y; m=+m; d=+d;
+    if(!(m>=1&&m<=12&&d>=1&&d<=31&&y>=1900&&y<=now.getFullYear())) return ''; return (m<10?'0':'')+m+'/'+(d<10?'0':'')+d+'/'+y; };
+  /* typed with separators (6/30/78) - but the box adds slashes as you type, so "63/07/8" must fall back to the digits */
+  var parts=v.split(/[\/\-.\s]+/).filter(Boolean), r='';
+  if(parts.length===3&&parts[0].length<=2&&parts[1].length<=2) r=make(parts[0],parts[1],parts[2]); if(r) return r;
+  var g=v.replace(/\D/g,'');
+  if(g.length===5) return make(g[0],g.slice(1,3),g.slice(3)); if(g.length===6) return make(g.slice(0,2),g.slice(2,4),g.slice(4));
+  if(g.length===7) return make(g[0],g.slice(1,3),g.slice(3)); if(g.length===8) return make(g.slice(0,2),g.slice(2,4),g.slice(4));
+  return ''; }
+/* Smart height: 52 -> 5'2", 511 -> 5'11", 5'2 / 5 2 / 5-2 -> 5'2". Returns inches as a string, or ''. */
+function smartHeight(v){ v=String(v||'').trim(); var m=v.match(/^(\d)\s*['′\-\s]\s*(\d{1,2})/); if(m) return +m[2]<12?String(+m[1]*12+(+m[2])):'';
+  var g=v.replace(/\D/g,''); if(/^[2-7]\d{1,2}$/.test(g)){ var ft=+g[0], inch=+g.slice(1); if(inch<12) return String(ft*12+inch); } return ''; }
+/* Money always reads $1,234.00 once the field is left - cents shown, commas in the thousands. */
+function fmtMoney2(v){ var n=moneyNum(v); return (String(v==null?'':v).replace(/[^0-9.]/g,'')==='')?'':'$'+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
 function fmtMoneyStr(v){
   var s=String(v==null?'':v).replace(/[^0-9.]/g,'');
   if(!s) return '';
@@ -3069,13 +3096,10 @@ function applySuiteAgent(ag){
   if(ag.name){ S.client=S.client||{}; S.client.agent=String(ag.name); }
   /* There is no NPN field on this page. It rides in the intake notes rather than being
      dropped on the floor, because it is the number a client looks up to check you are real. */
-  if(ag.npn){
-    S.intake=S.intake||{};
-    var TAG="Agent NPN ";
-    var kept=String(S.intake.notes||"").split("\n").filter(function(l){ return l.indexOf(TAG)!==0; });
-    kept.push(TAG+ag.npn);
-    S.intake.notes=kept.join("\n").replace(/^\n+|\n+$/g,"");
-  }
+  /* NPN belongs to the agent setup (Jesse, 2026-10-08), not the client's notes; an old "Agent NPN" note line is removed */
+  if(ag.npn){ S.agentNPN=String(ag.npn); S.intake=S.intake||{};
+    S.intake.notes=String(S.intake.notes||"").split("\n").filter(function(l){ return l.indexOf("Agent NPN ")!==0; }).join("\n").replace(/^\n+|\n+$/g,""); }
+  if(ag.website) S.agentWebsite=String(ag.website); if(ag.booking) S.agentBooking=String(ag.booking);
 }
 
 function applySuiteClient(c){
@@ -3371,7 +3395,9 @@ function fill(){
   $('p_pension').value=(+S.pension.monthly)?fmtMoneyStr(String(S.pension.monthly)):'';$('p_pnote').value=S.pension.note;
   ;['cv10','cv20','cv30','leg1','leg25'].forEach(function(k){ $('pp_'+k).value=(+S.pension[k])?fmtMoneyStr(String(S.pension[k])):''; });
   evRenderEditors();
-  S.negot=Object.assign({on:true,pct:40,min:2500,cards:{}},S.negot||{}); $('neg_on').checked=!!S.negot.on; $('neg_min').value=S.negot.min; $('neg_pct').value=S.negot.pct==null?'':S.negot.pct;
+  S.negot=Object.assign({on:true,pct:40,min:2500,cards:{}},S.negot||{});
+  if(!S.negotV){ S.negot.on=true; S.negotV=2; }   /* Bill Saver starts ticked - older quotes too, once; turning it off then sticks */
+  $('neg_on').checked=!!S.negot.on; $('neg_min').value=S.negot.min; $('neg_pct').value=S.negot.pct==null?'':S.negot.pct;
   $('tl_good').textContent=S.tabLabels.good;$('tl_better').textContent=S.tabLabels.better;$('tl_best').textContent=S.tabLabels.best;
   document.querySelectorAll('#tabs button').forEach(function(b){b.classList.toggle('on',b.dataset.tab===S.activeTab);b.classList.toggle('rec',b.dataset.tab===S.recommended);});
   S.include=S.include||{good:true,better:true,best:true};
@@ -3888,12 +3914,18 @@ function suiteFromNavProfile(P){
 }
 /* The agent's own details (agency, name, phone, email) belong to whoever is running the tool, not to a
    file. A loaded file keeps them unless it carries its own - loading a client never wipes the agent. */
-function agentOf(st){ return {agency:st.agency, agent:(st.client||{}).agent, phone:st.agentPhone, email:st.agentEmail}; }
+function agentOf(st){ return {agency:st.agency, agent:(st.client||{}).agent, phone:st.agentPhone, email:st.agentEmail, npn:st.agentNPN, web:st.agentWebsite, book:st.agentBooking}; }
+/* Agent setup folds closed once agency, name, phone and email are all in; it opens again if any of those four is
+   missing. NPN, website and booking are optional and never hold it open. (Jesse, 2026-10-08) */
+function agentSetupMissing(){ var a=[['agency',S.agency],['your name',(S.client||{}).agent],['phone',S.agentPhone],['email',S.agentEmail]]; return a.filter(function(x){ return !String(x[1]||'').trim(); }).map(function(x){ return x[0]; }); }
+function agentSetupFold(force){ var d=$('agentSetup'); if(!d) return; var miss=agentSetupMissing(); if(miss.length) d.open=true; else if(force) d.open=false;
+  var st=$('agentSetupState'); if(st) st.textContent=miss.length?'· needs '+miss.join(', '):'· complete'; }
 function keepAgent(ag){
   if(ag.agency && (!S.agency || S.agency==='HealthFirst')) S.agency=ag.agency;
   S.client=S.client||{}; if(ag.agent && !S.client.agent) S.client.agent=ag.agent;
   if(ag.phone && !S.agentPhone) S.agentPhone=ag.phone;
-  if(ag.email && !S.agentEmail) S.agentEmail=ag.email; }
+  if(ag.email && !S.agentEmail) S.agentEmail=ag.email;
+  if(ag.npn && !S.agentNPN) S.agentNPN=ag.npn; if(ag.web && !S.agentWebsite) S.agentWebsite=ag.web; if(ag.book && !S.agentBooking) S.agentBooking=ag.book; }
 function loadFile(file){
   var rd=new FileReader();
   rd.onload=function(){
@@ -3945,7 +3977,7 @@ function restore(){ try{ var s=localStorage.getItem('hf_pop_last'); if(s){ var r
 /* ========== INTAKE + RECOMMENDATION ENGINE ========== */
 function readIntake(){
   S.intake=S.intake||{};
-  S.agency=($('in_agency').value||'').trim()||'HealthFirst'; S.agentPhone=$('in_aphone').value; S.agentEmail=$('in_aemail').value;
+  S.agency=($('in_agency').value||'').trim()||'HealthFirst'; S.agentPhone=$('in_aphone').value; S.agentEmail=$('in_aemail').value; S.agentNPN=($('in_anpn').value||'').trim(); S.agentWebsite=($('in_aweb').value||'').trim(); S.agentBooking=($('in_abook').value||'').trim(); agentSetupFold();
   S.intake.who={app:$('in_who_app').checked,spouse:$('in_who_spouse').checked,kids:$('in_who_kids').checked};
   S.intake.phone=$('in_phone').value; S.intake.email=$('in_email').value;
   S.intake.tobaccoP=$('in_tobacco_p').checked; S.intake.tobaccoS=$('in_tobacco_s').checked;
@@ -3954,7 +3986,7 @@ function readIntake(){
   S.intake.dv=$('in_dv').checked;
   S.intake.majorcond=$('in_majorcond').checked; S.intake.majorcondNote=$('in_majorcond_note').value;
   S.intake.diabetic=$('in_diabetic').checked; S.intake.diabeticNote=$('in_diabetic_note').value;
-  S.intake.budget=+$('in_budget').value||0; S.intake.budgetComfort=+$('in_budget_comfort').value||0; S.intake.anchor=$('in_anchor').value||'aca';
+  S.intake.budget=moneyNum($('in_budget').value)||0; S.intake.budgetComfort=moneyNum($('in_budget_comfort').value)||0; S.intake.anchor=$('in_anchor').value||'aca';
   S.intake.visits=+$('in_visits').value||0;
   var C=curIn(); ['prem','emp','ded','oop','copay'].forEach(function(k){ C[k]=moneyVal($('in_cur_'+k).value); });
   C.isAca=$('in_cur_isaca').checked; C.show=$('in_cur_show').checked;
@@ -3984,7 +4016,7 @@ function fillIntake(){
   if(typeof renderKids==='function') setTimeout(renderKids,0);
   var I=S.intake||{}; var w=I.who||{app:true};
   $('in_who_app').checked=w.app!==false; $('in_who_spouse').checked=!!w.spouse; $('in_who_kids').checked=!!w.kids;
-  $('in_agency').value=(S.agency&&S.agency!=='HealthFirst')?S.agency:(S.agency||''); $('in_aphone').value=S.agentPhone||''; $('in_aemail').value=S.agentEmail||'';
+  $('in_agency').value=(S.agency&&S.agency!=='HealthFirst')?S.agency:(S.agency||''); $('in_aphone').value=S.agentPhone||''; $('in_aemail').value=S.agentEmail||''; $('in_anpn').value=S.agentNPN||''; $('in_aweb').value=S.agentWebsite||''; $('in_abook').value=S.agentBooking||''; agentSetupFold(true);
   $('in_pname').value=S.client.pname||''; $('in_sname').value=S.client.sname||''; $('in_agent').value=S.client.agent||'';
   $('in_state').value=S.client.state||''; $('in_zip').value=S.client.zip||''; $('in_page').value=S.client.page||''; $('in_sage').value=S.client.sage||''; $('in_date').value=S.client.date||''; $('in_sdob').value=S.client.sdob||''; $('in_address').value=S.client.address||'';
   $('in_phone').value=I.phone||''; $('in_email').value=I.email||'';
@@ -4003,7 +4035,7 @@ function fillIntake(){
   var A=acaIn(); $('in_aca_status').value=A.status||'na'; $('in_aca_show').checked=A.show!==false; $('in_aca_fullded').checked=A.fullded!==false;
   $('in_pincome').value=I.pincome?fmtMoneyStr(String(I.pincome)):''; $('in_sincome').value=I.sincome?fmtMoneyStr(String(I.sincome)):'';
   $('in_income').value=I.income?fmtMoneyStr(String(I.income)):''; $('in_retage').value=I.retage||''; $('in_savings').value=I.savings?fmtMoneyStr(String(I.savings)):''; $('in_invest').value=I.invest?fmtMoneyStr(String(I.invest)):''; $('in_invprot').checked=!!I.invprot; $('in_invsra').checked=!!I.invsra; $('in_invnote').value=I.invnote||'';
-  $('in_budget').value=I.budget||''; $('in_budget_comfort').value=I.budgetComfort||''; $('in_anchor').value=I.anchor||'aca'; anchorNote(); $('in_priority').value=I.priority||'coverage'; $('in_notes').value=I.notes||'';
+  $('in_budget').value=I.budget?fmtMoney2(I.budget):''; $('in_budget_comfort').value=I.budgetComfort?fmtMoney2(I.budgetComfort):''; $('in_anchor').value=I.anchor||'aca'; anchorNote(); $('in_priority').value=I.priority||'coverage'; $('in_notes').value=I.notes||'';
   renderMeds(); acaSync(); renderAca();
   $('in_aphone').value=fmtPhone($('in_aphone').value); $('in_phone').value=fmtPhone($('in_phone').value); $('in_date').value=fmtDate($('in_date').value); $('in_sdob').value=fmtDate($('in_sdob').value);
   markValid($('in_phone'),phoneOK($('in_phone').value)); markValid($('in_date'),dateOK($('in_date').value)); markValid($('in_email'),emailOK($('in_email').value)); markValid($('in_sdob'),dateOK($('in_sdob').value));
@@ -4174,8 +4206,10 @@ function enrollScript(){ var t=chosenTier()||S.activeTab, fr=$('enFrame2'); if(!
       /* the security question is rendered beside the maiden-name box straight from the script's data-render="enroll"
          block - no copy of Mike's words lives here. Its fallback tip says to write the answer into the notes, which
          breaks the never-saved rule, so it is left out until the source is corrected. */
-      var blk=doc.querySelector('[data-render="enroll"] .say'); if(blk){ var c2=blk.cloneNode(true); Array.prototype.forEach.call(c2.querySelectorAll('.who'),function(x){ x.remove(); }); EN_SAY=c2.textContent.trim(); }
-      var sy=document.querySelector('#enPeople .en-say'); if(sy) sy.textContent=EN_SAY?'Say: “'+EN_SAY+'”':'';
+      var txt=function(el){ if(!el) return ''; var c2=el.cloneNode(true); Array.prototype.forEach.call(c2.querySelectorAll('.who,.pinmark'),function(x){ x.remove(); }); return c2.textContent.replace(/\s+/g,' ').trim(); };
+      EN_SAY=txt(doc.querySelector('[data-render="enroll"] .say')); var tip=txt(doc.querySelector('[data-render="enroll"] .tip'));
+      EN_TIP=/notes?\b/i.test(tip)&&!/never saved/i.test(tip)?'':tip;   /* never render a tip that sends the code word to the notes */
+      var sy=document.querySelector('#enPeople .en-say'); if(sy){ sy.textContent=''; if(EN_SAY) sy.appendChild(document.createTextNode('Say: “'+EN_SAY+'”')); if(EN_TIP){ var tp=document.createElement('div'); tp.className='en-tip'; tp.textContent=EN_TIP; sy.appendChild(tp); } }
       fr.style.height='60px'; fr.style.height=(doc.documentElement.scrollHeight+8)+'px'; }); };
   if(fr.dataset.loaded) show(); else { fr.onload=function(){ fr.dataset.loaded='1'; show(); }; fr.src='presentation.html'; } }
 /* 2. The application, one open block per person (Jesse, 2026-10-08). Every field is a box: filled from the profile
@@ -4183,7 +4217,7 @@ function enrollScript(){ var t=chosenTier()||S.activeTab, fr=$('enFrame2'); if(!
    so Save / Print carry it and the navigator gets it on the next file load. Medications and conditions are a row each.
    Beneficiaries for each adult. A notes box per person feeds the one main notes field as "Name: …". The mother's
    maiden name is typed beside its security question and held in memory only - never saved. SSN / bank never here. */
-var EN_SAY='';   /* filled from the script's data-render="enroll" block when Enroll loads it */
+var EN_SAY='', EN_TIP='';   /* filled from the script's data-render="enroll" block when Enroll loads it */
 function enSplit(n){ n=String(n||'').trim(); var i=n.indexOf(' '); return i<0?[n,'']:[n.slice(0,i),n.slice(i+1)]; }
 function enInches(v){ v=String(v||'').trim(); var m=v.match(/^(\d)\s*['′ ]\s*(\d{1,2})/); if(m) return String(+m[1]*12+(+m[2])); var n=parseInt(v,10); return n>=48&&n<=84?String(n):''; }
 function enFt(v){ var x=parseInt(v,10); return x>=48&&x<=84?Math.floor(x/12)+'′'+(x%12)+'″':''; }
@@ -4201,14 +4235,16 @@ function enFieldsFor(id){ var C=S.client||{}, I=S.intake||{};
   return [['First name',kn[0],'kid:'+i+':n0'],['Last name',kn[1],'kid:'+i+':n1'],['Date of birth',k.dob,'kid:'+i+':dob'],['Age',k.age,'kid:'+i+':age'],
     ['Sex',k.sex,'kid:'+i+':sex','sex'],['Height',enFt(k.ht),'kid:'+i+':ht'],['Weight (lb)',k.wt,'kid:'+i+':wt']]; }
 function enWrite(path,v){ var C=S.client, I=S.intake, p=path.split(':');
-  if(p[0]==='c'){ C[p[1]]=v; if(p[1]==='dob') C.date=v; }
+  if(p[0]==='c'){ if(/dob$/.test(p[1])) v=smartDOB(v)||v; C[p[1]]=v; if(p[1]==='dob') C.date=v;
+    var ag=/dob$/.test(p[1])?ageFromDOB(v):''; if(ag){ if(p[1]==='dob') C.page=String(ag); else if(p[1]==='sdob') C.sage=String(ag); } }
   else if(p[0]==='i') I[p[1]]=v;
-  else if(p[0]==='ht') I[p[1]]=enInches(v);
+  else if(p[0]==='ht') I[p[1]]=smartHeight(v)||enInches(v);
   else if(p[0]==='wt') I[p[1]]=String(parseInt(v,10)||'');
   else if(p[0]==='tob') I[p[1]]=/^y/i.test(v);
   else if(p[0]==='name'){ var key=p[1]==='p'?'pname':'sname', parts=enSplit(C[key]); parts[+p[2]]=v; C[key]=(parts[0]+' '+parts[1]).trim(); }
   else if(p[0]==='kid'){ I.kids=I.kids||[]; var kd=I.kids[+p[1]]=I.kids[+p[1]]||{};
-    if(p[2]==='n0'||p[2]==='n1'){ var kp=enSplit(kd.n); kp[p[2]==='n0'?0:1]=v; kd.n=(kp[0]+' '+kp[1]).trim(); } else if(p[2]==='ht') kd.ht=enInches(v); else kd[p[2]]=v; }
+    if(p[2]==='n0'||p[2]==='n1'){ var kp=enSplit(kd.n); kp[p[2]==='n0'?0:1]=v; kd.n=(kp[0]+' '+kp[1]).trim(); } else if(p[2]==='ht') kd.ht=smartHeight(v)||enInches(v);
+    else if(p[2]==='dob'){ kd.dob=smartDOB(v)||v; var ka=ageFromDOB(kd.dob); if(ka) kd.age=String(ka); } else kd[p[2]]=v; }
   autosave(); }
 /* each person's notes land in the one main notes field, under one heading, as "Name: …" */
 var EN_NOTES_HEAD='— From the application —';
@@ -4235,7 +4271,7 @@ function enrollPeople(){ var host=$('enPeople'); if(!host) return; var C=S.clien
   var person=function(id,title,adult){ return '<div class="en-person" data-enp="'+id+'"><h5>'+esc(title)+'</h5><div class="en-grid">'+enFieldsFor(id).map(field).join('')+'</div>'
       +listRows('Medications',medsOf(id),'med',id)+listRows('Conditions',condsOf(id),'cond',id)
       +(adult?beneBlock(id):'')
-      +(id==='p'?'<div class="en-sec"><label class="en-f"><span>Mother’s maiden name</span><input data-mmn="1" autocomplete="off" value="'+q(PRESENT_MMN)+'" placeholder="typed here, never saved">'+cp(PRESENT_MMN)+'</label><div class="en-say">'+(EN_SAY?esc('Say: “'+EN_SAY+'”'):'')+'</div></div>':'')
+      +(id==='p'?'<div class="en-sec"><label class="en-f"><span>Mother’s maiden name</span><input data-mmn="1" autocomplete="off" value="'+q(PRESENT_MMN)+'" placeholder="typed here, never saved">'+cp(PRESENT_MMN)+'</label><div class="en-say">'+(EN_SAY?esc('Say: “'+EN_SAY+'”'):'')+(EN_TIP?'<div class="en-tip">'+esc(EN_TIP)+'</div>':'')+'</div></div>':'')
       +notesBlock(id)+'</div>'; };
   var h='<div class="en-step"><span>2</span> Information for your life application <small class="en-hint">(complete below and copy into the application — it’s all stored on the client profile and goes into your follow-up system / CRM)</small></div>';
   h+=person('p',(C.pname||'Primary applicant')+' — applicant',true);
@@ -4246,7 +4282,8 @@ function enrollPeople(){ var host=$('enPeople'); if(!host) return; var C=S.clien
   h+='<p class="note" style="margin:10px 0 0">SSN and bank details never go in POP Pro — enter them directly on the carrier’s application. The mother’s maiden name is held only while this page is open — never saved, printed or sent.</p>';
   host.innerHTML=h;
   host.querySelectorAll('[data-cpfrom]').forEach(function(b){ b.onclick=function(e){ e.preventDefault(); var el=b.previousElementSibling; if(!el) return; try{ navigator.clipboard.writeText(String(el.value||'').trim()); b.textContent='copied'; }catch(x){} }; });
-  host.querySelectorAll('[data-enw]').forEach(function(inp){ inp.onchange=function(){ enWrite(inp.dataset.enw,inp.value.trim()); var c2=inp.nextElementSibling; if(c2) c2.style.visibility=inp.value.trim()?'visible':'hidden'; }; });
+  host.querySelectorAll('[data-enw]').forEach(function(inp){ inp.onchange=function(){ var path=inp.dataset.enw; enWrite(path,inp.value.trim());
+    if(/dob|ht:|:ht$/.test(path)){ enrollPeople(); return; } var c2=inp.nextElementSibling; if(c2) c2.style.visibility=inp.value.trim()?'visible':'hidden'; }; });
   host.querySelectorAll('[data-enl]').forEach(function(inp){ inp.onchange=function(){ var q2=inp.dataset.enl.split(':'), kind=q2[0], id=q2[1], j=q2[2], v=inp.value.trim();
     if(id[0]==='k'){ var kd=(I.kids||[])[+id.slice(1)]; var key=kind==='med'?'meds':'conds', arr=String(kd[key]||'').split(/\s*;\s*/).filter(Boolean); if(j==='new'){ if(v) arr.push(v); } else { if(v) arr[+j]=v; else arr.splice(+j,1); } kd[key]=arr.join('; '); autosave(); enrollPeople(); return; }
     var fl=id==='p'?'forP':'forS';
@@ -4370,32 +4407,36 @@ function presentFields(){ var C=S.client||{}, I=S.intake||{}, ft=function(v){ va
    at the first words of a block (m), so Health ZONE can edit wording without breaking the cut; a marker that is not
    found folds its screen into the one before. Story repository and objections live in the rail, not as screens. */
 var PRESENT_PAGES=[
+ /* sc = the script's data-screen id (Health ZONE gates the set and its order); m = old wording match, used only if
+    that id is missing from the page (e.g. a marker on a closing tag, which browsers drop) */
  {t:'Before you dial'},
- {t:'The opening & setting the stage',m:['H2',/^1\s*Open/i],next:'The opening — your first words on the call'},
- {t:'Their reason',m:['H2',/^3\s*Their reason/i]},
- {t:'Price the marketplace & pick the anchor',m:['H2',/^4\s*Price/i]},
- {t:'Networks & providers',m:['H2',/^5\s*Networks/i]},
- {t:'The two questions everyone asks',m:['H2',/^6\s*The two/i]},
- {t:'How coverage works — day to day & preventive',m:['H2',/^7\s*How the coverage/i]},
- {t:'Prescriptions',m:['H3',/^prescriptions/i]},
- {t:'Catastrophic — walk it as layers',m:['H3',/^catastrophic/i]},
- {t:'Bonus benefits',m:['H2',/^8\s*Bonus/i]},
- {t:'Bonus benefits, continued',m:['DIV',/prescription discount program/i]},
- {t:'The close',m:['H2',/^9\s*Close/i]},
- {t:'Pivot to living benefits',m:['H3',/pivot to living benefits/i]},
- {t:'Living benefits — price it & do the numbers',m:['DIV',/^NOT SPOKEN\s*Price it here/i]},
- {t:'Pick your close',m:['H2',/^10\s*The bold/i]},
- {t:'The application',m:['DIV',/^Take the life application first/i],en:true},
- {t:'Security question & finish',m:['ATTR','data-render'],en:true},
- {t:'Wrap-up — text them',m:['DIV',/^Text them the moment/i],en:true},
- {t:'_rail',m:['H2',/^11\s*Story/i]}
+ {t:'The opening & setting the stage',sc:'open',next:'The opening — your first words on the call'},
+ {t:'Their reason',sc:'reason'},
+ {t:'Price the marketplace & pick the anchor',sc:'price'},
+ {t:'Networks & providers',sc:'networks'},
+ {t:'The two questions everyone asks',sc:'questions'},
+ {t:'How coverage works — day to day & preventive',sc:'coverage'},
+ {t:'Prescriptions',sc:'rx'},
+ {t:'Catastrophic — walk it as layers',sc:'catastrophic'},
+ {t:'Bonus benefits',sc:'bonus'},
+ {t:'Bonus benefits, continued',sc:'bonus-rx'},
+ {t:'The close',sc:'close'},
+ {t:'Pivot to living benefits',sc:'lb-pivot'},
+ {t:'Living benefits — price it & do the numbers',sc:'lb-price',m:['DIV',/^NOT SPOKEN\s*Price it here/i]},
+ {t:'Pick your close',sc:'boldstep'},
+ {t:'The application',sc:'lifeapp',en:true},
+ {t:'Security question & finish',sc:'wrapup',en:true},
+ {t:'Wrap-up — text them',sc:'posttext',en:true},
+ {t:'_rail',sc:'stories'}
 ];
 function presentPages(){ return PRESENT_PAGES.filter(function(p){ return p.t!=='_rail'; }); }
 /* give every top-level block of the script a screen number; -1 = rail only (stories, objections) */
 function presentPaginate(doc){ if(!doc||!doc.body||doc.body.dataset.pp) return; var pages=presentPages(), cur=0;
-  var at=function(el,m){ if(m[0]==='ATTR') return el.hasAttribute(m[1]); return el.tagName===m[0]&&m[1].test((el.innerText||el.textContent||'').replace(/\s+/g,' ').trim()); };
+  var has=function(id){ return !!doc.querySelector('[data-screen="'+id+'"]'); };
+  var at=function(el,p){ if(p.sc&&has(p.sc)) return el.getAttribute('data-screen')===p.sc||!!el.querySelector('[data-screen="'+p.sc+'"]');
+    var m=p.m; if(!m) return false; return el.tagName===m[0]&&m[1].test((el.innerText||el.textContent||'').replace(/\s+/g,' ').trim()); };
   Array.prototype.forEach.call(doc.body.children,function(el){
-    PRESENT_PAGES.forEach(function(p){ if(p.m&&at(el,p.m)) cur=p.t==='_rail'?-1:pages.indexOf(p); });
+    PRESENT_PAGES.forEach(function(p){ if((p.sc||p.m)&&at(el,p)) cur=p.t==='_rail'?-1:pages.indexOf(p); });
     el.dataset.pg=String(cur); });
   doc.body.dataset.pp='1'; }
 function presentShowPage(doc,pg){ var set=[].concat(pg); if(!doc||!doc.body) return; Array.prototype.forEach.call(doc.body.children,function(el){ if(el.dataset.pg!=null) el.style.display=set.indexOf(+el.dataset.pg)>=0?'':'none'; }); }
@@ -4410,7 +4451,8 @@ function presentRailFromScript(doc){ var qa=[], st=[];
   var flag=doc.querySelector('.flag'); return {qa:qa,stories:st,flag:flag?flag.innerText.trim():''}; }
 function renderPresent(){ var host=$('presentHost'); if(!host) return; var t=presentTier(), T=presentTokens(t), pages=presentPages();
   S.present=S.present||{}; var pg=Math.max(0,Math.min(pages.length-1,+S.present.pg||0));
-  var h='<div class="pr-top"><div><h3>Presenting '+esc(TIER_NAME[t])+' to '+esc(T['client.first']||'the client')+'</h3><small>Agent-only — never on Client View or the printout. Blue blanks fill from this quote; red ones are missing.</small></div>'
+  var who=(T['client.first']||'the client')+(S.client&&S.client.sname?' & '+enSplit(S.client.sname)[0]:'');
+  var h='<div class="pr-top"><div><h3>Presenting the <em class="pr-plan">'+esc(TIER_NAME[t])+'</em> plan to '+esc(who)+'</h3><small>Agent-only — never on Client View or the printout. Blue blanks fill from this quote; red ones are missing.</small></div>'
     +'<button type="button" data-pr="quote" style="font:inherit;font-weight:700;border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 13px;cursor:pointer">← Back to the Quote</button></div>';
   h+='<div class="pr-prog" id="prChips"></div><div class="pr-grid"><div>'
     +'<iframe id="prFrame" src="presentation.html" title="Presentation script" style="width:100%;border:1px solid var(--line);border-radius:12px;background:#fff;min-height:200px"></iframe>'
@@ -4519,7 +4561,7 @@ function presentScriptTokens(t){ var T=presentTokens(t), C=S.client||{}, I=S.int
   return T; }
 /* where a blank can be typed into on the Apply panel, and the profile field it writes back to */
 var PRESENT_WRITEBACK={'client.legal_name':'c:pname','client.dob':'c:dob','client.phone':'i:phone','client.email':'i:email','client.wt':'i:pweight','doctor.name':'i:docs1'};
-var PRESENT_CSS='.pp-off{display:none!important}.pp-chosen{outline:3px solid #2f7d4a;border-radius:6px}var.pp-ok{background:#fff3cf;border-radius:3px;padding:0 2px;font-style:normal}var.pp-miss{background:#fde8e8;color:#b42318;border-radius:3px;padding:0 2px;font-style:normal}'
+var PRESENT_CSS='.who{display:none!important}.pp-off{display:none!important}.pp-chosen{outline:3px solid #2f7d4a;border-radius:6px}var.pp-ok{background:#fff3cf;border-radius:3px;padding:0 2px;font-style:normal}var.pp-miss{background:#fde8e8;color:#b42318;border-radius:3px;padding:0 2px;font-style:normal}'
  +'tr[data-anchor]{cursor:pointer}tr[data-anchor].pp-on td{background:#e8f3ea}tr[data-anchor].pp-on td:first-child:after{content:"●";color:#2f7d4a}'
  +'.pp-pick{font:inherit;font-size:12px;font-weight:700;border:1px solid #16203c;background:#fff;color:#16203c;border-radius:6px;padding:4px 10px;cursor:pointer;margin:0 0 8px}'
  +'.pp-mount select,.pp-mount textarea{font:inherit;font-size:13.5px;border:1px solid #9ab6dd;border-radius:4px;padding:4px 7px}.pp-mount textarea{width:100%;min-height:90px;box-sizing:border-box;margin-top:8px}'
@@ -4585,8 +4627,14 @@ function presentWire(doc,t){ if(!doc||!doc.body) return 0; var T=presentScriptTo
     r.onclick=function(){ S.present.anchor=me; if(me==='aca'||me==='cur'){ S.intake.anchor=me; if($('in_anchor')) $('in_anchor').value=me; compute(); } autosave(); presentWire(doc,t); }; });
   Array.prototype.forEach.call(doc.querySelectorAll('[data-saving]'),function(x){ x.classList.toggle('pp-off',ak==='none'); });
   /* prescriptions: serve the version that matches the profile */
-  Array.prototype.forEach.call(doc.querySelectorAll('div.say'),function(x){ if(/^If they are on something now/i.test((x.innerText||'').trim())) x.classList.toggle('pp-off',!presentHasCur()); });
+  Array.prototype.forEach.call(doc.querySelectorAll('[data-anchor-say="cur"]'),function(x){ (x.closest('.say')||x).classList.toggle('pp-off',!presentHasCur()); });
   Array.prototype.forEach.call(doc.querySelectorAll('[data-render="enroll"]'),function(x){ x.classList.add('pp-off'); });
+  /* source tags stay in Health ZONE's file (its history); the agent's screen drops them and the legend line about them */
+  /* the build note under the title is for Jesse's review copy, not the agent's screen */
+  Array.prototype.forEach.call(doc.querySelectorAll('p.sub0'),function(x){ x.classList.add('pp-off'); });
+  var lg=doc.querySelector('p.legend'); if(lg&&!lg.dataset.ppTags){ lg.dataset.ppTags='1'; var kids=Array.prototype.slice.call(lg.childNodes), cut=-1;
+    kids.forEach(function(nd,i){ if(cut<0&&nd.nodeType===3&&/Source tags show/.test(nd.textContent)) cut=i; });
+    if(cut>=0){ kids.slice(cut).forEach(function(nd){ nd.remove(); }); var prev=kids[cut-1]; if(prev&&prev.nodeName==='BR') prev.remove(); } }
   presentMeds(doc,T);
   var hasRx=(S.intake.medList||[]).some(function(m){ return m&&String(m.name||'').trim(); });
   Array.prototype.forEach.call(doc.querySelectorAll('[data-rx]'),function(x){ x.classList.toggle('pp-off',(x.getAttribute('data-rx')==='has')!==hasRx); });
@@ -4740,6 +4788,7 @@ function bindInputs(){
   $('in_state').addEventListener('change',function(){ this.dataset.touched='1'; });
   $('in_phone').addEventListener('input',function(){ this.value=fmtPhone(this.value); markValid(this,phoneOK(this.value)); captureIntake(); });
   $('in_date').addEventListener('input',function(){ this.value=fmtDate(this.value); markValid(this,dateOK(this.value)); var a=ageFromDOB(this.value); if(a) $('in_page').value=a; captureIntake(); });
+  [['in_date','in_page'],['in_sdob','in_sage']].forEach(function(pr){ $(pr[0]).addEventListener('change',function(){ var d=smartDOB(this.value); if(d){ this.value=d; markValid(this,true); var a=ageFromDOB(d); if(a) $(pr[1]).value=a; captureIntake(); } }); });
   $('in_sdob').addEventListener('input',function(){ this.value=fmtDate(this.value); markValid(this,dateOK(this.value)); var a=ageFromDOB(this.value); if(a) $('in_sage').value=a; captureIntake(); });
   $('in_email').addEventListener('input',function(){ markValid(this,emailOK(this.value)); captureIntake(); });
   $('in_agency').addEventListener('input',function(){ captureIntake(); $('brandName').textContent=S.agency||'HealthFirst'; });
@@ -4748,6 +4797,13 @@ function bindInputs(){
   $('c_date').addEventListener('input',function(){ this.value=fmtDate(this.value); markValid(this,dateOK(this.value)); compute(); });
   $('in_priority').addEventListener('change',function(){ readIntake(); autosave(); });
   medFdaLoad();
+  /* every money box on the page reads $1,234.00 once you leave it (the numbers underneath are read with moneyNum) */
+  var moneyLeave=function(e){ var el=e.target; if(!el||!el.matches) return;
+    if(!el.matches('.curmoney,.money2,#in_income,#in_pincome,#in_sincome,#in_invest,[data-ov]:not([placeholder="type %"])')) return;
+    var f=fmtMoney2(el.value); if(f&&f!==el.value){ el.value=f; el.dispatchEvent(new Event('input',{bubbles:true})); } };
+  document.addEventListener('focusout',moneyLeave); document.addEventListener('change',moneyLeave,true);
+  /* the Intake notes are the one client note - save as typed, so Enroll's mirror of it is never a step behind */
+  $('in_notes').addEventListener('input',function(){ S.intake=S.intake||{}; S.intake.notes=$('in_notes').value; if($('enNotes')&&document.activeElement!==$('enNotes')) $('enNotes').value=S.intake.notes; autosave(); });
   $('addMed').onclick=function(){ S.intake.medList=S.intake.medList||[]; S.intake.medList.push({name:'',cost:0,forP:true,forS:false}); renderMeds(); };
   $('p_lb_cov').addEventListener('input',function(){ this.value=fmtMoneyStr(this.value); });
   ['p_pension','pp_cv10','pp_cv20','pp_cv30','pp_leg1','pp_leg25'].forEach(function(id){
@@ -5317,7 +5373,7 @@ function renderKids(){ var host=$('kidRows'); if(!host) return; var k=kidsList()
   k.forEach(function(x,i){ var r=document.createElement('div'); r.className='kidrow';
     r.innerHTML='<label>Name</label><input data-kf="n" value="'+(x.n||'').replace(/"/g,'&quot;')+'"><label>DOB</label><input data-kf="dob" placeholder="MM/DD/YYYY" value="'+(x.dob||'')+'"><label>Age</label><input data-kf="age" value="'+(x.age||'')+'"><label>Gender</label><select data-kf="sex"><option value=""></option><option'+(x.sex==='Male'?' selected':'')+'>Male</option><option'+(x.sex==='Female'?' selected':'')+'>Female</option></select><button type="button" class="kdel" aria-label="Remove child">×</button>';
     r.querySelectorAll('[data-kf]').forEach(function(el){ el.oninput=el.onchange=function(){ var f=el.dataset.kf;
-      if(f==='dob'){ el.value=fmtDate(el.value); var a=ageFromDOB(el.value); if(a){ x.age=String(a); r.querySelector('[data-kf="age"]').value=a; } }
+      if(f==='dob'){ el.value=(arguments[0]&&arguments[0].type==='change'&&smartDOB(el.value))||fmtDate(el.value); var a=ageFromDOB(el.value); if(a){ x.age=String(a); r.querySelector('[data-kf="age"]').value=a; } }
       x[f]=el.value; kidsSyncNote(); autosave(); }; });
     r.querySelector('.kdel').onclick=function(){ k.splice(i,1); S.intake.kidsManual=1; if($('in_kidcount')) $('in_kidcount').value=k.length||''; renderKids(); kidsSyncNote(); autosave(); };
     host.appendChild(r); });

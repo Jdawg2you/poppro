@@ -84,7 +84,7 @@ Source tags show where each piece came from: <span class="who wK">KYLE</span> hi
 <p style="margin:8px 0 0;font-size:13.5px;color:#555">All of it built <i>before</i> the call. The point is that it looks effortless because none of it is being done live.</p>
 </div>
 
-<h2><span class="n">1</span>Open</h2>
+<h2 data-screen="open"><span class="n">1</span>Open</h2>
 
 <div class="say">Hi <var data-k="client.first">&lt;client first name&gt;</var>, this is <var data-k="agent.first">&lt;your first name&gt;</var> calling about your private health insurance options. I&rsquo;m glad we could make this time work. Before we jump in &mdash; are you next to your computer, or would you rather I send information to your phone as we talk through your plan?<span class="who wJ">JESSE</span><span class="pinmark">1.1</span></div>
 
@@ -102,7 +102,7 @@ Source tags show where each piece came from: <span class="who wK">KYLE</span> hi
 
 <div class="aside">The bracket after &ldquo;small business owners&rdquo; fills from their profile &mdash; their trade, their business type, or why they are looking. Short, two or three words: <i>&ldquo;(and contractors like yourself)&rdquo;</i>, <i>&ldquo;(and folks between jobs)&rdquo;</i>, <i>&ldquo;(and anyone paying full price on the marketplace)&rdquo;</i>, <i>&ldquo;(and self-employed tradespeople)&rdquo;</i>. Kyle&rsquo;s sentence carries on unchanged after it.<span class="pinmark">2.3</span></div>
 
-<h2><span class="n">3</span>Their reason, in their words</h2>
+<h2 data-screen="reason"><span class="n">3</span>Their reason, in their words</h2>
 
 <div class="say">Last time we talked, the thing you highlighted as most important <var data-k="client.household_to">to you</var> was <var data-k="client.why">&lt;their reason for calling&gt;</var>. That&rsquo;s what I went looking for.<span class="who wM">MIKE</span><span class="pinmark">1.3</span></div>
 <p style="margin:-4px 0 11px;font-size:12.5px;color:#1d4e79">&#8627; <b>to you</b> becomes <b>to you and your spouse</b> or <b>to you and your family</b>, from who is on the profile. The reason itself is pulled <b>from their intake</b> &mdash; their own words, read back to them, not yours.</p>
@@ -114,15 +114,15 @@ Source tags show where each piece came from: <span class="who wK">KYLE</span> hi
 
 
 
-<h2><span class="n">4</span>Price the marketplace, then set it aside</h2>
+<h2 data-screen="price"><span class="n">4</span>Price the marketplace, then set it aside</h2>
 
 <p class="cue">This step exists because you asked where the price gets said. <span class="pinmark">Q1</span></p>
 
 <p class="cue">Two anchors &mdash; the script serves whichever fits what they actually have.<span class="pinmark">Q2</span></p>
 
-<div class="say"><b>If they have no coverage, or are shopping the marketplace.</b> The first thing I looked at was healthcare.gov &mdash; great if you qualify for discounts, but with your income it looks like you&rsquo;d pay full price. The cheapest plan that came back for you was <var data-k="aca.premium">$897</var> a month with a <var data-k="aca.deductible">$10,000</var> deductible.<span class="who wK">KYLE</span></div>
+<div class="say"><b data-anchor-say="aca">If they have no coverage, or are shopping the marketplace.</b> The first thing I looked at was healthcare.gov &mdash; great if you qualify for discounts, but with your income it looks like you&rsquo;d pay full price. The cheapest plan that came back for you was <var data-k="aca.premium">$897</var> a month with a <var data-k="aca.deductible">$10,000</var> deductible.<span class="who wK">KYLE</span></div>
 
-<div class="say"><b>If they are on something now and paying for it themselves.</b> You told me you&rsquo;re paying <var data-k="cur.premium">$1,400</var> a month right now with a <var data-k="cur.deductible">$6,000</var> deductible. I also checked healthcare.gov, and at your income you&rsquo;d pay full price there too &mdash; <var data-k="aca.premium">$897</var> with a <var data-k="aca.deductible">$10,000</var> deductible. So neither of those is where I&rsquo;d leave you.<span class="who wJ">JESSE</span></div>
+<div class="say"><b data-anchor-say="cur">If they are on something now and paying for it themselves.</b> You told me you&rsquo;re paying <var data-k="cur.premium">$1,400</var> a month right now with a <var data-k="cur.deductible">$6,000</var> deductible. I also checked healthcare.gov, and at your income you&rsquo;d pay full price there too &mdash; <var data-k="aca.premium">$897</var> with a <var data-k="aca.deductible">$10,000</var> deductible. So neither of those is where I&rsquo;d leave you.<span class="who wJ">JESSE</span></div>
 
 <div style="border:2px solid #5b3a8a;border-radius:6px;padding:12px 16px;margin:11px 0;background:#faf8fd">
 <p style="margin:0 0 8px;font-weight:700;color:#5b3a8a;font-size:11px;letter-spacing:1px">PICK THE ANCHOR &mdash; THIS NUMBER DRIVES THE CLOSE<span class="pinmark">Q2</span></p>
@@ -143,7 +143,7 @@ Source tags show where each piece came from: <span class="who wK">KYLE</span> hi
 
 
 
-<h2><span class="n">5</span>Networks &amp; providers</h2>
+<h2 data-screen="networks"><span class="n">5</span>Networks &amp; providers</h2>
 
 <div class="say">So I checked your private PPO options. The one that stood out is through an A-rated carrier, ManhattanLife. The plan, <var data-k="afc.name">Affordable Choice Elite</var>, gives you day-one, first-dollar benefits and <var data-k="afc.visits">10</var> annual doctor visits per person &mdash; and up to <var data-k="afc.rollover">5</var> unused visits roll over.<span class="pinmark">5.1</span><span class="who wK">KYLE</span></div>
 
@@ -157,7 +157,7 @@ Source tags show where each piece came from: <span class="who wK">KYLE</span> hi
 
 
 
-<h2><span class="n">6</span>The two questions everyone asks</h2>
+<h2 data-screen="questions"><span class="n">6</span>The two questions everyone asks</h2>
 
 <div class="say">And regarding out-of-network providers &mdash; you&rsquo;re covered either way. In-network is direct billing; out-of-network is reimbursed to you, usually a week or two, and I&rsquo;ll walk you through exactly how to file it if it ever comes up.<span class="pinmark">4.3</span><span class="who wK">KYLE</span></div>
 
@@ -169,7 +169,7 @@ Source tags show where each piece came from: <span class="who wK">KYLE</span> hi
 
 
 
-<h2><span class="n">7</span>How the coverage works</h2>
+<h2 data-screen="coverage"><span class="n">7</span>How the coverage works</h2>
 
 <p class="cue">Four buckets, in order. Every figure below is the plan you actually selected.</p>
 
@@ -188,7 +188,7 @@ Source tags show where each piece came from: <span class="who wK">KYLE</span> hi
 
 
 
-<h3>Prescriptions</h3>
+<h3 data-screen="rx">Prescriptions</h3>
 <p class="cue">Two versions &mdash; the script serves whichever matches their profile.<span class="pinmark">5.3</span></p>
 
 <div class="say" data-rx="has"><b>If they listed prescriptions.</b> <span data-repeat="meds">Your <var data-k="drug.name">&lt;drug&gt;</var> runs about <var data-k="drug.now">$&lt;now&gt;</var> at the pharmacy. With the coupon I already texted you it&rsquo;s <var data-k="drug.coupon">$&lt;coupon&gt;</var>.</span> The plan carries a <var data-k="afc.rx_day">$50</var>-a-day prescription benefit up to <var data-k="afc.rx_cap">$750</var> a year, so you&rsquo;re comfortably under it &mdash; and the rest of that benefit is sitting there if something unexpected gets added.<span class="who wM">MIKE</span></div>
@@ -197,7 +197,7 @@ Source tags show where each piece came from: <span class="who wK">KYLE</span> hi
 
 
 
-<h3>Catastrophic &mdash; walk it as layers</h3>
+<h3 data-screen="catastrophic">Catastrophic &mdash; walk it as layers</h3>
 <div class="say">Now I&rsquo;m going to go through the bigger things &mdash; and I want to walk you through this one layer at a time rather than just read you a list.<span class="who wJ">JESSE</span><span class="pinmark">5.2</span></div>
 
 
@@ -236,7 +236,7 @@ Now compare that to where you are today. On a <var data-k="anchor.deductible">$1
 
 
 
-<h2><span class="n">8</span>Bonus benefits</h2>
+<h2 data-screen="bonus"><span class="n">8</span>Bonus benefits</h2>
 
 
 
@@ -252,7 +252,7 @@ Now compare that to where you are today. On a <var data-k="anchor.deductible">$1
 
 <div class="aside"><b>Worth knowing so you never sell one benefit twice:</b> EasyCare2Go <i>is</i> the telehealth service, so it belongs inside that line rather than as a separate item. The brochure lists this whole set generically &mdash; 24/7 telemedicine, health advocacy, discounted imaging, discounted labs, discount pharmacy &mdash; and the Enhanced slide names the same set by vendor: EasyCare2Go, CareGuide, Green Imaging, DirectLabs. One set, two ways of naming it. Same reason the Rx discount program below and RxEDO are not two things.<br><br>Its direct line is <b>1-866-731-3017</b>. Beyond &ldquo;24/7 telemedicine&rdquo; and the fact it does not consume a doctor-visit day, the brochure does not spell out what it treats, so I have not put a service list in the script.<span class="pinmark">6.1</span></div>
 
-<div class="say">There&rsquo;s a <b>prescription discount program</b> that will usually save you even more than programs like GoodRx &mdash; the ones you often have to pay for.<span class="who wJ">JESSE</span></div>
+<div class="say">There&rsquo;s a <b data-screen="bonus-rx">prescription discount program</b> that will usually save you even more than programs like GoodRx &mdash; the ones you often have to pay for.<span class="who wJ">JESSE</span></div>
 
 <div class="say">And you get <b>CareGuide</b>, which will negotiate your larger medical bills for you &mdash; so before you pay a big hospital or ER bill, you call them and they go to work on the retail price.<span class="who wJ">JESSE</span><span class="pinmark">6.3</span></div>
 
@@ -268,13 +268,13 @@ Now compare that to where you are today. On a <var data-k="anchor.deductible">$1
 
 <div class="say">To keep the cost where it is, these plans leave out maternity and mental health. Pre-existing conditions aren't covered for the first twelve months &mdash; but your medications are covered from day one. Based on everything you've told me, this puts you in a better spot than you're in now and it covers every box you gave me. Would you agree?<span class="who wK">KYLE</span></div>
 
-<h2><span class="n">9</span>Close</h2>
+<h2 data-screen="close"><span class="n">9</span>Close</h2>
 
 <div class="say">So the entire package &mdash; your <var data-k="plan.products_spoken">AFC Elite health plan (with Specified Disease umbrella for worst-case), DVH Select, ER/accident coverage, out-of-pocket protection, and the Hospital Select rider</var> &mdash; comes to <var data-k="plan.monthly">$850</var> per month. That&rsquo;s locked in, <span data-saving>and you&rsquo;re saving <var data-k="savings.monthly">$550</var> vs. what you were paying. One of the biggest savings I&rsquo;ve seen this week!</span><span class="who wK">KYLE</span></div>
 
 <div class="tip">Build the package so the saving lands between <b>$200 and $400</b>, not as high as it will go. Mike's reasoning: a $700 saving reads as fake, and it means you left holes in the coverage you could have filled. Spend the difference on protection. <span class="pinmark">7.4</span><span class="who wM">MIKE</span></div>
 
-<h3>The pivot to living benefits</h3>
+<h3 data-screen="lb-pivot">The pivot to living benefits</h3>
 
 <div class="say">Here&rsquo;s what most people do after we save them this much: take a small piece &mdash; usually <var data-k="lb.suggested">$110 to $140</var> &mdash; and protect their income with living-benefit insurance that pays YOU while you&rsquo;re alive if you get cancer, a heart attack, or stroke. Instead of losing income, the company cuts you a check &mdash; $20,000, $50,000, $100,000 depending on the event. Health takes care of the bills; living benefits take care of your income. You really need both. Want me to show you what that looks like for your age and health?<span class="who wK">KYLE</span></div>
 
@@ -284,7 +284,7 @@ Now compare that to where you are today. On a <var data-k="anchor.deductible">$1
 
 <div class="tip">If they hesitate, this is the one that moves people: &ldquo;Think about it this way &mdash; if you had a cardiac event tomorrow and the doctor told you six months of rehab, no work, who&rsquo;s paying the mortgage? Health insurance handles the hospital. This handles the six months.&rdquo; It converts &ldquo;I don&rsquo;t need life insurance&rdquo; into &ldquo;I don&rsquo;t have six months of income.&rdquo;<span class="who wM">MIKE</span><span class="pinmark">S1</span></div>
 
-<div class="do"><span class="lab">NOT SPOKEN</span>Price it here, then do the arithmetic out loud. The numbers are already computed &mdash; don&rsquo;t do mental maths on a live call.<span class="who wM">MIKE</span></div>
+<div class="do"><span class="lab">NOT SPOKEN</span data-screen="lb-price">Price it here, then do the arithmetic out loud. The numbers are already computed &mdash; don&rsquo;t do mental maths on a live call.<span class="who wM">MIKE</span></div>
 
 <div style="border:2px solid #1d4e79;border-radius:6px;padding:13px 16px;margin:11px 0;background:#f7faff">
 <p style="margin:0 0 9px;font-weight:700;color:#1d4e79;font-size:11px;letter-spacing:1px">LIVING BENEFITS &mdash; QUOTE IT WITHOUT LEAVING THE SCRIPT<span class="who wJ">JESSE</span><span class="pinmark">7.2</span></p>
@@ -299,7 +299,7 @@ Now compare that to where you are today. On a <var data-k="anchor.deductible">$1
 
 <div class="prov">The figure <span class="pinmark">7.2</span> &mdash; once the living-benefits module is embedded here, the number comes from a real quote rather than Kyle's $40&ndash;70 or Mike's $70-plus-$50. Do you want the script to stop naming a number and just say &ldquo;a small piece of it&rdquo;?</div>
 
-<h2><span class="n">10</span>The bold step &mdash; pick one path</h2>
+<h2 data-screen="boldstep"><span class="n">10</span>The bold step &mdash; pick one path</h2>
 
 <div class="two" data-closes>
 <div class="pathA" data-close="assumptive">
@@ -317,24 +317,26 @@ Now compare that to where you are today. On a <var data-k="anchor.deductible">$1
 </div>
 </div>
 
-<div class="tip">Take the <b>life application first</b>, health second. The life app needs <i>them</i> to act &mdash; a code or an e-signature &mdash; so do that part while you still have them on the phone. The health app doesn&rsquo;t. Then collect whatever you still need beyond what is already on their profile, so the health application is quick once they are off the call.<span class="who wJ">JESSE</span><span class="pinmark">8.2</span></div>
+<div class="tip" data-screen="lifeapp">Take the <b>life application first</b>, health second. The life app needs <i>them</i> to act &mdash; a code or an e-signature &mdash; so do that part while you still have them on the phone. The health app doesn&rsquo;t. Then collect whatever you still need beyond what is already on their profile, so the health application is quick once they are off the call.<span class="who wJ">JESSE</span><span class="pinmark">8.2</span></div>
 
 <div class="do"><span class="lab">NOT SPOKEN</span>Take the application in <b>POP Pro&rsquo;s own per-person blocks</b> &mdash; one expandable block for the applicant, the spouse and each child. Anything you type into a blank there writes back to the profile. <b>Beneficiaries:</b> name, percentage, phone and date of birth. <b>Relationships are not asked.</b> Bank details, draft date and SSN are read straight into the carrier form and never stored here.</div>
 
 <div class="do"><span class="lab">NOT SPOKEN</span><b>Notes</b> &mdash; anything off script: what they said, what to remember, what to follow up. One box, and it is the same Notes as the Script Navigator profile.</div>
 
-<div data-render="enroll">
+<div class="flag"><b>This changed because two of your instructions collided.</b> On 8 October you said of the code word: &ldquo;you need a place to write it down, so write it in the notes section, so you can use it for the ManhattanLife application.&rdquo; But your standing rule is that the mother&rsquo;s maiden name is typed during the application and <b>never saved</b> &mdash; and the notes field is saved, printed, synced to the Script Navigator profile and headed for the CRM. Following the script instruction would have put a security credential into all four.<br><br>I have taken the safe reading: a box beside the question that is never stored. Your reason for wanting it written down still holds &mdash; they need it again at the health application &mdash; and that works because both applications go in on the same call. If the health app ever slips to another day, asking again is the right behaviour for a credential, not retrieving it from a note. <b>Tell me if you want it the other way</b> and I will put it back, but you should make that call knowingly.<span class="pinmark">8.3</span></div>
+
+<div data-render="enroll" data-screen="wrapup">
 <p style="margin:0 0 7px;font-size:12px;color:#8a6d1f;font-weight:700;letter-spacing:.6px">RENDERS ON THE ENROLL PAGE, NOT IN THE PRESENT FLOW &mdash; beside POP Pro&rsquo;s maiden-name box</p>
 <div class="say">For security purposes &mdash; and this'll be the code word you sign the health application with &mdash; what's your mother's maiden name?<span class="who wM">MIKE</span></div>
 
-<div class="tip">If they don't know it or won't give it, any word or name works as long as they'll remember it, because they'll need it again at the health application. <b>Write it in the notes field</b> the moment they say it.<span class="who wJ">JESSE</span></div>
+<div class="tip">If they don&rsquo;t know it or won&rsquo;t give it, any word or name works as long as they&rsquo;ll remember it &mdash; they&rsquo;ll need it again at the health application. Type it in the box beside this question: <b>it is never saved anywhere.</b> It holds for this call, which is all you need, because the health application goes in on the same call. If that ever slips to another day, ask them again rather than keeping it.<span class="who wJ">JESSE</span></div>
 </div>
 
 <div class="say">That's everything I need. You're done &mdash; I'll take it from here.<span class="who wM">MIKE</span></div>
 
 <div class="say">Three to five business days, sometimes seven to ten depending on the product. The moment it's approved you'll get an email from me with a temporary ID card and your benefit book.<span class="who wK">KYLE</span></div>
 
-<div class="tip">Text them <b>the moment you hang up</b>. They almost never book the follow-up, and that is fine &mdash; it stops the day-three panic call, which is the point. It takes away the &ldquo;I just gave a stranger my personal information.&rdquo;<span class="who wJ">JESSE</span><span class="pinmark">8.4</span></div>
+<div class="tip" data-screen="posttext">Text them <b>the moment you hang up</b>. They almost never book the follow-up, and that is fine &mdash; it stops the day-three panic call, which is the point. It takes away the &ldquo;I just gave a stranger my personal information.&rdquo;<span class="who wJ">JESSE</span><span class="pinmark">8.4</span></div>
 
 <details class="exp" data-mount="posttext"><summary>The text to send &mdash; open and copy</summary>
 <div class="body">
@@ -358,7 +360,7 @@ I&rsquo;ve kept a slot open about a week out in case you want to go over anythin
 
 <div class="tip">A <b>ten-second question gets a thirty-second answer</b>. Mike: &ldquo;if you give them a five-minute answer to a ten-second question, you&rsquo;re going to create way more confusion.&rdquo; This is the rule that governs the questions step, and it is the main reason a 20-minute call turns into 90.<span class="who wM">MIKE</span></div>
 
-<h2><span class="n">11</span>Story repository<span class="pinmark">S2</span></h2>
+<h2 data-screen="stories"><span class="n">11</span>Story repository<span class="pinmark">S2</span></h2>
 
 <p>Your idea, and it belongs here rather than scattered loose through the script. Each story sits next to the step it serves, and the same one can be pulled from here when a call goes somewhere unexpected.</p>
 
