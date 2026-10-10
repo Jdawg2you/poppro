@@ -194,6 +194,7 @@ const TEST = `(async function(){
   var bigd=Array.prototype.filter.call(d.querySelectorAll('details.exp'),function(x){ return /^If they want to go over the big stuff/.test(x.querySelector('summary').textContent.trim()); })[0];
   ok(exd&&exd.open&&(!bigd||!bigd.dataset.ppOpen),'catastrophic: Example words open on arrival; the big stuff is left as it was');
   if(exd){ exd.open=false; presentWire(d,'best'); ok(!exd.open,'and it stays folded once the agent folds it'); exd.open=true; }
+  var exn=d.querySelector('.pp-exnote'); ok(exn&&/Pay attention:/.test(exn.textContent),'the worked example ends with the Pay attention aside naming the anchor plan');
   ok(!/My stab at it/.test(d.body.textContent)&&/Let me do a real one/.test(d.body.textContent),'the 5.2 preface is gone, the example words stay');
   /* catastrophic: the quote page's own event card, anchor vs the chosen package, Bill Saver on, layers open */
   S.negot.on=false; presentGo(presentPageIx('Catastrophic — walk it as layers')); await wait(60);
