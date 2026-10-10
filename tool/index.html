@@ -4882,11 +4882,23 @@ function presentShowPage(doc,pg){ var set=[].concat(pg); if(!doc||!doc.body) ret
 function presentNav(){ var out=[]; presentPages().forEach(function(p,i){ if(!p.en) out.push(i); }); return out; }
 function presentPageIx(title){ return presentPages().map(function(p){ return p.t; }).indexOf(title); }
 /* the rail's objections and stories come from the script itself, so there is one source */
-function presentRailFromScript(doc){ var qa=[], st=[];
+/* Jesse's objection rewordings (10 Oct) - applied before the rail reads the answers, and again on every wire */
+function presentObjEdits(doc){ Array.prototype.forEach.call(doc.querySelectorAll('p.q'),function(q){ var a=q.nextElementSibling; if(!a||!a.classList.contains('fff')||a.dataset.ppObj) return;
+    if(/That sounds expensive/.test(q.textContent)&&/comparing it to the \$0 plans/.test(a.textContent)){ a.dataset.ppObj='1';
+      a.innerHTML='I totally understand how you feel — most people say that when they’re comparing it to the $0 plans in the ads out there. What they end up finding is that these plans save money over a year because they pay from day one. There’s no $8,000 deductible to get through first. <span class="ask">Let me show you how it pays you back on the visits you actually make.</span>'; } }); }
+function presentRailFromScript(doc){ presentObjEdits(doc); var qa=[], st=[];
   Array.prototype.forEach.call(doc.querySelectorAll('p.q'),function(q){ var a=q.nextElementSibling; if(a&&a.classList.contains('fff')) qa.push([q.textContent.trim(),a.textContent.trim()]); });
   var tb=Array.prototype.filter.call(doc.body.children,function(e){ return e.tagName==='TABLE'&&+e.dataset.pg===-1; })[0];
   if(tb) Array.prototype.forEach.call(tb.querySelectorAll('tr'),function(r,i){ var td=r.querySelectorAll('td'); if(td.length>=3) st.push({story:td[0].innerText.trim(),at:td[1].innerText.trim(),status:td[2].innerText.trim()}); });
-  var flag=doc.querySelector('.flag'); return {qa:qa,stories:st,flag:flag?flag.innerText.trim():''}; }
+  /* Jesse, 10 Oct: stories are named for who to tell them to, and every one is "coming soon" until written - the
+     script's table and its red author notes are no longer shown here. When to tell each keeps the script's own step. */
+  var atOf=function(re){ var m=st.filter(function(x){ return re.test(x.story); })[0]; return m?m.at:''; };
+  st=[{story:'Living benefit story',at:atOf(/rehab/i)||'Step 9, living benefits'},
+      {story:'If they think they don’t need HI / accident / OOP',at:atOf(/trip to the ER/i)||'Objection: “I can’t afford that”'},
+      {story:'What if I have a major health issue?',at:atOf(/daughter/i)||'Step 7, catastrophic'},
+      {story:'Why not just pay cash if this doesn’t cover everything anyway?',at:'Objection: “Why not just pay cash?”'}];
+  return {qa:qa,stories:st,flag:''}; }
+var PR_STORY_HEAD='<b>Story repository (who to tell)</b>';
 function renderPresent(){ var host=$('presentHost'); if(!host) return; var t=presentTier(), T=presentTokens(t), pages=presentPages();
   S.present=S.present||{}; var pg=Math.max(0,Math.min(pages.length-1,+S.present.pg||0));
   var who=(T['client.first']||'the client')+(S.client&&S.client.sname?' & '+enSplit(S.client.sname)[0]:'');
@@ -4899,7 +4911,7 @@ function renderPresent(){ var host=$('presentHost'); if(!host) return; var t=pre
     +'<div class="box"><b>Show them</b><button type="button" data-show="cmp">The plans side by side</button><button type="button" data-show="ev">The examples (what it pays)</button><button type="button" data-show="top">Their situation & options</button></div>'
     +'<div class="box"><b>Benefits in this plan</b>'+(S.packages[t].products||[]).filter(function(p){ return (+p.monthly||0)>0&&benFileFor(p.k,effCfg(t)); }).map(function(p){ return '<button type="button" data-ben="'+p.k+'">ⓘ '+esc(String(p.name).split(' — ')[0])+'</button>'; }).join('')+'</div>'
     +'<div class="box pr-qa" id="prQA"><b>Quick answers — objections</b></div>'
-    +'<div class="box" id="prStories"><b>Story repository</b></div>'
+    +'<div class="box" id="prStories">'+PR_STORY_HEAD+'</div>'
     +'</div></div><div id="prPop" style="display:none"></div>';
   host.innerHTML=h;
   var fr=$('prFrame');
@@ -4907,10 +4919,9 @@ function renderPresent(){ var host=$('presentHost'); if(!host) return; var t=pre
       benLoadSafe('afc').then(function(){ presentWire(doc,t); presentGo(+S.present.pg||0); });
       var R=presentRailFromScript(doc);
       $('prQA').innerHTML='<b>Quick answers — objections</b>'+R.qa.map(function(q){ return '<details><summary>'+esc(q[0])+'</summary><p>'+esc(q[1])+'</p></details>'; }).join('');
-      $('prStories').innerHTML='<b>Story repository</b>'+(R.stories.length?R.stories.map(function(x,i){ return '<button type="button" data-story="'+i+'">'+(/block/i.test(x.status)?'⛔ ':'📖 ')+esc(x.story.split(/ — |\n/)[0])+'</button>'; }).join(''):'<p style="font-size:13px;color:var(--muted);margin:4px 0 0">No stories yet.</p>');
+      $('prStories').innerHTML=PR_STORY_HEAD+(R.stories.length?R.stories.map(function(x,i){ return '<button type="button" data-story="'+i+'">📖 '+esc(x.story)+'</button>'; }).join(''):'<p style="font-size:13px;color:var(--muted);margin:4px 0 0">No stories yet.</p>');
       $('prStories').querySelectorAll('[data-story]').forEach(function(b){ b.onclick=function(){ var x=R.stories[+b.dataset.story], pop=$('prPop');
-        pop.innerHTML='<div class="pr-pop"><button type="button" class="x" aria-label="Close">×</button><div class="sec">Story</div><h4>'+esc(x.story)+'</h4><p><b>When to tell it:</b> '+esc(x.at)+'</p><p><b>Status:</b> '+esc(x.status)+'</p>'
-          +(/block/i.test(x.status)&&R.flag?'<p class="warn">'+esc(R.flag)+'</p>':'')+'<p class="rule">Never a client’s name — “a buddy of mine”, “a coworker of mine”.</p></div>';
+        pop.innerHTML='<div class="pr-pop"><button type="button" class="x" aria-label="Close">×</button><div class="sec">Story</div><h4>'+esc(x.story)+'</h4><p><b>When to tell it:</b> '+esc(x.at)+'</p><p style="font-style:italic;color:var(--muted)">Story coming soon.</p><p class="rule">Never a client’s name — “a buddy of mine”, “a coworker of mine”.</p></div>';
         pop.style.display='block'; pop.querySelector('.x').onclick=function(){ pop.style.display='none'; }; }; });
     }catch(e){} };
   host.querySelectorAll('[data-pr="quote"]').forEach(function(b){ b.onclick=function(){ goStep('quote'); }; });
@@ -5144,6 +5155,7 @@ function presentPendingEdits(doc){
   /* 17. (Jesse, 10 Oct) the living-benefits pivot ends on "You really need both." - the offer to show it is removed */
   Array.prototype.forEach.call(doc.querySelectorAll('.say'),function(x){ Array.prototype.forEach.call(x.childNodes,function(nd){
     if(nd.nodeType===3&&/ ?Want me to show you what that looks like (at your age|for your age and health)\?/.test(nd.nodeValue)) nd.nodeValue=nd.nodeValue.replace(/ ?Want me to show you what that looks like (at your age|for your age and health)\?/g,''); }); });
+  presentObjEdits(doc);   /* 18. objection rewordings */
   /* 6. (Jesse, 9 Oct) drop the author's preface above the worked example */
   Array.prototype.forEach.call(doc.querySelectorAll('details.exp .body > p'),function(p){ if(/^My stab at it/.test((p.textContent||'').trim())) p.remove(); });
   /* 3. Section 5 doctor line: the list carries its own "Dr", and it is "they're" (or "they're all" for several) */
