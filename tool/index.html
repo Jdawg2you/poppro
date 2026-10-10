@@ -2303,7 +2303,7 @@ function renderAca(){
   $('acaTrueMo').textContent=fmt2(t.mo); $('acaTrueYr').textContent=fmt2(t.yr);
   $('acaTrueHow').textContent='Annual = net premium × 12 + '+(S.aca.fullded?'deductible (brand drugs count toward it)':'brand drugs')+' + other medications × 12 + visits × cost per visit'+(t.capped?' — capped at the out-of-pocket max.':', never more than the out-of-pocket max.');
   var nm=host.querySelector('[data-acaname]'); if(nm) nm.oninput=function(){ A.plan=nm.value.trim(); nm.classList.toggle('typed',!!A.plan); autosave(); };
-  host.querySelectorAll('[data-ov]').forEach(function(inp){ inp.oninput=function(){ var v=inp.value.replace(/[^0-9.]/g,''); A.ov[inp.dataset.ov]=v===''?null:+v; acaSync(); autosave(); renderAcaTotalsOnly(); };
+  host.querySelectorAll('[data-ov]').forEach(function(inp){ inp.oninput=function(){ if(/^\s*(zero|none|no|nil)\s*$/i.test(inp.value)) inp.value='0'; var v=inp.value.replace(/[^0-9.]/g,''); A.ov[inp.dataset.ov]=v===''?null:+v; acaSync(); autosave(); renderAcaTotalsOnly(); };
     inp.onchange=function(){ renderAca(); }; });
   host.querySelectorAll('[data-jump]').forEach(function(a){ a.onclick=function(ev){ ev.preventDefault(); intakeJump(a.dataset.jump); }; });
   host.querySelectorAll('[data-clr]').forEach(function(b){ b.onclick=function(){ A.ov[b.dataset.clr]=null; acaSync(); autosave(); renderAca(); }; });
@@ -5422,7 +5422,7 @@ function bindInputs(){
     var el=$(id); if(el) el.addEventListener('input',function(){ this.value=fmtMoneyStr(this.value); });
   });
   $('in_effdate').addEventListener('input',function(){ this.value=fmtDate(this.value); });
-  ['in_cur_prem','in_cur_emp','in_cur_ded','in_cur_oop','in_cur_copay','in_savings','in_invest'].forEach(function(id){ var el=$(id); if(el) el.addEventListener('input',function(){ this.value=fmtMoneyStr(this.value); captureIntake(); }); });
+  ['in_cur_prem','in_cur_emp','in_cur_ded','in_cur_oop','in_cur_copay','in_savings','in_invest'].forEach(function(id){ var el=$(id); if(el) el.addEventListener('input',function(){ if(/^[ ]*(zero|none|no|nil)[ ]*$/i.test(this.value)) this.value='0'; this.value=fmtMoneyStr(this.value); captureIntake(); }); });
   ['in_cur_isaca','in_cur_show','in_aca_fullded'].forEach(function(id){ $(id).addEventListener('change',function(){ captureIntake(); syncChips(); }); });
   $('in_aca_status').addEventListener('change',function(){ $('in_aca_show').checked=(this.value!=='outside');
     /* Outside open enrollment the ACA can't be bought, so it can't be the anchor either. */
