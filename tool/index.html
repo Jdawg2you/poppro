@@ -5008,7 +5008,7 @@ var PRESENT_CSS='body{padding:10px 18px 12px!important;max-width:none!important}
  +'.pp-two{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:14px;align-items:start}.pp-two>*{min-width:0;max-width:none;margin:0;align-self:start}.pp-two>:not([data-close]){align-self:center}.pp-or{display:flex;align-items:center;justify-content:center;align-self:stretch;position:relative;min-width:36px}'
  +'.pp-or:before{content:"";position:absolute;top:0;bottom:0;left:50%;border-left:2px dashed #c9a24e}.pp-or span{position:relative;background:#fff;border:2px solid #c9a24e;color:#8a6a1f;font-weight:800;font-size:12px;border-radius:999px;padding:6px 8px}'
  +'@media(max-width:640px){.pp-two{grid-template-columns:1fr}.pp-or{min-height:40px}.pp-or:before{top:50%;bottom:auto;left:0;right:0;border-left:0;border-top:2px dashed #c9a24e}}'
- +'var.pp-est{color:#b42318!important;font-weight:800;border-bottom:1.5px dashed #b42318}var.pp-fix,.pp-curded.pp-fix{cursor:pointer}var.pp-fix:hover,.pp-curded.pp-fix:hover{background:#fdecea;border-radius:4px}var.pp-fix::after{content:" ✎";font-size:.8em;color:#b42318}.pp-curded.pp-fix b{color:#b42318}.say.pp-off+.pp-dednote,[data-anchor-say].pp-off+.pp-dednote{display:none!important}.pinmark{display:none!important}.pp-yr{font-size:11px;color:#6b7280}.pp-exbtn{font:inherit;font-size:12.5px;font-weight:700;border:1px solid #c69a3c;background:#12213b;color:#fff;border-radius:999px;padding:6px 13px;cursor:pointer;box-shadow:0 1px 3px rgba(18,33,59,.25);white-space:nowrap;transition:background .15s}.pp-exbtn:hover{background:#1c3a63}[data-screen="bonus"]{display:flex;align-items:center}.pp-picbtn{margin-left:auto;font:inherit;font-size:12.5px;font-weight:700;border:1px solid #c69a3c;background:#12213b;color:#fff;border-radius:999px;padding:6px 13px;cursor:pointer;box-shadow:0 1px 3px rgba(18,33,59,.25);white-space:nowrap;transition:background .15s}.pp-picbtn:hover{background:#1c3a63}'
+ +'var.pp-docok,var.pp-docq{position:relative;display:inline-block}var.pp-docok::before,var.pp-docq::before{position:absolute;left:50%;top:-1.15em;transform:translateX(-50%);font-size:.95em;line-height:1}var.pp-docok::before{content:"👍"}var.pp-docq::before{content:"❓"}var.pp-docq.pp-fix::after{content:""}var.pp-est{color:#b42318!important;font-weight:800;border-bottom:1.5px dashed #b42318}var.pp-fix,.pp-curded.pp-fix{cursor:pointer}var.pp-fix:hover,.pp-curded.pp-fix:hover{background:#fdecea;border-radius:4px}var.pp-fix::after{content:" ✎";font-size:.8em;color:#b42318}.pp-curded.pp-fix b{color:#b42318}.say.pp-off+.pp-dednote,[data-anchor-say].pp-off+.pp-dednote{display:none!important}.pinmark{display:none!important}.pp-yr{font-size:11px;color:#6b7280}.pp-exbtn{font:inherit;font-size:12.5px;font-weight:700;border:1px solid #c69a3c;background:#12213b;color:#fff;border-radius:999px;padding:6px 13px;cursor:pointer;box-shadow:0 1px 3px rgba(18,33,59,.25);white-space:nowrap;transition:background .15s}.pp-exbtn:hover{background:#1c3a63}[data-screen="bonus"]{display:flex;align-items:center}.pp-picbtn{margin-left:auto;font:inherit;font-size:12.5px;font-weight:700;border:1px solid #c69a3c;background:#12213b;color:#fff;border-radius:999px;padding:6px 13px;cursor:pointer;box-shadow:0 1px 3px rgba(18,33,59,.25);white-space:nowrap;transition:background .15s}.pp-picbtn:hover{background:#1c3a63}'
  +'.pp-sug{font-size:12px;font-weight:700;color:#2f7d4a}.pp-nlab{margin-top:10px;font-size:13.5px;color:#16203c}'
  +'.pp-copy[disabled]{opacity:.45;cursor:not-allowed}.pp-need{font-size:12px;color:#b42318;margin-left:8px}var[contenteditable]{outline:1px dashed #b42318;min-width:60px;display:inline-block}';
 function presentEvCss(doc){ if(doc.getElementById('ppevcss')) return; var css='';
@@ -5101,7 +5101,7 @@ var PRESENT_FIX={'aca.premium':'[data-ov="prem"]','aca.deductible':'[data-ov="de
   'cur.premium':'#in_cur_prem','cur.deductible':'#in_cur_ded','cur.copay':'#in_cur_copay','cur.oop':'#in_cur_oop',
   'client.why':'#in_whymatters','client.first':'#in_pname','client.name':'#in_pname','client.state':'#in_state',
   'agent.name':'#in_agent','agency':'#in_agency','agent.phone':'#in_aphone','agent.email':'#in_aemail','agent.website':'#in_aweb','agent.booking':'#in_abook',
-  'client.doctor':'#in_docs1','client.doctors':'#in_docs1'};
+  'client.doctor':'#in_docs1','client.doctors':'#in_docs1','doctor.name':'#in_keepafc'};
 function presentJump(k){ var sel=PRESENT_FIX[k]; if(!sel) return; S.present=S.present||{}; var back=+S.present.pg||0;
   goStep('intake'); setTimeout(function(){ var el=document.querySelector(sel); if(!el) return;
     for(var p=el.parentElement;p;p=p.parentElement){ if(p.tagName==='DETAILS') p.open=true; }
@@ -5132,6 +5132,12 @@ function presentWire(doc,t){ if(!doc||!doc.body) return 0; var T=presentScriptTo
   if(!doc.body.dataset.ppFix){ doc.body.dataset.ppFix='1'; doc.addEventListener('click',function(e){ var v=e.target.closest&&e.target.closest('var.pp-fix,.pp-curded.pp-fix'); if(!v) return;
       e.preventDefault(); presentJump(v.getAttribute('data-k')||'cur.deductible'); }); }
   var cdw=doc.querySelector('.pp-curded'); if(cdw) cdw.classList.toggle('pp-fix',!(+curIn().ded>0));
+  /* section 5's doctor (Jesse, 9 Oct): 👍 above the name once the Intake says the doctor is in First Health, ❓ until
+     then - and the ❓ jumps to the network check. */
+  var docOk=(S.intake||{}).keepafc==='yes'||!!(S.docs||{}).net;
+  Array.prototype.forEach.call(doc.querySelectorAll('var[data-k="doctor.name"]'),function(v){ if(!v.classList.contains('pp-ok')) return;
+    v.classList.toggle('pp-docok',docOk); v.classList.toggle('pp-docq',!docOk); v.classList.toggle('pp-fix',!docOk);
+    v.title=docOk?'Checked: in the First Health network':'Not checked against First Health yet — click to mark it on the Intake'; });
   Array.prototype.forEach.call(doc.querySelectorAll('details'),function(dt){ dt.ontoggle=function(){ presentFit(); }; });
   /* anchor rows: one click picks the "you were at" figure */
   /* a radio on each row; the anchor with the highest yearly true cost is marked Suggested (the agent still picks) */
