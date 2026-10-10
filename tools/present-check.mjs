@@ -179,6 +179,11 @@ const TEST = `(async function(){
   S.cur.ded=0; S.cur.dedSet=false; presentWire(d,'best'); ok(/I didn’t catch the deductible on that/.test(cdTxt())&&/ask now/.test(cdNote()),'a blank deductible asks for it');
   S.cur.ded=6000; S.cur.dedSet=true; presentWire(d,'best'); ok(!cdNote(),'the note goes away once the number is in');
   S.cur=kC; S.intake.anchor=kAn; S.present.anchor=kPA; presentWire(d,'best');
+  var keepOv=JSON.parse(JSON.stringify(acaIn().ov)); acaIn().ov.prem=null; acaIn().ov.ded=null; acaSync(); presentWire(d,'best');
+  var ev0=d.querySelector('var.pp-est[data-k="aca.premium"]'); ok(!acaIn().ov.subsidy?(+S.aca.subsidy===0):true,'no subsidy applied unless typed'); ok(!!ev0,'an estimated marketplace premium reads red in the script');
+  if(ev0){ S.present.pg=3; ev0.click(); await wait(800); ok(S.step==='intake'&&document.activeElement===document.querySelector('[data-ov="prem"]')&&document.getElementById('retBtn').style.display!=='none','clicking it jumps to the marketplace premium box with a Back button');
+    document.getElementById('retBtn').click(); await wait(600); ok(S.step==='present'&&+S.present.pg===3,'Back returns to the same script screen'); }
+  acaIn().ov=keepOv; acaSync(); for(var w9=0;w9<40;w9++){ await wait(75); fr=document.getElementById('prFrame'); if(fr&&fr.contentDocument&&fr.contentDocument.querySelector('var.pp-ok')) break; } d=fr.contentDocument; presentWire(d,'best');
   ok(!/My stab at it/.test(d.body.textContent)&&/Let me do a real one/.test(d.body.textContent),'the 5.2 preface is gone, the example words stay');
   /* catastrophic: the quote page's own event card, anchor vs the chosen package, Bill Saver on, layers open */
   S.negot.on=false; presentGo(presentPageIx('Catastrophic — walk it as layers')); await wait(60);

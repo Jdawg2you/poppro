@@ -648,6 +648,10 @@
   body.client .fab-save{display:none}
   @media (max-width:760px){.fab-save{top:auto;bottom:14px;transform:none;border-radius:14px 0 0 14px}}
   @media print{.fab-save{display:none!important}}
+  .ret-btn{position:fixed;right:18px;z-index:70;font:inherit;font-size:14px;font-weight:800;border:2px solid #c69a3c;background:#12213b;color:#fff;border-radius:999px;padding:10px 18px;cursor:pointer;box-shadow:0 6px 20px rgba(18,33,59,.35);animation:retin .3s ease}
+  @keyframes retin{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}
+  body.client .ret-btn{display:none}
+  .fixme{outline:3px solid #b42318!important;outline-offset:2px;background:#fff6f5!important}
   .cele-canvas{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:9999}
   .cele-float{position:fixed;bottom:12vh;pointer-events:none;z-index:9999;animation:celefloat 2.4s cubic-bezier(.2,.7,.3,1) forwards;filter:drop-shadow(0 4px 8px rgba(0,0,0,.18))}
   @keyframes celefloat{0%{transform:translateY(0) scale(.4) rotate(-8deg);opacity:0}15%{opacity:1;transform:translateY(-8vh) scale(1.1) rotate(6deg)}100%{transform:translateY(-70vh) scale(1) rotate(-4deg);opacity:0}}
@@ -2199,7 +2203,9 @@ function acaSync(){
   var pick=function(k,fb){ var t=acaPick(ov[k],null); return t.src==='typed'?t:fb; };
   var r={e:e,
     prem:pick('prem',{v:e.ok?e.bronze:null,src:'est'}),
-    subsidy:pick('subsidy',{v:e.ok?e.subsidy:null,src:'est'}),
+    /* Jesse, 9 Oct: no subsidy unless it is typed in (or comes from their current ACA plan) - the estimate is shown
+       as a possibility, never applied. Premium and deductible may still be estimates; the script shows those red. */
+    subsidy:pick('subsidy',{v:0,src:'none'}),
     ded:pick('ded',curOr(C.ded,e.ok?e.ded:null)),
     oop:pick('oop',curOr(C.oop,e.ok?e.oop:null)),
     visit:pick('visit',curOr(C.copay,e.ok?e.visit:null)),
@@ -2272,7 +2278,7 @@ function renderAca(){
     +'<input data-acaname="1" class="'+(A.plan?'typed':'')+'" value="'+esc(A.plan||'')+'" placeholder="e.g. Oscar Bronze Classic Standard"><span></span></div>';
   host.innerHTML=nameRow
     +row('prem','Monthly premium','lowest-cost bronze, before any subsidy',r.prem,e.ok?e.bronze:null)
-    +row('subsidy','Monthly subsidy (APTC)',(e.ok&&e.fpl==null&&r.subsidy.src!=='typed')?'<a class="jump" data-jump="in_pincome">fill out income to see the potential subsidy ↓</a>':'applied to the premium, never the deductible',r.subsidy,e.ok?e.subsidy:null)
+    +row('subsidy','Monthly subsidy (APTC)',r.subsidy.src==='typed'?'applied to the premium, never the deductible':'<b style="color:#b42318">not applied until you type it</b> — look it up on HealthSherpa'+((e.ok&&e.fpl==null)?' · <a class="jump" data-jump="in_pincome">add income to see a possible figure ↓</a>':''),r.subsidy,e.ok?e.subsidy:null)
     +calc('Net monthly premium','premium − subsidy',fmt2(net))
     +row('ded','Annual deductible',e.ok&&e.size>1?'family':'individual',r.ded,e.ok?e.ded:null)
     +row('oop','Out-of-pocket max',e.ok&&e.size>1?'family':'individual',r.oop,e.ok?e.oop:null)
@@ -2288,7 +2294,7 @@ function renderAca(){
   if(e.ok&&e.flags.indexOf('medicaid')>=0) fl.push('<div class="warn">⚠ Income is in the Medicaid range for '+e.st+' — no marketplace subsidy; check Medicaid first.</div>');
   if(e.ok&&e.flags.indexOf('gap')>=0) fl.push('<div class="warn">⚠ Under 100% of the poverty level in a state that did not expand Medicaid — no subsidy and no Medicaid (the coverage gap).</div>');
   if(e.ok&&e.flags.indexOf('cliff')>=0) fl.push('<div>No subsidy — income is over 400% of the poverty level (the 2026 cliff). The full bronze price is the anchor.</div>');
-  if(e.ok&&e.subsidy>0&&r.subsidy.src==='est') fl.push('<div>Likely subsidy of about '+fmt(e.subsidy)+'/mo (benchmark silver '+fmt(e.silver)+' − expected contribution '+fmt(e.contrib)+'). Confirm on HealthSherpa.</div>');
+  if(e.ok&&e.subsidy>0&&r.subsidy.src!=='typed') fl.push('<div>Possible subsidy of about '+fmt(e.subsidy)+'/mo at this income (benchmark silver '+fmt(e.silver)+' − expected contribution '+fmt(e.contrib)+') — <b>not applied</b>. Check next year’s income, look it up on HealthSherpa, and type it in to use it.</div>');
   if(A.status==='outside') fl.push('<div class="warn">Outside enrollment — still calculated, left off the presentation unless you tick it back on.</div>');
   if(/offered through work/.test((S.intake||{}).notes||'')) fl.push('<div class="warn">Health coverage is offered through work — if it is affordable, the marketplace subsidy may not apply.</div>');
   if(A.status==='onaca'&&!curIn().isAca) fl.push('<div class="warn">Marked “already on ACA” — tick “This is an ACA plan” under Current Insurance so its deductible and copay are used.</div>');
@@ -5002,7 +5008,7 @@ var PRESENT_CSS='body{padding:10px 18px 12px!important;max-width:none!important}
  +'.pp-two{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:14px;align-items:start}.pp-two>*{min-width:0;max-width:none;margin:0;align-self:start}.pp-two>:not([data-close]){align-self:center}.pp-or{display:flex;align-items:center;justify-content:center;align-self:stretch;position:relative;min-width:36px}'
  +'.pp-or:before{content:"";position:absolute;top:0;bottom:0;left:50%;border-left:2px dashed #c9a24e}.pp-or span{position:relative;background:#fff;border:2px solid #c9a24e;color:#8a6a1f;font-weight:800;font-size:12px;border-radius:999px;padding:6px 8px}'
  +'@media(max-width:640px){.pp-two{grid-template-columns:1fr}.pp-or{min-height:40px}.pp-or:before{top:50%;bottom:auto;left:0;right:0;border-left:0;border-top:2px dashed #c9a24e}}'
- +'.say.pp-off+.pp-dednote,[data-anchor-say].pp-off+.pp-dednote{display:none!important}.pinmark{display:none!important}.pp-yr{font-size:11px;color:#6b7280}.pp-exbtn{font:inherit;font-size:12.5px;font-weight:700;border:1px solid #c69a3c;background:#12213b;color:#fff;border-radius:999px;padding:6px 13px;cursor:pointer;box-shadow:0 1px 3px rgba(18,33,59,.25);white-space:nowrap;transition:background .15s}.pp-exbtn:hover{background:#1c3a63}[data-screen="bonus"]{display:flex;align-items:center}.pp-picbtn{margin-left:auto;font:inherit;font-size:12.5px;font-weight:700;border:1px solid #c69a3c;background:#12213b;color:#fff;border-radius:999px;padding:6px 13px;cursor:pointer;box-shadow:0 1px 3px rgba(18,33,59,.25);white-space:nowrap;transition:background .15s}.pp-picbtn:hover{background:#1c3a63}'
+ +'var.pp-est{color:#b42318!important;font-weight:800;border-bottom:1.5px dashed #b42318}var.pp-fix,.pp-curded.pp-fix{cursor:pointer}var.pp-fix:hover,.pp-curded.pp-fix:hover{background:#fdecea;border-radius:4px}var.pp-fix::after{content:" ✎";font-size:.8em;color:#b42318}.pp-curded.pp-fix b{color:#b42318}.say.pp-off+.pp-dednote,[data-anchor-say].pp-off+.pp-dednote{display:none!important}.pinmark{display:none!important}.pp-yr{font-size:11px;color:#6b7280}.pp-exbtn{font:inherit;font-size:12.5px;font-weight:700;border:1px solid #c69a3c;background:#12213b;color:#fff;border-radius:999px;padding:6px 13px;cursor:pointer;box-shadow:0 1px 3px rgba(18,33,59,.25);white-space:nowrap;transition:background .15s}.pp-exbtn:hover{background:#1c3a63}[data-screen="bonus"]{display:flex;align-items:center}.pp-picbtn{margin-left:auto;font:inherit;font-size:12.5px;font-weight:700;border:1px solid #c69a3c;background:#12213b;color:#fff;border-radius:999px;padding:6px 13px;cursor:pointer;box-shadow:0 1px 3px rgba(18,33,59,.25);white-space:nowrap;transition:background .15s}.pp-picbtn:hover{background:#1c3a63}'
  +'.pp-sug{font-size:12px;font-weight:700;color:#2f7d4a}.pp-nlab{margin-top:10px;font-size:13.5px;color:#16203c}'
  +'.pp-copy[disabled]{opacity:.45;cursor:not-allowed}.pp-need{font-size:12px;color:#b42318;margin-left:8px}var[contenteditable]{outline:1px dashed #b42318;min-width:60px;display:inline-block}';
 function presentEvCss(doc){ if(doc.getElementById('ppevcss')) return; var css='';
@@ -5089,6 +5095,21 @@ function presentPendingEdits(doc){
     if(pv&&pv.nodeType===3) pv.textContent=pv.textContent.replace(/Dr\.?\s*$/,'');
     if(nx&&nx.nodeType===3) nx.textContent=nx.textContent.replace(/(he|she|they)[’']s (all )?in the network|they[’']re (all )?in the network/,many?'they’re all in the network':'they’re in the network'); }); }
 function m0y(n){ return '$'+Math.round(+n||0).toLocaleString('en-US'); }
+/* script blank -> the Intake box that feeds it. Anything red with an entry here is clickable in Present. */
+var PRESENT_EST={'aca.premium':'prem','aca.deductible':'ded','aca.oop':'oop'};
+var PRESENT_FIX={'aca.premium':'[data-ov="prem"]','aca.deductible':'[data-ov="ded"]','aca.oop':'[data-ov="oop"]',
+  'cur.premium':'#in_cur_prem','cur.deductible':'#in_cur_ded','cur.copay':'#in_cur_copay','cur.oop':'#in_cur_oop',
+  'client.why':'#in_whymatters','client.first':'#in_pname','client.name':'#in_pname','client.state':'#in_state',
+  'agent.name':'#in_agent','agency':'#in_agency','agent.phone':'#in_aphone','agent.email':'#in_aemail','agent.website':'#in_aweb','agent.booking':'#in_abook',
+  'client.doctor':'#in_docs1','client.doctors':'#in_docs1'};
+function presentJump(k){ var sel=PRESENT_FIX[k]; if(!sel) return; S.present=S.present||{}; var back=+S.present.pg||0;
+  goStep('intake'); setTimeout(function(){ var el=document.querySelector(sel); if(!el) return;
+    for(var p=el.parentElement;p;p=p.parentElement){ if(p.tagName==='DETAILS') p.open=true; }
+    el.scrollIntoView({behavior:'smooth',block:'center'}); el.classList.add('fixme'); setTimeout(function(){ el.focus({preventScroll:true}); },350);
+    var b=$('retBtn'); if(!b){ b=document.createElement('button'); b.type='button'; b.id='retBtn'; b.className='ret-btn noprint hidein-client'; document.body.appendChild(b); }
+    b.innerHTML='↩ Back to the script'; b.style.display='';
+    setTimeout(function(){ var r=el.getBoundingClientRect(); b.style.top=Math.max(70,Math.min(innerHeight-60,r.top+r.height/2-20))+'px'; },650);
+    b.onclick=function(){ el.classList.remove('fixme'); el.blur(); b.style.display='none'; S.present.pg=back; goStep('present'); }; },60); }
 function presentWire(doc,t){ if(!doc||!doc.body) return 0; var T=presentScriptTokens(t), n=0;
   if(!doc.getElementById('ppcss')){ var st=doc.createElement('style'); st.id='ppcss'; st.textContent=PRESENT_CSS; doc.head.appendChild(st); }
   var copy=function(x){ try{ navigator.clipboard.writeText(x); }catch(e){} };
@@ -5102,6 +5123,15 @@ function presentWire(doc,t){ if(!doc||!doc.body) return 0; var T=presentScriptTo
       if(PRESENT_WRITEBACK[k]&&v.closest('[data-mount="lifeapp"],div')&&doc.querySelector('[data-mount="lifeapp"]')&&doc.querySelector('[data-mount="lifeapp"]').parentNode.parentNode.contains(v)){
         v.setAttribute('contenteditable','true'); v.textContent=''; v.onblur=function(){ var x=v.textContent.trim(); if(!x) return; var w=PRESENT_WRITEBACK[k];
           if(w.indexOf('c:')===0){ S.client[w.slice(2)]=x; if(w==='c:dob') S.client.date=x; } else S.intake[w.slice(2)]=x; autosave(); presentWire(doc,t); }; } } });
+  /* marketplace figures that are still national-average estimates read red (Jesse, 9 Oct): look up the real ones */
+  var R0=S.acaRes||{};
+  Array.prototype.forEach.call(doc.querySelectorAll('var[data-k]'),function(v){ var k=v.getAttribute('data-k'), rk=PRESENT_EST[k];
+    var est=!!(rk&&R0[rk]&&R0[rk].src==='est'&&v.classList.contains('pp-ok')); v.classList.toggle('pp-est',est); if(est) v.title='Estimate (national average) — look up their real number on healthcare.gov';
+    v.classList.toggle('pp-fix',!!PRESENT_FIX[k]&&(est||v.classList.contains('pp-miss'))); });
+  /* click anything red that has a box on the Intake: go fix it, then come straight back (presentJump) */
+  if(!doc.body.dataset.ppFix){ doc.body.dataset.ppFix='1'; doc.addEventListener('click',function(e){ var v=e.target.closest&&e.target.closest('var.pp-fix,.pp-curded.pp-fix'); if(!v) return;
+      e.preventDefault(); presentJump(v.getAttribute('data-k')||'cur.deductible'); }); }
+  var cdw=doc.querySelector('.pp-curded'); if(cdw) cdw.classList.toggle('pp-fix',!(+curIn().ded>0));
   Array.prototype.forEach.call(doc.querySelectorAll('details'),function(dt){ dt.ontoggle=function(){ presentFit(); }; });
   /* anchor rows: one click picks the "you were at" figure */
   /* a radio on each row; the anchor with the highest yearly true cost is marked Suggested (the agent still picks) */
