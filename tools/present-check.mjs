@@ -214,6 +214,7 @@ const TEST = `(async function(){
   ok(/every box you gave me[.] Wouldn’t you agree[?]/.test(d.body.textContent)&&!/Would you agree[?]/.test(d.body.textContent),'close check-in reads Wouldn’t you agree?');
   ok(/You really need both[.]/.test(d.body.textContent)&&!/Want me to show you what that looks like/.test(d.body.textContent),'living-benefits pivot ends on You really need both');
   ok(/I totally understand how you feel — most people say that when they’re comparing it to the [$]0 plans in the ads out there[.] What they end up finding is that these plans save money over a year because they pay from day one[.]/.test(d.body.textContent),'That sounds expensive: Jesse’s rewording in the script');
+  ok(/I’m glad you already have general coverage[.] I’ve had people say that before/.test(d.body.textContent)&&!/Glad you.re already covered/.test(d.body.textContent),'Already covered through work: Jesse’s rewording');
   ok(!/My stab at it/.test(d.body.textContent)&&/Let me do a real one/.test(d.body.textContent),'the 5.2 preface is gone, the example words stay');
   /* catastrophic: the quote page's own event card, anchor vs the chosen package, Bill Saver on, layers open */
   S.negot.on=false; presentGo(presentPageIx('Catastrophic — walk it as layers')); await wait(60);
