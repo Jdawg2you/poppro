@@ -172,6 +172,13 @@ const TEST = `(async function(){
   S.intake.whyShop='lower premiums'; presentWire(d,'best'); rs=d.querySelector('var[data-k="client.why"]'); ok(rs&&rs.textContent==='lower premiums','an old quote with a one-line reason still reads naturally');
   S.intake.whyMatters='keep Dr. Patel'; buildPrintout(); var poT=document.getElementById('printout').textContent; ok(/What matters most to you/.test(poT)&&/keep Dr. Patel/.test(poT)&&!/Why you are looking/.test(poT),'printout shows what matters most, never the story');
   S.intake.whyMatters=kI[0]; S.intake.whyShop=kI[1]; presentWire(d,'best');
+  var kC=JSON.parse(JSON.stringify(curIn())), kAn=S.intake.anchor; S.intake.anchor='cur'; S.present=S.present||{}; var kPA=S.present.anchor; S.present.anchor='cur';
+  var cdTxt=function(){ var sy=d.querySelector('[data-anchor-say="cur"]'); return sy?sy.textContent.split(String.fromCharCode(10)).join(' ').replace(/  +/g,' '):''; }, cdNote=function(){ var n2=d.querySelector('.pp-dednote'); return n2?n2.textContent:''; };
+  S.cur.ded=6000; S.cur.dedSet=true; presentWire(d,'best'); ok(/right now with a [$]6,000 deductible[.]/.test(cdTxt())&&!cdNote(),'a real deductible is read as written: '+cdTxt().slice(0,140));
+  S.cur.ded=0; S.cur.dedSet=true; presentWire(d,'best'); ok(/it looks like no deductible — is that correct, or is there a deductible on that[?]/.test(cdTxt())&&/Get this one exactly right/.test(cdNote()),'a typed $0 becomes the clarity question');
+  S.cur.ded=0; S.cur.dedSet=false; presentWire(d,'best'); ok(/I didn’t catch the deductible on that/.test(cdTxt())&&/ask now/.test(cdNote()),'a blank deductible asks for it');
+  S.cur.ded=6000; S.cur.dedSet=true; presentWire(d,'best'); ok(!cdNote(),'the note goes away once the number is in');
+  S.cur=kC; S.intake.anchor=kAn; S.present.anchor=kPA; presentWire(d,'best');
   ok(!/My stab at it/.test(d.body.textContent)&&/Let me do a real one/.test(d.body.textContent),'the 5.2 preface is gone, the example words stay');
   /* catastrophic: the quote page's own event card, anchor vs the chosen package, Bill Saver on, layers open */
   S.negot.on=false; presentGo(presentPageIx('Catastrophic — walk it as layers')); await wait(60);

@@ -3388,6 +3388,7 @@ function applySuiteClient(c){
   if(h.curEmpPrem) Cu.emp=suiteNum(h.curEmpPrem);
   if(h.curPaying==='Yes') Cu.paying=true; else if(h.curPaying==='No') Cu.paying=false;
   if(h.curDed)     Cu.ded=suiteNum(h.curDed);
+  if(String(h.curDed==null?'':h.curDed).trim()!=='') Cu.dedSet=true;
   if(h.curCopay)   Cu.copay=suiteNum(h.curCopay);
   if(h.curVisits && suiteNum(h.curVisits)>0) I.visits=suiteNum(h.curVisits);
   if(h.curOop)     Cu.oop=suiteNum(h.curOop);
@@ -4304,6 +4305,7 @@ function readIntake(){
   S.intake.budget=moneyNum($('in_budget').value)||0; S.intake.budgetComfort=moneyNum($('in_budget_comfort').value)||0; S.intake.anchor=$('in_anchor').value||'aca';
   S.intake.visits=+$('in_visits').value||0;
   var C=curIn(); ['prem','emp','ded','oop','copay'].forEach(function(k){ C[k]=moneyVal($('in_cur_'+k).value); });
+  C.dedSet=String($('in_cur_ded').value||'').trim()!=='';   /* a typed $0 means "no deductible", not "not asked" (Jesse, 9 Oct) */
   C.isAca=$('in_cur_isaca').checked; C.show=$('in_cur_show').checked; C.paying=$('in_cur_paying').checked;
   var A=acaIn(); A.status=$('in_aca_status').value; A.show=$('in_aca_show').checked; A.fullded=$('in_aca_fullded').checked;
   S.intake.priority=$('in_priority').value; S.intake.notes=$('in_notes').value;
@@ -4346,6 +4348,7 @@ function fillIntake(){
   $('in_net').checked=!!S.docs.net; $('in_rx').checked=!!S.docs.rx;
   $('in_carrier').value=I.carrier||''; $('in_plan').value=I.plan||'';
   var C=curIn(); ['prem','emp','ded','oop','copay'].forEach(function(k){ $('in_cur_'+k).value=(+C[k])?fmtMoneyStr(String(C[k])):''; });
+  if(!(+C.ded)&&C.dedSet&&$('in_cur_ded')) $('in_cur_ded').value='$0';
   $('in_cur_isaca').checked=!!C.isAca; $('in_cur_show').checked=!!C.show;
   /* "paying right now" ticks itself when a current premium is in and nobody has said otherwise */
   $('in_cur_paying').checked=C.paying===false?false:(C.paying===true||+C.prem>0); $('in_visits').value=I.visits||'';
@@ -4999,7 +5002,7 @@ var PRESENT_CSS='body{padding:10px 18px 12px!important;max-width:none!important}
  +'.pp-two{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:14px;align-items:start}.pp-two>*{min-width:0;max-width:none;margin:0;align-self:start}.pp-two>:not([data-close]){align-self:center}.pp-or{display:flex;align-items:center;justify-content:center;align-self:stretch;position:relative;min-width:36px}'
  +'.pp-or:before{content:"";position:absolute;top:0;bottom:0;left:50%;border-left:2px dashed #c9a24e}.pp-or span{position:relative;background:#fff;border:2px solid #c9a24e;color:#8a6a1f;font-weight:800;font-size:12px;border-radius:999px;padding:6px 8px}'
  +'@media(max-width:640px){.pp-two{grid-template-columns:1fr}.pp-or{min-height:40px}.pp-or:before{top:50%;bottom:auto;left:0;right:0;border-left:0;border-top:2px dashed #c9a24e}}'
- +'.pinmark{display:none!important}.pp-yr{font-size:11px;color:#6b7280}.pp-exbtn{font:inherit;font-size:12.5px;font-weight:700;border:1px solid #c69a3c;background:#12213b;color:#fff;border-radius:999px;padding:6px 13px;cursor:pointer;box-shadow:0 1px 3px rgba(18,33,59,.25);white-space:nowrap;transition:background .15s}.pp-exbtn:hover{background:#1c3a63}[data-screen="bonus"]{display:flex;align-items:center}.pp-picbtn{margin-left:auto;font:inherit;font-size:12.5px;font-weight:700;border:1px solid #c69a3c;background:#12213b;color:#fff;border-radius:999px;padding:6px 13px;cursor:pointer;box-shadow:0 1px 3px rgba(18,33,59,.25);white-space:nowrap;transition:background .15s}.pp-picbtn:hover{background:#1c3a63}'
+ +'.say.pp-off+.pp-dednote,[data-anchor-say].pp-off+.pp-dednote{display:none!important}.pinmark{display:none!important}.pp-yr{font-size:11px;color:#6b7280}.pp-exbtn{font:inherit;font-size:12.5px;font-weight:700;border:1px solid #c69a3c;background:#12213b;color:#fff;border-radius:999px;padding:6px 13px;cursor:pointer;box-shadow:0 1px 3px rgba(18,33,59,.25);white-space:nowrap;transition:background .15s}.pp-exbtn:hover{background:#1c3a63}[data-screen="bonus"]{display:flex;align-items:center}.pp-picbtn{margin-left:auto;font:inherit;font-size:12.5px;font-weight:700;border:1px solid #c69a3c;background:#12213b;color:#fff;border-radius:999px;padding:6px 13px;cursor:pointer;box-shadow:0 1px 3px rgba(18,33,59,.25);white-space:nowrap;transition:background .15s}.pp-picbtn:hover{background:#1c3a63}'
  +'.pp-sug{font-size:12px;font-weight:700;color:#2f7d4a}.pp-nlab{margin-top:10px;font-size:13.5px;color:#16203c}'
  +'.pp-copy[disabled]{opacity:.45;cursor:not-allowed}.pp-need{font-size:12px;color:#b42318;margin-left:8px}var[contenteditable]{outline:1px dashed #b42318;min-width:60px;display:inline-block}';
 function presentEvCss(doc){ if(doc.getElementById('ppevcss')) return; var css='';
@@ -5060,6 +5063,25 @@ function presentPendingEdits(doc){
      explain are hidden here, so their lines go. */
   var lg=doc.querySelector('p.legend'); if(lg&&!lg.dataset.ppLg){ lg.dataset.ppLg='1';
     lg.innerHTML='<var>Blue</var> = filled automatically from the selected plan or the client’s intake — you never type or remember these.<br><b style="color:#b42318">Red</b> = something flagged — you’ll want to look at that before you say it.'; }
+  /* 13. (Jesse, 9 Oct) their deductible today is "hugely important": a real number is read as written; a typed $0 or a
+     blank turns the line into a clarity question, with a note to get the real figure before going on. */
+  var cdv=doc.querySelector('[data-anchor-say="cur"] var[data-k="cur.deductible"]');
+  if(cdv&&!cdv.closest('.pp-curded')){ var pv=cdv.previousSibling, nx=cdv.nextSibling;
+    if(pv&&pv.nodeType===3&&/with a\s*$/.test(pv.nodeValue)&&nx&&nx.nodeType===3&&/^\s*deductible\./.test(nx.nodeValue)){
+      var wrap=doc.createElement('span'); wrap.className='pp-curded'; pv.nodeValue=pv.nodeValue.replace(/with a\s*$/,'');
+      nx.nodeValue=nx.nodeValue.replace(/^\s*deductible\.\s*/,' '); cdv.parentNode.insertBefore(wrap,cdv); wrap.appendChild(cdv); } }
+  var cw=doc.querySelector('[data-anchor-say="cur"] .pp-curded');
+  if(cw){ var Cd=curIn(), dv=+Cd.ded||0, m0d=function(n){ return '$'+Math.round(n).toLocaleString('en-US'); };
+    var vv=cw.querySelector('var')||doc.createElement('var'); vv.setAttribute('data-k','cur.deductible');
+    cw.textContent=''; var put=function(h){ var sp=doc.createElement('span'); sp.innerHTML=h; while(sp.firstChild) cw.appendChild(sp.firstChild); };
+    if(dv>0){ put('with a '); vv.textContent=m0d(dv); vv.className=''; vv.removeAttribute('title'); cw.appendChild(vv); put(' deductible.'); }
+    else if(Cd.dedSet){ put('and it looks like <b>no deductible</b> — is that correct, or is there a deductible on that?'); }
+    else { put('— and I didn’t catch the deductible on that. <b>What’s the deductible on your plan?</b>'); }
+    var say=cw.closest('.say'), nt=say&&say.nextElementSibling&&say.nextElementSibling.classList.contains('pp-dednote')?say.nextElementSibling:null;
+    if(!(dv>0)){ if(!nt&&say){ nt=doc.createElement('div'); nt.className='do pp-dednote'; say.parentNode.insertBefore(nt,say.nextSibling); }
+      if(nt){ if(say.dataset.pg!=null) nt.dataset.pg=say.dataset.pg; nt.style.display=say.style.display;
+        nt.innerHTML='<span class="lab">NOT SPOKEN</span><b>Get this one exactly right — it decides the whole comparison.</b> '+(Cd.dedSet?'A $0 deductible is rare on an individual plan; confirm it.':'It should have come up earlier — ask now.')+' Then type the real number on the Intake (Current insurance → Annual deductible).'; } }
+    else if(nt) nt.remove(); }
   /* 6. (Jesse, 9 Oct) drop the author's preface above the worked example */
   Array.prototype.forEach.call(doc.querySelectorAll('details.exp .body > p'),function(p){ if(/^My stab at it/.test((p.textContent||'').trim())) p.remove(); });
   /* 3. Section 5 doctor line: the list carries its own "Dr", and it is "they're" (or "they're all" for several) */
