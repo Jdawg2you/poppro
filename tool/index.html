@@ -5091,6 +5091,10 @@ function presentPendingEdits(doc){
       if(nt){ if(say.dataset.pg!=null) nt.dataset.pg=say.dataset.pg; nt.style.display=say.style.display;
         nt.innerHTML='<span class="lab">NOT SPOKEN</span><b>Get this one exactly right — it decides the whole comparison.</b> '+(Cd.dedSet?'A $0 deductible is rare on an individual plan; confirm it.':'It should have come up earlier — ask now.')+' Then type the real number on the Intake (Current insurance → Annual deductible).'; } }
     else if(nt) nt.remove(); }
+  /* 14. (Jesse, 9 Oct) the catastrophic walkthrough opens with its Example words showing; the "big stuff" block stays
+     folded, and both still fold/unfold by hand - so this only sets the starting state, once. */
+  Array.prototype.forEach.call(doc.querySelectorAll('details.exp'),function(dx){ if(dx.dataset.ppOpen) return; var sm=dx.querySelector('summary');
+    if(sm&&/^Example words/.test(sm.textContent.trim())){ dx.dataset.ppOpen='1'; dx.open=true; } });
   /* 6. (Jesse, 9 Oct) drop the author's preface above the worked example */
   Array.prototype.forEach.call(doc.querySelectorAll('details.exp .body > p'),function(p){ if(/^My stab at it/.test((p.textContent||'').trim())) p.remove(); });
   /* 3. Section 5 doctor line: the list carries its own "Dr", and it is "they're" (or "they're all" for several) */
