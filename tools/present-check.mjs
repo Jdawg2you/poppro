@@ -217,6 +217,7 @@ const TEST = `(async function(){
   ok(/I’m glad you already have general coverage[.] I’ve had people say that before/.test(d.body.textContent)&&!/Glad you.re already covered/.test(d.body.textContent),'Already covered through work: Jesse’s rewording');
   ok(/What a lot of my clients like is having it in writing and knowing they’re approved/.test(d.body.textContent)&&!/What clients found is that having it in writing/.test(d.body.textContent),'Want to think about it: Jesse’s rewording');
   ok(/Budgeting is real, and I’m glad you’re acknowledging that/.test(d.body.textContent)&&!/I.d rather you say it/.test(d.body.textContent),'Can’t afford that: Jesse’s rewording');
+  ok(/especially when they’re getting a subsidy/.test(d.body.textContent)&&/owe that subsidy back at tax time/.test(d.body.textContent)&&!/60-80/.test(d.body.textContent),'Stick with the ACA: rewording with checked numbers');
   ok(!/My stab at it/.test(d.body.textContent)&&/Let me do a real one/.test(d.body.textContent),'the 5.2 preface is gone, the example words stay');
   /* catastrophic: the quote page's own event card, anchor vs the chosen package, Bill Saver on, layers open */
   S.negot.on=false; presentGo(presentPageIx('Catastrophic — walk it as layers')); await wait(60);
