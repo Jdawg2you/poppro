@@ -81,6 +81,10 @@ const TEST = `(async function(){
   var kn=[S.intake.notes,JSON.stringify(S.intake.personNotes||{})]; S.intake.personNotes={p:'likes mornings'}; S.intake.notes='call notes'; enNotesSync(); S.intake.notes+=String.fromCharCode(10)+'ZZagent extra'; S.intake.personNotes.p='likes evenings'; enNotesSync();
   ok(/ZZagent extra/.test(S.intake.notes)&&/likes evenings/.test(S.intake.notes)&&!/likes mornings/.test(S.intake.notes),'notes typed after the application lines survive a person-note edit'); S.intake.notes=kn[0]; S.intake.personNotes=JSON.parse(kn[1]);
   var kd=[S.intake.docs1,S.intake.docs2,S.intake.docs3]; S.intake.docs1='A'; S.intake.docs2='B'; S.intake.docs3='C'; enWrite('docs:all','A, B, C, D'); ok(S.intake.docs1==='A'&&S.intake.docs2==='B'&&S.intake.docs3==='C, D','Enroll doctors box writes back without duplicates'); S.intake.docs1=kd[0]; S.intake.docs2=kd[1]; S.intake.docs3=kd[2];
+  presentOpen(); await wait(900); var stb=document.querySelectorAll('#prStories [data-story]'), stT=Array.prototype.map.call(stb,function(b){ return b.textContent; }).join(' | ');
+  ok(stb.length===4&&/Living benefit story/.test(stT)&&/Why not just pay cash/.test(stT)&&!/Kyle|rehab|trip to the ER/.test(stT)&&/who to tell/.test(document.getElementById('prStories').textContent),'story repository: four stories named for who to tell: '+stT);
+  if(stb[2]){ stb[2].click(); var pp=document.getElementById('prPop'); ok(/Story coming soon/.test(pp.textContent)&&!/1099/.test(pp.textContent)&&!pp.querySelector('.warn'),'a story opens to Story coming soon, no red author note'); pp.style.display='none'; }
+  goStep('quote'); await wait(200);
   ok(!!document.getElementById('sqDate')&&!!document.getElementById('sqTime')&&!!document.getElementById('sqPdf')&&document.querySelectorAll('#sendQuote .sqstep').length===3,'Send the quote has its three steps');
   ok(!document.querySelector('#printout .brlist')&&document.getElementById('brochBox').classList.contains('hidein-client'),'the brochure box stays off the printout and Client View');
   buildPrintout(); ok(!document.querySelector('#printout [data-copypic]')&&!/Copy (plans|example|picture)/.test(document.getElementById('printout').textContent),'no copy button inside the printout / emailed quote');
@@ -153,7 +157,7 @@ const TEST = `(async function(){
   ok(!d.querySelector('var[data-k="client.situation"]')&&d.body.textContent.indexOf('small business owners / 1099')>=0,'their situation is plain script words, no blank');
   ok(!!d.querySelector('[data-screen="lb-price"]'),'lb-price marker is a real element');
   ok(!Array.prototype.some.call(d.body.children,function(e){ return /^\s*↳/.test(e.textContent)&&fr.contentWindow.getComputedStyle(e).display!=='none'; }),'the ↳ explanation lines are hidden');
-  ok(/Kyle.s daughter/.test(document.getElementById('prStories').innerText),'prose mentioning Kyle is untouched');
+  ok(/Kyle.s daughter/.test(d.body.textContent),'prose mentioning Kyle is untouched (in the script text)');
   /* copy-as-picture: section 8 button, and the picture itself */
   ok(!!d.querySelector('[data-screen="bonus"] .pp-picbtn'),'Copy "Bonus Benefits" button in section 8');
   var pblob=await picOf('partners'); ok(pblob&&pblob.type==='image/png'&&pblob.size>50000,'partner benefits render to a PNG ('+(pblob&&pblob.size)+' bytes)');
@@ -209,6 +213,11 @@ const TEST = `(async function(){
   ok(/We deliberately did not put a dollar figure on the surgery [(]that depends on the scheduled amount for the procedure, and inventing one now could become a complaint later[)][.]/.test(d.body.textContent)&&!/I deliberately did not put/.test(d.body.textContent),'Why these figures: the surgery sentence reads as Jesse worded it');
   ok(/every box you gave me[.] Wouldn’t you agree[?]/.test(d.body.textContent)&&!/Would you agree[?]/.test(d.body.textContent),'close check-in reads Wouldn’t you agree?');
   ok(/You really need both[.]/.test(d.body.textContent)&&!/Want me to show you what that looks like/.test(d.body.textContent),'living-benefits pivot ends on You really need both');
+  ok(/I totally understand how you feel — most people say that when they’re comparing it to the [$]0 plans in the ads out there[.] What they end up finding is that these plans save money over a year because they pay from day one[.]/.test(d.body.textContent),'That sounds expensive: Jesse’s rewording in the script');
+  ok(/I’m glad you already have general coverage[.] I’ve had people say that before/.test(d.body.textContent)&&!/Glad you.re already covered/.test(d.body.textContent),'Already covered through work: Jesse’s rewording');
+  ok(/What a lot of my clients like is having it in writing and knowing they’re approved/.test(d.body.textContent)&&!/What clients found is that having it in writing/.test(d.body.textContent),'Want to think about it: Jesse’s rewording');
+  ok(/Budgeting is real, and I’m glad you’re acknowledging that/.test(d.body.textContent)&&!/I.d rather you say it/.test(d.body.textContent),'Can’t afford that: Jesse’s rewording');
+  ok(/especially when they’re getting a subsidy/.test(d.body.textContent)&&/owe that subsidy back at tax time/.test(d.body.textContent)&&!/60-80/.test(d.body.textContent),'Stick with the ACA: rewording with checked numbers');
   ok(!/My stab at it/.test(d.body.textContent)&&/Let me do a real one/.test(d.body.textContent),'the 5.2 preface is gone, the example words stay');
   /* catastrophic: the quote page's own event card, anchor vs the chosen package, Bill Saver on, layers open */
   S.negot.on=false; presentGo(presentPageIx('Catastrophic — walk it as layers')); await wait(60);
