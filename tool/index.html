@@ -5116,7 +5116,7 @@ function presentPendingEdits(doc){
     if(nd.nodeType===3&&/Would you agree\?/.test(nd.nodeValue)) nd.nodeValue=nd.nodeValue.replace(/Would you agree\?/g,'Wouldn’t you agree?'); }); });
   /* 17. (Jesse, 10 Oct) the living-benefits pivot ends on "You really need both." - the offer to show it is removed */
   Array.prototype.forEach.call(doc.querySelectorAll('.say'),function(x){ Array.prototype.forEach.call(x.childNodes,function(nd){
-    if(nd.nodeType===3&&/ Want me to show you what that looks like for your age and health\?/.test(nd.nodeValue)) nd.nodeValue=nd.nodeValue.replace(/ Want me to show you what that looks like for your age and health\?/,''); }); });
+    if(nd.nodeType===3&&/ ?Want me to show you what that looks like (at your age|for your age and health)\?/.test(nd.nodeValue)) nd.nodeValue=nd.nodeValue.replace(/ ?Want me to show you what that looks like (at your age|for your age and health)\?/g,''); }); });
   /* 6. (Jesse, 9 Oct) drop the author's preface above the worked example */
   Array.prototype.forEach.call(doc.querySelectorAll('details.exp .body > p'),function(p){ if(/^My stab at it/.test((p.textContent||'').trim())) p.remove(); });
   /* 3. Section 5 doctor line: the list carries its own "Dr", and it is "they're" (or "they're all" for several) */
