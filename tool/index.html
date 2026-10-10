@@ -652,6 +652,8 @@
   @keyframes retin{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}
   body.client .ret-btn{display:none}
   .fixme{outline:3px solid #b42318!important;outline-offset:2px;background:#fff6f5!important}
+  .netrow{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.netans{display:none;align-items:center;gap:10px;flex-wrap:wrap;margin-top:8px;padding:6px 12px;border:1px solid var(--line);border-radius:999px;background:#fffdf7;font-size:13.5px}
+  .netans.on{display:inline-flex}.netans>span{font-weight:700;color:var(--navy)}.netans label{display:inline-flex;align-items:center;gap:5px;cursor:pointer;font-weight:600}
   .cele-canvas{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:9999}
   .cele-float{position:fixed;bottom:12vh;pointer-events:none;z-index:9999;animation:celefloat 2.4s cubic-bezier(.2,.7,.3,1) forwards;filter:drop-shadow(0 4px 8px rgba(0,0,0,.18))}
   @keyframes celefloat{0%{transform:translateY(0) scale(.4) rotate(-8deg);opacity:0}15%{opacity:1;transform:translateY(-8vh) scale(1.1) rotate(6deg)}100%{transform:translateY(-70vh) scale(1) rotate(-4deg);opacity:0}}
@@ -1060,11 +1062,12 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
     </div>
     <div class="intakegrid" style="margin-top:10px">
       <div class="fld"><label>Keep current doctor on ACA?</label><select id="in_keepaca" class="selfld"><option value="">—</option><option value="yes">Yes</option><option value="no">No</option></select></div>
-      <div class="fld"><label>Keep current doctor on AFC (First Health)?</label><select id="in_keepafc" class="selfld"><option value="">—</option><option value="yes">Yes</option><option value="no">No</option></select></div>
       <div class="fld"><label>Doctor notes</label><input id="in_docnote" placeholder="if they can't keep a doctor, note why"></div>
       <div class="fld"><label>Doctor visits / year <small>whole household, specialists too</small></label><input id="in_visits" type="number" min="0" placeholder="0"></div>
     </div>
-    <label class="chip" style="margin-top:8px"><input type="checkbox" id="in_net"> Network status verified with client (First Health)</label>
+    <div class="netrow"><label class="chip" style="margin-top:8px"><input type="checkbox" id="in_net"> Network status verified with client (First Health)</label>
+      <span id="netAns" class="netans"><span>Their doctor is…</span><label><input type="radio" name="netans" value="yes"> ✅ In the network — they keep them</label><label><input type="radio" name="netans" value="no"> ❌ Not in the network</label>
+        <select id="in_keepafc" hidden><option value=""></option><option value="yes">yes</option><option value="no">no</option></select></span></div>
     <div style="margin-top:10px"><label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px">Preferred doctor notes</label><textarea id="in_docsnote" rows="2" style="width:100%;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font:inherit;background:#fff;resize:vertical" placeholder="Notes on providers / networks — e.g. wants to keep current PCP, specialist not in-network, willing to switch."></textarea></div>
 
     <div class="intake-sec" id="sec_curins">Current Insurance <span class="secnote">— what they have today, if anything</span></div>
@@ -4349,7 +4352,7 @@ function fillIntake(){
   $('in_majorcond').checked=!!I.majorcond; $('in_majorcond_note').value=I.majorcondNote||''; autoGrow($('in_majorcond_note'));
   $('in_diabetic').checked=!!I.diabetic; $('in_diabetic_note').value=I.diabeticNote||''; autoGrow($('in_diabetic_note'));
   $('in_docs1').value=I.docs1||''; $('in_docs2').value=I.docs2||''; $('in_docs3').value=I.docs3||'';
-  $('in_keepaca').value=I.keepaca||''; $('in_keepafc').value=I.keepafc||''; $('in_docnote').value=I.docnote||'';
+  $('in_keepaca').value=I.keepaca||''; $('in_keepafc').value=I.keepafc||''; $('in_docnote').value=I.docnote||''; if(window.netSync) setTimeout(window.netSync,0);
   $('in_pheight').value=I.pheight||''; $('in_pweight').value=I.pweight||''; $('in_sheight').value=I.sheight||''; $('in_sweight').value=I.sweight||''; $('in_psex').value=I.psex||''; $('in_ssex').value=I.ssex||''; $('in_kids').value=I.kidsNote||''; $('in_routenote').value=I.routeNote||''; $('in_docsnote').value=I.docsNote||''; $('in_whyshop').value=I.whyShop||''; $('in_whymatters').value=I.whyMatters||''; $('in_foundplan').value=I.foundPlan||''; $('in_effdate').value=I.effDate||''; updateBMI('p'); updateBMI('s'); buildFlag('p'); buildFlag('s');
   $('in_net').checked=!!S.docs.net; $('in_rx').checked=!!S.docs.rx;
   $('in_carrier').value=I.carrier||''; $('in_plan').value=I.plan||'';
@@ -5008,7 +5011,7 @@ var PRESENT_CSS='body{padding:10px 18px 12px!important;max-width:none!important}
  +'.pp-two{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:14px;align-items:start}.pp-two>*{min-width:0;max-width:none;margin:0;align-self:start}.pp-two>:not([data-close]){align-self:center}.pp-or{display:flex;align-items:center;justify-content:center;align-self:stretch;position:relative;min-width:36px}'
  +'.pp-or:before{content:"";position:absolute;top:0;bottom:0;left:50%;border-left:2px dashed #c9a24e}.pp-or span{position:relative;background:#fff;border:2px solid #c9a24e;color:#8a6a1f;font-weight:800;font-size:12px;border-radius:999px;padding:6px 8px}'
  +'@media(max-width:640px){.pp-two{grid-template-columns:1fr}.pp-or{min-height:40px}.pp-or:before{top:50%;bottom:auto;left:0;right:0;border-left:0;border-top:2px dashed #c9a24e}}'
- +'var.pp-docok,var.pp-docq{position:relative;display:inline-block}var.pp-docok::before,var.pp-docq::before{position:absolute;left:50%;top:-1.15em;transform:translateX(-50%);font-size:.95em;line-height:1}var.pp-docok::before{content:"👍"}var.pp-docq::before{content:"❓"}var.pp-docq.pp-fix::after{content:""}var.pp-est{color:#b42318!important;font-weight:800;border-bottom:1.5px dashed #b42318}var.pp-fix,.pp-curded.pp-fix{cursor:pointer}var.pp-fix:hover,.pp-curded.pp-fix:hover{background:#fdecea;border-radius:4px}var.pp-fix::after{content:" ✎";font-size:.8em;color:#b42318}.pp-curded.pp-fix b{color:#b42318}.say.pp-off+.pp-dednote,[data-anchor-say].pp-off+.pp-dednote{display:none!important}.pinmark{display:none!important}.pp-yr{font-size:11px;color:#6b7280}.pp-exbtn{font:inherit;font-size:12.5px;font-weight:700;border:1px solid #c69a3c;background:#12213b;color:#fff;border-radius:999px;padding:6px 13px;cursor:pointer;box-shadow:0 1px 3px rgba(18,33,59,.25);white-space:nowrap;transition:background .15s}.pp-exbtn:hover{background:#1c3a63}[data-screen="bonus"]{display:flex;align-items:center}.pp-picbtn{margin-left:auto;font:inherit;font-size:12.5px;font-weight:700;border:1px solid #c69a3c;background:#12213b;color:#fff;border-radius:999px;padding:6px 13px;cursor:pointer;box-shadow:0 1px 3px rgba(18,33,59,.25);white-space:nowrap;transition:background .15s}.pp-picbtn:hover{background:#1c3a63}'
+ +'var.pp-docok,var.pp-docq{position:relative;display:inline-block}var.pp-docok::before,var.pp-docq::before{position:absolute;left:50%;top:-1.15em;transform:translateX(-50%);font-size:.95em;line-height:1}var.pp-docok::before{content:"✅"}var.pp-docq::before{content:"❓"}var.pp-docno::before{content:"❌"}var.pp-docno{position:relative;display:inline-block}var.pp-docno::before{position:absolute;left:50%;top:-1.15em;transform:translateX(-50%);font-size:.95em;line-height:1}var.pp-docq.pp-fix::after,var.pp-docno.pp-fix::after{content:""}var.pp-est{color:#b42318!important;font-weight:800;border-bottom:1.5px dashed #b42318}var.pp-fix,.pp-curded.pp-fix{cursor:pointer}var.pp-fix:hover,.pp-curded.pp-fix:hover{background:#fdecea;border-radius:4px}var.pp-fix::after{content:" ✎";font-size:.8em;color:#b42318}.pp-curded.pp-fix b{color:#b42318}.say.pp-off+.pp-dednote,[data-anchor-say].pp-off+.pp-dednote{display:none!important}.pinmark{display:none!important}.pp-yr{font-size:11px;color:#6b7280}.pp-exbtn{font:inherit;font-size:12.5px;font-weight:700;border:1px solid #c69a3c;background:#12213b;color:#fff;border-radius:999px;padding:6px 13px;cursor:pointer;box-shadow:0 1px 3px rgba(18,33,59,.25);white-space:nowrap;transition:background .15s}.pp-exbtn:hover{background:#1c3a63}[data-screen="bonus"]{display:flex;align-items:center}.pp-picbtn{margin-left:auto;font:inherit;font-size:12.5px;font-weight:700;border:1px solid #c69a3c;background:#12213b;color:#fff;border-radius:999px;padding:6px 13px;cursor:pointer;box-shadow:0 1px 3px rgba(18,33,59,.25);white-space:nowrap;transition:background .15s}.pp-picbtn:hover{background:#1c3a63}'
  +'.pp-sug{font-size:12px;font-weight:700;color:#2f7d4a}.pp-nlab{margin-top:10px;font-size:13.5px;color:#16203c}'
  +'.pp-copy[disabled]{opacity:.45;cursor:not-allowed}.pp-need{font-size:12px;color:#b42318;margin-left:8px}var[contenteditable]{outline:1px dashed #b42318;min-width:60px;display:inline-block}';
 function presentEvCss(doc){ if(doc.getElementById('ppevcss')) return; var css='';
@@ -5101,7 +5104,7 @@ var PRESENT_FIX={'aca.premium':'[data-ov="prem"]','aca.deductible':'[data-ov="de
   'cur.premium':'#in_cur_prem','cur.deductible':'#in_cur_ded','cur.copay':'#in_cur_copay','cur.oop':'#in_cur_oop',
   'client.why':'#in_whymatters','client.first':'#in_pname','client.name':'#in_pname','client.state':'#in_state',
   'agent.name':'#in_agent','agency':'#in_agency','agent.phone':'#in_aphone','agent.email':'#in_aemail','agent.website':'#in_aweb','agent.booking':'#in_abook',
-  'client.doctor':'#in_docs1','client.doctors':'#in_docs1','doctor.name':'#in_keepafc'};
+  'client.doctor':'#in_docs1','client.doctors':'#in_docs1','doctor.name':'#in_net'};
 function presentJump(k){ var sel=PRESENT_FIX[k]; if(!sel) return; S.present=S.present||{}; var back=+S.present.pg||0;
   goStep('intake'); setTimeout(function(){ var el=document.querySelector(sel); if(!el) return;
     for(var p=el.parentElement;p;p=p.parentElement){ if(p.tagName==='DETAILS') p.open=true; }
@@ -5134,10 +5137,10 @@ function presentWire(doc,t){ if(!doc||!doc.body) return 0; var T=presentScriptTo
   var cdw=doc.querySelector('.pp-curded'); if(cdw) cdw.classList.toggle('pp-fix',!(+curIn().ded>0));
   /* section 5's doctor (Jesse, 9 Oct): 👍 above the name once the Intake says the doctor is in First Health, ❓ until
      then - and the ❓ jumps to the network check. */
-  var docOk=(S.intake||{}).keepafc==='yes'||!!(S.docs||{}).net;
+  var netV=!!(S.docs||{}).net, kaf=(S.intake||{}).keepafc, docSt=!netV||!kaf?'q':(kaf==='yes'?'ok':'no');
   Array.prototype.forEach.call(doc.querySelectorAll('var[data-k="doctor.name"]'),function(v){ if(!v.classList.contains('pp-ok')) return;
-    v.classList.toggle('pp-docok',docOk); v.classList.toggle('pp-docq',!docOk); v.classList.toggle('pp-fix',!docOk);
-    v.title=docOk?'Checked: in the First Health network':'Not checked against First Health yet — click to mark it on the Intake'; });
+    v.classList.toggle('pp-docok',docSt==='ok'); v.classList.toggle('pp-docno',docSt==='no'); v.classList.toggle('pp-docq',docSt==='q'); v.classList.toggle('pp-fix',docSt!=='ok');
+    v.title=docSt==='ok'?'Verified: in the First Health network':docSt==='no'?'Verified: NOT in the First Health network — don’t say they’re in it':'Network not verified yet — click to verify it on the Intake'; });
   Array.prototype.forEach.call(doc.querySelectorAll('details'),function(dt){ dt.ontoggle=function(){ presentFit(); }; });
   /* anchor rows: one click picks the "you were at" figure */
   /* a radio on each row; the anchor with the highest yearly true cost is marked Suggested (the agent still picks) */
@@ -5369,6 +5372,12 @@ function bindInputs(){
   $('neg_pct').addEventListener('input',compute);
   $('neg_min').addEventListener('input',compute);
   ['in_keepaca','in_keepafc'].forEach(function(id){ $(id).addEventListener('change',function(){ readIntake(); autosave(); }); });
+  /* Jesse, 9 Oct: verifying the network opens the answer - in (✅) or not (❌); the script shows ❓ until then */
+  var netSync=function(){ var on=$('in_net').checked, v=$('in_keepafc').value; $('netAns').classList.toggle('on',on);
+    document.querySelectorAll('input[name="netans"]').forEach(function(r){ r.checked=(r.value===v); }); };
+  $('in_net').addEventListener('change',function(){ netSync(); readIntake(); autosave(); });
+  document.querySelectorAll('input[name="netans"]').forEach(function(r){ r.addEventListener('change',function(){ $('in_keepafc').value=r.value; readIntake(); autosave(); }); });
+  window.netSync=netSync; netSync();
   document.querySelectorAll('#tabs button').forEach(function(b){ b.onclick=function(){ read(); S.activeTab=b.dataset.tab; fill(); compute(); }; });
   ['good','better','best'].forEach(function(t){ var c=$('inc_'+t); if(c) c.onchange=function(){ S.include=S.include||{}; S.include[t]=c.checked; updateTabVisibility(); compute(); autosave(); }; });
   if($('tfra_show')) $('tfra_show').onchange=function(){ S.showTfra=this.checked; updateTfraVisibility(); autosave(); };

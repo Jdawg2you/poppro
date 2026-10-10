@@ -184,9 +184,11 @@ const TEST = `(async function(){
   if(ev0){ S.present.pg=3; ev0.click(); await wait(800); ok(S.step==='intake'&&document.activeElement===document.querySelector('[data-ov="prem"]')&&document.getElementById('retBtn').style.display!=='none','clicking it jumps to the marketplace premium box with a Back button');
     document.getElementById('retBtn').click(); await wait(600); ok(S.step==='present'&&+S.present.pg===3,'Back returns to the same script screen'); }
   acaIn().ov=keepOv; acaSync(); for(var w9=0;w9<40;w9++){ await wait(75); fr=document.getElementById('prFrame'); if(fr&&fr.contentDocument&&fr.contentDocument.querySelector('var.pp-ok')) break; } d=fr.contentDocument; presentWire(d,'best');
-  var kDoc=[S.intake.keepafc,(S.docs||{}).net]; S.docs=S.docs||{}; S.intake.keepafc='yes'; presentWire(d,'best'); var dv=d.querySelector('var[data-k="doctor.name"]');
-  ok(dv&&dv.classList.contains('pp-docok')&&!dv.classList.contains('pp-docq'),'doctor in First Health: 👍 over the name');
-  S.intake.keepafc=''; S.docs.net=false; presentWire(d,'best'); dv=d.querySelector('var[data-k="doctor.name"]'); ok(dv&&dv.classList.contains('pp-docq')&&dv.classList.contains('pp-fix'),'not checked yet: ❓ over the name, click to fix');
+  var kDoc=[S.intake.keepafc,(S.docs||{}).net]; S.docs=S.docs||{}; var dmk=function(){ var dv2=d.querySelector('var[data-k="doctor.name"]'); return dv2?['pp-docok','pp-docno','pp-docq'].filter(function(c){ return dv2.classList.contains(c); }).join(','):'none'; };
+  S.docs.net=false; S.intake.keepafc='yes'; presentWire(d,'best'); ok(dmk()==='pp-docq','not verified: ❓ (even if an answer is set)');
+  S.docs.net=true; S.intake.keepafc='yes'; presentWire(d,'best'); ok(dmk()==='pp-docok','verified, in the network: ✅');
+  S.docs.net=true; S.intake.keepafc='no'; presentWire(d,'best'); ok(dmk()==='pp-docno','verified, not in the network: ❌');
+  ok(PRESENT_FIX['doctor.name']==='#in_net','the doctor mark jumps to Network status verified');
   S.intake.keepafc=kDoc[0]; S.docs.net=kDoc[1]; presentWire(d,'best');
   ok(!/My stab at it/.test(d.body.textContent)&&/Let me do a real one/.test(d.body.textContent),'the 5.2 preface is gone, the example words stay');
   /* catastrophic: the quote page's own event card, anchor vs the chosen package, Bill Saver on, layers open */
