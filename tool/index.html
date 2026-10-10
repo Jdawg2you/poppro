@@ -4991,7 +4991,10 @@ function presentScriptTokens(t){ var T=presentTokens(t), C=S.client||{}, I=S.int
   T['plan.monthly']=fmt2(planMo); T['lb.addback']=lbMo>0?fmt2(lbMo):''; T['new.total']=fmt2(planMo+lbMo);
   T['anchor.deductible']=ak==='aca'?T['aca.deductible']:(ak==='cur'||ak==='employer')?T['cur.deductible']:'';
   if(anc!=null){ T['anchor.today']=fmt2(anc); var sv=anc-planMo; T['savings.monthly']=fmt2(sv); T['saving']=fmt2(anc-planMo-lbMo);
-    if(sv>0){ var lo=Math.round(sv*0.20/10)*10, hi=Math.round(sv*0.25/10)*10; T['lb.suggested_low']=m0(lo); T['lb.suggested_high']=m0(hi); T['lb.suggested']=m0(lo)+' to '+m0(hi); T['lb.share']='20 to 25%'; } }
+    /* 20-25% of the monthly saving. Nearest $10 collapsed small savings into "$30 to $30" (Jesse, 10 Oct): use $5 steps
+       under $100, and say "about $X" when the two ends still meet. */
+    if(sv>0){ var stp=sv*0.25<100?5:10, lo=Math.round(sv*0.20/stp)*stp, hi=Math.round(sv*0.25/stp)*stp; if(lo<5) lo=5; if(hi<lo) hi=lo;
+      T['lb.suggested_low']=m0(lo); T['lb.suggested_high']=m0(hi); T['lb.suggested']=hi>lo?m0(lo)+' to '+m0(hi):'about '+m0(lo); T['lb.share']='20 to 25%'; } }
   else { T['anchor.today']=''; T['savings.monthly']=''; T['saving']=''; }
   return T; }
 /* where a blank can be typed into on the Apply panel, and the profile field it writes back to */
@@ -5066,8 +5069,8 @@ function presentPendingEdits(doc){
         nd.textContent=nd.textContent.replace(/Now compare that to (where you are today|the marketplace plan)\./,'Now compare that to '+(akx==='aca'?'the marketplace plan':'where you are today')+'.'); });
       var nx=say.querySelector('.pp-exnote'); if(!nx){ nx=doc.createElement('span'); nx.className='pp-exnote'; var wh=say.querySelector('.who'); say.insertBefore(nx,wh||null); }
       var red=ad&&ad.classList.contains('pp-miss');
-      nx.innerHTML=' <i>(<b>Pay attention:</b> '+(anName?'this compares against '+anName+(ad&&!red?' — a '+esc(ad.textContent)+' deductible':'')+'.':'no anchor plan is picked, so there is nothing to compare against — pick one above or skip this line.')
-        +(red||!anName?' If the number is red, they may not have a deductible on their current plan — check it before you say this line.':'')+')</i>'; } }
+      nx.innerHTML=' <i>(<b>Pay attention:</b> '+(anName?'this compares against their anchored plan ('+anName+'). If the number is red, they may not have a deductible in that plan. Check before you say this line.'
+        :'no anchored plan is picked, so there is nothing to compare against — pick one above or skip this line.')+')</i>'; } }
   /* 5. Before you dial: the quote-tool screenshots can be copied straight from the Quote page */
   Array.prototype.forEach.call(doc.querySelectorAll('.prep li'),function(li){ if(li.dataset.ppQ) return; if(/^Quote-tool screenshots/.test((li.textContent||'').trim())){ li.dataset.ppQ='1';
       li.innerHTML='<b>Quote-tool screenshots</b> for one tier up and one tier down (can be done on the Quote page — <b>📋 Copy plans</b> puts all three on the clipboard).'; } });
