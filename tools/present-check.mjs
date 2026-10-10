@@ -70,6 +70,10 @@ const TEST = `(async function(){
   var fb=document.getElementById('fabSave'); ok(fb&&fb.classList.contains('noprint'),'floating Save tab is on the page and never prints');
   document.body.classList.add('client'); ok(getComputedStyle(fb).display==='none','floating Save hides in Client View'); document.body.classList.remove('client');
   ok(/^POP_Pro_.+_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{1,2}-[0-9]{2}(am|pm)[.]json$/.test(fileName()),'each save file is named with the local date and time: '+fileName());
+  goStep('enroll'); await wait(200); var lm=document.getElementById('lnkMutual'), oo=window.open; lm.addEventListener('click',function(ev){ ev.preventDefault(); },{once:true}); lm.click(); window.dispatchEvent(new Event('focus')); await wait(150);
+  ok(document.querySelectorAll('.cele-float').length>0,'opening a living-benefits application floats a thumbs-up'); document.querySelectorAll('.cele-float').forEach(function(e2){ e2.remove(); }); goStep('quote'); await wait(150);
+  goStep('enroll'); await wait(200); var lmh=document.getElementById('lnkManhattan'); lmh.addEventListener('click',function(ev){ ev.preventDefault(); },{once:true}); lmh.click(); window.dispatchEvent(new Event('focus')); await wait(150);
+  ok(!!document.querySelector('.cele-go')&&/almost there/.test(document.querySelector('.cele-go').textContent),'opening a health application: rocket, Let’s go — almost there!'); document.querySelectorAll('.cele-go').forEach(function(e2){ e2.remove(); }); goStep('quote'); await wait(150);
   ok(!!document.getElementById('sqDate')&&!!document.getElementById('sqTime')&&!!document.getElementById('sqPdf')&&document.querySelectorAll('#sendQuote .sqstep').length===3,'Send the quote has its three steps');
   ok(!document.querySelector('#printout .brlist')&&document.getElementById('brochBox').classList.contains('hidein-client'),'the brochure box stays off the printout and Client View');
   buildPrintout(); ok(!document.querySelector('#printout [data-copypic]')&&!/Copy (plans|example|picture)/.test(document.getElementById('printout').textContent),'no copy button inside the printout / emailed quote');

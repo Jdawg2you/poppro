@@ -632,6 +632,11 @@
   @media (prefers-reduced-motion:reduce){#agentSetup .fld.needfill input{animation:none;box-shadow:0 0 0 3px rgba(34,160,90,.5)}}
   @keyframes fuglow{0%,100%{box-shadow:0 0 0 2px rgba(198,154,60,.35)}50%{box-shadow:0 0 0 4px rgba(198,154,60,.75),0 0 18px rgba(198,154,60,.5)}}
   .fitem.fu-glow{border-radius:8px;background:#fff8e6;animation:fuglow 1.4s ease-in-out infinite}
+  .cele-go{position:fixed;left:50%;top:44%;transform:translate(-50%,-50%);z-index:9999;pointer-events:none;text-align:center;animation:celego 2.7s ease forwards}
+  .cele-go .cg-r{display:inline-block;font-size:76px;animation:celerocket 2.7s cubic-bezier(.4,0,.6,1) forwards;filter:drop-shadow(0 8px 16px rgba(18,33,59,.3))}
+  .cele-go small{display:block;font-family:var(--serif);font-size:24px;font-weight:700;color:#fff;background:#12213b;border:2px solid #c69a3c;border-radius:999px;padding:6px 18px;margin-top:6px}
+  @keyframes celego{0%{opacity:0;transform:translate(-50%,-50%) scale(.6)}14%{opacity:1;transform:translate(-50%,-50%) scale(1.06)}24%{transform:translate(-50%,-50%) scale(1)}78%{opacity:1}100%{opacity:0}}
+  @keyframes celerocket{0%,30%{transform:translate(0,0) rotate(-45deg)}100%{transform:translate(60px,-55vh) rotate(-45deg)}}
   .cele-shield{position:fixed;left:50%;top:42%;transform:translate(-50%,-50%);z-index:9999;pointer-events:none;font-size:84px;text-align:center;animation:celeshield 2.5s ease forwards;filter:drop-shadow(0 8px 18px rgba(18,33,59,.3))}
   .cele-shield small{display:block;font-family:var(--serif);font-size:22px;font-weight:700;color:#12213b;background:#fff8e6;border:1.5px solid #c69a3c;border-radius:999px;padding:4px 14px;margin-top:4px}
   @keyframes celeshield{0%{opacity:0;transform:translate(-50%,-50%) scale(.4)}18%{opacity:1;transform:translate(-50%,-50%) scale(1.12)}28%{transform:translate(-50%,-50%) scale(1)}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-60%) scale(.96)}}
@@ -662,7 +667,7 @@
   .cele-banner .cele-l1,.cele-banner .cele-l2{display:block}.cele-banner .cele-who{white-space:nowrap;color:#f3d48a}
   .cele-banner small{display:block;font-family:-apple-system,sans-serif;font-size:14px;font-weight:600;color:#e9d6a6;margin-top:4px}
   @keyframes celebanner{0%{opacity:0;transform:translate(-50%,-50%) scale(.6)}8%{opacity:1;transform:translate(-50%,-50%) scale(1.06)}14%{transform:translate(-50%,-50%) scale(1)}85%{opacity:1}100%{opacity:0;transform:translate(-50%,-60%) scale(.98)}}
-  @media print{.cele-canvas,.cele-float,.cele-banner,.cele-shield{display:none!important}}
+  @media print{.cele-canvas,.cele-float,.cele-banner,.cele-shield,.cele-go{display:none!important}}
   .picbar{display:flex;justify-content:flex-end;margin:10px 0 -4px}.picbtn{font:inherit;font-size:12.5px;font-weight:700;border:1px solid #c69a3c;background:#12213b;color:#fff;border-radius:999px;padding:6px 13px;cursor:pointer;box-shadow:0 1px 3px rgba(18,33,59,.25);white-space:nowrap;transition:background .15s}.picbtn:hover{background:#1c3a63}
   .en-hint{font-family:-apple-system,sans-serif;font-weight:400;font-size:12.5px;color:var(--muted)}
   .en-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px}
@@ -4705,6 +4710,15 @@ function presentTier(){ return chosenTier()||S.activeTab||'best'; }
    one for the books", then straight to the follow-ups so they get done. Gmail/Outlook open a new tab, so it waits
    for the agent to come back to this one (or fires after a moment if the tab never left). */
 var CELE_GOLD_PENDING=false;
+/* A celebration for a click that opens another tab plays when the agent comes back (or after a moment if the tab
+   never left) - otherwise it would run unseen behind the carrier's site. */
+function celebrateOnReturn(kind,label){ var done=false, fire=function(){ if(done) return; done=true; document.removeEventListener('visibilitychange',vis); window.removeEventListener('focus',fire); celebrate(kind,label); },
+    vis=function(){ if(document.visibilityState==='visible') setTimeout(fire,300); };
+  document.addEventListener('visibilitychange',vis); window.addEventListener('focus',fire); setTimeout(function(){ if(document.hasFocus()) fire(); },1200); }
+/* Enroll step 1 (Jesse, 10 Oct): opening a living-benefits application earns a thumbs-up */
+document.addEventListener('click',function(e){ var a=e.target.closest&&e.target.closest('#lnkMutual,#lnkNLG,#lnkAmerico'); if(a) celebrateOnReturn('thumbs'); });
+/* Enroll step 4 (Jesse, 10 Oct): the health application - "Let's go — almost there!" */
+document.addEventListener('click',function(e){ var a=e.target.closest&&e.target.closest('#lnkManhattan,#lnkCigna,#lnkLifex,#lnkSparkle'); if(a) celebrateOnReturn('go'); });
 function goldFinale(){ if(CELE_GOLD_PENDING) return; CELE_GOLD_PENDING=true;
   var fire=function(){ if(!CELE_GOLD_PENDING) return; CELE_GOLD_PENDING=false; document.removeEventListener('visibilitychange',vis); window.removeEventListener('focus',fire);
     celebrate('gold','<span class="cele-l1">🏆 Another one for the books!</span><span class="cele-l2" style="font-size:.62em;color:#f3d48a">Now make your follow-up tight ↓</span>');
@@ -4721,6 +4735,7 @@ function enrollCheer(){ var C=S.client||{}, I=S.intake||{}, w=I.who||{}, names=[
   return '<span class="cele-l1">🎉 Let’s get <span class="cele-who">'+esc(who).replace(/&amp;amp;/g,'&amp;')+'</span></span><span class="cele-l2">'+pro+' Package of Protection!</span>'; }
 function celebrate(kind,label){ try{
   var still=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(kind==='go'){ var g=document.createElement('div'); g.className='cele-go'; g.innerHTML='<span class="cg-r">🚀</span><small>Let’s go — almost there!</small>'; document.body.appendChild(g); setTimeout(function(){ g.remove(); },2800); return; }
   if(kind==='shield'){ var sh=document.createElement('div'); sh.className='cele-shield'; sh.innerHTML='🛡️<small>Family protected</small>'; document.body.appendChild(sh); setTimeout(function(){ sh.remove(); },2600); return; }
   if(kind==='thumbs'){ var n=still?1:5;
     for(var i=0;i<n;i++)(function(i){ var e=document.createElement('div'); e.className='cele-float'; e.textContent=i%3===2?'✨':'👍';
