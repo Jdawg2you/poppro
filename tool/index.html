@@ -1601,10 +1601,10 @@ function loadBaseRates(){
   });
 }
 function loadPortalRates(){
-  var give=setTimeout(function(){ if(PR_STATE==='loading'){ PR_STATE='failed'; try{ autoPriceTiers(); fill(); compute(); }catch(e){} } },10000);
-  var fail=function(){ clearTimeout(give); if(PR_STATE!=='ok'){ PR_STATE='failed'; try{ autoPriceTiers(); fill(); compute(); }catch(e){} } };
+  var give=setTimeout(function(){ if(PR_STATE==='loading'){ PR_STATE='failed'; try{ autoPriceTiers(); fill(); compute(); }catch(e){} buildAfterRates(); } },10000);
+  var fail=function(){ clearTimeout(give); if(PR_STATE!=='ok'){ PR_STATE='failed'; try{ autoPriceTiers(); fill(); compute(); }catch(e){} buildAfterRates(); } };
   fetch('rates/portal-rates.json',{cache:'no-cache'}).then(function(r){ return r.ok?r.json():null; }).then(function(j){
-    if(!j){ fail(); return; } clearTimeout(give); PR=j; PR_STATE='ok';
+    if(!j){ fail(); return; } clearTimeout(give); PR=j; PR_STATE='ok'; setTimeout(buildAfterRates,0);
     try{ autoPriceTiers(); fill(); compute(); }catch(e){}
     /* DVH Select for states the portal pull missed, read from each state's own brochure. */
     fetch('rates/dvh-brochure-rates.json',{cache:'no-cache'}).then(function(r){ return r.ok?r.json():null; }).then(function(b){
@@ -2240,6 +2240,7 @@ function acaEstFlags(){ var A=acaIn(), C=curIn(), ov=A.ov, onAca=(A.status==='on
   f.any=f.prem||f.subsidy||f.ded||f.visit||f.med; return f; }
 /* The one baseline every savings figure uses - builder, client view, printout. */
 function anchorBase(){ var k=(S.intake&&S.intake.anchor)||'aca';
+  if(k==='cur'&&curIn().paying===false) k='aca';   /* not paying for it now: compare against the marketplace, as the script does */
   if(k==='aca'){ if(!(+S.aca.prem>0)) return null;   // nothing priced yet (a full subsidy still has a gross premium)
     var t=acaTrueParts(), v=+((S.intake||{}).visits)||0, cp=+S.aca.copay||0, cm=v*cp/12;
     return {k:'aca',lab:'ACA bronze',short:'ACA',your:'your marketplace plan',prem:t.net+cm,premOnly:t.net,copayMo:cm,visits:v,copay:cp,mo:t.mo,yr:t.yr,ded:+S.aca.ded||0}; }
@@ -2410,7 +2411,8 @@ function afcPartnerLines(){ return AFC_PARTNERS.map(function(p){ return '• '+(
 /* Living benefits in the emails (Jesse, 9 Oct). What each covered adult has on plan t: who, amount, term, carrier -
    the carrier is the one actually priced (MoO falls back to Americo past 60). Other carriers have no term on file. */
 var LB_BLURB='Besides protecting your family, living benefits can pay out to you while you’re living if you’re diagnosed with a chronic, critical or terminal illness, so the coverage supports you as well as the people you love.';
-function lbSummary(t){ var pk=(S.packages||{})[t]||{}, c=effCfg(t), out=[];
+function lbSummary(t){ if(!TIERCFG[t]) t=chosenTier()||S.activeTab||'best';   /* brochList's 'all' is not a package (crashed Enroll with no plan marked) */
+  var pk=(S.packages||{})[t]||{}, c=effCfg(t), out=[];
   (pk.products||[]).forEach(function(p){ if(!(p.k==='lbp'||p.k==='lbs')||!((+p.monthly||0)>0)) return; var w=p.k.slice(2), lc=(c.lb||{})[w]||{}, nm=String(p.name||'');
     var car=lc.carrier==='other'?(String(lc.otherName||'').trim()||'another carrier'):/americo/i.test(nm)?'Americo':/mutual|omaha/i.test(nm)?'Mutual of Omaha':(lc.carrier==='americo'?'Americo':'Mutual of Omaha');
     var who=w==='s'?(enSplit(S.client.sname)[0]||'your spouse'):(enSplit(S.client.pname)[0]||'you'), face=+String(lc.face||'').replace(/[^\d.]/g,'')||0;
@@ -2424,7 +2426,7 @@ function enrollEmail(){ var L=brochList(), first=((S.client.pname||'').trim().sp
     +'Here’s what happens next. This is an underwritten plan, which just means it isn’t a plan everyone can get: the carrier reviews your application to confirm you qualify, and that’s exactly why the price is what it is. The review usually takes 3–5 business days, sometimes 7–10 depending on the product. The moment it’s approved, I’ll email you your temporary ID card and your benefit book.'+(hasLife?' Your life coverage is reviewed on its own, and I’ll keep you posted on that one too.':'')+'\n\n'
     +(L.list.length?'So you have everything in one place, here are the brochures for each part of your plan:\n'+brochLines(L)+'\n\n':'')
     +(function(){ var LB=lbSummary(L.t); if(!LB.length) return ''; return 'Your plan also includes living benefits:\n'+LB.map(function(x){ return '• '+x.who+' — '+(x.face?'$'+x.face.toLocaleString('en-US')+' of ':'')+(x.term?x.term+' ':'')+'Living Benefits coverage with Term Life Protection with '+x.carrier; }).join('\n')+'\n'+LB_BLURB+'\n\n'; })()
-    +(afcInPk(S.packages[L.t])?'Your Affordable Choice plan also comes with these partner benefits built in, at no extra cost:\n'+afcPartnerLines()+'\n\n':'')
+    +(afcInPk(S.packages[TIERCFG[L.t]?L.t:(chosenTier()||S.activeTab||'best')])?'Your Affordable Choice plan also comes with these partner benefits built in, at no extra cost:\n'+afcPartnerLines()+'\n\n':'')
     +'I’ll be reaching out over the next few days with an update.'+(book?' If anything comes up before then, you can book a time to reconnect here: '+book+' — or just call or text me.':' If anything comes up before then, just call or text me.')+'\n\n'
     +'And know that I’m your agent for life. Insurance can be a lot to navigate, and that’s my job — whenever you have a question, a claim or a change in your life, I’m the person to call.\n\n'
     +'Best,\n'+(agent||agency)+(agent&&agency?'\n'+agency:'')+(S.agentPhone?'\n'+S.agentPhone:'')+(S.agentEmail?'\n'+S.agentEmail:'')+(site?'\n'+site:'')+(String(S.agentNPN||'').trim()?'\nNational Producer Number: '+String(S.agentNPN).trim():'');
@@ -2435,7 +2437,7 @@ function renderEnBroch(){ var host=$('enBrochHost'); if(!host) return; if(!BROCH
     +'<div class="note" style="padding:0 0 8px">A draft: edit it to sound like you. The links are '+(m.L.t==='all'?'every shown plan’s':'the <i>'+esc(TIER_NAME[m.L.t]||'')+'</i> plan’s')+' ManhattanLife brochures for '+esc(m.L.st)+'.</div>'
     +'<textarea id="enEmailTxt" rows="26" style="width:100%;font:inherit;font-size:13px;line-height:1.45;padding:10px;border:1px solid var(--line);border-radius:8px">'+esc('Subject: '+m.subject+'\n\n'+m.body)+'</textarea>'
     +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button type="button" class="picbtn" id="enEmailCopy">📋 Copy the email</button>'
-    +'<button type="button" class="picbtn" id="enEmailGmail">Open in Gmail ↗</button><button type="button" class="picbtn" id="enEmailOutlook">Open in Outlook ↗</button>'+(afcInPk(S.packages[m.L.t])?'<button type="button" class="picbtn noprint" data-copypic="partners" title="Paste it into the email under the partner benefits">📋 Copy partner benefits picture</button>':'')+'</div>'
+    +'<button type="button" class="picbtn" id="enEmailGmail">Open in Gmail ↗</button><button type="button" class="picbtn" id="enEmailOutlook">Open in Outlook ↗</button>'+(afcInPk(S.packages[TIERCFG[m.L.t]?m.L.t:(chosenTier()||S.activeTab||'best')])?'<button type="button" class="picbtn noprint" data-copypic="partners" title="Paste it into the email under the partner benefits">📋 Copy partner benefits picture</button>':'')+'</div>'
     +'<div style="margin-top:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap"><b style="font-size:13px;color:var(--navy)">The links on their own</b><button type="button" class="picbtn" id="enCopyAll" style="margin-left:auto">📋 Copy all links</button></div>'+brochListHTML(m.L);
   $('enEmailCopy').onclick=function(){ brochCopy($('enEmailTxt').value,this); };
   $('enCopyAll').onclick=function(){ brochCopy(brochLines(m.L),this); };
@@ -4488,7 +4490,11 @@ function recommendBundles(){
   if(cap!==Infinity && pkMonthly(S.packages.good)>cap) flags.push('Even Good is above their budget / current premium — trim coverage or reset expectations.');
   S.recFlags=flags;
 }
-function buildQuote(){
+/* Build Quote clicked before the full rate file arrives would recommend from empty packages (always Best, no budget
+   flag) - hold the click and run it the moment the rates are in (code review, 10 Oct). */
+var BUILD_PENDING=false;
+function buildAfterRates(){ if(!BUILD_PENDING) return; BUILD_PENDING=false; var b=$('buildQuoteBtn'); if(b) b.innerHTML='Build Quote &rarr;'; buildQuote(); }
+function buildQuote(){ if(PR_STATE==='loading'){ BUILD_PENDING=true; var bq=$('buildQuoteBtn'); if(bq) bq.textContent='Loading rates… one moment'; return; }
   captureIntake();
   syncRateBasis();
   acaSync();
@@ -4540,7 +4546,7 @@ function renderEnroll(){
 }
 /* the script's application and finish screens, filled and wired the same as on Present */
 function enrollScript(){ var t=chosenTier()||S.activeTab, fr=$('enFrame2'); if(!fr) return;
-  var show=function(){ var doc=fr.contentDocument; presentPaginate(doc); benLoad('afc').then(function(){ presentShowPage(doc,['Security question & finish','Wrap-up — text them'].map(presentPageIx)); presentWire(doc,t);
+  var show=function(){ var doc=fr.contentDocument; presentPaginate(doc); benLoadSafe('afc').then(function(){ presentShowPage(doc,['Security question & finish','Wrap-up — text them'].map(presentPageIx)); presentWire(doc,t);
       /* the security question is rendered beside the maiden-name box straight from the script's data-render="enroll"
          block - no copy of Mike's words lives here. Its fallback tip says to write the answer into the notes, which
          breaks the never-saved rule, so it is left out until the source is corrected. */
@@ -4572,7 +4578,7 @@ function enFieldsFor(id){ var C=S.client||{}, I=S.intake||{};
   if(id==='p'){ var nm=enSplit(C.pname); return [['First name',nm[0],'name:p:0'],['Last name',nm[1],'name:p:1'],['Date of birth',C.dob||C.date,'c:dob'],['Age',C.page||C.age,'c:page'],
     ['Sex',I.psex,'i:psex','sex'],['Height',enFt(I.pheight),'ht:pheight'],['Weight (lb)',I.pweight,'wt:pweight'],['Tobacco',I.tobaccoP?'Yes':'No','tob:tobaccoP','yn'],
     ['Phone',I.phone,'i:phone'],['Email',I.email,'i:email'],['Street address',C.address,'c:address'],['State',C.state,'c:state'],['ZIP',C.zip,'c:zip'],
-    ['Doctor(s)',[I.docs1,I.docs2,I.docs3].filter(Boolean).join(', '),'i:docs1'],['Coverage start',I.effDate,'i:effDate']].concat(enLbPolicy('p')); }
+    ['Doctor(s)',[I.docs1,I.docs2,I.docs3].filter(Boolean).join(', '),'docs:all'],['Coverage start',I.effDate,'i:effDate']].concat(enLbPolicy('p')); }
   if(id==='s'){ var sn=enSplit(C.sname); return [['First name',sn[0],'name:s:0'],['Last name',sn[1],'name:s:1'],['Date of birth',C.sdob,'c:sdob'],['Age',C.sage,'c:sage'],
     ['Sex',I.ssex,'i:ssex','sex'],['Height',enFt(I.sheight),'ht:sheight'],['Weight (lb)',I.sweight,'wt:sweight'],['Tobacco',I.tobaccoS?'Yes':'No','tob:tobaccoS','yn'],
     ['Phone',I.sphone,'i:sphone'],['Email',I.semail,'i:semail']].concat(enLbPolicy('s')); }
@@ -4583,6 +4589,7 @@ function enWrite(path,v){ var C=S.client, I=S.intake, p=path.split(':');
   if(p[0]==='c'){ if(/dob$/.test(p[1])) v=smartDOB(v)||v; C[p[1]]=v; if(p[1]==='dob') C.date=v;
     var ag=/dob$/.test(p[1])?ageFromDOB(v):''; if(ag){ if(p[1]==='dob') C.page=String(ag); else if(p[1]==='sdob') C.sage=String(ag); } }
   else if(p[0]==='i') I[p[1]]=v;
+  else if(p[0]==='docs'){ var dl=String(v||'').split(/\s*[,;]\s*/).filter(Boolean); I.docs1=dl[0]||''; I.docs2=dl[1]||''; I.docs3=dl.slice(2).join(', '); }   /* one box shows all three; write them back apart (was duplicating into docs1) */
   else if(p[0]==='ht') I[p[1]]=smartHeight(v)||enInches(v);
   else if(p[0]==='wt') I[p[1]]=String(parseInt(v,10)||'');
   else if(p[0]==='tob') I[p[1]]=/^y/i.test(v);
@@ -4593,9 +4600,12 @@ function enWrite(path,v){ var C=S.client, I=S.intake, p=path.split(':');
   autosave(); }
 /* each person's notes land in the one main notes field, under one heading, as "Name: …" */
 var EN_NOTES_HEAD='— From the application —';
-function enNotesSync(){ var I=S.intake, pn=I.personNotes||{}, base=String(I.notes||''), ix=base.indexOf(EN_NOTES_HEAD); if(ix>=0) base=base.slice(0,ix).replace(/\s+$/,'');
+function enNotesSync(){ var I=S.intake, pn=I.personNotes||{}, all=String(I.notes||''), base=all, ix=all.indexOf(EN_NOTES_HEAD), rest=[]; if(ix>=0) base=all.slice(0,ix).replace(/\s+$/,'');
+  /* anything typed after the per-person lines is the agent's own note - keep it (code review, 10 Oct: it was erased) */
+  if(ix>=0){ var ids=Object.keys(pn).concat(['p','s']).concat((I.kids||[]).map(function(x,i){ return 'k'+i; })), pre=ids.map(function(k){ return enWho(k)+': '; });
+    rest=all.slice(ix+EN_NOTES_HEAD.length).split('\n').filter(function(l){ return l.trim()&&!pre.some(function(p){ return l.indexOf(p)===0; }); }); }
   var lines=Object.keys(pn).filter(function(k){ return String(pn[k]||'').trim(); }).map(function(k){ return enWho(k)+': '+String(pn[k]).trim(); });
-  I.notes=lines.length?(base?base+'\n\n':'')+EN_NOTES_HEAD+'\n'+lines.join('\n'):base; if($('in_notes')) $('in_notes').value=I.notes; if($('enNotes')&&document.activeElement!==$('enNotes')) $('enNotes').value=I.notes; autosave(); }
+  I.notes=(lines.length?(base?base+'\n\n':'')+EN_NOTES_HEAD+'\n'+lines.join('\n'):base)+(rest.length?((lines.length||base)?'\n\n':'')+rest.join('\n'):''); if($('in_notes')) $('in_notes').value=I.notes; if($('enNotes')&&document.activeElement!==$('enNotes')) $('enNotes').value=I.notes; autosave(); }
 function enrollPeople(){ var host=$('enPeople'); if(!host) return; var C=S.client||{}, I=S.intake||{}, w=I.who||{}, q=function(x){ return esc(x==null?'':String(x)).replace(/"/g,'&quot;'); };
   var cp=function(v){ return '<button type="button" class="cp" data-cpfrom="1"'+(String(v||'').trim()?'':' style="visibility:hidden"')+'>copy</button>'; };
   var field=function(f){ var v=f[1]==null?'':String(f[1]), ctl;
@@ -4894,7 +4904,7 @@ function renderPresent(){ var host=$('presentHost'); if(!host) return; var t=pre
   host.innerHTML=h;
   var fr=$('prFrame');
   fr.onload=function(){ try{ var doc=fr.contentDocument; presentPaginate(doc);
-      benLoad('afc').then(function(){ presentWire(doc,t); presentGo(+S.present.pg||0); });
+      benLoadSafe('afc').then(function(){ presentWire(doc,t); presentGo(+S.present.pg||0); });
       var R=presentRailFromScript(doc);
       $('prQA').innerHTML='<b>Quick answers — objections</b>'+R.qa.map(function(q){ return '<details><summary>'+esc(q[0])+'</summary><p>'+esc(q[1])+'</p></details>'; }).join('');
       $('prStories').innerHTML='<b>Story repository</b>'+(R.stories.length?R.stories.map(function(x,i){ return '<button type="button" data-story="'+i+'">'+(/block/i.test(x.status)?'⛔ ':'📖 ')+esc(x.story.split(/ — |\n/)[0])+'</button>'; }).join(''):'<p style="font-size:13px;color:var(--muted);margin:4px 0 0">No stories yet.</p>');
@@ -5004,13 +5014,13 @@ function presentScriptTokens(t){ var T=presentTokens(t), C=S.client||{}, I=S.int
   var EA=evAnchor(), exDed=EA&&EA.ded?EA.ded:(EA&&EA.lab==='Your current plan'&&+curIn().ded>0?+curIn().ded:0);
   if(exDed){ T['anchor.deductible']=m0(exDed); T['_exDedWords']=m0(exDed); }
   T['anchor.aside_obj']=(presentHasCur()&&!(+curIn().emp>0))?'those':'that one';
-  var planMo=tierTotals(t).mo-lbMo, ak=presentAnchor(), anc=ak==='aca'?(+S.aca.prem>0?acaNetPrem():null):ak==='cur'||ak==='employer'?(+Cu.prem>0?+Cu.prem:null):null;
+  var planMo=tierTotals(t).mo-lbMo-(+(pk.med)||0),   /* premium only: the anchor side has no drug costs either */ ak=presentAnchor(), anc=ak==='aca'?(+S.aca.prem>0?acaNetPrem():null):ak==='cur'||ak==='employer'?(+Cu.prem>0?+Cu.prem:null):null;
   T['plan.monthly']=fmt2(planMo); T['lb.addback']=lbMo>0?fmt2(lbMo):''; T['new.total']=fmt2(planMo+lbMo);
   T['anchor.deductible']=ak==='aca'?T['aca.deductible']:(ak==='cur'||ak==='employer')?T['cur.deductible']:'';
   if(anc!=null){ T['anchor.today']=fmt2(anc); var sv=anc-planMo; T['savings.monthly']=fmt2(sv); T['saving']=fmt2(anc-planMo-lbMo);
     /* 20-25% of the monthly saving. Nearest $10 collapsed small savings into "$30 to $30" (Jesse, 10 Oct): use $5 steps
        under $100, and say "about $X" when the two ends still meet. */
-    if(sv>0){ var stp=sv*0.25<100?5:10, lo=Math.round(sv*0.20/stp)*stp, hi=Math.round(sv*0.25/stp)*stp; if(lo<5) lo=5; if(hi<lo) hi=lo;
+    if(sv>=20){ var stp=sv*0.25<100?5:10, lo=Math.round(sv*0.20/stp)*stp, hi=Math.round(sv*0.25/stp)*stp; if(lo<5) lo=5; if(hi<lo) hi=lo;   /* under $20 a month there is no sensible slice */
       T['lb.suggested_low']=m0(lo); T['lb.suggested_high']=m0(hi); T['lb.suggested']=hi>lo?m0(lo)+' to '+m0(hi):'about '+m0(lo); T['lb.share']='20 to 25%'; } }
   else { T['anchor.today']=''; T['savings.monthly']=''; T['saving']=''; }
   return T; }
@@ -5360,7 +5370,7 @@ function buildEmail(){
   var opts=n>=3?'the three options':n===2?'the two options':'the plan';
   var ch=chosenTier(), save='';
   if(ch){ save='The '+TIER_NAME[ch]+' plan is the one we landed on';
-    var tt=tierTotals(ch), prem=tt.mo-(+tt.pk.med||0), mo=B?(+B.premOnly||0)-prem:0;
+    var tt=tierTotals(ch), lbm=((tt.pk.products||[]).filter(function(p){ return p.k==='lbp'||p.k==='lbs'; }).reduce(function(a,p){ return a+(+p.monthly||0); },0))+(+tt.pk.lb||0), prem=tt.mo-(+tt.pk.med||0)-lbm,   /* same figure the script speaks */ mo=B?(+B.premOnly||0)-prem:0;
     /* premiums alone, then the deductible they would not carry: one person's, as the examples count it (Jesse, 9 Oct) */
     var EA=B?evAnchor():null, ded=EA&&EA.ded?+EA.ded:(B&&B.k==='cur'?+curIn().ded||0:0);
     if(mo>=1){ save+=', and its premiums alone will save you about '+m0(mo)+' a month — '+m0(mo*12)+' over a year.';
@@ -5642,6 +5652,7 @@ function benCol(k,c){ switch(k){
   case 'lbp': return (c.lb&&c.lb.p&&c.lb.p.carrier)||'moo'; case 'lbs': return (c.lb&&c.lb.s&&c.lb.s.carrier)||'moo';
   case 'base': return c.base==='lifex'?(c.lifexPlan||'$500 PPO'):('Triad Cigna '+(c.triadPlan||'3500'));
   default: return '*'; } }
+function benLoadSafe(f){ return benLoad(f).catch(function(){ return null; }); }
 function benLoad(f){ if(BEN_DATA[f]) return Promise.resolve(BEN_DATA[f]);
   return fetch('benefits/'+f+'.json',{cache:'no-cache'}).then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); })
     .then(function(d){ BEN_DATA[f]=d; return d; }); }
@@ -5909,7 +5920,7 @@ function renderBuilder(){
       var prHtml=open?'<span class="pr"><span style="font-weight:600;color:var(--muted)">$</span><input class="pbprice" type="number" step="0.01" min="0" data-k="'+k+'" value="'+(+price).toFixed(2)+'" aria-label="Monthly price for '+sl.name+'"></span>'
                     :'<span class="pr">'+pbMoney(price)+'</span>';
       var info=benFileFor(k,c)?'<button type="button" class="pbinfo" data-ben="'+k+'" title="Benefits — '+sl.name+'" aria-label="Benefits for '+sl.name+'">i</button>':'';
-      html+='<div class="pbrow'+(edited?' edited':'')+'"><div class="pbhead"><span class="nm">'+sl.name+info+(edited?' <span class="edtag">edited</span>':'')+'<span class="cov">'+pbSummary(k,c,live)+'</span></span>'+prHtml
+      html+='<div class="pbrow'+(edited?' edited':'')+'"><div class="pbhead"><span class="nm">'+sl.name+info+(edited?' <span class="edtag">edited</span>':'')+'<span class="cov">'+esc(pbSummary(k,c,live)||'')+'</span></span>'+prHtml
         +'<button class="pbib" data-act="tog" data-k="'+k+'" aria-label="Change '+sl.name+'">'+(open?'▴':'▾')+'</button>'
         +'<button class="pbib" data-act="rm" data-k="'+k+'" title="Remove" aria-label="Remove '+sl.name+'">✕</button></div>'
         +(open?'<div class="pbbody" data-k="'+k+'">'+pbControls(k,c)
