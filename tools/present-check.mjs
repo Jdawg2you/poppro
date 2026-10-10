@@ -197,10 +197,11 @@ const TEST = `(async function(){
   var exn=d.querySelector('.pp-exnote'); ok(exn&&/Pay attention:/.test(exn.textContent),'the worked example ends with the Pay attention aside naming the anchor plan');
   ok(/We deliberately did not put a dollar figure on the surgery [(]that depends on the scheduled amount for the procedure, and inventing one now could become a complaint later[)][.]/.test(d.body.textContent)&&!/I deliberately did not put/.test(d.body.textContent),'Why these figures: the surgery sentence reads as Jesse worded it');
   ok(/every box you gave me[.] Wouldn’t you agree[?]/.test(d.body.textContent)&&!/Would you agree[?]/.test(d.body.textContent),'close check-in reads Wouldn’t you agree?');
+  ok(/You really need both[.]/.test(d.body.textContent)&&!/Want me to show you what that looks like/.test(d.body.textContent),'living-benefits pivot ends on You really need both');
   ok(!/My stab at it/.test(d.body.textContent)&&/Let me do a real one/.test(d.body.textContent),'the 5.2 preface is gone, the example words stay');
   /* catastrophic: the quote page's own event card, anchor vs the chosen package, Bill Saver on, layers open */
   S.negot.on=false; presentGo(presentPageIx('Catastrophic — walk it as layers')); await wait(60);
-  var mc=d.querySelector('[data-mount="conditions"]'), tab=mc&&mc.querySelector('.evtab');
+  var mc=null, tab=null; for(var mw=0;mw<40;mw++){ d=document.getElementById('prFrame').contentDocument||d; mc=d.querySelector('[data-mount="conditions"]'); tab=mc&&mc.querySelector('.evtab'); if(tab) break; await wait(75); }
   ok(!!tab&&tab.classList.contains('open')&&mc.closest('details').open,'catastrophic: real event card, layers open');
   ok(!!mc.querySelector('.evtab .c.l .pp-exbtn'),'Copy example button in the table corner');
   var exb=await picOf('example'); ok(exb&&exb.type==='image/png'&&exb.size>50000,'the example renders to a PNG ('+(exb&&exb.size)+' bytes)');
