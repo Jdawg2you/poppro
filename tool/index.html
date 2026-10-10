@@ -5111,6 +5111,9 @@ function presentPendingEdits(doc){
   Array.prototype.forEach.call(doc.querySelectorAll('p'),function(p){ if(!/^Why these figures/.test((p.textContent||'').trim())) return;
     Array.prototype.forEach.call(p.childNodes,function(nd){ if(nd.nodeType===3&&/I deliberately did not put a dollar figure on the surgery/.test(nd.nodeValue))
       nd.nodeValue=nd.nodeValue.replace(/I deliberately did not put a dollar figure on the surgery[^.]*\./,'We deliberately did not put a dollar figure on the surgery (that depends on the scheduled amount for the procedure, and inventing one now could become a complaint later).'); }); });
+  /* 16. (Jesse, 10 Oct) the close's check-in reads "Wouldn't you agree?" */
+  Array.prototype.forEach.call(doc.querySelectorAll('.say'),function(x){ Array.prototype.forEach.call(x.childNodes,function(nd){
+    if(nd.nodeType===3&&/Would you agree\?/.test(nd.nodeValue)) nd.nodeValue=nd.nodeValue.replace(/Would you agree\?/g,'Wouldn’t you agree?'); }); });
   /* 6. (Jesse, 9 Oct) drop the author's preface above the worked example */
   Array.prototype.forEach.call(doc.querySelectorAll('details.exp .body > p'),function(p){ if(/^My stab at it/.test((p.textContent||'').trim())) p.remove(); });
   /* 3. Section 5 doctor line: the list carries its own "Dr", and it is "they're" (or "they're all" for several) */

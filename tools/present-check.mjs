@@ -196,6 +196,7 @@ const TEST = `(async function(){
   if(exd){ exd.open=false; presentWire(d,'best'); ok(!exd.open,'and it stays folded once the agent folds it'); exd.open=true; }
   var exn=d.querySelector('.pp-exnote'); ok(exn&&/Pay attention:/.test(exn.textContent),'the worked example ends with the Pay attention aside naming the anchor plan');
   ok(/We deliberately did not put a dollar figure on the surgery [(]that depends on the scheduled amount for the procedure, and inventing one now could become a complaint later[)][.]/.test(d.body.textContent)&&!/I deliberately did not put/.test(d.body.textContent),'Why these figures: the surgery sentence reads as Jesse worded it');
+  ok(/every box you gave me[.] Wouldn’t you agree[?]/.test(d.body.textContent)&&!/Would you agree[?]/.test(d.body.textContent),'close check-in reads Wouldn’t you agree?');
   ok(!/My stab at it/.test(d.body.textContent)&&/Let me do a real one/.test(d.body.textContent),'the 5.2 preface is gone, the example words stay');
   /* catastrophic: the quote page's own event card, anchor vs the chosen package, Bill Saver on, layers open */
   S.negot.on=false; presentGo(presentPageIx('Catastrophic — walk it as layers')); await wait(60);
