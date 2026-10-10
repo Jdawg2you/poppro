@@ -28,7 +28,7 @@ const SCENARIO = `(function(){ var HEAVY=${HEAVY};
   var s=blankState();
   s.client.pname='Sample Client'; s.client.state='FL'; s.client.zip='33101'; s.client.page=45; s.client.agent='Jesse Stamm'; s.client.date='';
   s.intake.income=60000; s.intake.pincome=60000; s.intake.visits=20; s.intake.anchor='cur'; s.intake.budget=600; s.intake.budgetComfort=450;
-  s.intake.carrier='Florida Blue'; s.intake.plan='Silver PPO'; s.intake.whyShop='Premium went up again at renewal';
+  s.intake.carrier='Florida Blue'; s.intake.plan='Silver PPO'; s.intake.whyShop='Premium went up again at renewal'; s.intake.whyMatters='keep my doctors and stop the premium climbing';
   s.intake.medList=[]; s.acaIn={status:'open',show:true,fullded:true,ov:{}};
   s.cur={show:true,prem:450,ded:5000,oop:8000,copay:50};
   if(HEAVY){ s.intake.who={app:true,spouse:true,kids:true}; s.client.sname='Sample Spouse'; s.client.sage=43;
