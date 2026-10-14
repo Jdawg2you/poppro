@@ -619,6 +619,31 @@
     font-size:12.5px;font-weight:700;line-height:20px;padding:8px 14px;border-radius:9px;text-decoration:none}
   .goatskip{display:block;margin-top:9px;background:none;border:0;padding:0;cursor:pointer;
     font:inherit;font-size:11.5px;color:#2c4a7c;text-decoration:underline}
+  /* Welcome screen (Jesse, 2026-10-14): what the tool is and the order you use it in, on open, until they switch it off. */
+  .welcome{display:none;position:fixed;inset:0;z-index:60;background:rgba(10,15,25,.55);overflow:auto;padding:24px 16px}
+  .welcome.open{display:block}
+  .wl-card{max-width:1040px;margin:0 auto;background:var(--cream,#faf6ec);border-radius:16px;box-shadow:0 14px 50px rgba(0,0,0,.4);overflow:hidden}
+  .wl-head{background:var(--navy);color:#fff;padding:22px 26px}
+  .wl-head h2{font-family:var(--serif);color:var(--gold-brand);margin:0;font-size:28px}
+  .wl-head p{margin:6px 0 0;color:#c9d1e0;font-size:14.5px;line-height:1.5}
+  .wl-flow{display:flex;align-items:stretch;gap:0;padding:22px 20px 8px;flex-wrap:nowrap}
+  .wl-step{flex:1;min-width:0;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 12px 14px;position:relative}
+  .wl-step.once{background:#f2fbf5;border-color:#9fd7b4}
+  .wl-arrow{flex:0 0 22px;display:flex;align-items:center;justify-content:center;color:#c69a3c;font-size:20px;font-weight:800}
+  .wl-step .wl-n{display:inline-flex;line-height:1;width:26px;height:26px;border-radius:50%;background:var(--navy);color:#fff;font-weight:800;font-size:13px;align-items:center;justify-content:center}
+  .wl-step.once .wl-n{font-size:15px;background:#22a05a}
+  .wl-step b{display:block;font-family:var(--serif);color:var(--navy);font-size:16px;margin:8px 0 4px}
+  .wl-step span{display:block;font-size:12.5px;color:var(--muted);line-height:1.45}
+  .wl-step em{display:inline-block;margin-top:8px;font-style:normal;font-size:11.5px;font-weight:800;color:#17824a}
+  .wl-step em.todo{color:#b4561f}
+  .wl-save{margin:10px 20px 0;padding:10px 14px;background:#fff8e6;border:1px solid #e6d3a3;border-radius:10px;font-size:13.5px;color:var(--navy);line-height:1.5}
+  .wl-foot{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:18px 20px 22px}
+  .wl-foot .btn-gold,.wl-foot .btn-ghost{font-size:15px;padding:10px 18px}
+  .wl-foot .btn-ghost{color:var(--navy);border-color:var(--line);background:#fff}
+  .wl-off{margin-left:auto;font-size:13px;color:var(--muted);display:flex;align-items:center;gap:7px;cursor:pointer}
+  .wl-off input{width:16px;height:16px}
+  .helpbtn{font-weight:800;min-width:34px}
+  @media(max-width:900px){.wl-flow{flex-direction:column}.wl-arrow{flex-basis:22px;transform:rotate(90deg)}.wl-off{margin-left:0}}
   #agentSetup.goat-skipped .goatgrab{display:none}
   .modal-head #agentSetupState{font-style:normal;margin-left:6px}.modal-head #agentSetupState.needfill-sum{color:#7fe0a6}
   .setupbtn em{font-style:normal;font-size:11px;font-weight:800;margin-left:6px;background:#22a05a;color:#fff;border-radius:999px;padding:1px 7px}.setupbtn em:empty{display:none}
@@ -915,6 +940,7 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
         <button data-view="agent" class="on">Agent Setup</button>
         <button data-view="client">Client View</button>
       </div>
+      <button type="button" class="btn-ghost helpbtn hidein-client" id="helpBtn" title="How POP Pro works">?</button>
       <button type="button" class="btn-ghost setupbtn hidein-client" id="setupBtn" title="Your agency, name, phone, email, NPN and links">⚙ Setup<em id="setupNeed"></em></button>
       <button class="btn-ghost" id="newBtn">New</button>
       <button class="btn-ghost" id="loadBtn">Load Quote</button>
@@ -1392,6 +1418,30 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
 <!-- PLAN LIBRARY MODAL -->
 <aside class="bendrawer hidein-client" id="benDrawer" aria-label="Plan benefits"></aside>
 <div class="modal-backdrop" id="nmhModal"><div class="modal" style="max-width:600px"><div class="modal-head"><b id="nmhTitle">Great choice</b><button class="btn-ghost" id="nmhClose">Got it</button></div><div class="modal-body" id="nmhBody" style="font-size:14.5px;line-height:1.55"></div></div></div>
+<!-- Welcome screen: shown on open until the agent ticks "don't show"; the ? button brings it back. (Jesse, 2026-10-14) -->
+<div class="welcome noprint" id="welcome" role="dialog" aria-labelledby="wlTitle"><div class="wl-card">
+  <div class="wl-head"><h2 id="wlTitle">Welcome to POP Pro</h2>
+    <p>Everything for a health client in one place: the call, the quote, the presentation and the application. Work left to right.</p></div>
+  <div class="wl-flow">
+    <div class="wl-step once"><span class="wl-n">⚙</span><b>Setup</b><span>Once. Your name, phone, email, NPN and links. They go on every page, email and text.</span><em id="wlSetupState"></em></div>
+    <div class="wl-arrow">→</div>
+    <div class="wl-step"><span class="wl-n">1</span><b>Discovery call</b><span>Follow the script. Fill in the blanks as the client talks. The Intake fills itself.</span></div>
+    <div class="wl-arrow">→</div>
+    <div class="wl-step"><span class="wl-n">2</span><b>Intake</b><span>Check what the call filled in. Add anything missing.</span></div>
+    <div class="wl-arrow">→</div>
+    <div class="wl-step"><span class="wl-n">3</span><b>Quote</b><span>Build the packages. Set the follow-up time.</span></div>
+    <div class="wl-arrow">→</div>
+    <div class="wl-step"><span class="wl-n">4</span><b>Present</b><span>Walk the client through it on screen.</span></div>
+    <div class="wl-arrow">→</div>
+    <div class="wl-step"><span class="wl-n">5</span><b>Enroll</b><span>Take the application, then send the thank-you.</span></div>
+  </div>
+  <div class="wl-save">💾&nbsp; <b>Save any time</b> with the 💾 tab on the right. One file holds the call and the quote together, and <b>Load Quote</b> brings it back.</div>
+  <div class="wl-foot">
+    <button type="button" class="btn-gold" id="wlSetup">Do the setup first →</button>
+    <button type="button" class="btn-gold" id="wlGo">Start the call →</button>
+    <label class="wl-off"><input type="checkbox" id="wlOff"> I know the way &mdash; don&rsquo;t show this when I open the tool</label>
+  </div>
+</div></div>
 <!-- Agent setup lives behind the Setup button at the top (Jesse, 2026-10-14): it is set once, not per client,
      so it does not belong in the middle of every intake. Same input ids, so fillIntake/readIntake are unchanged. -->
 <div class="modal-backdrop" id="setupModal"><div class="modal" style="max-width:980px">
@@ -3382,7 +3432,7 @@ function applySuiteAgent(ag){
   if(ag.website) S.agentWebsite=String(ag.website); if(ag.card) S.agentCard=String(ag.card); if(ag.booking) S.agentBooking=String(ag.booking);
 }
 
-function applySuiteClient(c, live){
+function applySuiteClient(c, live){ var wl=$('welcome'); if(wl&&!live) wl.classList.remove('open');
   if(!c || typeof c!=="object") return false;
 
   var incoming=suiteName(c.first,c.last);
@@ -4285,6 +4335,16 @@ function agentSetupFold(){ var miss=agentSetupMissing(), b=$('setupBtn'), n=$('s
 function fillAgent(){ $('in_agency').value=(S.agency&&S.agency!=='HealthFirst')?S.agency:(S.agency||''); $('in_agent').value=(S.client||{}).agent||''; $('in_aphone').value=S.agentPhone||''; $('in_aemail').value=S.agentEmail||''; $('in_anpn').value=S.agentNPN||''; $('in_aweb').value=S.agentWebsite||''; $('in_acard').value=S.agentCard||''; $('in_abook').value=S.agentBooking||''; agentSetupFold(); }
 /* Only the agent fields - captureIntake() would also read the client boxes, which are stale off the Intake step. */
 function readAgent(){ S.agency=($('in_agency').value||'').trim()||'HealthFirst'; S.client=S.client||{}; S.client.agent=$('in_agent').value; S.agentPhone=$('in_aphone').value; S.agentEmail=$('in_aemail').value; S.agentNPN=($('in_anpn').value||'').trim(); S.agentWebsite=($('in_aweb').value||'').trim(); S.agentCard=($('in_acard').value||'').trim(); S.agentBooking=($('in_abook').value||'').trim(); agentSetupFold(); autosave(); }
+/* ---- Welcome screen ---- */
+function welcomeOff(){ try{ return localStorage.getItem('pp_welcome_off')==='1'; }catch(e){ return false; } }
+function inProgress(){ var c=S.client||{}; return !!String(c.pname||'').trim(); }
+function openWelcome(){ var miss=agentSetupMissing(), st=$('wlSetupState');
+  st.textContent=miss.length?miss.length+' to fill in':'✓ Done'; st.className=miss.length?'todo':'';
+  $('wlSetup').style.display=miss.length?'':'none';
+  $('wlGo').className=miss.length?'btn-ghost':'btn-gold';
+  var c=(S.client||{}).pname; $('wlGo').textContent=inProgress()?'Carry on with '+String(c).trim().split(/\s+/)[0]+' →':'Start the call →';
+  $('wlOff').checked=welcomeOff(); $('welcome').classList.add('open'); }
+function closeWelcome(){ try{ localStorage.setItem('pp_welcome_off',$('wlOff').checked?'1':'0'); }catch(e){} $('welcome').classList.remove('open'); }
 function openSetup(){ fillAgent(); $('setupModal').classList.add('open'); var f=document.querySelector('#agentSetup .fld.needfill input')||$('in_agency'); setTimeout(function(){ try{ f.focus(); }catch(e){} },30); }
 function closeSetup(){ readAgent(); $('setupModal').classList.remove('open'); if(typeof goStep==='function') goStep(S.step||'call'); }
 document.addEventListener('input',function(e){ if(e.target&&e.target.closest&&e.target.closest('#agentSetup')) readAgent(); });
@@ -5539,6 +5599,12 @@ function bindInputs(){
   ['in_anpn','in_aweb','in_acard','in_abook'].forEach(function(id){ $(id).addEventListener('input',function(){ captureIntake(); }); });
   if($('goatSkip')) $('goatSkip').onclick=function(){ try{ localStorage.setItem('pp_goat_skip','1'); }catch(e){} agentSetupFold(); };
   $('setupBtn').onclick=openSetup; $('closeSetup').onclick=closeSetup;
+  $('helpBtn').onclick=openWelcome;
+  $('wlSetup').onclick=function(){ closeWelcome(); openSetup(); };
+  $('wlGo').onclick=function(){ var keep=inProgress(); closeWelcome(); if(!keep) goStep('call'); };
+  $('wlOff').onchange=function(){ try{ localStorage.setItem('pp_welcome_off',this.checked?'1':'0'); }catch(e){} };
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&$('welcome').classList.contains('open')) closeWelcome(); });
+  if(!welcomeOff()) openWelcome();
   $('setupModal').addEventListener('click',function(e){ if(e.target===$('setupModal')) closeSetup(); });
   document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&$('setupModal').classList.contains('open')) closeSetup(); });
   agentSetupFold();
