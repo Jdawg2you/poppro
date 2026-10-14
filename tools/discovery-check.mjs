@@ -77,12 +77,23 @@ try {
       ok(r.navFirst === 'Livia' && r.navLead === 'Yes', 'POP Pro keeps the whole call');
       ok(r.confirms === 0, 'no confirm prompts while the name is typed (' + r.confirms + ')');
       ok(r.step === 'call', 'POP Pro stays on the call (' + r.step + ')');
+      /* the Book stage feeds the Quote page's follow-up, and an agent's later edit there stands */
+      await inFrame(`(function(){ P.appt_date='2026-10-20'; P.appt_time='18:00'; pStore(); return 1; })()`); await sleep(800);
+      const b1 = await pop.run(`({d:(S.sendq||{}).date, t:(S.sendq||{}).time})`);
+      ok(b1.d === '2026-10-20' && b1.t === '18:00', 'the booked presentation fills the follow-up on the Quote page: ' + JSON.stringify(b1));
+      await pop.run(`(function(){ S.sendq.time='19:30'; return 1; })()`);
+      await inFrame(`(function(){ P.why_matters='keep my doctor!'; pStore(); return 1; })()`); await sleep(800);
+      ok(await pop.run(`S.sendq.time`) === '19:30', 'an edit on the Quote page stands while the booking is unchanged');
+      await inFrame(`(function(){ P.appt_time='17:00'; pStore(); return 1; })()`); await sleep(800);
+      ok(await pop.run(`S.sendq.time`) === '17:00', 'a new booking in the call moves it again');
       if (MODE === 'save') {
         const file = await pop.run(`(function(){ var d=currentQuote(); d.format='optimum-client'; d.formatV=1; return d; })()`);
         ok(file.format === 'optimum-client' && file.nav && file.nav.keep_docs === 'Yes', 'POP Pro’s save carries the call');
         const nav = await page(`${NAV_ORIGIN}/`); await sleep(3500);
         const back = await nav.run(`(function(){ var p=profileFromFile(${JSON.stringify(file)}); return {first:p.first, last:p.last, lead:p.has_assets, keep:p.keep_docs, wm:p.why_matters}; })()`);
-        ok(back.first === 'Livia' && back.lead === 'Yes' && back.keep === 'Yes' && back.wm === 'keep my doctor', 'that file opens in the stand-alone navigator with every answer: ' + JSON.stringify(back));
+        const bk = await nav.run(`(function(){ var p=profileFromFile(${JSON.stringify(file)}); return {d:p.appt_date, t:p.appt_time, w:p.appt_when}; })()`);
+        ok(bk.d === '2026-10-20' && bk.t === '17:00' && /5:00/.test(bk.w || ''), 'the follow-up opens in the stand-alone navigator’s Book stage: ' + JSON.stringify(bk));
+        ok(back.first === 'Livia' && back.lead === 'Yes' && back.keep === 'Yes' && /^keep my doctor/.test(back.wm || ''), 'that file opens in the stand-alone navigator with every answer: ' + JSON.stringify(back));
         nav.close();
       }
     }

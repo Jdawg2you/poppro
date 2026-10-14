@@ -3577,6 +3577,11 @@ function applySuiteClient(c, live){
   var appt=[h.apptWhen,h.apptDate,h.apptTime].filter(Boolean).join(" ");
   if(appt||h.apptWho) extra.push("PRESENTATION BOOKED: "+(appt||"(no time set)")+(h.apptWho?" (with "+h.apptWho+")":""));
   if(h.apptNotes)   extra.push(h.apptNotes);
+  /* The call's Book stage feeds Send the quote's follow-up (Jesse, 14 Oct). Booked in the agent's own time, as the
+     follow-up picker is. Only a change in the call's booking moves it, so a later edit on the Quote page stands. */
+  if(/^\d{4}-\d{2}-\d{2}$/.test(String(h.apptDate||''))){ S.sendq=S.sendq||{}; var bk=h.apptDate+' '+(h.apptTime||'');
+    if(S.sendq.callKey!==bk){ S.sendq.callKey=bk; S.sendq.date=h.apptDate; var tm=String(h.apptTime||'').match(/^(\d{1,2}):(\d{2})/); S.sendq.time=tm?(tm[1].length<2?'0':'')+tm[1]+':'+tm[2]:'';
+      try{ S.sendq.atz=Intl.DateTimeFormat().resolvedOptions().timeZone; }catch(e){} if(typeof sqSync==='function') sqSync(); } }
   if(h.losing==="Yes")      extra.push("Losing current coverage: done deal");
   else if(h.losing==="No") extra.push("Losing current coverage: not final yet");
   if(h.lastDay)     extra.push("Current cover ends: "+h.lastDay);
