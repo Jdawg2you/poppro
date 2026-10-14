@@ -625,6 +625,26 @@
   .wl-you{margin:18px 20px 0;padding-top:14px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}.wl-you b{font-family:var(--serif);color:var(--navy);font-size:17px;margin-right:6px}.wl-you i{font-style:normal}.wl-you i.needfill-sum{color:#17824a;font-weight:700}
   #agentSetup{padding:8px 20px 4px}
   #setupModal{z-index:2000}
+  /* What's new */
+  .newsbtn em{font-style:normal;font-size:11px;font-weight:800;margin-left:6px;background:#c69a3c;color:#12213b;border-radius:999px;padding:1px 7px}.newsbtn em:empty{display:none}
+  .newsbtn.has{border-color:#c69a3c}
+  .nw-scrim{display:none;position:fixed;inset:0;background:rgba(10,15,25,.45);z-index:1900}.nw-scrim.open{display:block}
+  .nw-panel{position:fixed;top:0;right:0;bottom:0;width:min(460px,100vw);background:var(--cream,#faf6ec);z-index:1950;box-shadow:-12px 0 40px rgba(0,0,0,.3);
+    transform:translateX(105%);transition:transform .28s ease;display:flex;flex-direction:column}
+  .nw-panel.open{transform:none}
+  .nw-head{display:flex;align-items:center;justify-content:space-between;background:var(--navy);padding:16px 18px}
+  .nw-head b{font-family:var(--serif);color:var(--gold-brand,#c69a3c);font-size:22px}.nw-head .btn-ghost{color:#fff}
+  .nw-body{overflow:auto;padding:14px 18px 30px;flex:1}
+  .nw-rel{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:12px}
+  .nw-rel.fresh{border-color:#c69a3c;box-shadow:0 0 0 2px rgba(198,154,60,.25)}
+  .nw-rel .nw-new{font-style:normal;font-family:inherit;font-size:10.5px;font-weight:800;letter-spacing:.06em;background:#c69a3c;color:#12213b;border-radius:999px;padding:2px 8px;margin-left:8px;vertical-align:middle}
+  .nw-rel h4{font-family:var(--serif);color:var(--navy);font-size:17px;margin:0 0 8px}
+  .nw-rel h4 small{display:block;font-family:inherit;font-size:12px;color:var(--muted);font-weight:600;margin-top:2px}
+  .nw-rel ul{list-style:none;margin:0;padding:0}.nw-rel li{padding:7px 0;border-top:1px dotted var(--line)}.nw-rel li:first-child{border-top:0}
+  .nw-rel li b{display:block;color:var(--navy);font-size:14px}.nw-rel li span{display:block;font-size:13px;color:#3a475f;line-height:1.5;margin-top:1px}
+  .nw-all{margin-top:6px}.nw-all summary{cursor:pointer;font-weight:800;color:var(--navy);font-size:15px;padding:8px 0}
+  .nw-all summary small{font-weight:600;color:var(--muted);font-size:12px;margin-left:6px}
+  .nw-none{color:var(--muted);font-size:14px}
   /* Let's go: gold confetti and the one line, then the call (Jesse, 2026-10-14) */
   .lg-wrap{position:fixed;inset:0;z-index:3000;pointer-events:none;overflow:hidden}
   .lg-bit{position:absolute;top:-24px;border-radius:2px;animation:lgfall linear forwards}
@@ -964,6 +984,7 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
         <button data-view="agent" class="on">Agent Setup</button>
         <button data-view="client">Client View</button>
       </div>
+      <button type="button" class="btn-ghost newsbtn hidein-client" id="newsBtn" title="What’s new in MyPopPro">✨ What’s new<em id="newsCount"></em></button>
       <button type="button" class="btn-ghost setupbtn hidein-client" id="setupBtn" title="Your agency, name, phone, email, NPN and links">⚙ Setup<em id="setupNeed"></em></button>
       <button class="btn-ghost" id="newBtn">New</button>
       <button class="btn-ghost" id="loadBtn">Load Quote</button>
@@ -1441,6 +1462,9 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
 <!-- PLAN LIBRARY MODAL -->
 <aside class="bendrawer hidein-client" id="benDrawer" aria-label="Plan benefits"></aside>
 <div class="modal-backdrop" id="nmhModal"><div class="modal" style="max-width:600px"><div class="modal-head"><b id="nmhTitle">Great choice</b><button class="btn-ghost" id="nmhClose">Got it</button></div><div class="modal-body" id="nmhBody" style="font-size:14.5px;line-height:1.55"></div></div></div>
+<!-- What's new: slide-out from the right; recent releases on top, the whole history under All updates. -->
+<div class="nw-scrim noprint" id="newsScrim"></div>
+<aside class="nw-panel noprint" id="newsPanel" aria-label="What’s new"><div class="nw-head"><b>What’s new</b><button class="btn-ghost" id="newsClose">Close</button></div><div class="nw-body" id="newsBody"></div></aside>
 <!-- Agent setup lives behind the Setup button at the top (Jesse, 2026-10-14): it is set once, not per client,
      so it does not belong in the middle of every intake. Same input ids, so fillIntake/readIntake are unchanged. -->
 <div class="modal-backdrop" id="setupModal"><div class="modal wl-card" style="max-width:1040px">
@@ -4356,6 +4380,85 @@ function agentSetupFold(){ var miss=agentSetupMissing(), b=$('setupBtn'), n=$('s
 function fillAgent(){ $('in_agency').value=(S.agency&&S.agency!=='HealthFirst')?S.agency:(S.agency||''); $('in_agent').value=(S.client||{}).agent||''; $('in_aphone').value=S.agentPhone||''; $('in_aemail').value=S.agentEmail||''; $('in_anpn').value=S.agentNPN||''; $('in_aweb').value=S.agentWebsite||''; $('in_acard').value=S.agentCard||''; $('in_abook').value=S.agentBooking||''; agentSetupFold(); }
 /* Only the agent fields - captureIntake() would also read the client boxes, which are stale off the Intake step. */
 function readAgent(){ S.agency=($('in_agency').value||'').trim()||'HealthFirst'; S.client=S.client||{}; S.client.agent=$('in_agent').value; S.agentPhone=$('in_aphone').value; S.agentEmail=$('in_aemail').value; S.agentNPN=($('in_anpn').value||'').trim(); S.agentWebsite=($('in_aweb').value||'').trim(); S.agentCard=($('in_acard').value||'').trim(); S.agentBooking=($('in_abook').value||'').trim(); agentSetupFold(); autosave(); }
+/* ---- What's new (Jesse, 2026-10-14) ----
+   Every substantive change an agent would notice, newest first. On each ship: add a release at the top with its ship date.
+   A release is "new" for NEWS_DAYS after its date; after that it only shows under All updates. The badge counts new
+   items the agent hasn't opened yet (localStorage pp_news_seen = newest date they've seen). */
+var NEWS_DAYS=30;
+var NEWS=[
+ {d:'2026-10-14',t:'The all-in-one launch',i:[
+  ['Discovery call, built in','The Script Navigator’s Health Discovery is now step 1. Type answers into the blanks as the client talks, and the Intake fills itself.'],
+  ['One client file for both tools','Save here and open it in the Script Navigator, or the other way round. The call and the quote travel together in one file.'],
+  ['Booking fills the follow-up','The date and time you book at the end of the call land in Send the quote on the Quote page.'],
+  ['GLP-1 question on the call','Card 5.1 asks about Ozempic, Wegovy, Mounjaro, Zepbound and Saxenda, whether it’s for diabetes or weight, and for how long.'],
+  ['⚙ Setup and a walk-through','Your agent details moved to ⚙ Setup at the top, with a five-step walk-through of the tool. The button glows until everything is filled in.'],
+  ['Now called MyPopPro','One name everywhere: buttons, emails, files and the Script Navigator.'],
+  ['What’s new','This panel. New features show here first, and every past update stays under All updates.']]},
+ {d:'2026-10-10',t:'Stories and objections',i:[
+  ['Story repository','Stories are named for who to tell them to, so you can find the right one mid-call.'],
+  ['Objection answers rewritten','“I already have something through work”, “I want to think about it”, “I can’t afford that right now” and “I’ll stick with the ACA plan”.']]},
+ {d:'2026-10-10',t:'Present and Enroll',i:[
+  ['Present mode','The presentation script, screen by screen, with their name, numbers, doctors and medications filled in. It ends at the close.'],
+  ['Enroll in call order','Life application first, each person’s details to copy in, then the health carriers: ManhattanLife, Cigna and LifeX.'],
+  ['Send the quote in three steps','Pick the follow-up time (converted to the client’s time zone), save the PDF, and the email is written for you.'],
+  ['Enrollment email and post-call text','Written for you, with their brochures, partner benefits, your booking link and your signature.'],
+  ['Brochure links','Each plan’s brochures for the client’s state, on the Quote page, in the emails and on Enroll.'],
+  ['Copy as a picture','📋 Copy plans, Copy example and Copy partner benefits paste straight into a text.'],
+  ['Client-friendly package names','The client sees Essential / Complete / Comprehensive; you still see Good / Better / Best.'],
+  ['Living benefits from live quotes','Mutual of Omaha (18–60) and Americo (20–65), $25K–$250K over 20 years, or type any other carrier.'],
+  ['Doctor network check','Mark each doctor in or out of the First Health network, and the script shows ✅ or ❌ beside their name.'],
+  ['What matters most','The client’s own words on the Intake are read back to them in the presentation.'],
+  ['Appendicitis example','A new everyday example: ER, surgery and two nights in hospital.'],
+  ['💾 Save tab','Always on the right edge. Each save is a new file; load the newest.'],
+  ['Celebrations','Confetti when they enroll, and when the enrollment email goes out.']]},
+ {d:'2026-10-08',t:'Medications and states',i:[
+  ['3,836 medications','Type any drug, brand or generic; both names show, and each one suggests a condition to confirm.'],
+  ['Medical Bill Saver on by default','CareGuide’s bill negotiation is switched on for every example.'],
+  ['Home Health Care Select','Now in ID, IN, MD, PA and VA.'],
+  ['LifeX enrollment button','On the Enroll step.']]},
+ {d:'2026-10-06',t:'LifeX',i:[
+  ['LifeX benefits and costs','The LifeX benefit schedule in the slide-out, and the example cards show what the client actually pays.']]},
+ {d:'2026-10-02',t:'Examples',i:[
+  ['Two example cards','Two side-by-side, fully buildable “what happened” examples.'],
+  ['Medical Bill Saver (CareGuide)','One switch runs both examples, at 40% by default.'],
+  ['ACA plan name','Name the marketplace plan above its monthly premium.']]},
+ {d:'2026-09-30',t:'Dental, vision and hearing',i:[
+  ['Vision and hearing riders','Priced when they’re on, and named exactly.'],
+  ['Dental where DVH Select isn’t sold','ManhattanLife’s Dental, Vision & Hearing (7016) in MD, MT and VA.'],
+  ['Sparkle Care Dental','A second dental option.']]},
+ {d:'2026-09-29',t:'The package builder',i:[
+  ['Package builder','One row per product: change levels, add or remove products, or type over a price.'],
+  ['Real rates by state','ManhattanLife rates pulled from the portal for every state; products a state doesn’t sell are greyed out.'],
+  ['Three lineups','ManhattanLife, LifeX and Cigna (Triad).'],
+  ['ⓘ Benefits slide-out','Each product’s benefits for the client’s state.'],
+  ['POP Score','How complete each package is, with smart adds to raise it.'],
+  ['“What happened” examples','Hospital stay, broken arm, heart attack, cancer year, urgent care, ER and MRI: what each plan pays and what they net.'],
+  ['ACA section','A state-based marketplace estimate and a HealthSherpa link; type the real numbers over it.'],
+  ['Savings and TFRA','Savings against their ACA or current plan, and TFRA sized from the real monthly savings.'],
+  ['Four-page printout','A recap, the plans, the examples and the partner benefits.'],
+  ['Intake in script order','Children, medication type-ahead and conditions for each person.'],
+  ['Load a Script Navigator profile','Load Quote opens a navigator profile file, and your agent details stay put.']]},
+ {d:'2026-09-24',t:'Script Navigator handoff',i:[
+  ['Push from the Script Navigator','Send the client from the navigator’s discovery call straight into the Intake.'],
+  ['ZIP fills the state','Type the ZIP code and the state is filled in for you.']]},
+ {d:'2026-08-14',t:'Launch',i:[
+  ['MyPopPro goes live','Build a client’s Package of Protection next to their ACA or current plan. $0 lines are hidden in Client View.']]}
+];
+/* Never opened it: everything before the newest release counts as seen, so a first look shows this launch, not the whole history. */
+function newsSeen(){ var v=''; try{ v=localStorage.getItem('pp_news_seen')||''; }catch(e){} return v||(NEWS[1]?NEWS[1].d:''); }
+function newsRecent(r){ return (Date.now()-new Date(r.d+'T12:00:00').getTime())/864e5 <= NEWS_DAYS; }
+function newsDate(d){ return new Date(d+'T12:00:00').toLocaleDateString([], {month:'long',day:'numeric',year:'numeric'}); }
+function newsBadge(){ var seen=newsSeen(), n=0; NEWS.forEach(function(r){ if(newsRecent(r)&&r.d>seen) n+=r.i.length; });
+  var e=$('newsCount'); if(e) e.textContent=n?String(n):''; var b=$('newsBtn'); if(b) b.classList.toggle('has',!!n); }
+function newsRel(r,fresh){ return '<section class="nw-rel'+(fresh?' fresh':'')+'"><h4>'+esc(r.t)+(fresh?'<i class="nw-new">NEW</i>':'')+'<small>'+newsDate(r.d)+'</small></h4><ul>'+
+  r.i.map(function(x){ return '<li><b>'+x[0]+'</b><span>'+x[1]+'</span></li>'; }).join('')+'</ul></section>'; }
+function openNews(){ var seen=newsSeen(), recent=NEWS.filter(function(r,k){ return newsRecent(r)&&(r.d>seen||k===0); }), h='';
+  h+= recent.length? recent.map(function(r){ return newsRel(r, r.d>seen); }).join('') : '<p class="nw-none">Nothing new right now. Everything we have added is under All updates.</p>';
+  var all=NEWS.reduce(function(a,r){ return a+r.i.length; },0);
+  h+='<details class="nw-all"><summary>All updates <small>'+all+' changes since '+newsDate(NEWS[NEWS.length-1].d)+'</small></summary>'+NEWS.map(function(r){ return newsRel(r,false); }).join('')+'</details>';
+  $('newsBody').innerHTML=h; $('newsPanel').classList.add('open'); $('newsScrim').classList.add('open');
+  try{ localStorage.setItem('pp_news_seen',NEWS[0].d); }catch(e){} newsBadge(); }
+function closeNews(){ $('newsPanel').classList.remove('open'); $('newsScrim').classList.remove('open'); }
 /* ---- Setup = the welcome page (Jesse, 2026-10-14) ----
    Opens by itself once per relaunch: every agent counts as new after a big update, because so much moved.
    Bump WELCOME_V on the next relaunch to show it to everyone again. After that only the Setup button opens it. */
@@ -5649,6 +5752,9 @@ function bindInputs(){
   ['in_anpn','in_aweb','in_acard','in_abook'].forEach(function(id){ $(id).addEventListener('input',function(){ captureIntake(); }); });
   if($('goatSkip')) $('goatSkip').onclick=function(){ try{ localStorage.setItem('pp_goat_skip','1'); }catch(e){} agentSetupFold(); };
   $('setupBtn').onclick=openSetup; $('closeSetup').onclick=closeSetup;
+  $('newsBtn').onclick=openNews; $('newsClose').onclick=closeNews; $('newsScrim').onclick=closeNews;
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&$('newsPanel').classList.contains('open')) closeNews(); });
+  newsBadge();
   $('wlGo').onclick=function(){ if(tourAt===0){ readAgent(); try{ localStorage.setItem('pp_welcome_v',WELCOME_V); }catch(e){} showTour(1); } else if(tourAt<5) showTour(tourAt+1); else { finishSetup(); letsGo(); } };
   $('wlBack').onclick=function(){ showTour(Math.max(0,tourAt-1)); };
   $('wlSkip').onclick=finishSetup;
