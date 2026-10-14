@@ -593,7 +593,7 @@
   .pr-f input{border:1px solid #f0b9b9;border-radius:6px;padding:3px 6px;width:55%}
   .pr-f .cp{font-size:11px;padding:2px 7px;margin-left:6px}
   .pr-prog button{padding:5px 9px}
-  #prPop .pr-pop{position:fixed;right:18px;top:90px;width:min(420px,calc(100vw - 36px));z-index:9997;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,.2);padding:16px 18px;font-size:14px}
+  #prPop .pr-pop{position:fixed;right:18px;top:90px;width:min(460px,calc(100vw - 36px));max-height:calc(100vh - 110px);overflow-y:auto;z-index:9997;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,.2);padding:16px 18px;font-size:14px}
   #prPop .pr-pop h4{margin:4px 0 8px;font-family:var(--serif);color:var(--navy)}#prPop .x{position:absolute;right:10px;top:8px;border:none;background:none;font-size:22px;cursor:pointer;color:var(--muted)}
   #prPop .warn{background:#fde8e8;color:#8a1f12;border-radius:8px;padding:8px 10px;font-size:13px}#prPop .rule{font-size:12px;color:var(--muted)}
   .en-step{font-family:var(--serif);font-weight:700;color:var(--navy);margin-bottom:10px;font-size:17px}
@@ -625,6 +625,12 @@
   .wl-you{margin:18px 20px 0;padding-top:14px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}.wl-you b{font-family:var(--serif);color:var(--navy);font-size:17px;margin-right:6px}.wl-you i{font-style:normal}.wl-you i.needfill-sum{color:#17824a;font-weight:700}
   #agentSetup{padding:8px 20px 4px}
   #setupModal{z-index:2000}
+  /* Story pop-up (Kyle's daughter) */
+  .pr-pop .st-act{margin:12px 0 4px;color:var(--navy)}.pr-pop .st-act small{color:var(--muted);font-weight:600;margin-left:6px}
+  .pr-pop .st-say{background:#f7f9fd;border-left:3px solid #2c4a7c;border-radius:6px;padding:9px 12px;font-size:14.5px;line-height:1.55;color:#1e2a44}
+  .pr-pop .st-sum{margin:12px 0 0;border-collapse:collapse;font-size:13.5px}.pr-pop .st-sum td{padding:4px 14px 4px 0;border-bottom:1px dotted var(--line)}.pr-pop .st-sum td+td{text-align:right;font-weight:700;color:var(--navy)}
+  .pr-pop .st-warn{margin-top:12px;background:#fff6f2;border:1px solid #f0c9b9;border-radius:8px;padding:9px 12px;font-size:13px;line-height:1.5}.pr-pop .st-warn ul{margin:6px 0 0;padding-left:18px}.pr-pop .st-warn li{margin:4px 0}
+  .st-ready{font-style:normal;font-size:11px;font-weight:800;background:#c69a3c;color:#12213b;border-radius:999px;padding:1px 7px;margin-left:4px;white-space:nowrap}
   .glp1q{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:6px 0 8px;font-size:14px;color:var(--navy);font-weight:600}
   .glp1q select{font:inherit;font-size:14px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:#fff;margin-left:6px}
   .glp1grid{grid-template-columns:repeat(5,1fr);margin-bottom:10px}.glp1grid .fld.needfill select{border-color:#22a05a;background:#f2fbf5;animation:agglow 1.8s ease-in-out infinite}.glp1grid select{width:100%;padding:8px 9px;border:1px solid var(--line);border-radius:8px;background:#fbfaf6;font:inherit}@media(max-width:1100px){.glp1grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:620px){.glp1grid{grid-template-columns:1fr}}
@@ -4493,7 +4499,7 @@ var NEWS=[
  {d:'2026-09-24',t:'Script Navigator handoff',i:[
   ['Push from the Script Navigator','Send the client from the navigator’s discovery call straight into the Intake.'],
   ['ZIP fills the state','Type the ZIP code and the state is filled in for you.']]},
- {d:'2026-08-14',t:'Launch',i:[
+ {d:'2026-08-13',t:'Launch',i:[
   ['MyPopPro goes live','Build a client’s Package of Protection next to their ACA or current plan. $0 lines are hidden in Client View.']]}
 ];
 /* Never opened it: everything before the newest release counts as seen, so a first look shows this launch, not the whole history. */
@@ -5212,9 +5218,25 @@ function presentRailFromScript(doc){ presentObjEdits(doc); var qa=[], st=[];
   var atOf=function(re){ var m=st.filter(function(x){ return re.test(x.story); })[0]; return m?m.at:''; };
   st=[{story:'Living benefit story',at:atOf(/rehab/i)||'Step 9, living benefits'},
       {story:'If they think they don’t need HI / accident / OOP',at:atOf(/trip to the ER/i)||'Objection: “I can’t afford that”'},
-      {story:'What if I have a major health issue?',at:atOf(/daughter/i)||'Step 7, catastrophic'},
+      {story:'What if I have a major health issue?',at:atOf(/daughter/i)||'Step 7, catastrophic',title:'Kyle’s daughter: $211,000 in intensive care, and a $33,000 cheque',html:STORY_KYLE},
       {story:'Why not just pay cash if this doesn’t cover everything anyway?',at:'Objection: “Why not just pay cash?”'}];
   return {qa:qa,stories:st,flag:''}; }
+/* Kyle's daughter (Health ZONE, 14 Oct; Kyle at the Bundle Bootcamp, 13 Oct 2026; source: Health Insurance/_training/
+   bundle-bootcamp-2026-10/stories/negotiated-rate_kyles-daughter.html + raw/06b_daughter-story_RECOVERED.txt).
+   Arithmetic: $75,000 paid - $42,000 final bill = $33,000, Kyle's stated cheque to the dollar. Three things ship with it,
+   not as options: say "eleven months", never promise the cheque, and CareGuide's own wording. */
+var STORY_KYLE='<p class="st-act"><b>1 · Why the big number is never the real number</b> <small>~40 sec · tell this first</small></p>'
+ +'<div class="st-say">The price on a hospital bill is not the price. The network has already agreed what that hospital gets paid &mdash; agreed before you ever walk in. The hospital bills whatever it bills, the plan pays the agreed rate, and the hospital writes off the difference. It has to. That&rsquo;s the deal it signed to get network patients at all.</div>'
+ +'<p class="st-act"><b>2 · The grind</b> <small>~50 sec · do not skip the eleven months</small></p>'
+ +'<div class="st-say">The man who runs our health division had this happen to his own daughter. Six nights in intensive care. The bill was <b>two hundred and eleven thousand dollars</b>.<br><br>He called the bill advocates and signed one form &mdash; a release. Then they went to work. And it took <b>eleven months</b>. A call every week, an email every week.<br><br>It went from $211,000 to $198,000. Then $184,000. Then $124,000. Then ninety thousand. It finished at <b>forty-two thousand</b>.<br><br>Along the way they found the hospital was charging <b>forty-seven dollars for a Tylenol</b>. Once that came to light, the hospital got a lot more willing to talk.</div>'
+ +'<p class="st-act"><b>3 · The cheque</b> <small>~35 sec · the payoff</small></p>'
+ +'<div class="st-say">Then a cheque arrived in the mail. <b>Thirty-three thousand dollars</b>, from the insurance company, made out to him.<br><br>He thought it was a mistake. He said, &ldquo;I don&rsquo;t think I should cash this &mdash; this is too good to be true.&rdquo; He got the carrier and the advocates on a three-way call to check.<br><br>It wasn&rsquo;t a mistake. The final bill was forty-two thousand. His plan paid seventy-five. The benefit is a fixed amount &mdash; it pays what it says it pays, whatever the bill turns out to be. So once the bill came down, the difference belonged to him.<br><br>He didn&rsquo;t just avoid a two-hundred-thousand-dollar bill. He came out thirty-three thousand ahead.</div>'
+ +'<table class="st-sum"><tr><td>Hospital charged</td><td>$211,000</td></tr><tr><td>Final bill, after 11 months</td><td>$42,000</td></tr><tr><td>The plan paid (fixed benefit)</td><td>$75,000</td></tr><tr><td><b>Paid to him</b></td><td><b>$33,000</b></td></tr></table>'
+ +'<div class="st-warn"><b>Tell it honestly</b><ul>'
+ +'<li><b>Say &ldquo;eleven months.&rdquo;</b> It was a campaign with weekly contact, not a phone call. A client who expects it sorted in two weeks will be angry in month three.</li>'
+ +'<li><b>Never promise the cheque.</b> It happened because a fixed benefit was bigger than a reduced bill &mdash; the amount depends entirely on the bill. And it wasn&rsquo;t a windfall: she came out with a blood-clot diagnosis and a medication for life. It was a serious illness the plan covered well.</li>'
+ +'<li><b>CareGuide</b> is &ldquo;a medical bill advocacy service, not insurance. It does not pay medical bills. Results vary by case.&rdquo; Promise that somebody will look &mdash; never an outcome. Best results when they call <b>before</b> paying anything: 469-902-2267 &middot; cgasaves.com/manhattanlifemembers</li>'
+ +'</ul></div>';
 var PR_STORY_HEAD='<b>Story repository (who to tell)</b>';
 function renderPresent(){ var host=$('presentHost'); if(!host) return; var t=presentTier(), T=presentTokens(t), pages=presentPages();
   S.present=S.present||{}; var pg=Math.max(0,Math.min(pages.length-1,+S.present.pg||0));
@@ -5236,9 +5258,9 @@ function renderPresent(){ var host=$('presentHost'); if(!host) return; var t=pre
       benLoadSafe('afc').then(function(){ presentWire(doc,t); presentGo(+S.present.pg||0); });
       var R=presentRailFromScript(doc);
       $('prQA').innerHTML='<b>Quick answers — objections</b>'+R.qa.map(function(q){ return '<details><summary>'+esc(q[0])+'</summary><p>'+esc(q[1])+'</p></details>'; }).join('');
-      $('prStories').innerHTML=PR_STORY_HEAD+(R.stories.length?R.stories.map(function(x,i){ return '<button type="button" data-story="'+i+'">📖 '+esc(x.story)+'</button>'; }).join(''):'<p style="font-size:13px;color:var(--muted);margin:4px 0 0">No stories yet.</p>');
+      $('prStories').innerHTML=PR_STORY_HEAD+(R.stories.length?R.stories.map(function(x,i){ return '<button type="button" data-story="'+i+'">📖 '+esc(x.story)+(x.html?' <em class="st-ready">Kyle’s daughter</em>':'')+'</button>'; }).join(''):'<p style="font-size:13px;color:var(--muted);margin:4px 0 0">No stories yet.</p>');
       $('prStories').querySelectorAll('[data-story]').forEach(function(b){ b.onclick=function(){ var x=R.stories[+b.dataset.story], pop=$('prPop');
-        pop.innerHTML='<div class="pr-pop"><button type="button" class="x" aria-label="Close">×</button><div class="sec">Story</div><h4>'+esc(x.story)+'</h4><p><b>When to tell it:</b> '+esc(x.at)+'</p><p style="font-style:italic;color:var(--muted)">Story coming soon.</p><p class="rule">Never a client’s name — “a buddy of mine”, “a coworker of mine”.</p></div>';
+        pop.innerHTML='<div class="pr-pop"><button type="button" class="x" aria-label="Close">×</button><div class="sec">Story</div><h4>'+esc(x.title||x.story)+'</h4><p><b>When to tell it:</b> '+esc(x.at)+'</p>'+(x.html?'<p style="font-size:12.5px;color:var(--muted);margin:0 0 6px">Asked: '+esc(x.story)+'</p>'+x.html:'<p style="font-style:italic;color:var(--muted)">Story coming soon.</p>')+'<p class="rule">Never a client’s name — “a buddy of mine”, “a coworker of mine”.</p></div>';
         pop.style.display='block'; pop.querySelector('.x').onclick=function(){ pop.style.display='none'; }; }; });
     }catch(e){} };
   host.querySelectorAll('[data-pr="quote"]').forEach(function(b){ b.onclick=function(){ goStep('quote'); }; });
