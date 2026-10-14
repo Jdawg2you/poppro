@@ -670,6 +670,7 @@
   .cele-banner small{display:block;font-family:-apple-system,sans-serif;font-size:14px;font-weight:600;color:#e9d6a6;margin-top:4px}
   @keyframes celebanner{0%{opacity:0;transform:translate(-50%,-50%) scale(.6)}8%{opacity:1;transform:translate(-50%,-50%) scale(1.06)}14%{transform:translate(-50%,-50%) scale(1)}85%{opacity:1}100%{opacity:0;transform:translate(-50%,-60%) scale(.98)}}
   @media print{.cele-canvas,.cele-float,.cele-banner,.cele-shield,.cele-go{display:none!important}}
+  .callwrap{padding:14px}.callhead{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:0 0 10px}
   .picbar{display:flex;justify-content:flex-end;margin:10px 0 -4px}.picbtn{font:inherit;font-size:12.5px;font-weight:700;border:1px solid #c69a3c;background:#12213b;color:#fff;border-radius:999px;padding:6px 13px;cursor:pointer;box-shadow:0 1px 3px rgba(18,33,59,.25);white-space:nowrap;transition:background .15s}.picbtn:hover{background:#1c3a63}
   .en-hint{font-family:-apple-system,sans-serif;font-weight:400;font-size:12.5px;color:var(--muted)}
   .en-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px}
@@ -933,12 +934,21 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
   </div>
 
   <div class="stepper noprint" id="stepper">
-    <button data-step="intake"><span class="n">1</span> Intake</button>
-    <button data-step="quote" class="on"><span class="n">2</span> Quote</button>
-    <button data-step="present"><span class="n">3</span> Present</button>
-    <button data-step="enroll"><span class="n">4</span> Enroll</button>
+    <button data-step="call"><span class="n">1</span> Discovery call</button>
+    <button data-step="intake"><span class="n">2</span> Intake</button>
+    <button data-step="quote" class="on"><span class="n">3</span> Quote</button>
+    <button data-step="present"><span class="n">4</span> Present</button>
+    <button data-step="enroll"><span class="n">5</span> Enroll</button>
   </div>
 
+  <div id="step-call" class="step">
+    <div class="card pad callwrap">
+      <div class="callhead"><div><div class="sectitle" style="margin:0"><span class="dot">●</span> Discovery call</div>
+        <div class="note" style="padding:2px 0 0">The Script Navigator’s Health Discovery, right here. Every answer fills the Intake as you go and saves with this client.</div></div>
+        <button type="button" class="btn-gold" id="callDone">Review the Intake →</button></div>
+      <iframe id="callFrame" title="Health Discovery call" style="width:100%;height:calc(100vh - 200px);min-height:620px;border:1px solid var(--line);border-radius:12px;background:#fff;display:block"></iframe>
+    </div>
+  </div>
   <div id="step-intake" class="step">
    <div class="card pad">
     <div class="sectitle"><span class="dot">●</span> Client Intake</div>
@@ -2901,7 +2911,7 @@ function blankState(){
     follow:{},
     lb:{p:{carrier:'americo',face:'',term:''},s:{carrier:'americo',face:'',term:''}},
     recFlags:[],
-    step:'intake',
+    step:'call',
     estBand:null
   };
 }
@@ -3362,14 +3372,14 @@ function applySuiteAgent(ag){
   if(ag.website) S.agentWebsite=String(ag.website); if(ag.card) S.agentCard=String(ag.card); if(ag.booking) S.agentBooking=String(ag.booking);
 }
 
-function applySuiteClient(c){
+function applySuiteClient(c, live){
   if(!c || typeof c!=="object") return false;
 
   var incoming=suiteName(c.first,c.last);
   var current=(S.client&&S.client.pname||"").trim();
   /* Walking on top of a different client's case loses real work, so ask. Same name,
      or an empty case, goes straight through - that is the normal path. */
-  if(current && incoming && current.toLowerCase()!==incoming.toLowerCase()){
+  if(!live && current && incoming && current.toLowerCase()!==incoming.toLowerCase()){   /* live = the call inside POP Pro, typing the name */
     if(!confirm('This case is open for '+current+'.\n\nReplace the client details with '+
                 incoming+' from the Script Navigator?\n\nYour products and pricing are kept.')) return false;
   }
@@ -3613,6 +3623,7 @@ function applySuiteClient(c){
   }
 
   normClient();
+  if(live){ if(S.step==='intake') fillIntake(); autosave(); return true; }   /* the call inside POP Pro: stay on the call */
   goStep('intake');     /* fillIntake() runs from here, so the boxes show it straight away */
   autosave();
   return true;
@@ -3625,7 +3636,7 @@ window.addEventListener("message", function(e){
   /* The agent's own details are applied either way. They are not this client's data, so a
      declined client overwrite is no reason to keep sending someone the wrong phone number. */
   applySuiteAgent(d.agent);
-  var ok=applySuiteClient(d.client);
+  var ok=applySuiteClient(d.client, d.live===true);
   if(ok&&d.profile&&typeof d.profile==='object') S.nav=JSON.parse(JSON.stringify(d.profile));   /* portable file: keep the whole navigator call */
   if(!ok){ fillIntake(); autosave(); }
   /* Acknowledge either way. A declined overwrite is an answer, not a dropped message -
@@ -5363,13 +5374,25 @@ function clientStripSum(){ var el=$('csSum'), cs=$('clientStrip'); if(!el||!cs) 
   var ages=[C.page,C.sage].filter(Boolean).join(' / ');
   el.textContent=[who,[C.state,C.zip].filter(Boolean).join(' '),ages?'ages '+ages:'',C.dob||C.date?'DOB '+(C.dob||C.date):'',C.agent?'Agent '+C.agent:''].filter(Boolean).join('  ·  ');
   cs.classList.toggle('pinned',!!(S.present&&S.present.stripOpen)); var cb=$('csCaret'); if(cb) cb.setAttribute('aria-expanded',String(!!(S.present&&S.present.stripOpen))); }
+/* ===== Discovery call inside POP Pro (Jesse, 14 Oct) =====
+   The Script Navigator's own Health Discovery, framed - one script, so every navigator edit shows here. POP Pro hands in
+   the client's saved call (S.nav, via the portable file loader) and the agent's details, because a framed site cannot
+   read its stand-alone storage; every answer comes straight back and fills the Intake live. */
+var NAV_BASE=location.port==='8767'?'http://127.0.0.1:8777/':'https://script.ffloptimum.com/';
+function callAgent(){ var C=S.client||{}; return {a_name:C.agent||'',a_agency:(S.agency&&S.agency!=='HealthFirst')?S.agency:'',a_npn:S.agentNPN||'',a_phone:S.agentPhone||'',a_email:S.agentEmail||'',a_web:S.agentWebsite||'',a_book:S.agentBooking||''}; }
+function callInit(){ var f=$('callFrame'); if(!f||!f.contentWindow) return; try{ f.contentWindow.postMessage({source:'optimum-poppro',type:'call-init',v:1,pop:currentQuote(),agent:callAgent()},NAV_BASE.replace(/\/$/,'')); }catch(e){} }
+function callOpen(){ var f=$('callFrame'); if(!f) return; if(!f.getAttribute('src')) f.src=NAV_BASE+'?embed=1&script=health&host=poppro'; else callInit(); }
+window.addEventListener('message',function(e){ var f=$('callFrame'); if(!f||e.source!==f.contentWindow) return; var d=e.data||{};
+  if(d.source==='insurance-script-navigator'&&d.type==='call-ready') callInit();
+});
 function goStep(s){
   S.step=s;
   document.querySelectorAll('.step').forEach(function(el){el.classList.toggle('on',el.id==='step-'+s);});
   document.querySelectorAll('#stepper button').forEach(function(b){b.classList.toggle('on',b.dataset.step===s);});
-  var cs=$('clientStrip'); if(cs) cs.style.display=(s==='intake')?'none':'';
+  var cs=$('clientStrip'); if(cs) cs.style.display=(s==='intake'||s==='call')?'none':'';
   document.body.classList.toggle('step-present',s==='present'); clientStripSum();
   if(s==='intake') fillIntake();
+  if(s==='call') callOpen();
   if(s==='enroll') renderEnroll();
   if(s==='present') renderPresent();
   if(s==='quote'){ syncRateBasis(); acaSync(); autoPriceTiers(); fill(); compute(); }
@@ -5578,7 +5601,8 @@ function bindInputs(){
   };
   $('loadBtn').onclick=function(){ $('fileInput').click(); };
   $('fileInput').onchange=function(e){ if(e.target.files[0]) loadFile(e.target.files[0]); e.target.value=''; };
-  $('newBtn').onclick=function(){ if(confirm('Start a new blank quote? Unsaved changes will be lost.')){ var ag=S.agency, agn=S.client.agent, aph=S.agentPhone, aem=S.agentEmail; S=blankState(); S.agency=ag; S.client.agent=agn; S.agentPhone=aph; S.agentEmail=aem; fill(); compute(); goStep('intake'); } };
+  $('callDone').onclick=function(){ goStep('intake'); };
+  $('newBtn').onclick=function(){ if(confirm('Start a new blank quote? Unsaved changes will be lost.')){ var ag=agentOf(S); S=blankState(); keepAgent(ag); var cf=$('callFrame'); if(cf) cf.removeAttribute('src'); fill(); compute(); goStep('call'); } };
   $('reloadBase').onclick=function(){ read(); reloadBaseTier(S.activeTab); renderProducts(); compute(); };
   $('resetTab').onclick=function(){ read(); pbResetTier(S.activeTab); autoPriceTiers(); renderProducts(); compute(); if(typeof renderBuilder==='function') renderBuilder(); autosave(); };   // same as the builder's ↺ Reset
   $('howBtn').onclick=function(){ $('howModal').classList.add('open'); };
@@ -6224,7 +6248,7 @@ restore();
 fill();
 bindInputs();
 compute();
-goStep(S.step||'intake');
+goStep(S.step||'call');
 loadPortalRates();
 loadBaseRates();
 </script>
