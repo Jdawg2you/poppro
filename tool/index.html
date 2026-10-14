@@ -3626,6 +3626,7 @@ window.addEventListener("message", function(e){
      declined client overwrite is no reason to keep sending someone the wrong phone number. */
   applySuiteAgent(d.agent);
   var ok=applySuiteClient(d.client);
+  if(ok&&d.profile&&typeof d.profile==='object') S.nav=JSON.parse(JSON.stringify(d.profile));   /* portable file: keep the whole navigator call */
   if(!ok){ fillIntake(); autosave(); }
   /* Acknowledge either way. A declined overwrite is an answer, not a dropped message -
      if we stayed silent the navigator would keep asking every 300ms. */
@@ -4174,7 +4175,7 @@ function fileName(){
   return 'POP_Pro_'+n+'_'+d+'.json';
 }
 function saveQuote(){
-  var data=currentQuote();
+  var data=currentQuote(); data.format='optimum-client'; data.formatV=1;   /* opens in the Script Navigator too */
   var blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
   var url=URL.createObjectURL(blob);
   var a=document.createElement('a'); a.href=url; a.download=fileName(); document.body.appendChild(a); a.click(); a.remove();
@@ -4260,21 +4261,27 @@ function keepAgent(ag){
   if(ag.phone && !S.agentPhone) S.agentPhone=ag.phone;
   if(ag.email && !S.agentEmail) S.agentEmail=ag.email;
   if(ag.npn && !S.agentNPN) S.agentNPN=ag.npn; if(ag.web && !S.agentWebsite) S.agentWebsite=ag.web; if(ag.card && !S.agentCard) S.agentCard=ag.card; if(ag.book && !S.agentBooking) S.agentBooking=ag.book; }
+/* Portable client file (Jesse, 14 Oct): one file per client opens in POP Pro or the Script Navigator. A POP Pro save
+   carries the whole navigator call (S.nav); a navigator save carries the POP Pro quote it came with (_pop). Opening a
+   navigator file: its POP Pro quote is the base and the navigator's answers - the newer save - go on top. */
+function navOnlyOf(p){ var o={}; Object.keys(p||{}).forEach(function(k){ if(k!=='_pop') o[k]=p[k]; }); return JSON.parse(JSON.stringify(o)); }
+function loadQuoteObject(obj){ var ag=agentOf(S);
+  if(isNavProfile(obj)){ var pop=obj._pop&&typeof obj._pop==='object'?obj._pop:null;
+    if(pop){ S=deepMerge(blankState(),pop); keepAgent(ag); migrateAca(pop); migrateEvents(pop); if(!S.packages||!S.packages[S.activeTab]) S.packages=blankState().packages; if(!S.aca) S.aca=blankState().aca; }
+    else { S=blankState(); keepAgent(ag); }
+    applySuiteClient(suiteFromNavProfile(obj)); S.nav=navOnlyOf(obj);
+    return pop?'quote':'intake'; }
+  S=deepMerge(blankState(),obj); keepAgent(ag); migrateAca(obj); migrateEvents(obj);
+  if(!S.packages||!S.packages[S.activeTab]) S.packages=blankState().packages;
+  if(!S.aca) S.aca=blankState().aca;
+  return 'quote'; }
 function loadFile(file){
   var rd=new FileReader();
   rd.onload=function(){
-    try{ var obj=JSON.parse(rd.result), ag=agentOf(S);
-      if(isNavProfile(obj)){
-        /* A fresh case for this client, filled exactly as a push from the navigator would. */
-        S=blankState(); keepAgent(ag); applySuiteClient(suiteFromNavProfile(obj)); fill(); compute(); goStep('intake'); autosave();
-        alert('Script Navigator profile loaded'+(S.client&&S.client.pname?': '+S.client.pname:'')+'. Check the intake, then build the packages.');
-        return; }
-      S=deepMerge(blankState(),obj); keepAgent(ag); migrateAca(obj); migrateEvents(obj);
-      if(!S.packages||!S.packages[S.activeTab]) S.packages=blankState().packages;
-      if(!S.aca) S.aca=blankState().aca;
-      fill(); compute(); goStep('quote'); autosave();
-      alert('Quote loaded'+(S.client&&S.client.pname?': '+S.client.pname:'')+'. Edit and Save again to keep a new version.');
-    }catch(e){ alert('Could not read that file — is it a HealthFirst quote (.json)?'); }
+    try{ var obj=JSON.parse(rd.result), nav=isNavProfile(obj), where=loadQuoteObject(obj);
+      fill(); compute(); goStep(where); autosave();
+      alert((nav?'Script Navigator profile loaded':'Quote loaded')+(S.client&&S.client.pname?': '+S.client.pname:'')+'. '+(where==='intake'?'Check the intake, then build the packages.':'Edit and Save again to keep a new version.'));
+    }catch(e){ alert('Could not read that file — is it a POP Pro quote or a Script Navigator profile (.json)?'); }
   };
   rd.readAsText(file);
 }
