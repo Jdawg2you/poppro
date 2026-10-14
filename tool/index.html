@@ -625,6 +625,9 @@
   .wl-you{margin:18px 20px 0;padding-top:14px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}.wl-you b{font-family:var(--serif);color:var(--navy);font-size:17px;margin-right:6px}.wl-you i{font-style:normal}.wl-you i.needfill-sum{color:#17824a;font-weight:700}
   #agentSetup{padding:8px 20px 4px}
   #setupModal{z-index:2000}
+  .glp1q{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:6px 0 8px;font-size:14px;color:var(--navy);font-weight:600}
+  .glp1q select{font:inherit;font-size:14px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:#fff;margin-left:6px}
+  .glp1grid{grid-template-columns:repeat(5,1fr);margin-bottom:10px}.glp1grid select{width:100%;padding:8px 9px;border:1px solid var(--line);border-radius:8px;background:#fbfaf6;font:inherit}@media(max-width:1100px){.glp1grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:620px){.glp1grid{grid-template-columns:1fr}}
   /* What's new */
   .newsbtn em{font-style:normal;font-size:11px;font-weight:800;margin-left:6px;background:#c69a3c;color:#12213b;border-radius:999px;padding:1px 7px}.newsbtn em:empty{display:none}
   .newsbtn.has{border-color:#c69a3c}
@@ -1100,6 +1103,26 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
     <div id="condList"></div>
     <div class="medbox" style="margin-top:4px"><input id="condInput" class="condinput" placeholder="Add a condition — start typing…" autocomplete="off"><div class="medsug" id="condSug"></div></div>
 
+
+    <!-- GLP-1 (Jesse, 2026-10-14): one question per person; the follow-ups open only for whoever is on one.
+         Same answers as the Script Navigator's 5.1: glp1, glp1_drug/_for/_since/_cost/_source, and sp_ for the spouse. -->
+    <div class="intake-sec" id="sec_glp1">GLP-1 <span class="secnote">— Ozempic, Wegovy, Mounjaro, Zepbound, Saxenda and the rest of that family</span></div>
+    <div class="glp1q" id="glp1Row_p"><label>Primary — on a GLP-1 now? <select id="in_glp1_p" data-w="p"><option value="">—</option><option>No</option><option>Yes</option></select></label><span class="note" id="glp1Hint_p"></span></div>
+    <div class="intakegrid glp1grid" id="glp1More_p" style="display:none">
+      <div class="fld"><label>Which one</label><input id="in_glp1_p_drug" placeholder="e.g. Ozempic"></div>
+      <div class="fld"><label>For diabetes or weight?</label><select id="in_glp1_p_for"><option value="">—</option><option>Diabetes</option><option>Weight loss</option><option>Both</option></select></div>
+      <div class="fld"><label>How long on it</label><input id="in_glp1_p_since" placeholder="e.g. 8 months"></div>
+      <div class="fld"><label>What they pay a month</label><input id="in_glp1_p_cost" class="money2" inputmode="decimal" placeholder="e.g., $499.00"></div>
+      <div class="fld"><label>Where they get it</label><select id="in_glp1_p_source"><option value="">—</option><option>Pharmacy</option><option>Telehealth</option><option>Compounded</option><option>Other</option></select></div>
+    </div>
+    <div class="glp1q" id="glp1Row_s"><label>Spouse — on a GLP-1 now? <select id="in_glp1_s" data-w="s"><option value="">—</option><option>No</option><option>Yes</option></select></label><span class="note" id="glp1Hint_s"></span></div>
+    <div class="intakegrid glp1grid" id="glp1More_s" style="display:none">
+      <div class="fld"><label>Which one</label><input id="in_glp1_s_drug" placeholder="e.g. Ozempic"></div>
+      <div class="fld"><label>For diabetes or weight?</label><select id="in_glp1_s_for"><option value="">—</option><option>Diabetes</option><option>Weight loss</option><option>Both</option></select></div>
+      <div class="fld"><label>How long on it</label><input id="in_glp1_s_since" placeholder="e.g. 8 months"></div>
+      <div class="fld"><label>What they pay a month</label><input id="in_glp1_s_cost" class="money2" inputmode="decimal" placeholder="e.g., $499.00"></div>
+      <div class="fld"><label>Where they get it</label><select id="in_glp1_s_source"><option value="">—</option><option>Pharmacy</option><option>Telehealth</option><option>Compounded</option><option>Other</option></select></div>
+    </div>
 
     <div class="intake-sec" id="sec_health">Health &amp; Routing</div>
     <div class="chips">
@@ -3636,6 +3659,7 @@ function applySuiteClient(c, live){ var sm=$('setupModal'); if(sm&&!live&&sm.cla
   if(h.effDate)  I.effDate=suiteDate(h.effDate);
   if(h.whyShop)  I.whyShop=h.whyShop;
   if(h.whyMatters) I.whyMatters=h.whyMatters;
+  var g1=glp1FromSuite(h); if(g1) I.glp1=g1;
   if(h.foundPlan) I.foundPlan=h.foundPlan;
 
   /* Doctors they said they want to keep. Whether keeping one is a hard requirement is
@@ -4331,6 +4355,8 @@ function suiteFromNavProfile(P){
       retireAge:P.i_retire||"", spRetireAge:P.sp_retire||"", liquid:P.i_liquid||"", invest:P.asset_amt||"",
       protectable:P.asset_prot||"", invnote:P.asset_notes||"", budgetComfort:P.budget_comfort||"", budgetMax:P.budget_max||"",
       healthNotes:P.health_notes||"", healthOther:P.health_other||"", whyShop:P.why_note||"", whyMatters:P.why_matters||"", foundPlan:P.found_plan||"", effDate:P.start_when||"", lastDay:P.last_day||"",
+      glp1On:P.glp1||"", glp1Drug:P.glp1_drug||"", glp1For:P.glp1_for||"", glp1Since:P.glp1_since||"", glp1Cost:P.glp1_cost||"", glp1Source:P.glp1_source||"",
+      spGlp1On:P.sp_glp1||"", spGlp1Drug:P.sp_glp1_drug||"", spGlp1For:P.sp_glp1_for||"", spGlp1Since:P.sp_glp1_since||"", spGlp1Cost:P.sp_glp1_cost||"", spGlp1Source:P.sp_glp1_source||"",
       apptWhen:P.appt_when||"", apptWho:P.appt_who||"", apptNotes:P.appt_notes||"", occupation:P.occupation||"", occYears:P.occ_years||"",
       kidsHealth:P.kids_health||"", wantDental:P.want_dental||"", wantVision:P.want_vision||"", wantHearing:P.want_hearing||"",
       curCarrier:P.cur_carrier||"", curPlan:P.cur_plan||"", curPrem:P.cur_prem||"", curEmpPrem:P.cur_emp_prem||"", curTotal:P.cur_total||"",
@@ -4380,6 +4406,26 @@ function agentSetupFold(){ var miss=agentSetupMissing(), b=$('setupBtn'), n=$('s
 function fillAgent(){ $('in_agency').value=(S.agency&&S.agency!=='HealthFirst')?S.agency:(S.agency||''); $('in_agent').value=(S.client||{}).agent||''; $('in_aphone').value=S.agentPhone||''; $('in_aemail').value=S.agentEmail||''; $('in_anpn').value=S.agentNPN||''; $('in_aweb').value=S.agentWebsite||''; $('in_acard').value=S.agentCard||''; $('in_abook').value=S.agentBooking||''; agentSetupFold(); }
 /* Only the agent fields - captureIntake() would also read the client boxes, which are stale off the Intake step. */
 function readAgent(){ S.agency=($('in_agency').value||'').trim()||'HealthFirst'; S.client=S.client||{}; S.client.agent=$('in_agent').value; S.agentPhone=$('in_aphone').value; S.agentEmail=$('in_aemail').value; S.agentNPN=($('in_anpn').value||'').trim(); S.agentWebsite=($('in_aweb').value||'').trim(); S.agentCard=($('in_acard').value||'').trim(); S.agentBooking=($('in_abook').value||'').trim(); agentSetupFold(); autosave(); }
+/* ---- GLP-1 on the Intake: S.intake.glp1 = {p:{on,drug,for,since,cost,source}, s:{...}} ---- */
+var GLP1_RX=/semaglutide|tirzepatide|liraglutide|dulaglutide|exenatide|ozempic|wegovy|rybelsus|mounjaro|zepbound|saxenda|victoza|trulicity|byetta|bydureon/i;
+var GLP1_F=['drug','for','since','cost','source'];
+function glp1FromMeds(w){ var m=(S.intake.medList||[]).filter(function(x){ return GLP1_RX.test(String(x.name||'')) && (w==='s'?x.forS:(x.forP!==false)); }); return m.length?m[0].name:''; }
+function glp1Show(){ ['p','s'].forEach(function(w){ var on=$('in_glp1_'+w).value==='Yes'; $('glp1More_'+w).style.display=on?'':'none'; });
+  var sp=$('in_who_spouse')&&$('in_who_spouse').checked; $('glp1Row_s').style.display=sp?'':'none'; if(!sp) $('glp1More_s').style.display='none'; }
+function glp1Fill(){ var G=S.intake.glp1=S.intake.glp1||{};
+  ['p','s'].forEach(function(w){ var g=G[w]=G[w]||{}, med=glp1FromMeds(w);
+    /* A GLP-1 on that person's medication list answers the question unless the agent already said No. */
+    if(!g.on&&med){ g.on='Yes'; if(!g.drug) g.drug=med; }
+    $('in_glp1_'+w).value=g.on||''; GLP1_F.forEach(function(f){ var el=$('in_glp1_'+w+'_'+f); el.value=f==='cost'?(g.cost?fmtMoney2(g.cost):''):(g[f]||''); });
+    $('glp1Hint_'+w).textContent=med&&g.on==='No'?'Their medication list includes '+med+'.':''; });
+  glp1Show(); }
+function glp1Read(){ var G={}; ['p','s'].forEach(function(w){ var g={on:$('in_glp1_'+w).value};
+    GLP1_F.forEach(function(f){ var v=$('in_glp1_'+w+'_'+f).value; g[f]=f==='cost'?(moneyNum(v)||0):String(v||'').trim(); }); G[w]=g; });
+  S.intake.glp1=G; }
+/* From the suite's flat health keys (glp1On… / spGlp1On…). */
+function glp1FromSuite(h){ var one=function(pre){ var k=function(f){ return h[pre+f]; }; if(!k('On')&&!k('Drug')) return null;
+    return {on:k('On')||'', drug:k('Drug')||'', for:k('For')||'', since:k('Since')||'', cost:moneyNum(String(k('Cost')||''))||0, source:k('Source')||''}; };
+  var p=one('glp1'), s=one('spGlp1'); if(!p&&!s) return null; return {p:p||{}, s:s||{}}; }
 /* ---- What's new (Jesse, 2026-10-14) ----
    Every substantive change an agent would notice, newest first. On each ship: add a release at the top with its ship date.
    A release is "new" for NEWS_DAYS after its date; after that it only shows under All updates. The badge counts new
@@ -4390,7 +4436,7 @@ var NEWS=[
   ['Discovery call, built in','The Script Navigator’s Health Discovery is now step 1. Type answers into the blanks as the client talks, and the Intake fills itself.'],
   ['One client file for both tools','Save here and open it in the Script Navigator, or the other way round. The call and the quote travel together in one file.'],
   ['Booking fills the follow-up','The date and time you book at the end of the call land in Send the quote on the Quote page.'],
-  ['GLP-1 question on the call','Card 5.1 asks about Ozempic, Wegovy, Mounjaro, Zepbound and Saxenda, whether it’s for diabetes or weight, and for how long.'],
+  ['GLP-1 questions','The call asks about Ozempic, Wegovy, Mounjaro, Zepbound and Saxenda. The Intake has a GLP-1 row for each person that opens only if they’re on one: which drug, diabetes or weight, how long, what they pay and where they get it. A GLP-1 on the medication list fills it in for you.'],
   ['⚙ Setup and a walk-through','Your agent details moved to ⚙ Setup at the top, with a five-step walk-through of the tool. The button glows until everything is filled in.'],
   ['Now called MyPopPro','One name everywhere: buttons, emails, files and the Script Navigator.'],
   ['What’s new','This panel. New features show here first, and every past update stays under All updates.']]},
@@ -4585,6 +4631,7 @@ function readIntake(){
   S.intake.income=moneyVal($('in_income').value); S.intake.retage=$('in_retage').value;
   S.intake.savings=moneyVal($('in_savings').value); S.intake.invest=moneyVal($('in_invest').value); S.intake.invprot=$('in_invprot').checked; S.intake.invsra=$('in_invsra').checked; S.intake.invnote=$('in_invnote').value;
   S.intake.docs1=$('in_docs1').value; S.intake.docs2=$('in_docs2').value; S.intake.docs3=$('in_docs3').value;
+  glp1Read();
   S.intake.keepaca=$('in_keepaca').value; S.intake.keepafc=$('in_keepafc').value; S.intake.docnote=$('in_docnote').value;
   S.intake.pheight=$('in_pheight').value; S.intake.pweight=$('in_pweight').value; S.intake.sheight=$('in_sheight').value; S.intake.sweight=$('in_sweight').value; S.intake.psex=$('in_psex').value; S.intake.ssex=$('in_ssex').value; S.intake.kidsNote=$('in_kids').value; S.intake.routeNote=$('in_routenote').value; S.intake.docsNote=$('in_docsnote').value; S.intake.whyShop=$('in_whyshop').value; S.intake.whyMatters=$('in_whymatters').value; S.intake.foundPlan=$('in_foundplan').value; S.intake.effDate=$('in_effdate').value;
   S.docs.net=$('in_net').checked; S.docs.rx=$('in_rx').checked; S.docs.famcancer=!!(S.intake.famcancer||S.intake.famheart);
@@ -4608,6 +4655,7 @@ function fillIntake(){
   $('in_pname').value=S.client.pname||''; $('in_sname').value=S.client.sname||''; $('in_agent').value=S.client.agent||'';
   $('in_state').value=S.client.state||''; $('in_zip').value=S.client.zip||''; $('in_page').value=S.client.page||''; $('in_sage').value=S.client.sage||''; $('in_date').value=S.client.date||''; $('in_sdob').value=S.client.sdob||''; $('in_address').value=S.client.address||'';
   $('in_phone').value=I.phone||''; $('in_email').value=I.email||'';
+  setTimeout(glp1Fill,0);
   $('in_tobacco_p').checked=!!(I.tobaccoP!==undefined?I.tobaccoP:I.tobacco); $('in_tobacco_s').checked=!!I.tobaccoS; $('in_dv').checked=!!I.dv;
   var fillPS=function(k,legacy){ $('in_'+k+'_p').checked=!!(I[k+'P']!==undefined?I[k+'P']:legacy); $('in_'+k+'_s').checked=!!I[k+'S']; };
   fillPS('famcancer', I.famcancer||S.docs.famcancer); fillPS('famheart', I.famheart); fillPS('maternity', I.maternity); fillPS('mental', I.mental); fillPS('surg2yr', I.surg2yr);
@@ -5752,6 +5800,8 @@ function bindInputs(){
   ['in_anpn','in_aweb','in_acard','in_abook'].forEach(function(id){ $(id).addEventListener('input',function(){ captureIntake(); }); });
   if($('goatSkip')) $('goatSkip').onclick=function(){ try{ localStorage.setItem('pp_goat_skip','1'); }catch(e){} agentSetupFold(); };
   $('setupBtn').onclick=openSetup; $('closeSetup').onclick=closeSetup;
+  ['p','s'].forEach(function(w){ $('in_glp1_'+w).addEventListener('change',function(){ if(this.value==='Yes'&&!$('in_glp1_'+w+'_drug').value) $('in_glp1_'+w+'_drug').value=glp1FromMeds(w); glp1Show(); }); });
+  if($('in_who_spouse')) $('in_who_spouse').addEventListener('change',glp1Show);
   $('newsBtn').onclick=openNews; $('newsClose').onclick=closeNews; $('newsScrim').onclick=closeNews;
   document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&$('newsPanel').classList.contains('open')) closeNews(); });
   newsBadge();

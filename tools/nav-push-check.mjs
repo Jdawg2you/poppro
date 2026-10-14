@@ -114,6 +114,11 @@ try {
     sp_hosp_stay: ['^intake\\.surg2yrS=true'], sp_stay_what: ['notes=.*Spouse hospital stay'],
     appt_date: ['notes=.*PRESENTATION BOOKED'], appt_time: ['notes=.*PRESENTATION BOOKED'], appt_who: ['notes=.*PRESENTATION BOOKED'],
     want_dental: ['^intake\\.dv=true'], want_vision: ['^intake\\.dv=true', '^intake\\.wantVis=true'], want_hearing: ['^intake\\.wantHear=true'], docs: ['^intake\\.keepaca=yes'],
+    /* GLP-1 at 5.1, one set per person (Jesse, 2026-10-14). These route the presentation, so they must be real fields. */
+    glp1: ['^intake\\.glp1\\.p\\.on=Yes'], glp1_drug: ['^intake\\.glp1\\.p\\.drug=M_glp1_drug'], glp1_for: ['^intake\\.glp1\\.p\\.for=Both'],
+    glp1_since: ['^intake\\.glp1\\.p\\.since=M_glp1_since'], glp1_cost: ['^intake\\.glp1\\.p\\.cost=1\\d{4}'], glp1_source: ['^intake\\.glp1\\.p\\.source=Other'],
+    sp_glp1: ['^intake\\.glp1\\.s\\.on=Yes'], sp_glp1_drug: ['^intake\\.glp1\\.s\\.drug=M_sp_glp1_drug'], sp_glp1_for: ['^intake\\.glp1\\.s\\.for=Both'],
+    sp_glp1_since: ['^intake\\.glp1\\.s\\.since=M_sp_glp1_since'], sp_glp1_cost: ['^intake\\.glp1\\.s\\.cost=1\\d{4}'], sp_glp1_source: ['^intake\\.glp1\\.s\\.source=Other'],
     married: ['^intake\\.who\\.spouse=true'], kids: ['^intake\\.who\\.kids=true', '^intake\\.kids\\.0\\.n='],
   };
   const NOT = { recent_stay: ['^intake\\.surg2yrP=true'] };
@@ -131,7 +136,8 @@ try {
   await go(`http://127.0.0.1:${NAVPORT}/`);
   const rt = await ev(`(function(o){ curScript='health'; var back=fromPopPro(o), keys=['first','last','dob','age','sex','phone','email','state','zip','sp_name','sp_age','height','weight','sp_height','tobacco',
     'why_note','start_when','cur_carrier','cur_plan','cur_prem','cur_emp_prem','cur_ded','cur_oop','cur_copay','cur_visits','cur_is_aca','cur_subsidy','fh_cancer','fh_heart','mat_needs',
-    'income_this','sp_income','hh_income','i_retire','i_liquid','asset_amt','budget_comfort','budget_max','want_dental','meds_list','deps','docs','kids','married'];
+    'income_this','sp_income','hh_income','i_retire','i_liquid','asset_amt','budget_comfort','budget_max','want_dental','meds_list','deps','docs','kids','married',
+    'glp1','glp1_drug','glp1_for','glp1_since','glp1_cost','glp1_source','sp_glp1','sp_glp1_drug','sp_glp1_for','sp_glp1_since','sp_glp1_cost','sp_glp1_source'];
     var miss=keys.filter(function(k){ var v=back[k]; return v==null||v===''||(Array.isArray(v)&&!v.length); });
     return {n:keys.length, miss:miss}; })(${saved})`);
   console.log(`ROUNDTRIP ${rt.n - rt.miss.length}/${rt.n}${rt.miss.length ? ' missing ' + rt.miss.join(',') : ''}`);
