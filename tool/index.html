@@ -627,7 +627,7 @@
   #setupModal{z-index:2000}
   .glp1q{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:6px 0 8px;font-size:14px;color:var(--navy);font-weight:600}
   .glp1q select{font:inherit;font-size:14px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:#fff;margin-left:6px}
-  .glp1grid{grid-template-columns:repeat(5,1fr);margin-bottom:10px}.glp1grid select{width:100%;padding:8px 9px;border:1px solid var(--line);border-radius:8px;background:#fbfaf6;font:inherit}@media(max-width:1100px){.glp1grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:620px){.glp1grid{grid-template-columns:1fr}}
+  .glp1grid{grid-template-columns:repeat(5,1fr);margin-bottom:10px}.glp1grid .fld.needfill select{border-color:#22a05a;background:#f2fbf5;animation:agglow 1.8s ease-in-out infinite}.glp1grid select{width:100%;padding:8px 9px;border:1px solid var(--line);border-radius:8px;background:#fbfaf6;font:inherit}@media(max-width:1100px){.glp1grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:620px){.glp1grid{grid-template-columns:1fr}}
   /* What's new */
   .newsbtn em{font-style:normal;font-size:11px;font-weight:800;margin-left:6px;background:#c69a3c;color:#12213b;border-radius:999px;padding:1px 7px}.newsbtn em:empty{display:none}
   .newsbtn.has{border-color:#c69a3c}
@@ -4415,11 +4415,17 @@ function glp1Show(){ ['p','s'].forEach(function(w){ var on=$('in_glp1_'+w).value
 function glp1Fill(){ var G=S.intake.glp1=S.intake.glp1||{};
   ['p','s'].forEach(function(w){ var g=G[w]=G[w]||{}, med=glp1FromMeds(w);
     /* A GLP-1 on that person's medication list answers the question unless the agent already said No. */
-    if(!g.on&&med){ g.on='Yes'; if(!g.drug) g.drug=med; }
+    if(!g.on&&med){ g.on='Yes'; g.inferred=true; if(!g.drug) g.drug=med; }
     $('in_glp1_'+w).value=g.on||''; GLP1_F.forEach(function(f){ var el=$('in_glp1_'+w+'_'+f); el.value=f==='cost'?(g.cost?fmtMoney2(g.cost):''):(g[f]||''); });
     $('glp1Hint_'+w).textContent=med&&g.on==='No'?'Their medication list includes '+med+'.':''; });
-  glp1Show(); }
-function glp1Read(){ var G={}; ['p','s'].forEach(function(w){ var g={on:$('in_glp1_'+w).value};
+  glp1Show(); glp1Need(); }
+/* Yes with no indication can't be routed (diabetes vs weight decide the presentation), and the brand doesn't settle it -
+   Ozempic is often taken for weight. So an inferred Yes says where it came from, and the indication glows until it's asked. */
+function glp1Need(){ var G=S.intake.glp1||{}; ['p','s'].forEach(function(w){ var g=G[w]||{}, on=$('in_glp1_'+w).value==='Yes', f=$('in_glp1_'+w+'_for');
+    var need=on&&!f.value; f.closest('.fld').classList.toggle('needfill',need);
+    if(on&&g.inferred&&$('in_glp1_'+w).value==='Yes') $('glp1Hint_'+w).textContent=need?'From their medication list. Ask: is it for diabetes, or for the weight?':'From their medication list.'; }); }
+function glp1Read(){ var G={}, old=S.intake.glp1||{}; ['p','s'].forEach(function(w){ var g={on:$('in_glp1_'+w).value};
+    if((old[w]||{}).inferred&&g.on==='Yes') g.inferred=true;
     GLP1_F.forEach(function(f){ var v=$('in_glp1_'+w+'_'+f).value; g[f]=f==='cost'?(moneyNum(v)||0):String(v||'').trim(); }); G[w]=g; });
   S.intake.glp1=G; }
 /* From the suite's flat health keys (glp1On… / spGlp1On…). */
@@ -5800,7 +5806,7 @@ function bindInputs(){
   ['in_anpn','in_aweb','in_acard','in_abook'].forEach(function(id){ $(id).addEventListener('input',function(){ captureIntake(); }); });
   if($('goatSkip')) $('goatSkip').onclick=function(){ try{ localStorage.setItem('pp_goat_skip','1'); }catch(e){} agentSetupFold(); };
   $('setupBtn').onclick=openSetup; $('closeSetup').onclick=closeSetup;
-  ['p','s'].forEach(function(w){ $('in_glp1_'+w).addEventListener('change',function(){ if(this.value==='Yes'&&!$('in_glp1_'+w+'_drug').value) $('in_glp1_'+w+'_drug').value=glp1FromMeds(w); glp1Show(); }); });
+  ['p','s'].forEach(function(w){ $('in_glp1_'+w).addEventListener('change',function(){ if(this.value==='Yes'&&!$('in_glp1_'+w+'_drug').value) $('in_glp1_'+w+'_drug').value=glp1FromMeds(w); glp1Show(); glp1Need(); }); $('in_glp1_'+w+'_for').addEventListener('change',glp1Need); });
   if($('in_who_spouse')) $('in_who_spouse').addEventListener('change',glp1Show);
   $('newsBtn').onclick=openNews; $('newsClose').onclick=closeNews; $('newsScrim').onclick=closeNews;
   document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&$('newsPanel').classList.contains('open')) closeNews(); });
