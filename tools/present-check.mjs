@@ -28,7 +28,7 @@ const TEST = `(async function(){
   S.client.agent='Jesse Stamm'; S.agentPhone='555-0199'; S.agentEmail='';
   ['good','better','best'].forEach(function(t){ S.include[t]=true; }); autoPriceTiers(); compute(); goStep('quote'); await wait(300);
   var c=effCfg('best'); c.lb=c.lb||{}; c.lb.p={carrier:'americo',face:'50000'}; autoPriceTiers(); compute(); await wait(100);
-  ok(Array.prototype.map.call(document.querySelectorAll('#stepper button'),function(b){ return b.dataset.step; }).join()==='intake,quote,present,enroll','stepper order');
+  ok(Array.prototype.map.call(document.querySelectorAll('#stepper button'),function(b){ return b.dataset.step; }).join()==='call,intake,quote,present,enroll','stepper order (Discovery call first)');
   chooseTier('best'); var pb=document.querySelector('[data-act="present"]'); ok(!!pb,'Present button on the Quote step'); pb.click();
   var fr; for(var i=0;i<60;i++){ await wait(100); fr=document.getElementById('prFrame'); if(fr&&fr.contentDocument&&fr.contentDocument.querySelector('var.pp-ok')) break; }
   var pblob2=null; goStep('quote'); await wait(200); ok(!!document.querySelector('.bh [data-copypic="plans"]'),'Copy plans button on the Package builder');
