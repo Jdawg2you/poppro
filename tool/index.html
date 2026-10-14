@@ -625,6 +625,17 @@
   .wl-you{margin:18px 20px 0;padding-top:14px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}.wl-you b{font-family:var(--serif);color:var(--navy);font-size:17px;margin-right:6px}.wl-you i{font-style:normal}.wl-you i.needfill-sum{color:#17824a;font-weight:700}
   #agentSetup{padding:8px 20px 4px}
   #setupModal{z-index:2000}
+  /* Let's go: gold confetti and the one line, then the call (Jesse, 2026-10-14) */
+  .lg-wrap{position:fixed;inset:0;z-index:3000;pointer-events:none;overflow:hidden}
+  .lg-bit{position:absolute;top:-24px;border-radius:2px;animation:lgfall linear forwards}
+  @keyframes lgfall{0%{transform:translate3d(0,0,0) rotate(0)}100%{transform:translate3d(var(--dx),110vh,0) rotate(var(--r))}}
+  .lg-msg{position:fixed;left:50%;top:42%;transform:translate(-50%,-50%);z-index:3001;pointer-events:none;text-align:center;
+    background:#12213b;border:2px solid #c69a3c;border-radius:18px;padding:22px 34px;box-shadow:0 18px 50px rgba(0,0,0,.35);
+    animation:lgmsg 2.8s ease forwards;max-width:calc(100vw - 32px)}
+  .lg-msg b{display:block;font-family:var(--serif);color:var(--gold-brand,#c69a3c);font-size:34px;line-height:1.15}
+  .lg-msg span{display:block;color:#fff;font-size:18px;margin-top:8px}
+  @keyframes lgmsg{0%{opacity:0;transform:translate(-50%,-50%) scale(.7)}12%{opacity:1;transform:translate(-50%,-50%) scale(1.04)}20%{transform:translate(-50%,-50%) scale(1)}80%{opacity:1}100%{opacity:0}}
+  @media (prefers-reduced-motion:reduce){.lg-bit{display:none}.lg-msg{animation:lgmsgr 2.8s ease forwards}@keyframes lgmsgr{0%,85%{opacity:1}100%{opacity:0}}}
   /* Walk-through (Jesse, 2026-10-14): Save, then step 1 lights up with what to do there; Next walks the rest. */
   .wl-step[data-tour]{cursor:pointer;transition:opacity .2s,box-shadow .2s,border-color .2s}
   .wl-card.touring .wl-step{opacity:.45}
@@ -4368,13 +4379,21 @@ var TOUR=[null,
    'Then the health carriers: ManhattanLife, Cigna and LifeX.',
    'Never type a Social Security or bank number into the tool. Save with the 💾 tab when you&rsquo;re done; one file holds the call and the quote.']}];
 var tourAt=0;
-function goLabel(){ var c=(S.client||{}).pname; return inProgress()?'Carry on with '+String(c).trim().split(/\s+/)[0]+' →':'Start the call →'; }
 function showTour(i){ tourAt=i; var card=document.querySelector('#setupModal .wl-card'); card.classList.toggle('touring',i>0);
   document.querySelectorAll('#setupModal .wl-step').forEach(function(el){ el.classList.toggle('cur',+el.dataset.tour===i); });
   if(i>0){ var T=TOUR[i]; $('wlTip').innerHTML='<h3>'+i+' · '+T.t+'<small>STEP '+i+' OF 5</small></h3><ol>'+T.d.map(function(x){return '<li>'+x+'</li>';}).join('')+'</ol>';
-    $('wlGo').textContent=i<5?'Next: '+TOUR[i+1].t+' →':goLabel(); }
+    $('wlGo').textContent=i<5?'Next: '+TOUR[i+1].t+' →':'Let’s go! →'; }
   else $('wlGo').textContent='Save →';
   var b=document.querySelector('#setupModal .wl-body'); if(b) b.scrollTop=0; $('setupModal').scrollTop=0; }
+function letsGo(){
+  var gold=['#c69a3c','#e3c47a','#a8853a','#f2dc9b','#d4af37','#fff1c1'], w=document.createElement('div'); w.className='lg-wrap';
+  for(var i=0;i<160;i++){ var b=document.createElement('i'); b.className='lg-bit'; var sz=6+Math.random()*8;
+    b.style.cssText='left:'+(Math.random()*100)+'vw;width:'+sz+'px;height:'+(sz*(.4+Math.random()*.8))+'px;background:'+gold[i%gold.length]+
+      ';animation-duration:'+(1.8+Math.random()*1.8)+'s;animation-delay:'+(Math.random()*.6)+'s;--dx:'+(Math.random()*240-120)+'px;--r:'+(Math.random()*900-450)+'deg';
+    w.appendChild(b); }
+  var m=document.createElement('div'); m.className='lg-msg'; m.innerHTML='<b>Let&rsquo;s go!</b><span>Start building your client&rsquo;s Package of Protection</span>';
+  document.body.appendChild(w); document.body.appendChild(m);
+  setTimeout(function(){ w.remove(); m.remove(); },4200); }
 function finishSetup(){ var keep=inProgress(); closeSetup(); if(!keep) goStep('call'); }
 function openSetup(){ fillAgent(); $('setupModal').classList.add('open'); showTour(0); var b=document.querySelector('#setupModal .wl-body'); if(b) b.scrollTop=0; }
 function closeSetup(){ readAgent(); try{ localStorage.setItem('pp_welcome_v',WELCOME_V); }catch(e){} $('setupModal').classList.remove('open'); if(typeof goStep==='function') goStep(S.step||'call'); }
@@ -5630,7 +5649,7 @@ function bindInputs(){
   ['in_anpn','in_aweb','in_acard','in_abook'].forEach(function(id){ $(id).addEventListener('input',function(){ captureIntake(); }); });
   if($('goatSkip')) $('goatSkip').onclick=function(){ try{ localStorage.setItem('pp_goat_skip','1'); }catch(e){} agentSetupFold(); };
   $('setupBtn').onclick=openSetup; $('closeSetup').onclick=closeSetup;
-  $('wlGo').onclick=function(){ if(tourAt===0){ readAgent(); try{ localStorage.setItem('pp_welcome_v',WELCOME_V); }catch(e){} showTour(1); } else if(tourAt<5) showTour(tourAt+1); else finishSetup(); };
+  $('wlGo').onclick=function(){ if(tourAt===0){ readAgent(); try{ localStorage.setItem('pp_welcome_v',WELCOME_V); }catch(e){} showTour(1); } else if(tourAt<5) showTour(tourAt+1); else { finishSetup(); letsGo(); } };
   $('wlBack').onclick=function(){ showTour(Math.max(0,tourAt-1)); };
   $('wlSkip').onclick=finishSetup;
   document.querySelectorAll('#setupModal .wl-step[data-tour]').forEach(function(el){ el.onclick=function(){ showTour(+el.dataset.tour); }; });
