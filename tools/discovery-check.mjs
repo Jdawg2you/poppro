@@ -50,6 +50,10 @@ try {
       ok(r.host, 'the navigator knows it is inside POP Pro');
       ok(r.script === 'health', 'it opened straight into Health Discovery (' + r.script + ')');
       ok(r.hidden.length === 0, 'stand-alone controls hidden inside POP Pro; still showing: ' + r.hidden.join(', '));
+      const il = await inFrame(`(function(){ go('hs_qualify'); return {inputs:document.querySelectorAll('#script .iblank').length, open:document.getElementById('drawer').classList.contains('open'), tools:(function(){ var t=document.querySelector('.ptools'); return !t||getComputedStyle(t).display==='none'; })()}; })()`);
+      ok(il.inputs >= 4 && !il.open, 'fill-ins sit in the script and the profile slide-out starts closed: ' + JSON.stringify(il));
+      const il2 = await inFrame(`(function(){ pOpen(); closeDrawer(); go('hs_qualify'); return document.querySelectorAll('#script .iblank').length; })()`);
+      ok(il2 >= 4, 'fill-ins stay after opening and closing the slide-out (' + il2 + ')');
       /* nothing leaves the call before a POP Pro page has identified itself (call-init) */
       await pop.run(`(function(){ window.__got=0; window.addEventListener('message',function(e){ if(e.data&&e.data.live) window.__got++; }); return 1; })()`);
       await inFrame(`(function(){ window.__keep=HOST_ORIGIN; HOST_ORIGIN='*'; P.first='Leak'; pStore(); return 1; })()`); await sleep(800);
