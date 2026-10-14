@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>HealthFirst — Package of Protection Comparison Tool</title>
-<meta name="description" content="POP Pro builds a client's Package of Protection next to their ACA or current plan — true monthly cost, POP Score, what each plan pays on a real event, and a printable quote.">
-<meta property="og:title" content="POP Pro — Package of Protection Tool">
+<meta name="description" content="MyPopPro builds a client's Package of Protection next to their ACA or current plan — true monthly cost, POP Score, what each plan pays on a real event, and a printable quote.">
+<meta property="og:title" content="MyPopPro — Package of Protection Tool">
 <meta property="og:description" content="Build the Package of Protection side by side with the ACA: true cost, POP Score and a client-ready quote.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://mypoppro.com/tool/">
@@ -1433,7 +1433,7 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
 <!-- Agent setup lives behind the Setup button at the top (Jesse, 2026-10-14): it is set once, not per client,
      so it does not belong in the middle of every intake. Same input ids, so fillIntake/readIntake are unchanged. -->
 <div class="modal-backdrop" id="setupModal"><div class="modal wl-card" style="max-width:1040px">
-  <div class="wl-head"><button class="btn-ghost" id="closeSetup" style="float:right">Close</button><h2 id="wlTitle">Welcome to POP Pro</h2>
+  <div class="wl-head"><button class="btn-ghost" id="closeSetup" style="float:right">Close</button><h2 id="wlTitle">Welcome to MyPopPro</h2>
     <p>Everything for a health client in one place: the call, the quote, the presentation and the application. Work left to right.</p></div>
   <div class="wl-body">
   <div class="wl-flow">
@@ -1482,7 +1482,7 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
 </div></div>
 <div class="modal-backdrop" id="howModal">
   <div class="modal">
-    <div class="modal-head"><b>How to use POP Pro</b><span>Intake → Quote → Present → Enroll</span><button class="btn-ghost" id="closeHow">Done</button></div>
+    <div class="modal-head"><b>How to use MyPopPro</b><span>Intake → Quote → Present → Enroll</span><button class="btn-ghost" id="closeHow">Done</button></div>
     <div class="modal-body howbody">
       <h4>Once · Your agent information</h4>
       <ul>
@@ -1491,7 +1491,7 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
       </ul>
       <h4>1 · Intake: two ways to fill it in</h4>
       <ul>
-        <li><b>Run the call in the Script Navigator.</b> Click <b>Open the Script Navigator</b>, choose <b>Health Discovery</b>, follow it card by card, then <b>Push client to MyPOP Pro</b>. Who's covered, medications, conditions, doctors, current plan, income, budget and call notes all land here. A saved Navigator profile file loads the same way.</li>
+        <li><b>Run the call in the Script Navigator.</b> Click <b>Open the Script Navigator</b>, choose <b>Health Discovery</b>, follow it card by card, then <b>Push client to MyPopPro</b>. Who's covered, medications, conditions, doctors, current plan, income, budget and call notes all land here. A saved Navigator profile file loads the same way.</li>
         <li><b>Or use this tool on its own</b>: work down the sections from top to bottom.</li>
         <li><b>Shortcuts as you type:</b> date of birth <i>63078</i> becomes 06/30/1978 and works out the age, height <i>52</i> becomes 5′2″, and money tidies to $1,234.00.</li>
         <li><b>Medications:</b> type any name, brand or generic. Both names show, and each one suggests a condition for you to confirm.</li>
@@ -1499,7 +1499,7 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
       </ul>
       <h4>2 · Quote</h4>
       <ul>
-        <li>Click <b>Build Quote</b>. POP Pro builds three packages. You see them as <b>Good / Better / Best</b>; the client sees <b>Essential / Complete / Comprehensive</b>.</li>
+        <li>Click <b>Build Quote</b>. MyPopPro builds three packages. You see them as <b>Good / Better / Best</b>; the client sees <b>Essential / Complete / Comprehensive</b>.</li>
         <li><b>Package builder:</b> open a row to change its options, add or remove products, or type over a price. <b>ⓘ</b> slides out that product's benefits for their state, with a link to the full brochure. ↺ <b>Reload our recommendation</b> starts over. If a row can't be priced, it tells you which option to change.</li>
         <li><b>Living benefits:</b> Mutual of Omaha (ages 18–60) or Americo (20–65), from $25K to $250K over 20 years. Above 60 it switches to Americo for you. For any other carrier, choose <b>Other</b> and type the carrier, amount and monthly price.</li>
         <li><b>Mark their plan:</b> click <b>Choose this plan</b> on the package they're leaning toward. It carries into Present, Enroll, the brochures and the emails.</li>
@@ -4358,7 +4358,7 @@ var TOUR=[null,
  {t:'Intake',d:['Check what the call filled in: who is covered, doctors, medications, current plan, income and budget.',
    'Fill in anything the call missed. Shortcuts: a date of birth typed as 63078 becomes 06/30/1978 and works out the age.',
    'Click <b>Build Quote</b>.']},
- {t:'Quote',d:['POP Pro builds three packages. You see Good / Better / Best; the client sees Essential / Complete / Comprehensive.',
+ {t:'Quote',d:['MyPopPro builds three packages. You see Good / Better / Best; the client sees Essential / Complete / Comprehensive.',
    'Open a row to change a level or add a product; <b>ⓘ</b> shows that product&rsquo;s benefits for their state. Click <b>Choose this plan</b> on the one they lean toward.',
    'Pick an example (a hospital stay, a broken arm) to show what each plan pays. Not today? <b>Send the quote</b> is at the bottom.']},
  {t:'Present',d:['Click <b>▶ Present</b>. The script plays screen by screen with their name, numbers, doctors and medications filled in.',
@@ -4405,7 +4405,7 @@ function loadFile(file){
     try{ var obj=JSON.parse(rd.result), nav=isNavProfile(obj), where=loadQuoteObject(obj);
       fill(); compute(); goStep(where); autosave();
       alert((nav?'Script Navigator profile loaded':'Quote loaded')+(S.client&&S.client.pname?': '+S.client.pname:'')+'. '+(where==='intake'?'Check the intake, then build the packages.':'Edit and Save again to keep a new version.'));
-    }catch(e){ alert('Could not read that file — is it a POP Pro quote or a Script Navigator profile (.json)?'); }
+    }catch(e){ alert('Could not read that file — is it a MyPopPro quote or a Script Navigator profile (.json)?'); }
   };
   rd.readAsText(file);
 }
@@ -4764,7 +4764,7 @@ function enrollPeople(){ var host=$('enPeople'); if(!host) return; var C=S.clien
   if(w.spouse||C.sname) h+=person('s',(C.sname||'Spouse')+' — spouse',true);
   (I.kids||[]).forEach(function(k,i){ if(k&&(k.n||k.dob||k.age)) h+=person('k'+i,(k.n||('Child '+(i+1)))+' — child',false); });
   h+='<div class="en-prof"><button type="button" class="btn-gold" data-enprof="save">Save profile</button><button type="button" class="btn-ghost" data-enprof="print">Print profile</button></div>';
-  h+='<p class="note" style="margin:10px 0 0">SSN and bank details never go in POP Pro — enter them directly on the carrier’s application. The mother’s maiden name (or code word) saves with the quote.</p>';
+  h+='<p class="note" style="margin:10px 0 0">SSN and bank details never go in MyPopPro — enter them directly on the carrier’s application. The mother’s maiden name (or code word) saves with the quote.</p>';
   host.innerHTML=h;
   host.querySelectorAll('[data-cpfrom]').forEach(function(b){ b.onclick=function(e){ e.preventDefault(); var el=b.previousElementSibling; if(!el) return; try{ navigator.clipboard.writeText(String(el.value||'').trim()); b.textContent='copied'; }catch(x){} }; });
   host.querySelectorAll('[data-enw]').forEach(function(inp){ if(inp.tagName==='INPUT') inp.onkeydown=function(e){ if(e.key==='Enter'){ e.preventDefault(); inp.blur(); } };
@@ -5434,7 +5434,7 @@ function presentWire(doc,t){ if(!doc||!doc.body) return 0; var T=presentScriptTo
     Array.prototype.forEach.call(ml.querySelectorAll('[data-lbrm]'),function(b){ b.onclick=function(){ var w=b.getAttribute('data-lbrm'); pk.dropped=pk.dropped||[]; if(pk.dropped.indexOf('lb'+w)<0) pk.dropped.push('lb'+w); redo(); }; }); }
   /* notes: the same S.intake.notes the Intake step and the navigator push write */
   var mn=doc.querySelector('[data-mount="notes"]'); if(mn){ var ta=mn.querySelector('textarea');
-    if(!ta){ mn.classList.add('pp-mount'); var lb=doc.createElement('div'); lb.className='pp-nlab'; lb.innerHTML='<b>Notes</b> (the same notes as the Script Navigator profile and POP Pro Intake — put anything important here)';
+    if(!ta){ mn.classList.add('pp-mount'); var lb=doc.createElement('div'); lb.className='pp-nlab'; lb.innerHTML='<b>Notes</b> (the same notes as the Script Navigator profile and MyPopPro Intake — put anything important here)';
       ta=doc.createElement('textarea'); ta.placeholder='Draft-date requests, a condition they mention, the code word from the bridge question…';
       ta.oninput=function(){ S.intake.notes=ta.value; if($('in_notes')) $('in_notes').value=ta.value; autosave(); }; mn.parentNode.appendChild(lb); mn.parentNode.appendChild(ta); }
     if(doc.activeElement!==ta) ta.value=S.intake.notes||''; }
@@ -6058,7 +6058,7 @@ function renderBuilder(){
   var presentBtn='<button type="button" data-act="present" class="presentbtn" style="margin-left:auto">'+presentBtnLabel()+'</button>';
   var pb2=$('presentBtn2'); if(pb2) pb2.innerHTML=presentBtnLabel();
   var lineupBar='<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 12px"><span style="font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--muted);text-transform:uppercase">Lineup</span>'
-    +'<button type="button" data-act="reload" title="Put all three packages back to POP Pro’s recommendation" style="font:inherit;font-size:13px;font-weight:700;border-radius:999px;padding:7px 14px;cursor:pointer;border:1.5px solid var(--gold);background:#fffdf7;color:#8a6a1f;margin-right:6px">↺ Reload our recommendation</button>'
+    +'<button type="button" data-act="reload" title="Put all three packages back to MyPopPro’s recommendation" style="font:inherit;font-size:13px;font-weight:700;border-radius:999px;padding:7px 14px;cursor:pointer;border:1.5px solid var(--gold);background:#fffdf7;color:#8a6a1f;margin-right:6px">↺ Reload our recommendation</button>'
     +LINEUPS.map(function(L){ var on=(S.lineup||'mh')===L[0]; return '<button type="button" data-lineup="'+L[0]+'" style="font:inherit;font-size:13px;font-weight:600;border-radius:999px;padding:7px 14px;cursor:pointer;border:1px solid '+(on?'var(--navy)':'#d6cdb4')+';background:'+(on?'var(--navy)':'#fff')+';color:'+(on?'#fff':'var(--ink)')+'">'+L[1]+'</button>'; }).join('')+'</div>';
   lineupBar=lineupBar.replace(/<\/div>$/,presentBtn+'</div>');
   var html=(PR_STATE==='failed'?'<div class="hidein-client noprint" style="margin:0 0 10px;padding:10px 14px;border:1px solid #f1b4ad;background:#fdecea;color:#b42318;border-radius:10px;font-weight:700">The full ManhattanLife rate file didn’t load, so some products (Out-of-Pocket, dental, Cancer/Heart/Stroke) can’t be priced in many states. <a href="#" onclick="location.reload();return false" style="color:#b42318">Refresh the page</a> before you quote.</div>':'')
