@@ -50,6 +50,13 @@ try {
       ok(r.host, 'the navigator knows it is inside POP Pro');
       ok(r.script === 'health', 'it opened straight into Health Discovery (' + r.script + ')');
       ok(r.hidden.length === 0, 'stand-alone controls hidden inside POP Pro; still showing: ' + r.hidden.join(', '));
+      /* nothing leaves the call before a POP Pro page has identified itself (call-init) */
+      await pop.run(`(function(){ window.__got=0; window.addEventListener('message',function(e){ if(e.data&&e.data.live) window.__got++; }); return 1; })()`);
+      await inFrame(`(function(){ window.__keep=HOST_ORIGIN; HOST_ORIGIN='*'; P.first='Leak'; pStore(); return 1; })()`); await sleep(800);
+      const leaked = await pop.run('window.__got'); await inFrame(`(function(){ HOST_ORIGIN=window.__keep; return 1; })()`);
+      ok(leaked === 0, 'no client data is sent before POP Pro identifies itself (' + leaked + ' messages)');
+      await inFrame(`(function(){ P.first='Sent'; pStore(); return 1; })()`); await sleep(800);
+      ok(await pop.run('window.__got') > 0, 'and once it has, answers do flow (positive control)');
     }
     if (MODE === 'init') {
       const r = await inFrame(`({first:P.first, lead:P.has_assets, keep:P.keep_docs, wm:P.why_matters, state:P.state, agent:A.a_name, agency:A.a_agency})`);
