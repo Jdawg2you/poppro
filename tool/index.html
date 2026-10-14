@@ -619,7 +619,11 @@
     font-size:12.5px;font-weight:700;line-height:20px;padding:8px 14px;border-radius:9px;text-decoration:none}
   .goatskip{display:block;margin-top:9px;background:none;border:0;padding:0;cursor:pointer;
     font:inherit;font-size:11.5px;color:#2c4a7c;text-decoration:underline}
-  .agentsetup:not([open]) .goatgrab{display:none}.agentsetup:not([open]){margin-bottom:10px}
+  #agentSetup.goat-skipped .goatgrab{display:none}
+  .modal-head #agentSetupState{font-style:normal;margin-left:6px}.modal-head #agentSetupState.needfill-sum{color:#7fe0a6}
+  .setupbtn em{font-style:normal;font-size:11px;font-weight:800;margin-left:6px;background:#22a05a;color:#fff;border-radius:999px;padding:1px 7px}.setupbtn em:empty{display:none}
+  .setupbtn.need{border-color:#22a05a;animation:agglow 1.8s ease-in-out infinite}
+  @media (prefers-reduced-motion:reduce){.setupbtn.need{animation:none}}
   .afc-picbtn{position:absolute;right:0;top:16px}@media(max-width:820px){.afc-picbtn{position:static;margin:0 0 8px}}
   .presentbtn{font:inherit;font-size:14px;font-weight:800;border-radius:999px;padding:9px 18px;cursor:pointer;border:none;background:#2f7d4a;color:#fff}.presentbtn:hover{background:#286b40}.presentbtn i{font-family:var(--serif);font-weight:700}
   .picbtn.sendbtn{display:inline-flex;align-items:center;gap:7px;font-size:13.5px;padding:9px 14px;margin:0 7px 0 0;text-decoration:none}.picbtn.sendbtn svg{background:#fff;border-radius:4px;padding:2px;box-sizing:content-box}
@@ -911,6 +915,7 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
         <button data-view="agent" class="on">Agent Setup</button>
         <button data-view="client">Client View</button>
       </div>
+      <button type="button" class="btn-ghost setupbtn hidein-client" id="setupBtn" title="Your agency, name, phone, email, NPN and links">⚙ Setup<em id="setupNeed"></em></button>
       <button class="btn-ghost" id="newBtn">New</button>
       <button class="btn-ghost" id="loadBtn">Load Quote</button>
       <button class="btn-gold" id="saveBtn">Save Quote</button>
@@ -968,31 +973,6 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
       <label class="kidcount" id="kidCountWrap" style="display:none">How many? <select id="in_kidcount"><option value="">—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option></select></label>
     </div>
 
-    <details id="agentSetup" class="agentsetup">
-    <summary class="intake-sec">Agent Information <span class="secnote">— set once; appears on every page</span> <span class="secnote" id="agentSetupState"></span></summary>
-    <div class="intakegrid agentgrid">
-      <div class="fld"><label>Agency</label><input id="in_agency" placeholder="HealthFirst"></div>
-      <div class="fld"><label>Agent</label><input id="in_agent" placeholder="Your name"></div>
-      <div class="fld"><label>Agent phone</label><input id="in_aphone" placeholder="(000) 000-0000"></div>
-      <div class="fld"><label>Agent email</label><input id="in_aemail" placeholder="you@agency.com"></div>
-      <div class="fld"><label>NPN <small>in your signature</small></label><input id="in_anpn" inputmode="numeric" placeholder="National Producer Number"></div>
-      <div class="fld"><label>Website <small>in emails + text</small></label><input id="in_aweb" placeholder="yourwebsite.com"></div>
-      <div class="fld"><label>Digital business card <small>in emails + text</small></label><input id="in_acard" placeholder="yourcard.com/you"></div>
-      <div class="fld"><label>Booking link <small>in emails + text</small></label><input id="in_abook" placeholder="calendly.com/you"></div>
-    </div>
-    <div class="goatgrab" id="goatGrab">
-      <b>Don&rsquo;t have the last three yet? All three are free.</b> <span class="freetag">NO COST</span>
-      <p>One GOAT account gives you an agent website, a digital business card, and a booking calendar clients can use to book themselves.</p>
-      <ol class="gsteps">
-        <li>Create your free account</li>
-        <li>Fill in your agent profile</li>
-        <li>Open <b>Settings</b></li>
-        <li>Switch on your <b>website</b>, <b>digital business card</b> and <b>calendar</b>, then paste the three links here</li>
-      </ol>
-      <a class="goatbtn" href="https://goatleads.com/registration/new?affiliate_id=66c4aa379e0123651ad2f0e6" target="_blank" rel="noopener">Create my free GOAT account &rarr;</a>
-      <button type="button" class="goatskip" id="goatSkip">I&rsquo;m not using GOAT &mdash; fold this away anyway</button>
-    </div>
-    </details>
 
     <div class="intake-sec" id="sec_client">Client Information</div>
     <div class="fld" style="margin-bottom:8px"><label>What matters most — their words <small>short · the one thing the plan has to do · read back to them on the presentation</small></label><input id="in_whymatters" placeholder="e.g. keep Dr. Patel · never get wiped out by a hospital bill"></div>
@@ -1412,13 +1392,42 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
 <!-- PLAN LIBRARY MODAL -->
 <aside class="bendrawer hidein-client" id="benDrawer" aria-label="Plan benefits"></aside>
 <div class="modal-backdrop" id="nmhModal"><div class="modal" style="max-width:600px"><div class="modal-head"><b id="nmhTitle">Great choice</b><button class="btn-ghost" id="nmhClose">Got it</button></div><div class="modal-body" id="nmhBody" style="font-size:14.5px;line-height:1.55"></div></div></div>
+<!-- Agent setup lives behind the Setup button at the top (Jesse, 2026-10-14): it is set once, not per client,
+     so it does not belong in the middle of every intake. Same input ids, so fillIntake/readIntake are unchanged. -->
+<div class="modal-backdrop" id="setupModal"><div class="modal" style="max-width:980px">
+  <div class="modal-head"><b>Agent setup</b><span>Set once &middot; appears on every page, email and text <i id="agentSetupState"></i></span><button class="btn-ghost" id="closeSetup">Done</button></div>
+  <div class="modal-body agentsetup" id="agentSetup">
+    <div class="intakegrid agentgrid">
+      <div class="fld"><label>Agency</label><input id="in_agency" placeholder="HealthFirst"></div>
+      <div class="fld"><label>Agent</label><input id="in_agent" placeholder="Your name"></div>
+      <div class="fld"><label>Agent phone</label><input id="in_aphone" placeholder="(000) 000-0000"></div>
+      <div class="fld"><label>Agent email</label><input id="in_aemail" placeholder="you@agency.com"></div>
+      <div class="fld"><label>NPN <small>in your signature</small></label><input id="in_anpn" inputmode="numeric" placeholder="National Producer Number"></div>
+      <div class="fld"><label>Website <small>in emails + text</small></label><input id="in_aweb" placeholder="yourwebsite.com"></div>
+      <div class="fld"><label>Digital business card <small>in emails + text</small></label><input id="in_acard" placeholder="yourcard.com/you"></div>
+      <div class="fld"><label>Booking link <small>in emails + text</small></label><input id="in_abook" placeholder="calendly.com/you"></div>
+    </div>
+    <div class="goatgrab" id="goatGrab">
+      <b>Don&rsquo;t have the last three yet? All three are free.</b> <span class="freetag">NO COST</span>
+      <p>One GOAT account gives you an agent website, a digital business card, and a booking calendar clients can use to book themselves.</p>
+      <ol class="gsteps">
+        <li>Create your free account</li>
+        <li>Fill in your agent profile</li>
+        <li>Open <b>Settings</b></li>
+        <li>Switch on your <b>website</b>, <b>digital business card</b> and <b>calendar</b>, then paste the three links here</li>
+      </ol>
+      <a class="goatbtn" href="https://goatleads.com/registration/new?affiliate_id=66c4aa379e0123651ad2f0e6" target="_blank" rel="noopener">Create my free GOAT account &rarr;</a>
+      <button type="button" class="goatskip" id="goatSkip">I&rsquo;m not using GOAT &mdash; stop asking for these three links</button>
+    </div>
+  </div>
+</div></div>
 <div class="modal-backdrop" id="howModal">
   <div class="modal">
     <div class="modal-head"><b>How to use POP Pro</b><span>Intake → Quote → Present → Enroll</span><button class="btn-ghost" id="closeHow">Done</button></div>
     <div class="modal-body howbody">
       <h4>Once · Your agent information</h4>
       <ul>
-        <li>Open <b>Agent Information</b> on the Intake and fill in your <b>agency, name, phone and email</b>. The box folds away once all four are in, and opens again if one goes missing.</li>
+        <li>Click <b>⚙ Setup</b> at the top and fill in your <b>agency, name, phone, email, NPN and links</b>. Set it once; the button glows green and counts anything still missing.</li>
         <li><b>Website</b> and <b>booking link</b> are optional but worth it: they go into the client emails and the text. Your <b>NPN</b> is kept for you only and never goes into notes.</li>
       </ul>
       <h4>1 · Intake: two ways to fill it in</h4>
@@ -4270,8 +4279,15 @@ function agentSetupMissing(){
 var AGENT_BOXES=[['in_agency','agency'],['in_agent','your name'],['in_aphone','phone'],['in_aemail','email'],['in_anpn','NPN'],['in_aweb','website'],['in_acard','digital business card'],['in_abook','booking link']];
 function agentGlow(){ var empty=[]; AGENT_BOXES.forEach(function(b){ var el=$(b[0]); if(!el) return; var f=el.closest('.fld'), e=!String(el.value||'').trim(); if(f) f.classList.toggle('needfill',e); if(e) empty.push(b[1]); });
   var st=$('agentSetupState'); if(st){ st.textContent=empty.length?'· fill in: '+empty.join(', '):'· complete'; st.classList.toggle('needfill-sum',!!empty.length); } return empty; }
-function agentSetupFold(force){ var d=$('agentSetup'); if(!d) return; var miss=agentSetupMissing(); if(miss.length) d.open=true; else if(force) d.open=false; agentGlow(); }
-document.addEventListener('input',function(e){ if(e.target&&e.target.closest&&e.target.closest('#agentSetup')) agentGlow(); });
+/* No fold any more: the box lives in the Setup window. While anything is missing, the Setup button glows and counts it. */
+function agentSetupFold(){ var miss=agentSetupMissing(), b=$('setupBtn'), n=$('setupNeed'); if(b){ b.classList.toggle('need',!!miss.length); b.title=miss.length?'Still to fill in: '+miss.join(', '):'Your agency, name, phone, email, NPN and links'; } if(n) n.textContent=miss.length?String(miss.length):'';
+  var d=$('agentSetup'); if(d) d.classList.toggle('goat-skipped',goatSkipped()); agentGlow(); }
+function fillAgent(){ $('in_agency').value=(S.agency&&S.agency!=='HealthFirst')?S.agency:(S.agency||''); $('in_agent').value=(S.client||{}).agent||''; $('in_aphone').value=S.agentPhone||''; $('in_aemail').value=S.agentEmail||''; $('in_anpn').value=S.agentNPN||''; $('in_aweb').value=S.agentWebsite||''; $('in_acard').value=S.agentCard||''; $('in_abook').value=S.agentBooking||''; agentSetupFold(); }
+/* Only the agent fields - captureIntake() would also read the client boxes, which are stale off the Intake step. */
+function readAgent(){ S.agency=($('in_agency').value||'').trim()||'HealthFirst'; S.client=S.client||{}; S.client.agent=$('in_agent').value; S.agentPhone=$('in_aphone').value; S.agentEmail=$('in_aemail').value; S.agentNPN=($('in_anpn').value||'').trim(); S.agentWebsite=($('in_aweb').value||'').trim(); S.agentCard=($('in_acard').value||'').trim(); S.agentBooking=($('in_abook').value||'').trim(); agentSetupFold(); autosave(); }
+function openSetup(){ fillAgent(); $('setupModal').classList.add('open'); var f=document.querySelector('#agentSetup .fld.needfill input')||$('in_agency'); setTimeout(function(){ try{ f.focus(); }catch(e){} },30); }
+function closeSetup(){ readAgent(); $('setupModal').classList.remove('open'); if(typeof goStep==='function') goStep(S.step||'call'); }
+document.addEventListener('input',function(e){ if(e.target&&e.target.closest&&e.target.closest('#agentSetup')) readAgent(); });
 function keepAgent(ag){
   if(ag.agency && (!S.agency || S.agency==='HealthFirst')) S.agency=ag.agency;
   S.client=S.client||{}; if(ag.agent && !S.client.agent) S.client.agent=ag.agent;
@@ -4375,7 +4391,7 @@ function fillIntake(){
   if(typeof renderKids==='function') setTimeout(renderKids,0);
   var I=S.intake||{}; var w=I.who||{app:true};
   $('in_who_app').checked=w.app!==false; $('in_who_spouse').checked=!!w.spouse; $('in_who_kids').checked=!!w.kids;
-  $('in_agency').value=(S.agency&&S.agency!=='HealthFirst')?S.agency:(S.agency||''); $('in_aphone').value=S.agentPhone||''; $('in_aemail').value=S.agentEmail||''; $('in_anpn').value=S.agentNPN||''; $('in_aweb').value=S.agentWebsite||''; $('in_acard').value=S.agentCard||''; $('in_abook').value=S.agentBooking||''; agentSetupFold(true);
+  $('in_agency').value=(S.agency&&S.agency!=='HealthFirst')?S.agency:(S.agency||''); $('in_aphone').value=S.agentPhone||''; $('in_aemail').value=S.agentEmail||''; $('in_anpn').value=S.agentNPN||''; $('in_aweb').value=S.agentWebsite||''; $('in_acard').value=S.agentCard||''; $('in_abook').value=S.agentBooking||''; agentSetupFold();
   $('in_pname').value=S.client.pname||''; $('in_sname').value=S.client.sname||''; $('in_agent').value=S.client.agent||'';
   $('in_state').value=S.client.state||''; $('in_zip').value=S.client.zip||''; $('in_page').value=S.client.page||''; $('in_sage').value=S.client.sage||''; $('in_date').value=S.client.date||''; $('in_sdob').value=S.client.sdob||''; $('in_address').value=S.client.address||'';
   $('in_phone').value=I.phone||''; $('in_email').value=I.email||'';
@@ -5521,7 +5537,11 @@ function bindInputs(){
   $('in_aphone').addEventListener('input',function(){ this.value=fmtPhone(this.value); markValid(this,phoneOK(this.value)); captureIntake(); });
   $('in_aemail').addEventListener('input',function(){ markValid(this,emailOK(this.value)); captureIntake(); });
   ['in_anpn','in_aweb','in_acard','in_abook'].forEach(function(id){ $(id).addEventListener('input',function(){ captureIntake(); }); });
-  if($('goatSkip')) $('goatSkip').onclick=function(){ try{ localStorage.setItem('pp_goat_skip','1'); }catch(e){} agentSetupFold(true); };
+  if($('goatSkip')) $('goatSkip').onclick=function(){ try{ localStorage.setItem('pp_goat_skip','1'); }catch(e){} agentSetupFold(); };
+  $('setupBtn').onclick=openSetup; $('closeSetup').onclick=closeSetup;
+  $('setupModal').addEventListener('click',function(e){ if(e.target===$('setupModal')) closeSetup(); });
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&$('setupModal').classList.contains('open')) closeSetup(); });
+  agentSetupFold();
   $('c_date').addEventListener('input',function(){ this.value=fmtDate(this.value); markValid(this,dateOK(this.value)); compute(); });
   $('in_priority').addEventListener('change',function(){ readIntake(); autosave(); });
   medFdaLoad();

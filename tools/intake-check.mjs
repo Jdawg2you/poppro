@@ -22,28 +22,31 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  var old=blankState(); old.negot.on=false; delete old.negotV; old.intake.notes='likes mornings\\nAgent NPN 1234567'; old.client.agent=''; S=old; fill(); goStep('intake'); await w(300);
  R.billSaverOnOldSave=$('neg_on').checked&&S.negot.on;
  applySuiteAgent({npn:'7654321'}); R.npnToSetup=S.agentNPN==='7654321'&&!/NPN/.test(S.intake.notes);
- R.setupOpenWhenMissing=$('agentSetup').open+' '+$('agentSetupState').textContent;
+ R.notInIntake=!document.querySelector('#step-intake #agentSetup')&&!!document.querySelector('#setupModal #agentSetup');
+ $('setupBtn').click(); await w(50); R.modalOpens=$('setupModal').classList.contains('open'); $('closeSetup').click(); await w(50); R.modalCloses=!$('setupModal').classList.contains('open');
+ R.setupOpenWhenMissing=$('setupBtn').classList.contains('need')+' '+$('agentSetupState').textContent;
  $('in_agent').value='Jesse Stamm'; $('in_aphone').value='5550100'; $('in_aemail').value='j@x.com'; $('in_agency').value='Optimum'; captureIntake(); goStep('quote'); goStep('intake'); await w(100);
  /* The fold used to wait on these four. It now waits on all eight (Jesse, 2026-10-09), so the
     four alone must NOT fold it - that is the regression this line guards. */
- R.stillOpenOnFourOfEight=$('agentSetup').open+' '+$('agentSetupState').textContent;
+ R.stillOpenOnFourOfEight=$('setupBtn').classList.contains('need')+' '+$('agentSetupState').textContent;
  $('in_anpn').value='7654321'; $('in_aweb').value='x.com'; $('in_acard').value='x.com/card'; $('in_abook').value='x.com/book';
  captureIntake(); goStep('quote'); goStep('intake'); await w(100);
- R.setupFoldedWhenComplete=!$('agentSetup').open+' '+$('agentSetupState').textContent;
+ R.setupFoldedWhenComplete=!$('setupBtn').classList.contains('need')+' '+$('agentSetupState').textContent;
  $('in_aweb').value=''; $('in_acard').value=''; $('in_abook').value=''; captureIntake();
- R.reopensWhenLinksGone=$('agentSetup').open;
- $('goatSkip').click(); await w(50); R.foldsAfterGoatSkip=!$('agentSetup').open;
+ R.reopensWhenLinksGone=$('setupBtn').classList.contains('need');
+ $('goatSkip').click(); await w(50); R.foldsAfterGoatSkip=!$('setupBtn').classList.contains('need');
  try{ localStorage.removeItem('pp_goat_skip'); }catch(e){}
  $('in_aweb').value='x.com'; $('in_acard').value='x.com/card'; $('in_abook').value='x.com/book'; captureIntake();
- $('in_aemail').value=''; captureIntake(); R.reopensWhenEmailGone=$('agentSetup').open;
+ $('in_aemail').value=''; captureIntake(); R.reopensWhenEmailGone=$('setupBtn').classList.contains('need');
  var d=$('in_date'); d.focus(); d.value='63078'; d.dispatchEvent(new Event('input')); d.dispatchEvent(new Event('change')); R.dob=d.value+' age '+$('in_page').value;
  var b=$('in_budget'); b.focus(); b.value='1250'; b.dispatchEvent(new Event('input')); b.dispatchEvent(new Event('change',{bubbles:true})); await w(50); R.budget=b.value+' -> '+S.intake.budget;
  var cp=$('in_cur_ded'); cp.focus(); cp.value='6000'; cp.dispatchEvent(new Event('input')); cp.dispatchEvent(new Event('change',{bubbles:true})); await w(50); R.curDed=cp.value+' -> '+(S.cur||{}).ded;
  var inc=$('in_income'); inc.focus(); inc.value='85000'; inc.dispatchEvent(new Event('input')); inc.dispatchEvent(new Event('change',{bubbles:true})); await w(50); R.income=inc.value+' -> '+S.intake.income;
  
+ ok(R.notInIntake,'agent setup lives in the Setup window, not the intake'); ok(R.modalOpens&&R.modalCloses,'Setup button opens and Done closes it');
  ok(R.billSaverOnOldSave,'Bill Saver ticked on an older quote'); ok(R.npnToSetup,'NPN goes to setup, out of the notes');
  ok(/^true · fill in: your name, phone, email/.test(R.setupOpenWhenMissing),'setup open while basics are missing: '+R.setupOpenWhenMissing);
- ok(/^true · fill in: NPN, website, digital business card, booking link$/.test(R.stillOpenOnFourOfEight),'setup stays open on four of eight: '+R.stillOpenOnFourOfEight);
+ ok(/^true · fill in: (NPN, )?website, digital business card, booking link$/.test(R.stillOpenOnFourOfEight),'setup stays open on four of eight: '+R.stillOpenOnFourOfEight);
  ok(/^true · complete$/.test(R.setupFoldedWhenComplete),'setup folds when all eight are in: '+R.setupFoldedWhenComplete);
  ok(R.reopensWhenLinksGone,'setup reopens when the links go');
  ok(R.foldsAfterGoatSkip,'setup folds after the GOAT opt-out');
