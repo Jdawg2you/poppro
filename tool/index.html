@@ -636,7 +636,10 @@
   .rv-warn div{margin-top:8px;font-size:13.5px;color:#8a3b12;background:#fff1ea;border:1px solid #f0c9b9;border-radius:8px;padding:7px 10px}
   .rv-ticks .rv-row{display:flex;gap:9px;align-items:flex-start;padding:7px 0;border-top:1px dotted var(--line);font-size:13.5px;color:var(--navy);font-weight:600;cursor:pointer}
   .rv-ticks .rv-row:first-of-type{border-top:0}.rv-ticks .rv-row input{width:18px;height:18px;margin-top:1px}.rv-ticks .rv-row.on{color:#17824a}
-  .rv-ticks small{display:block;font-weight:500;font-size:12px;margin-top:2px}.rv-ticks small a{color:#2c4a7c}
+  .rv-ticks small{display:block;font-weight:500;font-size:12px;margin-top:2px}.rv-ticks em{font-style:normal;font-weight:600;font-size:11.5px;color:var(--muted)}
+  .rv-ticks .rv-row.cur{border:2px solid #22a05a;border-radius:10px;background:#eef9f1;padding:8px 9px;margin:4px -4px;box-shadow:0 0 0 3px rgba(34,160,90,.15)}
+  .rv-ticks .rv-row.cur+.rv-row{border-top:0}
+  .rv-acts{display:flex!important;flex-wrap:wrap;gap:5px;margin-top:5px!important}.rv-acts a{display:inline-block;border:1px solid #c9d3e6;background:#fff;border-radius:999px;padding:2px 9px;color:#1e3a6a;text-decoration:none;font-weight:700;font-size:11.5px}.rv-acts a:hover{background:#eef3fb}
   .pr-rail .rv-a{display:block;margin-top:6px;font-size:13px;font-weight:700;color:var(--navy)}.rv-miss{display:block;font-size:12.5px;color:#b42318;margin-top:6px}
   .rv-next{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-top:16px;padding:12px 14px;border:1.5px solid #c69a3c;border-radius:12px;background:#fffaf0}
   .rv-next b{display:block;color:var(--navy);font-size:14.5px}.rv-next span{display:block;font-size:13px;color:var(--muted);margin-top:2px;max-width:640px}
@@ -4465,12 +4468,20 @@ var REVIEW_PAGES=[
  {t:'If they elected below',sc:'tierdown',when:'below'},
  {t:'Close',sc:'close'},
  {t:'Coaching notes',sc:'notes'}];
-/* The four on-call registrations; links are the ones on the client resource page. */
+/* The four on-call registrations; links are the ones on the client resource page. Each row: open it, text it to the
+   client (Messages opens with a short note and the link written), or copy the link (Jesse, 2026-10-16). A text can't
+   attach a contact card, so CareGuide's text carries the number plus a link to a .vcf - tapping that on a phone opens
+   "Add Contact" filled in. The .vcf is served from the live site, so that link works once this ships. */
+var CG_VCF='https://mypoppro.com/tool/careguide.vcf';
 var REVIEW_TICKS=[
- {k:'portal',t:'Portal registered + ID card saved',a:'Open the portal',href:'https://clients.manhattanlife.com'},
- {k:'ecg',t:'EasyCare2go registered',a:'Register (Group ID mlins2023)',href:'https://manhattanlife.myeasycare2go.com/login'},
- {k:'upload',t:'Easy Upload app installed',a:'Text them the link',sms:'easyupload.manhattanlife.com'},
- {k:'cg',t:'CareGuide saved in their phone',a:'469-902-2267',href:'tel:+14699022267'}];
+ {k:'portal',t:'Portal registered + ID card saved',open:'Open the portal',url:'https://clients.manhattanlife.com',
+  sms:function(f){ return 'Hi '+f+'! Here’s your ManhattanLife portal. Choose “I have a life or health policy,” put in your name and Social, and it finds your policies. Then save your temporary ID card to your phone: https://clients.manhattanlife.com'; }},
+ {k:'ecg',t:'EasyCare2go registered',open:'Open registration',url:'https://manhattanlife.myeasycare2go.com/login',note:'Group ID mlins2023',
+  sms:function(f){ return 'Hi '+f+'! Here’s EasyCare2go, the 24/7 telehealth that comes with your plan — phone, chat or video. Register now so it’s ready at 2am. Group ID: mlins2023 https://manhattanlife.myeasycare2go.com/login'; }},
+ {k:'upload',t:'Easy Upload app installed',open:'Open the app page',url:'https://easyupload.manhattanlife.com/',
+  sms:function(f){ return 'Hi '+f+'! Here’s the ManhattanLife Easy Upload app, for sending in receipts. It picks the right store for your phone: https://easyupload.manhattanlife.com'; }},
+ {k:'cg',t:'CareGuide saved in their phone',open:'Call 469-902-2267',url:'tel:+14699022267',copy:'469-902-2267',copyLabel:'Copy number',
+  sms:function(f){ return 'Hi '+f+'! Save this one: CareGuide, 469-902-2267. Call them before you pay any medical bill over $2,500. Tap to add them to your contacts: '+CG_VCF; }}];
 /* The script's button row, in its own order; the last one is the agent's own page (Setup). */
 var REVIEW_LINKS=['https://clients.manhattanlife.com','https://providerlocator.firsthealth.com/home/index','https://manhattanlife.solutionssimplified.com/','https://www.singlecare.com',null];
 var MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -4547,18 +4558,21 @@ function reviewWire(doc,t){ if(!doc||!doc.body) return; var T=reviewTokens(t), X
     else { a.setAttribute('data-rv-off','1'); a.title='Add your benefits page in ⚙ Setup'; } });
   var R=reviewState(); Array.prototype.forEach.call(doc.querySelectorAll('.rv-tick'),function(l){ var on=!!R.ticks[l.dataset.tick]; l.querySelector('input').checked=on; l.classList.toggle('on',on); }); }
 function reviewTick(k,on){ var R=reviewState(); if(on) R.ticks[k]=new Date().toISOString(); else delete R.ticks[k]; autosave(); reviewRail(); var fr=$('rvFrame'); if(fr&&fr.contentDocument) reviewWire(fr.contentDocument,chosenTier()); }
-function reviewRail(){ var R=reviewState(), box=$('rvTicks'); if(!box) return; var ph=String((S.intake||{}).phone||'').replace(/[^\d+]/g,'');
-  var n=REVIEW_TICKS.filter(function(x){ return R.ticks[x.k]; }).length;
-  box.innerHTML='<b>Done on the call · '+n+' of 4</b>'+REVIEW_TICKS.map(function(x){ var on=!!R.ticks[x.k];
-    var act=x.sms?'<a href="sms:'+esc(ph)+'?&body='+encodeURIComponent('Here’s the ManhattanLife Easy Upload app — it picks the right store for your phone: https://'+x.sms)+'">'+esc(x.a)+'</a> · <a href="#" data-copy="https://'+x.sms+'">copy link</a>'
-      :'<a href="'+esc(x.href)+'" target="_blank" rel="noopener">'+esc(x.a)+'</a>';
-    return '<label class="rv-row'+(on?' on':'')+'"><input type="checkbox" data-k="'+x.k+'"'+(on?' checked':'')+'><span>'+esc(x.t)+'<small>'+act+'</small></span></label>'; }).join('');
+/* the registration the script is on right now - its row is boxed in green, so the agent sends one thing at a time */
+function reviewCurTick(){ var t=chosenTier(), R=reviewState(), p=reviewPages(t)[+R.pg||0]; return (p&&p.tick)||''; }
+function reviewRail(){ var R=reviewState(), box=$('rvTicks'); if(!box) return; var ph=String((S.intake||{}).phone||'').replace(/[^\d+]/g,''); if(/^\d{10}$/.test(ph)) ph='+1'+ph; else if(/^1\d{10}$/.test(ph)) ph='+'+ph;
+  var first=((S.client||{}).pname||'').trim().split(/\s+/)[0]||'there', n=REVIEW_TICKS.filter(function(x){ return R.ticks[x.k]; }).length;
+  box.innerHTML='<b>Done on the call · '+n+' of 4</b>'+(ph?'':'<span class="rv-miss">No phone on the Intake — Text opens a blank message.</span>')+REVIEW_TICKS.map(function(x){ var on=!!R.ticks[x.k];
+    var ext=/^https?:/.test(x.url), open='<a href="'+esc(x.url)+'"'+(ext?' target="_blank" rel="noopener"':'')+'>'+esc(x.open)+(ext?' ↗':'')+'</a>';
+    var text='<a href="sms:'+esc(ph)+'?&body='+encodeURIComponent(x.sms(first))+'">Text them</a>';
+    var copy='<a href="#" data-copy="'+esc(x.copy||x.url)+'">'+esc(x.copyLabel||'Copy link')+'</a>';
+    return '<div class="rv-row'+(on?' on':'')+(x.k===reviewCurTick()?' cur':'')+'" data-row="'+x.k+'"><input type="checkbox" data-k="'+x.k+'"'+(on?' checked':'')+' aria-label="'+esc(x.t)+'"><span>'+esc(x.t)+(x.note?' <em>'+esc(x.note)+'</em>':'')+'<small class="rv-acts">'+open+text+copy+'</small></span></div>'; }).join('');
   box.querySelectorAll('input[data-k]').forEach(function(c){ c.onchange=function(){ reviewTick(c.dataset.k,c.checked); }; });
-  box.querySelectorAll('[data-copy]').forEach(function(a){ a.onclick=function(e){ e.preventDefault(); try{ navigator.clipboard.writeText(a.dataset.copy); a.textContent='copied ✓'; }catch(x){} }; }); }
+  box.querySelectorAll('[data-copy]').forEach(function(a){ a.onclick=function(e){ e.preventDefault(); var t=a.textContent; try{ navigator.clipboard.writeText(a.dataset.copy); a.textContent='Copied ✓'; setTimeout(function(){ a.textContent=t; },1600); }catch(x){} }; }); }
 function reviewGo(pg){ var t=chosenTier(), pages=reviewPages(t), R=reviewState(); pg=Math.max(0,Math.min(pages.length-1,pg|0)); R.pg=pg; autosave();
   var fr=$('rvFrame'), doc=fr&&fr.contentDocument; if(!doc||!doc.body) return; var want=REVIEW_PAGES.indexOf(pages[pg]);
   Array.prototype.forEach.call(doc.body.children,function(el){ if(el.dataset.rv==null) return; el.style.display=(+el.dataset.rv===want)?'':'none'; });
-  reviewWire(doc,t); fr.style.height='60px'; fr.style.height=(doc.documentElement.scrollHeight+8)+'px';
+  reviewWire(doc,t); reviewRail(); fr.style.height='60px'; fr.style.height=(doc.documentElement.scrollHeight+8)+'px';
   $('rvChips').innerHTML=pages.map(function(p,i){ return '<button type="button" data-pg="'+i+'" title="'+esc(p.t)+'" class="'+(i===pg?'on':(i<pg?'done':''))+'">'+(i+1)+(i===pg?'. '+esc(p.t):'')+(p.tick&&R.ticks[p.tick]?' ✓':'')+'</button>'; }).join('');
   $('rvChips').querySelectorAll('[data-pg]').forEach(function(b){ b.onclick=function(){ reviewGo(+b.dataset.pg); }; });
   var nx=pages[pg+1];
@@ -4639,7 +4653,7 @@ var NEWS=[
   ['One client file for both tools','Save here and open it in the Script Navigator, or the other way round. The call and the quote travel together in one file.'],
   ['Booking fills the follow-up','The date and time you book at the end of the call land in Send the quote on the Quote page.'],
   ['GLP-1 questions','The call asks about Ozempic, Wegovy, Mounjaro, Zepbound and Saxenda. The Intake has a GLP-1 row for each person that opens only if they’re on one: which drug, diabetes or weight, how long, what they pay and where they get it. A GLP-1 on the medication list fills it in for you.'],
-  ['Benefits Review','A sixth step for the call after approval: type the effective date, premium and draft date off the carrier’s confirmation, then walk the script while the client registers the portal, telehealth, the Easy Upload app and CareGuide, ticked as you go. Their prescriptions are priced against the daily benefit, and only the true sentence is shown.'],
+  ['Benefits Review','A sixth step for the call after approval: type the effective date, premium and draft date off the carrier’s confirmation, then walk the script while the client registers the portal, telehealth, the Easy Upload app and CareGuide. The one you’re on is boxed in green, with Open, Text them (Messages opens with a note and the link) and Copy link. CareGuide’s text includes a tap-to-save contact card. Their prescriptions are priced against the daily benefit, and only the true sentence is shown.'],
   ['Your benefits page in Setup','Add the link to your own client resource page (your ManhattanLife benefits page, flipbook or similar) in ⚙ Setup. The Benefits Review opens it for every client.'],
   ['A real story for big bills','In Present, “What if I have a major health issue?” now opens Kyle’s daughter’s story: a $211,000 ICU bill, eleven months of negotiation, and a $33,000 cheque, with what to say and what never to promise.'],
   ['⚙ Setup and a walk-through','Your agent details moved to ⚙ Setup at the top, with a six-step walk-through of the tool. The button glows until everything is filled in.'],

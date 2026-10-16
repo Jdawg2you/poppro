@@ -64,9 +64,15 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  tk.querySelector('input').click(); await w(50); ok(!!(JSON.parse(localStorage.getItem('hf_pop_last')).review.ticks||{}).portal,'a tick is saved with the client');
  ok(/1 of 4/.test(document.getElementById('rvTicks').textContent),'the rail counts it');
  ok(['ecg','upload','cg'].every(function(k){ return !!d.querySelector('.rv-tick[data-tick="'+k+'"]'); }),'all four registration screens carry a tick');
+ /* each registration: open / text / copy, and the one the script is on is boxed (Jesse, 16 Oct) */
+ S.intake.phone='(555) 010-2030'; reviewRail(); var rows=document.querySelectorAll('#rvTicks .rv-row');
+ ok(rows.length===4&&Array.prototype.every.call(rows,function(r){ return r.querySelectorAll('.rv-acts a').length===3&&r.querySelector('a[href^="sms:+15550102030?&body="]')&&r.querySelector('[data-copy]'); }),'every registration has open, text (to +1 number) and copy');
+ ok(decodeURIComponent(document.querySelector('#rvTicks [data-row="cg"] a[href^="sms:"]').getAttribute('href')).indexOf('mypoppro.com/tool/careguide.vcf')>0,'CareGuide text carries the contact-card link');
+ var cur=function(t){ reviewGo(pages.indexOf(t)); var c=document.querySelector('#rvTicks .rv-row.cur'); return c?c.dataset.row:''; };
+ ok(cur('Telehealth — do it live')==='ecg'&&cur('CareGuide')==='cg'&&cur('The money line')==='','the row being talked about is boxed, and only then');
  /* setup asks for the benefits page */
  S.agentBenefits=''; ok(agentSetupMissing().indexOf('benefits page')>=0,'Setup counts the benefits page until it is filled');
- return {n:30, fails:fails}; })()`;
+ return {n:33, fails:fails}; })()`;
 try {
   let l; for (let i = 0; i < 60 && !l; i++) { await sleep(150); l = await fetch(`http://127.0.0.1:${DBG}/json/list`).then(r => r.json()).catch(() => null); }
   ws = new WebSocket(l.find(t => t.type === 'page').webSocketDebuggerUrl);
