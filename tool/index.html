@@ -4478,9 +4478,9 @@ function readAgent(){ S.agency=($('in_agency').value||'').trim()||'HealthFirst';
    once they buy, we've moved past it). */
 var WHY_TAGS=['Too expensive','Deductible too high','Losing coverage','No coverage now','Doctor / network','Life change','Other'];
 function whyTagList(v){ return (Array.isArray(v)?v:String(v||'').split(/\s*,\s*/)).map(function(x){ return String(x||'').trim(); }).filter(function(x){ return WHY_TAGS.indexOf(x)>=0; }); }
-/* their words; an older file with no why but a one-line story still reads back - a long story never does */
-function whyQuote(I){ var m=String((I&&I.whyMatters)||'').trim(); if(!m){ var w=String((I&&I.whyShop)||'').trim(); if(w&&w.length<=80&&!/[\n.!?].+/.test(w)) m=w; }
-  return m.replace(/^["“”']+|["“”']+$/g,'').replace(/[.!\s]+$/,''); }
+/* their words only - never the story, which may be the agent's own shorthand ("wants lower premium") and must not be
+   quoted back as "you said". No why: the blank stays red and the agent asks. (Health ZONE, 16 Oct) */
+function whyQuote(I){ return String((I&&I.whyMatters)||'').trim().replace(/^["“”']+|["“”']+$/g,'').replace(/[.!\s]+$/,''); }
 function whyHouse(){ var k=householdKey(); return k==='f'||k==='c'?'you and your family':k==='s'?'you and your spouse':'you'; }
 function whyDocs(){ var I=S.intake||{}, out=[]; [I.docs1,I.docs2,I.docs3].forEach(function(x){ String(x||'').split(/[;,]|\s+and\s+/i).forEach(function(d){
     d=d.replace(/\s*\(.*?\)\s*/g,' ').replace(/\s+[-–—]\s+.*$/,'').replace(/^\s*(dr\.?|doctor)\s+/i,'').trim(); if(d&&out.indexOf(d)<0) out.push(d); }); });

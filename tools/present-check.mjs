@@ -186,7 +186,7 @@ const TEST = `(async function(){
   S.intake.whyMatters='keep Dr. Patel'; S.intake.whyShop='Premium went up $200 at renewal, then the claim on my wife’s surgery got denied and we had to fight it for three months.'; presentWire(d,'best');
   var rs=d.querySelector('var[data-k="client.why_quote"]'); ok(rs&&rs.textContent==='keep Dr. Patel','section 3 quotes their why, not the story');
   S.intake.whyMatters=''; presentWire(d,'best'); rs=d.querySelector('var[data-k="client.why_quote"]'); ok(rs&&!/Premium went up/.test(rs.textContent),'a long prompted-it story is never read aloud (blank stays flagged)');
-  S.intake.whyShop='lower premiums'; presentWire(d,'best'); rs=d.querySelector('var[data-k="client.why_quote"]'); ok(rs&&rs.textContent==='lower premiums','an old quote with a one-line reason still reads naturally');
+  S.intake.whyShop='lower premiums'; presentWire(d,'best'); rs=d.querySelector('var[data-k="client.why_quote"]'); ok(rs&&rs.textContent!=='lower premiums'&&rs.classList.contains('pp-miss'),'the story is never quoted as "you said" - no why stays red');
   S.intake.whyMatters='keep Dr. Patel'; buildPrintout(); var poT=document.getElementById('printout').textContent; ok(/What matters most to you/.test(poT)&&/keep Dr. Patel/.test(poT)&&!/Why you are looking/.test(poT),'printout shows what matters most, never the story');
   S.intake.whyMatters=kI[0]; S.intake.whyShop=kI[1]; presentWire(d,'best');
   var kC=JSON.parse(JSON.stringify(curIn())), kAn=S.intake.anchor; S.intake.anchor='cur'; S.present=S.present||{}; var kPA=S.present.anchor; S.present.anchor='cur';
