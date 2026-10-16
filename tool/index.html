@@ -4484,8 +4484,8 @@ function readAgent(){ S.agency=($('in_agency').value||'').trim()||'HealthFirst';
    ManhattanLife product, using the agent's code on Direction Rx's site. So it is a discount they have access to, never
    "covered" and never free. Only for weight loss ("Both" counts); diabetes is pinned. Each agent's link and code live in
    Setup. No dollar saving is worked out - prices depend on the drug and dose - their current cost is said as theirs. */
-/* ONE place for the figure. Jesse said 35%; his DirectionRx pricing chart (16 Oct, member code 4-MEM-26-6) says
-   "30% Off = 30% discount applied to Patient Price" on every row. 30% until he confirms otherwise. */
+/* ONE place for the figure: 30%, confirmed by Jesse 2026-10-16, matching his DirectionRx pricing chart (member code
+   4-MEM-26-6: "30% Off = 30% discount applied to Patient Price" on every row). */
 var DRX_PCT='30%';
 function drxWho(){ var G=(S.intake&&S.intake.glp1)||{}, C=S.client||{}, out=[];
   /* the discount needs an active ManhattanLife product: a LifeX or Cigna plan gets nothing (Health ZONE, 16 Oct) */
