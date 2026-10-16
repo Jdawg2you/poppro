@@ -63,10 +63,13 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  ok(s3&&s3.textContent.indexOf('healthcare has just gotten so flippin expensive')>0,'screen 3 quotes their words: '+(s3&&s3.textContent.slice(0,140)));
  var cl=d.querySelector('div[data-needs="why.answer"]'); ok(cl&&!cl.classList.contains('pp-off')&&/under what you pay now/.test(cl.textContent),'the close slot (a div) carries the switched-on answers');
  S.present.why={'Too expensive':false,'Deductible too high':false,'Doctor / network':false}; presentWire(d,'better'); ok(cl&&cl.classList.contains('pp-off'),'the close slot drops out when nothing is on'); S.present.why={};
+ /* notes never stack across handoffs (Jesse, 16 Oct: four copies of "Also wants: dental") */
+ S=blankState(); S.intake.notes='Agent typed this'; for(var i=0;i<5;i++){ applySuiteClient({first:'Syed',last:'O',state:'TX',kids:[],health:{wantDental:'Yes',notes:S.intake.notes+(i===2?String.fromCharCode(10)+'Call note: evenings':'')}},true); }
+ var nl=S.intake.notes.split(String.fromCharCode(10)); ok(nl.filter(function(l){ return l.indexOf('From the discovery call')===0; }).length===1&&nl.filter(function(l){ return l==='Agent typed this'; }).length===1&&nl.indexOf('Call note: evenings')>=0,'five round trips: one summary line, every agent note once: '+nl.join(' | '));
  /* an old file keeps its why */
  S=blankState(); applySuiteClient({first:'Old',last:'File',state:'TX',age:'50',kids:[],health:{whyMatters:'keep Dr. Patel',whyShop:'premium jumped'}});
  ok(S.intake.whyMatters==='keep Dr. Patel'&&S.intake.whyShop==='premium jumped'&&whyTagList(S.intake.whyTags).length===0,'an older file without tags still loads its why and story');
- return {n:28, fails:fails}; })()`;
+ return {n:29, fails:fails}; })()`;
 try {
   let l; for (let i = 0; i < 60 && !l; i++) { await sleep(150); l = await fetch(`http://127.0.0.1:${DBG}/json/list`).then(r => r.json()).catch(() => null); }
   ws = new WebSocket(l.find(t => t.type === 'page').webSocketDebuggerUrl);

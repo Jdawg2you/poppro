@@ -3792,12 +3792,16 @@ function applySuiteClient(c, live){ var sm=$('setupModal'); if(sm&&!live&&sm.cla
   if(h.healthNotes) extra.push("Health: "+h.healthNotes);
   if(h.hospStay2===true||h.hospStay) extra.push("Hospital stay (last 2 yrs)"+(h.hospStay?": "+h.hospStay:""));
   if(h.surgery===true||h.surgeryWhat) extra.push("Surgery or overnight stay (last 5 yrs)"+(h.surgeryWhat?": "+h.surgeryWhat:""));
-  if(h.notes)     extra.push(h.notes);
   /* Pushed twice, this line is replaced rather than stacked - the agent may well press the
      button again after correcting something on the call, and two nearly-identical
      paragraphs is how a real note gets skimmed past. Anything they typed stays. */
   var TAG="From the discovery call — ";
   var kept=String(I.notes||"").split("\n").filter(function(l){ return l.indexOf(TAG)!==0; });
+  /* The call's notes box holds what MyPopPro handed it, so it comes back with our own lines in it. Our lines are
+     dropped and only what is new is kept, as the agent typed it - otherwise every handoff wrapped the last one in
+     another "From the discovery call" line and the notes grew a copy per push (Jesse, 16 Oct). */
+  String(h.notes||"").split("\n").forEach(function(l){ var t=l.replace(/\s+$/,""); if(!t.trim()||t.indexOf(TAG)===0) return;
+    if(kept.indexOf(t)<0) kept.push(t); });
   if(extra.length) kept.push(TAG+extra.join(" · "));
   I.notes=kept.join("\n").replace(/^\n+|\n+$/g,"");
 
