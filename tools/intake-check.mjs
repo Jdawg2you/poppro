@@ -29,7 +29,7 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  /* The fold used to wait on these four. It now waits on all eight (Jesse, 2026-10-09), so the
     four alone must NOT fold it - that is the regression this line guards. */
  R.stillOpenOnFourOfEight=$('setupBtn').classList.contains('need')+' '+$('agentSetupState').textContent;
- $('in_anpn').value='7654321'; $('in_aweb').value='x.com'; $('in_acard').value='x.com/card'; $('in_abook').value='x.com/book';
+ $('in_anpn').value='7654321'; $('in_aweb').value='x.com'; $('in_acard').value='x.com/card'; $('in_abook').value='x.com/book'; $('in_abenefits').value='x.com/manhattanlife';
  captureIntake(); goStep('quote'); goStep('intake'); await w(100);
  R.setupFoldedWhenComplete=!$('setupBtn').classList.contains('need')+' '+$('agentSetupState').textContent;
  $('in_aweb').value=''; $('in_acard').value=''; $('in_abook').value=''; captureIntake();
@@ -46,7 +46,7 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  ok(R.notInIntake,'agent setup lives in the Setup window, not the intake'); ok(R.modalOpens&&R.modalCloses,'Setup button opens and Done closes it');
  ok(R.billSaverOnOldSave,'Bill Saver ticked on an older quote'); ok(R.npnToSetup,'NPN goes to setup, out of the notes');
  ok(/^true · fill in: your name, phone, email/.test(R.setupOpenWhenMissing),'setup open while basics are missing: '+R.setupOpenWhenMissing);
- ok(/^true · fill in: (NPN, )?website, digital business card, booking link$/.test(R.stillOpenOnFourOfEight),'setup stays open on four of eight: '+R.stillOpenOnFourOfEight);
+ ok(/^true · fill in: (NPN, )?website, digital business card, booking link, benefits page$/.test(R.stillOpenOnFourOfEight),'setup stays open on four of eight: '+R.stillOpenOnFourOfEight);
  ok(/^true · complete$/.test(R.setupFoldedWhenComplete),'setup folds when all eight are in: '+R.setupFoldedWhenComplete);
  ok(R.reopensWhenLinksGone,'setup reopens when the links go');
  ok(R.foldsAfterGoatSkip,'setup folds after the GOAT opt-out');

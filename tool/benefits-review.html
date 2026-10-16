@@ -1,0 +1,232 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Benefits Review Script</title>
+<style>
+body{font-family:-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;font-size:15px;line-height:1.65;color:#1a1a1a;max-width:900px;margin:0 auto;padding:26px 22px 60px}
+h1{font-size:23px;margin:0 0 3px;border-bottom:3px solid #16203c;padding-bottom:7px}
+.sub0{color:#666;font-size:12.5px;margin:0 0 22px}
+h2{font-size:18px;margin:34px 0 10px;padding-bottom:5px;border-bottom:2px solid #c9a24e}
+h2 .n{display:inline-block;background:#16203c;color:#fff;min-width:26px;height:26px;line-height:26px;text-align:center;border-radius:4px;font-size:14px;margin-right:9px;vertical-align:1px;padding:0 5px}
+h3{font-size:13px;margin:18px 0 5px;color:#16203c;text-transform:uppercase;letter-spacing:.7px}
+p{margin:0 0 11px}
+.say{background:#f7f9fb;border-left:4px solid #16203c;padding:12px 16px;margin:9px 0;font-size:16px;line-height:1.6}
+.say:before{content:"SAY";display:block;font-weight:700;color:#16203c;font-size:10px;letter-spacing:1.2px;margin-bottom:5px}
+.do{position:relative;background:#f6f8f6;border:1px solid #cfdcd3;border-radius:5px;padding:11px 34px 11px 36px;margin:9px 0;font-size:14px;color:#33493c}
+.do:before{content:"(";position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:52px;font-weight:300;color:#a8c4b3;line-height:0}
+.do:after{content:")";position:absolute;right:11px;top:50%;transform:translateY(-50%);font-size:52px;font-weight:300;color:#a8c4b3;line-height:0}
+.do .lab{display:block;font-weight:700;color:#2f5f42;font-size:9.5px;letter-spacing:1.2px;margin-bottom:3px}
+.aside{position:relative;background:#fbfbf9;border:1px dashed #cfcfc4;border-radius:5px;padding:8px 30px 8px 32px;margin:7px 0 11px;font-size:13.5px;color:#555;font-style:italic}
+.aside:before{content:"(";position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:44px;font-weight:300;color:#c9c9bc;line-height:0}
+.aside:after{content:")";position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:44px;font-weight:300;color:#c9c9bc;line-height:0}
+details.exp{border:2px solid #146b6b;border-radius:6px;margin:11px 0;background:#f1f8f8}
+details.exp>summary{cursor:pointer;padding:11px 16px 11px 34px;position:relative;font-weight:700;color:#0f4f4f;font-size:14px;list-style:none}
+details.exp>summary::-webkit-details-marker{display:none}
+details.exp>summary::before{content:"\25B8";position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#146b6b;font-size:13px}
+details.exp[open]>summary::before{transform:translateY(-50%) rotate(90deg)}
+details.exp .body{padding:0 16px 14px;font-size:13.5px}
+.cpy{display:inline-block;background:#146b6b;color:#fff;text-decoration:none;font-weight:700;font-size:12.5px;padding:7px 13px;border-radius:5px;margin:4px 0}
+.cpy.dim{background:#c3d4d4;color:#5d6f6f}
+.blank{display:inline-block;min-width:150px;border-bottom:1px dashed #a8452f;color:#a8452f;font-size:12.5px}
+.needs{background:#fdf2ef;border:1px solid #e3b4a8;border-radius:5px;padding:9px 12px;margin:8px 0;font-size:13px;color:#7a2d1c}
+.flag{background:#fdf2ef;border-left:4px solid #a8452f;padding:10px 14px;margin:10px 0;font-size:14px}
+.flag:before{content:"FLAGGED \2014 WE AGREED TO COME BACK TO THIS";display:block;font-weight:700;color:#a8452f;font-size:9.5px;letter-spacing:1px;margin-bottom:4px}
+.tip{background:#f1f8f8;border-left:4px solid #146b6b;padding:10px 14px;margin:11px 0;font-size:14.5px}
+.tip:before{content:"TOP TIP";display:block;font-weight:700;color:#146b6b;font-size:10px;letter-spacing:1.2px;margin-bottom:4px}
+.story{background:#fdfaf1;border:1px dashed #8a6d1f;border-radius:5px;padding:10px 14px;margin:11px 0;font-size:14.5px}
+.story:before{content:"OPTIONAL \2014 USE IF THEY HESITATE";display:block;font-weight:700;color:#8a6d1f;font-size:10px;letter-spacing:1px;margin-bottom:4px}
+.cue{color:#8a6d1f;font-weight:700;font-size:12.5px;letter-spacing:.3px;text-transform:uppercase;margin:16px 0 3px}
+.who{display:inline-block;font-size:9px;font-weight:700;letter-spacing:.8px;padding:1px 5px;border-radius:3px;color:#fff;margin-left:6px;vertical-align:2px}
+.wK{background:#16203c}.wM{background:#8a6d1f}.wJ{background:#5b3a8a}
+var{font-style:normal;font-weight:700;background:#eef2fb;color:#1d4e79;border-bottom:2px solid #9ab6dd;padding:0 3px;border-radius:2px}
+.pinmark{display:inline-block;font-family:ui-monospace,Menlo,monospace;font-size:10px;font-weight:700;background:#fdfaf1;color:#8a6d1f;border:1px solid #d8c48a;border-radius:3px;padding:0 4px;margin-left:5px;vertical-align:2px}
+.prov{background:#fdfaf1;border-left:4px solid #c9a24e;padding:10px 14px;margin:9px 0;font-size:14.5px}
+.prov:before{content:"PROVISIONAL \2014 WAITING ON YOUR ANSWER";display:block;font-weight:700;color:#8a6d1f;font-size:10px;letter-spacing:1px;margin-bottom:4px}
+.btnrow{margin:12px 0 4px}
+.btnrow a{display:inline-block;background:#16203c;color:#fff;text-decoration:none;padding:8px 14px;border-radius:5px;font-size:13.5px;font-weight:600;margin:0 7px 7px 0}
+.prep{background:#eef0f4;border:1px solid #c7cdd9;border-radius:6px;padding:14px 17px;margin:12px 0 22px}
+.prep h4{margin:0 0 8px;font-size:12.5px;letter-spacing:.8px;text-transform:uppercase;color:#16203c}
+.prep li{margin-bottom:6px}
+.two{display:flex;gap:14px;flex-wrap:wrap;margin:12px 0}
+.two>div{flex:1 1 380px;border:1px solid #d8d8d8;border-top-width:4px;border-radius:5px;padding:12px 15px;background:#fff}
+.two h4{margin:0 0 7px;font-size:14.5px}
+.pathA{border-top-color:#8a6d1f}.pathB{border-top-color:#16203c}
+.q{font-weight:700;color:#16203c;margin:16px 0 3px;font-size:15px}
+.fff{margin:0 0 12px;font-size:14.5px}
+.ask{font-style:italic;color:#16203c;font-weight:600}
+.legend{font-size:12.5px;color:#555;background:#f8f8f6;border-radius:5px;padding:10px 14px;margin:0 0 20px}
+ul,ol{margin:0 0 11px;padding-left:22px}li{margin-bottom:6px}
+@media print{body{padding:0;font-size:11.5px;max-width:none}.say,.do,.tip,.story,.prov,.prep,.two>div{page-break-inside:avoid}h2{page-break-after:avoid}.btnrow a{background:#fff;color:#16203c;border:1px solid #16203c}}
+</style></head><body>
+
+<h1>Benefits Review &mdash; the script</h1>
+<p class="sub0">The call that happens after the application is approved and before the policy goes effective. Jesse&rsquo;s script, supplied whole on 16 October 2026 with its agent-only coaching notes; twelve screens, about fifteen minutes. This folder is the source of truth &mdash; POP Pro renders a copy and hides this line, the coaching notes and the working flags. Three lines carry corrections against the carrier documents; they are flagged in place and nothing was silently reworded.</p>
+
+<p class="legend"><var>Blue</var> = filled automatically from the policy, the plan or the client&rsquo;s intake &mdash; you never type or remember these.
+<span class="pinmark">?</span> = waiting on an answer from Jesse.<br>
+<b>Provenance:</b> this arrived as one finished piece, so there are no per-block source tags. Everything here is <span class="who wJ">JESSE</span> unless a flag says otherwise.</p>
+
+<div class="btnrow">
+<a href="#">ManhattanLife portal</a><a href="#">First Health locator</a><a href="#">Careington dentist finder</a><a href="#">SingleCare &mdash; Rx pricing</a><a href="#">The client&rsquo;s resource page</a>
+<p style="margin:4px 0 0;font-size:12.5px;color:#555">Each opens in a <b>separate window</b> so this script stays on screen behind it. Open them before you dial &mdash; you are about to walk someone through four registrations and you cannot be hunting for links while they wait.</p>
+</div>
+
+<div class="prep">
+<h4>Before you dial</h4>
+<ul>
+<li><b>The approval in front of you</b> &mdash; approved as applied for, or approved with a change? If anything moved, that is the first thing you say, not the last.</li>
+<li><b>The effective date and the exact premium</b> including every rider, read off the carrier&rsquo;s own confirmation. Not the quote.</li>
+<li><b>The office-visit count for their tier and their state</b>, read off the schedule. <b>Do not quote it from memory.</b></li>
+<li><b>Their prescription list and what each one actually costs</b> &mdash; priced, not guessed. This is the part of the call they remember.</li>
+<li><b>Your email already sent</b>, with the resource-page link in it. The whole call runs off that page.</li>
+<li><b>Your own portal open</b> on your screen, in case screen-sharing is faster than describing buttons.</li>
+<li><b>Fifteen minutes blocked.</b> Eight policies a month is two hours that removes most of your support burden for the year.</li>
+</ul>
+</div>
+
+<h2 data-screen="open"><span class="n">1</span>Open</h2>
+
+<div class="say">Hey <var data-k="client.first">&lt;client first name&gt;</var>, it&rsquo;s <var data-k="agent.first">&lt;your first name&gt;</var> with <var data-k="agent.agency">Optimum</var>. Thanks for taking a few minutes. I just want to cross the T&rsquo;s and dot the I&rsquo;s before your policy goes effective on <var data-k="policy.effective_date">&lt;effective date&gt;</var> so there are no surprises. You&rsquo;ve been approved as applied for with <var data-k="policy.carrier">ManhattanLife</var>. I sent you an email a little earlier &mdash; you&rsquo;ll also get one from the carrier &mdash; and I&rsquo;d like to walk through mine with you now. Can you open it?</div>
+
+<div class="do"><span class="lab">NOT SPOKEN</span>Wait for the email to be open on their screen. The entire call runs off it. If they cannot find it, stop and fix that before anything else &mdash; resend it, read the subject line out, check the spam folder.</div>
+
+<div class="warn" data-author="note"><b>&ldquo;Approved as applied for&rdquo; is a claim, not a greeting.</b> If underwriting changed anything &mdash; a rider dropped, a rate class moved, a dependent excluded &mdash; that sentence is wrong and the call opens with the change instead. Say what moved, what it costs, and what it means, then carry on with the rest of the script.</div>
+
+<h2 data-screen="money"><span class="n">2</span>The money line</h2>
+
+<div class="say">Your policy goes effective <var data-k="policy.effective_date">&lt;effective date&gt;</var>, and the draft is usually that same day. The draft for everything, including the riders, is <var data-k="policy.premium">$&lt;premium&gt;</var>. So you need <var data-k="policy.premium">$&lt;premium&gt;</var> in the account on <var data-k="policy.draft_date">&lt;draft date&gt;</var> &mdash; there&rsquo;s no coverage until money changes hands.</div>
+
+<div class="tip">Say the figure and the date early, plainly, and only once. It is the single most common reason a good case lapses in its first month, and this call is your one chance to put the number in their head before the bank does.</div>
+
+<div class="flag" data-author="note"><b>Custom draft dates die in the handoff.</b> If this client asked for a draft date that is not the effective date &mdash; a Social Security benefit week, a payday &mdash; <b>do not say &ldquo;usually that same day&rdquo;.</b> Read the date off the carrier&rsquo;s confirmation. A custom date is not done until the carrier confirms it back, and we have had one go through the handoff and come out as the default.</div>
+
+<h2 data-screen="page"><span class="n">3</span>The page</h2>
+
+<div class="say">In that email there&rsquo;s a link to your resource page &mdash; &ldquo;How to use your new health plan.&rdquo; Click it. That&rsquo;s your home base for everything: what to do now, how to find a doctor, who to call. You&rsquo;ll never need to remember any of this, it&rsquo;s all right there. And I&rsquo;m a resource too &mdash; you have my personal cell, I&rsquo;ve already got you saved in mine with your policy info. But honestly, everything I&rsquo;d do for you is on that page, and the people on it are the ones who can actually process a claim or fix a billing problem. So let&rsquo;s make sure you can drive it yourself.</div>
+
+<div class="aside">That last sentence is the whole call in one line. You are not making yourself unavailable &mdash; you are making yourself unnecessary for the four things that are not your job.</div>
+
+<h2 data-screen="portal"><span class="n">4</span>Portal &mdash; do it live</h2>
+
+<div class="say">First button: Register on the <var data-k="policy.carrier">ManhattanLife</var> portal. Click it. Choose &ldquo;I have a life or health policy,&rdquo; put in your first and last name and your Social, and it&rsquo;ll find every policy for you.</div>
+
+<div class="do"><span class="lab">DO IT NOW</span>Wait for them. Screen-share your own portal if it helps. <b>They type their own Social &mdash; you never ask for it on this call and you never read it back.</b></div>
+
+<div class="say">Once you&rsquo;re in you&rsquo;ll see your policy documents, your temporary ID cards, your premium payments on the right, where to change your banking or your draft date, and your claims. Down at the bottom, customer service email and phone. Go ahead and open your temporary ID card &mdash; save that to your phone.</div>
+
+<div class="say">Did you get logged in? Card saved? Great.</div>
+
+<div class="tip">Those two questions are not filler. A client who never logged in will call <b>you</b> for every document, every card, every billing question, for as long as they hold the policy. A client who logged in while you were on the phone calls the carrier. Most &ldquo;needy&rdquo; clients are made right here, by an agent who said &ldquo;you&rsquo;ll get an email about the portal&rdquo; and moved on.</div>
+
+<h2 data-screen="telehealth"><span class="n">5</span>Telehealth &mdash; do it live</h2>
+
+<div class="say">Next: register with EasyCare2go. Your plan gives you <var data-k="plan.visits">&lt;office visits&gt;</var> in-person doctor visits a year, but telehealth is unlimited and free &mdash; phone, chat, or video, 24/7, and they call the prescription in to your pharmacy. If you get the flu or strep at two in the morning, don&rsquo;t burn an office visit and two hours in a waiting room to be told you&rsquo;re sick. Call telehealth. The Group ID is <var>mlins2023</var> &mdash; go ahead and register now so it&rsquo;s ready before you need it.</div>
+
+<div class="do"><span class="lab">DO IT NOW</span>Registration takes about a minute. Done on this call, it is there at 2am. Left for later, it never happens &mdash; and the first fever becomes an urgent-care bill.</div>
+
+<div class="warn" data-author="note"><b>The visit count is per person and runs on the calendar year, not the policy year.</b> Say &ldquo;each&rdquo; where it applies &mdash; a family of four does not share one allowance, and the count resets on 1 January, not on their anniversary. <b>Read the number off the schedule for their tier and their state before the call.</b> It changes by both.</div>
+
+<div class="warn" data-author="note"><b>Compliance &mdash; the words the carrier uses.</b> <i>&ldquo;Network and prescription drug are not part of this policy. First Health Network and RxEDO are value-added healthcare programs from other providers.&rdquo;</i> Telehealth, the network and the Rx programme are <b>value-added services</b>, not insurance benefits. Saying &ldquo;your plan gives you&rdquo; about the visit benefit is right; saying it about telehealth, First Health or the drug discounts is drift. Keep &ldquo;comes with&rdquo; for those three.</div>
+
+<h2 data-screen="app"><span class="n">6</span>The app</h2>
+
+<div class="say">Third: the Easy Upload <var data-k="policy.carrier">ManhattanLife</var> app &mdash; I&rsquo;m texting you the link now: <var>easyupload.manhattanlife.com</var>, it picks the right store for your phone.</div>
+
+<div class="do"><span class="lab">DO IT NOW</span>Send the text while you are saying the sentence, not after the call.</div>
+
+<div class="say">Two reasons you&rsquo;ll use this. One, if you ever go out of network, you&rsquo;ll pay as a self-pay patient and upload the receipt; <var data-k="policy.carrier">ManhattanLife</var> reimburses you by direct deposit or check. Two &mdash; and this one matters for you &mdash; prescriptions.</div>
+
+<h2 data-screen="rx"><span class="n">7</span>Prescriptions &mdash; their own numbers</h2>
+
+<div class="say" data-rx="has">You&rsquo;ve got a <var data-k="plan.rx_per_day">$50</var> per person per day prescription benefit, up to the annual max of <var data-k="plan.rx_annual_max">$750</var>. You told me you&rsquo;re on <var data-k="client.meds">&lt;their medications&gt;</var> and those run about <var data-k="client.med_costs">$&lt;cost each&gt;</var>. So say you fill <var data-k="client.meds_list">&lt;med 1, med 2 and med 3&gt;</var> the same day &mdash; that&rsquo;s about <var data-k="client.med_total">$&lt;total&gt;</var>. You upload the receipt from the <var data-k="client.pharmacy">Walgreens</var> line and <var data-k="plan.rx_per_day">$50</var> comes back. <span data-rx-math="gain">You made <var data-k="client.rx_gain">$&lt;50 &minus; total&gt;</var> filling your prescriptions.</span><span data-rx-math="partial">That covers <var data-k="client.rx_covered">&lt;most of it&gt;</var>, and you&rsquo;re out <var data-k="client.rx_short">$&lt;the difference&gt;</var> instead of the whole thing.</span></div>
+
+<div class="needs" data-author="note"><b>Two versions of the last sentence, and the tool must pick.</b> &ldquo;You made $X filling your prescriptions&rdquo; is only true when the day&rsquo;s fills come to <b>less</b> than the per-day benefit. Where the fills cost more, the honest sentence is the second one. <b>Never print a gain that is actually a shortfall</b> &mdash; a client who hears &ldquo;you made money&rdquo; and then pays $18 out of pocket has caught you being loose with their money on the first call.</div>
+
+<div class="say" data-rx="none">You&rsquo;ve also got a <var data-k="plan.rx_per_day">$50</var> per person per day prescription benefit, up to <var data-k="plan.rx_annual_max">$750</var> a year. You&rsquo;re not on anything regular right now &mdash; but the day a doctor puts you on something, you fill it, photograph the receipt, and upload it. Put the app on your phone now so it&rsquo;s there when that happens.</div>
+
+<div class="story" data-author="note"><b>The per-day mechanic, said plainly.</b> The benefit is per person per day, capped at the annual maximum. A client who fills three prescriptions on three different days has three qualifying days. That is simply how the benefit is written, and it is worth them understanding &mdash; <b>say it as the rule, not as a trick.</b><br><br>Jesse&rsquo;s own version carries &ldquo;and being fully transparent&rdquo; with a wink. <b>Keep the transparency, drop the wink in anything written down</b> &mdash; a script that reads as coaching someone to work the benefit is a different document in front of a carrier than one that explains how the benefit works.<span class="pinmark">?</span></div>
+
+<div class="say">Before you fill anything, check the price. Same drug can be $5 at one pharmacy and $20 at another &mdash; the page has SingleCare, GoodRx, and RxEDO on it. You get your <var data-k="plan.rx_per_day">$50</var> either way, so go where it&rsquo;s cheapest and keep more of it.</div>
+
+<div class="tip">That last clause is the one that lands: the benefit is fixed, so every dollar they save on the fill is a dollar they keep. It is the only part of the whole plan where the client can beat the system by paying attention, and it costs them nothing to learn.</div>
+
+<h2 data-screen="careguide"><span class="n">8</span>CareGuide</h2>
+
+<div class="say">Last one: save CareGuide in your phone right now &mdash; <var>469-902-2267</var>. Any bill over <var data-k="careguide.threshold">$2,500</var>, you don&rsquo;t pay it until you&rsquo;ve called them. They negotiate hospital bills down, they catch billing errors, and they&rsquo;ll price a procedure before you go. Then call me.</div>
+
+<div class="do"><span class="lab">DO IT NOW</span>In the phone, under a name they will find in a crisis. &ldquo;CareGuide &mdash; before you pay any bill&rdquo; beats &ldquo;CareGuide&rdquo;.</div>
+
+<div class="warn" data-author="note"><b>Required framing.</b> CareGuide is <b>a medical bill advocacy service, not insurance. It does not pay medical bills. Results vary by case.</b> Say it that way. Do not quote an average reduction, a percentage or a dollar figure on this call &mdash; the published numbers are case examples, not a promise, and this is the call where a client will hold you to whatever you said.</div>
+
+<h2 data-screen="doctor"><span class="n">9</span>Finding a doctor</h2>
+
+<div class="say">Your plan comes with the First Health network &mdash; it&rsquo;s huge, close to a million providers and 6,000 hospitals, so you won&rsquo;t have trouble near you.</div>
+
+<div class="say" data-doctor="none">Since you&rsquo;re not attached to anyone, interview two or three &mdash; the provider locator on the page takes your zip code. They&rsquo;ve all already agreed to take this plan.</div>
+
+<div class="say">Here&rsquo;s the one thing to say at the front desk &mdash; it&rsquo;s on the page word for word: <b>&ldquo;I have the ManhattanLife Affordable Choice plan. Do you participate in the First Health network?&rdquo;</b> Ask about First Health, not <var data-k="policy.carrier">ManhattanLife</var>. Whoever&rsquo;s at the desk knows the network name; they may never have heard of the carrier.</div>
+
+<div class="tip">Say <b>First Health</b>, never &ldquo;Aetna&rdquo;. First Health is Aetna-owned, which is where the habit comes from &mdash; but a front desk searches the name on the card, and that name is First Health. Keep the client&rsquo;s sentence to the network name.</div>
+
+<div class="say">Find your doctor, an urgent care, an ER, and a hospital that are in network <b>before</b> you need them. In network, this works just like regular insurance &mdash; hand over your card, they bill <var data-k="policy.carrier">ManhattanLife</var>, and if the benefit is more than the bill you get a check. Out of network it pays exactly the same, you just pay first and upload the receipt.</div>
+
+<div class="do"><span class="lab">NOT SPOKEN</span>Four things before they need them, and the ER is the one they will skip. Walk them to it on the locator while you are on the phone &mdash; nobody looks up a hospital on a good day.</div>
+
+<div class="warn" data-author="note"><b>&ldquo;Out of network it pays exactly the same&rdquo; is true here and false next door.</b> It holds for the <b>fixed-dollar</b> products &mdash; Affordable Choice, Hospital Indemnity, Accident, Gap. Those pay a set amount per event, so the network changes what they <i>owe</i>, never what the plan <i>pays</i>. It does <b>not</b> hold for <b>DVH</b>, which pays a percentage of a basis: in network the basis is the contracted rate, out of network it is UCR at a lower percentage. Keep this sentence in the health section and never let it drift into the dental paragraph.</div>
+
+<h2 data-screen="dental"><span class="n">10</span>Dental <span style="font-size:13px;font-weight:400;color:#666">&mdash; if elected</span></h2>
+
+<div class="say" data-dental="yes">Your dental is on the Careington network &mdash; the finder&rsquo;s on the page. Preventive is first-day and first-dollar <b>in network</b>: your cleanings, exams and X-rays at no cost to you, and the deductible doesn&rsquo;t touch preventive at all. You could go tomorrow.</div>
+
+<div class="flag" data-author="note"><b>Correction applied &mdash; &ldquo;at zero cost&rdquo; needed a qualifier.</b> Jesse&rsquo;s line read: <i>&ldquo;two cleanings, two exams, two X-rays, two fluoride treatments a year at zero cost.&rdquo;</i><br>
+Against <code>DVH-SELECT.md</code>: preventive pays <b>100% of the contracted rate in network</b> and <b>80% of UCR out of network</b>, and the Careington network is <b>optional</b> &mdash; so a client who keeps their own out-of-network dentist owes the 20% plus anything above UCR. &ldquo;Zero cost&rdquo; without &ldquo;in network&rdquo; is the kind of sentence that produces a surprise bill and a phone call. The deductible genuinely does not apply to preventive, so <b>first-dollar is correct</b> either way.<br>
+The <b>frequencies</b> (two cleanings, two exams, two X-rays, two fluoride) are not in our reference file. <b>Read them off the schedule</b> or say &ldquo;your cleanings, exams and X-rays&rdquo; without a count, as written above.<span class="pinmark">?</span></div>
+
+<div class="warn" data-author="note"><b>Three waiting periods live inside this product</b> and the review call is where they should be heard, not at claim time: <b>orthodontia pays nothing in year one</b> (year 2+ at 50%, $1,500 lifetime, nothing at all out of network), <b>hearing has a 12-month wait</b>, and <b>eyeglass frames have a 6-month wait</b>. If this client elected the hearing rider to buy hearing aids, that is the whole conversation and it belongs on this call.</div>
+
+<h2 data-screen="tierdown"><span class="n">11</span>If they elected below your recommendation</h2>
+
+<div class="say" data-tier="below">One more thing for the record &mdash; the plan I&rsquo;d have put my own family in was <var data-k="tier.recommended">&lt;tier recommended&gt;</var>. You went with <var data-k="tier.elected">&lt;tier elected&gt;</var>. Something&rsquo;s better than nothing, and you&rsquo;ve got real coverage here. When things change, we step up. That&rsquo;s what the annual review is for.</div>
+
+<div class="aside">Four sentences, no pressure, and it is on the record. It is also the opening line of the annual review twelve months from now &mdash; which is exactly why it gets said out loud today.</div>
+
+<h2 data-screen="close"><span class="n">12</span>Close</h2>
+
+<div class="say">That&rsquo;s everything. You&rsquo;ve got a good plan, and more importantly you know how to use it. Any questions?</div>
+
+<div class="do"><span class="lab">NOT SPOKEN</span>Actually stop. Everything above was you talking for twelve minutes.</div>
+
+<div class="say">The biggest thank-you I can get is an introduction &mdash; if anyone you know is paying too much or has nothing, send them to me. And <var data-k="client.first">&lt;client first name&gt;</var>, I&rsquo;m not just the health guy. Life insurance, retirement, protecting your savings &mdash; I want to be your one advocate for all of it, and I want your family to know who to call if anything ever happens to you. Save my number under &ldquo;<var data-k="agent.first">Jesse</var> &mdash; <var data-k="agent.agency">Optimum</var>.&rdquo; I&rsquo;ll check in every six to twelve months, I&rsquo;ll keep an eye on your claims, and your annual review is already on my calendar for <var data-k="review.month">&lt;month&gt;</var>. You&rsquo;ll get a recap email from me within the hour.</div>
+
+<div class="do"><span class="lab">AFTER THE CALL</span>The recap email inside the hour, because you just promised it. The annual review on the calendar, because you just said it is there. Both are commitments made out loud on a recorded relationship.</div>
+
+<h2 data-screen="notes">Coaching notes <span style="font-size:13px;font-weight:400;color:#666">&mdash; agent only, never on screen for a client</span></h2>
+
+<div class="prep">
+<h4>Why the call is built this way</h4>
+<ul>
+<li><b>Pass the baton.</b> Make them log in, register, and install <i>on the call</i>. A client who never logged into their portal will call you for everything; a client who did will call <var data-k="policy.carrier">ManhattanLife</var>. Most of the &ldquo;needy&rdquo; clients are the result of not following this process through.</li>
+<li><b>Teach a man to fish.</b> You&rsquo;re the broker, not the carrier. The point of the call is that they leave knowing <i>who solves each problem</i>.</li>
+<li><b>Fifteen minutes each.</b> Eight policies a month is two hours that eliminates most of the support burden.</li>
+<li><b>Don&rsquo;t quote the visit count from memory.</b> Read it off the schedule for the tier and state.</li>
+<li><b>Say &ldquo;First Health,&rdquo; not &ldquo;Aetna.&rdquo;</b> First Health is Aetna-owned, which is where the &ldquo;it&rsquo;s Aetna&rsquo;s network&rdquo; habit comes from, but a front desk searches for First Health. Keep the client&rsquo;s script to the network name.</li>
+</ul>
+</div>
+
+<div class="prep">
+<h4>What this call is for, structurally</h4>
+<ul>
+<li><b>It is the lapse-prevention call.</b> The premium, the date and the account are said in section 2 and nowhere else. Most of what we have seen flagged as a &ldquo;lapse&rdquo; in the first month was a <b>first draft that bounced</b> &mdash; which is this call&rsquo;s job to prevent.</li>
+<li><b>It is the four-registration call.</b> Portal, telehealth, app, CareGuide. Each one not done on the call is a future phone call to you.</li>
+<li><b>It is the referral ask.</b> It is the only moment in the relationship where they are grateful and nothing has gone wrong yet.</li>
+<li><b>It sets up the annual review</b> by naming the month out loud, and by putting the tier-down note on the record.</li>
+</ul>
+</div>
+
+<div class="needs" data-author="note"><b>Open questions for Jesse &mdash; three.</b>
+<ol>
+<li><b>The &ldquo;wink, wink&rdquo; line on the per-day Rx benefit.</b> Kept as the plain rule above, with the wink removed from the written version. Confirm that is how you want it to read, or tell me to put your wording back verbatim.</li>
+<li><b>The dental frequencies</b> (two cleanings, two exams, two X-rays, two fluoride). Not in our reference file. Give me the schedule line and I will put the counts back in the spoken sentence.</li>
+<li><b>Provenance.</b> This came through as one finished piece. If any of it is Kyle&rsquo;s or Gaylan&rsquo;s wording rather than yours, say so and I will tag the blocks the way the presentation script is tagged.</li>
+</ol></div>
+
+</body></html>
