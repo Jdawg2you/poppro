@@ -4489,7 +4489,8 @@ function reviewRx(t){ var I=S.intake||{}, meds=(I.medList||[]).filter(function(m
   var priced=meds.map(function(m){ var d=medDisc(m), c=+m.cur||0; return d>0?d:c; });
   var all=meds.length&&priced.every(function(x){ return x>0; }), tot=priced.reduce(function(a,b){ return a+b; },0);
   return {meds:meds, priced:priced, all:!!all, total:tot, per:per, cap:X.rx_cap||'', day:X.rx_day||'',
-    math:!all||!per?'':(tot<per?'gain':'partial')}; }
+    /* exactly the daily benefit is a wash - neither "you made $0" nor "you're out $0" describes it, so neither is said */
+    math:!all||!per||Math.abs(tot-per)<0.005?'':(tot<per?'gain':'partial')}; }
 function reviewTokens(t){ var C=S.client||{}, R=reviewState(), T={}, m2=function(n){ return fmt2(+n||0); };
   var join=function(a){ return a.length<2?(a[0]||''):a.slice(0,-1).join(', ')+' and '+a[a.length-1]; };
   T['client.first']=((C.pname||'').trim().split(/\s+/)[0])||'';
