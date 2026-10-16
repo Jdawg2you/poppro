@@ -4504,7 +4504,7 @@ function presentDrxBox(){ var box=$('prDrx'); if(!box) return; var W=drxWho(); i
   S.present=S.present||{}; var on=drxOn();
   box.innerHTML='<b>Direction Rx — GLP-1 for weight loss</b>'+W.map(function(x){ return '<p class="pw-tags">'+esc(x.name)+': '+esc(x.drug)+(x.cost?' · pays '+fmt2(x.cost)+'/mo now':'')+'</p>'; }).join('')
     +'<div class="pw-row'+(on?' on':'')+'"><label><input type="checkbox" id="drxOn"'+(on?' checked':'')+'> Mention it in Bonus benefits</label>'
-    +'<small>'+DRX_PCT+' off Direction Rx’s own price for our clients with an active plan. It is <b>not</b> '+DRX_PCT+' off what they pay now — the script promises a lookup, not a saving.</small>'
+    +'<small>A teaser only: no vendor, no percentage, no savings promise before they buy. Direction Rx itself ('+DRX_PCT+' off their own price, with your code) is on the Benefits Review.</small>'
     +(String(S.agentDrxCode||'').trim()?'':'<small style="color:#b42318">No Direction Rx code in ⚙ Setup yet — add it before the Benefits Review.</small>')+'</div>';
   $('drxOn').onchange=function(){ S.present.drx=this.checked; autosave(); presentDrxBox(); try{ var fr=$('prFrame'); if(fr&&fr.contentDocument) presentWire(fr.contentDocument,presentTier()); }catch(e){} }; }
 /* the follow-up they keep: how to use it */
