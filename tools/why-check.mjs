@@ -70,14 +70,15 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  S=blankState(); applySuiteClient({first:'Pat',last:'Drx',state:'TX',age:'45',kids:[],health:{glp1On:'Yes',glp1Drug:'Wegovy',glp1For:'Weight loss',glp1Cost:'1100',spGlp1On:'Yes',spGlp1Drug:'Ozempic',spGlp1For:'Diabetes'}});
  S.client.sname='Jane Drx'; S.agentDrxLink='bit.ly/x'; S.agentDrxCode='OPT35'; S.review={eff:'2026-11-01',ticks:{}};
  var dw=drxWho(); ok(dw.length===1&&dw[0].w==='p','weight loss gets Direction Rx; diabetes (pinned) does not');
- var dl=drxLine(); ok(/You still pay for the medication/.test(dl)&&dl.indexOf('35% off')>0&&dl.indexOf('$1,100 a month')>0&&!/free|covered by/i.test(dl),'the line says they pay, 35% as our client, their own cost: '+dl);
+ var dp=drxParts(); ok(dp.drug==='Wegovy'&&dp.pct==='30%'&&dp.cost==='$1,100 a month','the parts: drug, one percentage from one place, their own cost: '+JSON.stringify(dp));
+ ok(/off Direction Rx\u2019s own price/.test(drxHowTo())&&/depends on their price for your dose/.test(drxHowTo())&&!/lowest/i.test(drxHowTo()),'the how-to is off THEIR price and promises no saving');
  ok(/use code OPT35/.test(drxHowTo())&&/November 1, 2026/.test(drxHowTo()),'the how-to carries the code and the active date');
  ok(/Direction Rx/.test(enrollEmail().body),'the enrollment email explains how to use it');
  S.intake.glp1.s.for='Both'; ok(drxWho().length===2,'"Both" counts as weight loss');
- S.intake.glp1={p:{on:'Yes',for:'Diabetes'},s:{}}; ok(!drxWho().length&&!/Direction Rx/.test(enrollEmail().body)&&drxLine()==='','no weight-loss GLP-1: no line, no email paragraph');
+ S.intake.glp1={p:{on:'Yes',for:'Diabetes'},s:{}}; ok(!drxWho().length&&!/Direction Rx/.test(enrollEmail().body)&&drxParts().drug==='','no weight-loss GLP-1: no block, no email paragraph');
  ok(reviewTicks().length===4,'no Direction Rx step in the Benefits Review without it');
  S.intake.glp1={p:{on:'Yes',for:'Weight loss',drug:'Zepbound'},s:{}}; ok(reviewTicks().length===5&&reviewTicks()[4].k==='drx','with it, a fifth Benefits Review step');
- S.present={drx:false}; ok(drxLine()===''&&presentScriptTokens('better')['drx.line']==='','switched off on Present: nothing said'); S.present={};
+ S.present={drx:false}; ok(drxParts().drug===''&&presentScriptTokens('better')['drx.drug']==='','switched off on Present: drx.drug empty, the block drops out'); S.present={};
  /* an old file keeps its why */
  S=blankState(); applySuiteClient({first:'Old',last:'File',state:'TX',age:'50',kids:[],health:{whyMatters:'keep Dr. Patel',whyShop:'premium jumped'}});
  ok(S.intake.whyMatters==='keep Dr. Patel'&&S.intake.whyShop==='premium jumped'&&whyTagList(S.intake.whyTags).length===0,'an older file without tags still loads its why and story');

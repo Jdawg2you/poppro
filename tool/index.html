@@ -4484,27 +4484,30 @@ function readAgent(){ S.agency=($('in_agency').value||'').trim()||'HealthFirst';
    ManhattanLife product, using the agent's code on Direction Rx's site. So it is a discount they have access to, never
    "covered" and never free. Only for weight loss ("Both" counts); diabetes is pinned. Each agent's link and code live in
    Setup. No dollar saving is worked out - prices depend on the drug and dose - their current cost is said as theirs. */
-var DRX_PCT='35%';
+/* ONE place for the figure. Jesse said 35%; his DirectionRx pricing chart (16 Oct, member code 4-MEM-26-6) says
+   "30% Off = 30% discount applied to Patient Price" on every row. 30% until he confirms otherwise. */
+var DRX_PCT='30%';
 function drxWho(){ var G=(S.intake&&S.intake.glp1)||{}, C=S.client||{}, out=[];
   [['p',(C.pname||'').trim().split(/\s+/)[0]],['s',(C.sname||'').trim().split(/\s+/)[0]]].forEach(function(x){ var g=G[x[0]]||{};
     if(g.on==='Yes'&&(g.for==='Weight loss'||g.for==='Both')) out.push({w:x[0],name:x[1]||(x[0]==='s'?'your spouse':'you'),drug:medBase(g.drug||'')||'your GLP-1',cost:+g.cost||0}); });
   return out; }
 function drxLink(){ var u=String(S.agentDrxLink||'').trim(); return u?(/^https?:\/\//i.test(u)?u:'https://'+u):''; }
 function drxOn(){ var P=S.present||{}; return P.drx==null?true:!!P.drx; }
-/* the Bonus benefits line on Present */
-function drxLine(){ var W=drxWho(); if(!W.length||!drxOn()) return ''; var one=W.length===1, x=W[0];
-  var who=one?(x.w==='s'?x.name+' is':'you’re'):'you’re both', drug=one?x.drug:'your GLP-1s';
-  var cost=W.filter(function(y){ return y.cost>0; }).map(function(y){ return (one?(y.w==='s'?y.name+' is':'you’re'):(y.w==='s'?y.name+' is':'you’re'))+' paying $'+Math.round(y.cost).toLocaleString('en-US')+' a month for it now'; });
-  return 'And since '+who+' on '+drug+' for weight loss — because you’ll have an active ManhattanLife plan with us, you get access to Direction Rx. You still pay for the medication, but as our client it’s '+DRX_PCT+' off their prices.'+(cost.length?' You told me '+cost.join(', and ')+'.':''); }
+/* Health ZONE owns the wording (gated); MyPopPro serves the parts. drx.drug empty = the block drops out. */
+function drxParts(){ var W=drxWho(), on=drxOn(); if(!W.length||!on) return {drug:'',pct:'',cost:''};
+  var drug=W.length===1?W[0].drug:W.map(function(x){ return x.drug; }).filter(function(d,i,a){ return a.indexOf(d)===i; }).join(' and ');
+  var c=W.filter(function(x){ return x.cost>0; })[0];
+  return {drug:drug, pct:DRX_PCT, cost:c?'$'+Math.round(c.cost).toLocaleString('en-US')+' a month':''}; }
 function presentDrxBox(){ var box=$('prDrx'); if(!box) return; var W=drxWho(); if(!W.length){ box.style.display='none'; return; } box.style.display='';
   S.present=S.present||{}; var on=drxOn();
   box.innerHTML='<b>Direction Rx — GLP-1 for weight loss</b>'+W.map(function(x){ return '<p class="pw-tags">'+esc(x.name)+': '+esc(x.drug)+(x.cost?' · pays '+fmt2(x.cost)+'/mo now':'')+'</p>'; }).join('')
-    +'<div class="pw-row'+(on?' on':'')+'"><label><input type="checkbox" id="drxOn"'+(on?' checked':'')+'> Mention it in Bonus benefits</label><small>'+esc(drxLine()||'')+'</small>'
+    +'<div class="pw-row'+(on?' on':'')+'"><label><input type="checkbox" id="drxOn"'+(on?' checked':'')+'> Mention it in Bonus benefits</label>'
+    +'<small>'+DRX_PCT+' off Direction Rx’s own price for our clients with an active plan. It is <b>not</b> '+DRX_PCT+' off what they pay now — the script promises a lookup, not a saving.</small>'
     +(String(S.agentDrxCode||'').trim()?'':'<small style="color:#b42318">No Direction Rx code in ⚙ Setup yet — add it before the Benefits Review.</small>')+'</div>';
   $('drxOn').onchange=function(){ S.present.drx=this.checked; autosave(); presentDrxBox(); try{ var fr=$('prFrame'); if(fr&&fr.contentDocument) presentWire(fr.contentDocument,presentTier()); }catch(e){} }; }
 /* the follow-up they keep: how to use it */
 function drxHowTo(){ var W=drxWho(); if(!W.length) return ''; var R=(S.review||{}), eff=R.eff?reviewDate(R.eff):'', code=String(S.agentDrxCode||'').trim(), link=drxLink();
-  return 'Direction Rx, for '+(W.length>1?'your GLP-1s':W[0].drug)+': as a ManhattanLife client with an active plan, you get '+DRX_PCT+' off. You pay for the medication; the discount comes from being our client. '
+  return 'Direction Rx, for '+(W.length>1?'your GLP-1s':W[0].drug)+': as a ManhattanLife client with an active plan, you get '+DRX_PCT+' off Direction Rx’s own price. You pay for the medication. Whether it beats what you pay today depends on their price for your dose, so compare before you switch. '
     +'Once your plan is active'+(eff?' on '+eff:'')+', go to '+(link||'the Direction Rx website')+(code?' and use code '+code:' — I’ll send you your code')+'.'; }
 /* ===== The client's Why (Jesse, 2026-10-16) =====
    One Why, in their exact words, quoted back on the presentation ("you said, ..."), plus tags. The read-back only
@@ -4688,7 +4691,7 @@ function reviewTokens(t){ var C=S.client||{}, R=reviewState(), T={}, m2=function
     if(X.math==='partial'){ T['client.rx_covered']=m2(X.per)+' of it'; T['client.rx_short']=m2(X.total-X.per); } }
   T['careguide.threshold']='$2,500';
   T['tier.elected']=TIER_NAME[t]||''; T['tier.recommended']=TIER_NAME[(S.rec&&S.rec.tier)||S.recommended]||'';
-  T['drx.howto']=drxHowTo();
+  var DQ=drxParts(); T['drx.drug']=drxWho().length?DQ.drug||drxWho()[0].drug:''; T['drx.pct']=DRX_PCT; T['drx.link']=drxLink(); T['drx.code']=String(S.agentDrxCode||'').trim(); T['drx.howto']=drxWho().length?'1':'';   /* the block's switch; its words are Health ZONE's */
   T['review.month']=R.month||(R.eff?MONTHS[+String(R.eff).slice(5,7)-1]:'');
   return T; }
 var REVIEW_CSS='.rv-tick{margin:10px 0 4px;padding:10px 14px;border:2px dashed #2f7d4a;border-radius:10px;background:#f2fbf5;font:inherit;font-size:14px;display:flex;align-items:center;gap:10px;cursor:pointer}'
@@ -4730,7 +4733,7 @@ function reviewWire(doc,t){ if(!doc||!doc.body) return; var T=reviewTokens(t), X
   var R=reviewState(); Array.prototype.forEach.call(doc.querySelectorAll('.rv-tick'),function(l){ var on=!!R.ticks[l.dataset.tick]; l.querySelector('input').checked=on; l.classList.toggle('on',on); }); }
 function reviewTick(k,on){ var R=reviewState(); if(on) R.ticks[k]=new Date().toISOString(); else delete R.ticks[k]; autosave(); reviewRail(); var fr=$('rvFrame'); if(fr&&fr.contentDocument) reviewWire(fr.contentDocument,chosenTier()); }
 /* the registration the script is on right now - its row is boxed in green, so the agent sends one thing at a time */
-function reviewCurTick(){ var t=chosenTier(), R=reviewState(), p=reviewPages(t)[+R.pg||0]; return (p&&p.tick)||''; }
+function reviewCurTick(){ var t=chosenTier(), R=reviewState(), p=reviewPages(t)[+R.pg||0]; if(p&&p.sc==='rx'&&drxWho().length) return 'drx'; return (p&&p.tick)||''; }
 function reviewTicks(){ var L=REVIEW_TICKS.slice(); if(drxWho().length) L.push({k:'drx',t:'Direction Rx code sent (GLP-1)',open:'Open Direction Rx',url:drxLink()||'#',copy:String(S.agentDrxCode||'').trim()||drxLink(),copyLabel:String(S.agentDrxCode||'').trim()?'Copy code':'Copy link',sms:function(f){ return 'Hi '+f+'! '+drxHowTo(); }}); return L; }
 function reviewRail(){ var REVIEW_TICKS=reviewTicks(), R=reviewState(), box=$('rvTicks'); if(!box) return; var ph=String((S.intake||{}).phone||'').replace(/[^\d+]/g,''); if(/^\d{10}$/.test(ph)) ph='+1'+ph; else if(/^1\d{10}$/.test(ph)) ph='+'+ph;
   var first=((S.client||{}).pname||'').trim().split(/\s+/)[0]||'there', n=REVIEW_TICKS.filter(function(x){ return R.ticks[x.k]; }).length;
@@ -4826,7 +4829,7 @@ var NEWS=[
   ['Booking fills the follow-up','The date and time you book at the end of the call land in Send the quote on the Quote page.'],
   ['GLP-1 questions','The call asks about Ozempic, Wegovy, Mounjaro, Zepbound and Saxenda. The Intake has a GLP-1 row for each person that opens only if they’re on one: which drug, diabetes or weight, how long, what they pay and where they get it. A GLP-1 on the medication list fills it in for you.'],
   ['Benefits Review','A sixth step for the call after approval: type the effective date, premium and draft date off the carrier’s confirmation, then walk the script while the client registers the portal, telehealth, the Easy Upload app and CareGuide. The one you’re on is boxed in green, with Open, Text them (Messages opens with a note and the link) and Copy link. CareGuide’s text includes a tap-to-save contact card. Their prescriptions are priced against the daily benefit, and only the true sentence is shown.'],
-  ['Direction Rx for GLP-1 weight loss','When someone is on a GLP-1 for weight loss, Present offers a Bonus benefits line about Direction Rx — they pay for the medication, but as our client it’s 35% off. The Benefits Review gets a step to text them the link and your code, and the enrollment email explains how to use it. Add your Direction Rx link and code in ⚙ Setup.'],
+  ['Direction Rx for GLP-1 weight loss','When someone is on a GLP-1 for weight loss, Present offers a Bonus benefits line about Direction Rx — they pay for the medication, and as our client they get a discount off Direction Rx’s own price. The Benefits Review gets a step to text them the link and your code, and the enrollment email explains how to use it. Add your Direction Rx link and code in ⚙ Setup.'],
   ['Their why, in their words','One Why on the call and the Intake: type exactly what they said, click what’s behind it, and see what you’ll say back. On Present it’s quoted back — “you said, …” — with their own numbers, and the close offers only the answers the quote actually supports, each one yours to switch on or off.'],
   ['Recommended vs what they bought','Presenting a plan records it as your recommendation, product by product. Enroll records what they actually bought and lists every gap — a lower package, products declined, levels lowered — with a box to tick each one they knowingly declined.'],
   ['Your benefits page in Setup','Add the link to your own client resource page (your ManhattanLife benefits page, flipbook or similar) in ⚙ Setup. The Benefits Review opens it for every client.'],
@@ -5700,7 +5703,7 @@ function presentWhy(I){ var m=String((I&&I.whyMatters)||'').trim(); if(m) return
 function presentScriptTokens(t){ var T=presentTokens(t), C=S.client||{}, I=S.intake||{}, Cu=curIn(), pk=S.packages[t]||{products:[]}, c=effCfg(t), o=evTierPack(t), A=o.afc||{};
   var m0=function(n){ return '$'+Math.round(+n||0).toLocaleString('en-US'); };
   var who=I.who||{}, hh=who.kids?'you and your family':who.spouse?'you and your spouse':'you'; T['client.household_to']='to '+hh; T['client.household_for']='for '+hh;
-  T['client.why_quote']=whyQuote(I); T['client.why_facts']=whyFacts(I); T['why.answer']=whyAnswerText(t); T['drx.line']=drxLine();
+  T['client.why_quote']=whyQuote(I); T['client.why_facts']=whyFacts(I); T['why.answer']=whyAnswerText(t); var DP=drxParts(); T['drx.drug']=DP.drug; T['drx.pct']=DP.pct; T['drx.cost']=DP.cost;
   T['agent.first']=((C.agent||'').trim().split(/\s+/)[0])||''; T['agent.phone']=S.agentPhone||''; T['agent.email']=S.agentEmail||'';
   T['agent.website']=S.agentWebsite||''; T['agent.card']=S.agentCard||''; T['agent.booking']=S.agentBooking||'';
   T['client.legal_name']=(C.pname||'').trim(); T['client.dob']=C.dob||C.date||''; T['client.phone']=I.phone||''; T['client.email']=I.email||'';

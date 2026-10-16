@@ -82,9 +82,13 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  S.chosen={tier:'best'}; goStep('enroll'); await w(200); ok(recGap().length===0&&/took what you recommended/.test(document.getElementById('enDiff').textContent),'no gap when they take the recommendation');
  S.rec=null; renderRecGap(); ok(/No recommendation on record/.test(document.getElementById('enDiff').textContent),'never presented: says so, offers the tool\u2019s REC');
  S.chosen={tier:'better'}; S.recommended='best';
+ /* Direction Rx block inside screen 7: only for a weight-loss GLP-1, with the agent's code */
+ S.agentDrxCode='OPT35'; S.agentDrxLink='bit.ly/x'; S.intake.glp1={p:{on:'Yes',for:'Weight loss',drug:'Zepbound'},s:{}}; reviewWire(d,'better');
+ var db=d.querySelector('[data-needs="drx.howto"]'); ok(db&&!db.classList.contains('pp-off')&&/OPT35/.test(db.textContent)&&/30%/.test(db.textContent),'Benefits Review: the Direction Rx block shows with the code and 30%');
+ S.intake.glp1={}; reviewWire(d,'better'); ok(db&&db.classList.contains('pp-off'),'no weight-loss GLP-1: the block is gone');
  /* setup asks for the benefits page */
  S.agentBenefits=''; ok(agentSetupMissing().indexOf('benefits page')>=0,'Setup counts the benefits page until it is filled');
- return {n:42, fails:fails}; })()`;
+ return {n:44, fails:fails}; })()`;
 try {
   let l; for (let i = 0; i < 60 && !l; i++) { await sleep(150); l = await fetch(`http://127.0.0.1:${DBG}/json/list`).then(r => r.json()).catch(() => null); }
   ws = new WebSocket(l.find(t => t.type === 'page').webSocketDebuggerUrl);
