@@ -4488,6 +4488,8 @@ function readAgent(){ S.agency=($('in_agency').value||'').trim()||'HealthFirst';
    "30% Off = 30% discount applied to Patient Price" on every row. 30% until he confirms otherwise. */
 var DRX_PCT='30%';
 function drxWho(){ var G=(S.intake&&S.intake.glp1)||{}, C=S.client||{}, out=[];
+  /* the discount needs an active ManhattanLife product: a LifeX or Cigna plan gets nothing (Health ZONE, 16 Oct) */
+  var ct=chosenTier(); if(ct&&tierNonMh(ct)) return out;
   [['p',(C.pname||'').trim().split(/\s+/)[0]],['s',(C.sname||'').trim().split(/\s+/)[0]]].forEach(function(x){ var g=G[x[0]]||{};
     if(g.on==='Yes'&&(g.for==='Weight loss'||g.for==='Both')) out.push({w:x[0],name:x[1]||(x[0]==='s'?'your spouse':'you'),drug:medBase(g.drug||'')||'your GLP-1',cost:+g.cost||0}); });
   return out; }

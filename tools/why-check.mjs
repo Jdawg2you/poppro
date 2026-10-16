@@ -75,6 +75,7 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  ok(/use code OPT35/.test(drxHowTo())&&/November 1, 2026/.test(drxHowTo()),'the how-to carries the code and the active date');
  ok(/Direction Rx/.test(enrollEmail().body),'the enrollment email explains how to use it');
  S.intake.glp1.s.for='Both'; ok(drxWho().length===2,'"Both" counts as weight loss');
+ var nm=tierNonMh; tierNonMh=function(){ return {name:'LifeX'}; }; S.chosen={tier:'good'}; ok(drxWho().length===0&&!/Direction Rx/.test(enrollEmail().body),'a LifeX / Cigna plan gets no Direction Rx'); tierNonMh=nm; S.chosen={tier:'better'};
  S.intake.glp1={p:{on:'Yes',for:'Diabetes'},s:{}}; ok(!drxWho().length&&!/Direction Rx/.test(enrollEmail().body)&&drxParts().drug==='','no weight-loss GLP-1: no block, no email paragraph');
  ok(reviewTicks().length===4,'no Direction Rx step in the Benefits Review without it');
  S.intake.glp1={p:{on:'Yes',for:'Weight loss',drug:'Zepbound'},s:{}}; ok(reviewTicks().length===5&&reviewTicks()[4].k==='drx','with it, a fifth Benefits Review step');
@@ -82,7 +83,7 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  /* an old file keeps its why */
  S=blankState(); applySuiteClient({first:'Old',last:'File',state:'TX',age:'50',kids:[],health:{whyMatters:'keep Dr. Patel',whyShop:'premium jumped'}});
  ok(S.intake.whyMatters==='keep Dr. Patel'&&S.intake.whyShop==='premium jumped'&&whyTagList(S.intake.whyTags).length===0,'an older file without tags still loads its why and story');
- return {n:38, fails:fails}; })()`;
+ return {n:39, fails:fails}; })()`;
 try {
   let l; for (let i = 0; i < 60 && !l; i++) { await sleep(150); l = await fetch(`http://127.0.0.1:${DBG}/json/list`).then(r => r.json()).catch(() => null); }
   ws = new WebSocket(l.find(t => t.type === 'page').webSocketDebuggerUrl);
