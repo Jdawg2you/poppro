@@ -45,14 +45,17 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  var keep=S.intake.medList; S.intake.medList=[{name:'Eliquis',disc:48,forP:true},{name:'Metformin',disc:9,forP:true}]; var T2=reviewTokens('better'), X2=reviewRx('better');
  ok(X2.math==='partial'&&!T2['client.rx_gain']&&T2['client.rx_short']==='$7.00','over the daily benefit: never a gain, the shortfall instead');
  S.intake.medList=[{name:'Eliquis',forP:true}]; ok(reviewRx('better').math==='','an unpriced med list serves neither sentence');
- S.intake.medList=[{name:'Eliquis',disc:41,forP:true},{name:'Metformin',disc:9,forP:true}]; ok(reviewRx('better').math==='','fills of exactly the daily benefit serve neither sentence');
+ S.intake.medList=[{name:'Eliquis',disc:41,forP:true},{name:'Metformin',disc:9,forP:true}]; ok(reviewRx('better').math==='wash','fills of exactly the daily benefit serve the wash sentence');
  S.intake.medList=keep;
  var pages=reviewPages('better').map(function(p){ return p.t; });
  ok(pages.indexOf('Dental')<0,'no dental screen when no dental was elected'); ok(pages.indexOf('If they elected below')>=0,'tier-below screen when they took less than recommended');
  S.chosen={tier:'best'}; ok(reviewPages('best').map(function(p){ return p.t; }).indexOf('If they elected below')<0,'no tier-below screen when they took the recommendation'); S.chosen={tier:'better'};
+ var ag=S.agency; S.agency='HealthFirst'; reviewWire(d,'better'); ok(Array.prototype.every.call(d.querySelectorAll('[data-needs="agent.agency"]'),function(x){ return x.classList.contains('pp-off'); })&&d.querySelectorAll('[data-needs="agent.agency"]').length===2,'no agency: both agency phrases drop out'); S.agency=ag;
  reviewWire(d,'better');
+ ok(Array.prototype.every.call(d.querySelectorAll('[data-needs="agent.agency"]'),function(x){ return !x.classList.contains('pp-off'); }),'agency set: its phrases show');
  var vis=function(sel){ var e=d.querySelector(sel); return !!e&&!e.classList.contains('pp-off'); };
  ok(!vis('[data-rx-math="partial"]')&&vis('[data-rx-math="gain"]'),'gain branch shown, partial hidden');
+ ok(!vis('[data-rx-math="wash"]'),'wash hidden when it is a gain');
  ok(Array.prototype.every.call(d.querySelectorAll('[data-author="note"]'),function(x){ return x.classList.contains('pp-off'); })&&!vis('p.sub0'),'agent-only notes and the build line are hidden');
  var a=d.querySelectorAll('.btnrow a'); ok(a.length===5&&a[0].href.indexOf('clients.manhattanlife.com')>0&&a[4].href==='https://optimumprotects.com/manhattanlife','buttons are real links; the resource page is the Setup link: '+(a[4]&&a[4].href));
  set('rv_link','client-own.example/page'); await w(50); reviewWire(d,'better'); ok(d.querySelectorAll('.btnrow a')[4].href==='https://client-own.example/page','a client-specific page overrides the Setup link'); set('rv_link','');
@@ -63,7 +66,7 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  ok(['ecg','upload','cg'].every(function(k){ return !!d.querySelector('.rv-tick[data-tick="'+k+'"]'); }),'all four registration screens carry a tick');
  /* setup asks for the benefits page */
  S.agentBenefits=''; ok(agentSetupMissing().indexOf('benefits page')>=0,'Setup counts the benefits page until it is filled');
- return {n:27, fails:fails}; })()`;
+ return {n:30, fails:fails}; })()`;
 try {
   let l; for (let i = 0; i < 60 && !l; i++) { await sleep(150); l = await fetch(`http://127.0.0.1:${DBG}/json/list`).then(r => r.json()).catch(() => null); }
   ws = new WebSocket(l.find(t => t.type === 'page').webSocketDebuggerUrl);

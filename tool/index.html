@@ -4489,8 +4489,8 @@ function reviewRx(t){ var I=S.intake||{}, meds=(I.medList||[]).filter(function(m
   var priced=meds.map(function(m){ var d=medDisc(m), c=+m.cur||0; return d>0?d:c; });
   var all=meds.length&&priced.every(function(x){ return x>0; }), tot=priced.reduce(function(a,b){ return a+b; },0);
   return {meds:meds, priced:priced, all:!!all, total:tot, per:per, cap:X.rx_cap||'', day:X.rx_day||'',
-    /* exactly the daily benefit is a wash - neither "you made $0" nor "you're out $0" describes it, so neither is said */
-    math:!all||!per||Math.abs(tot-per)<0.005?'':(tot<per?'gain':'partial')}; }
+    /* exactly the daily benefit is a wash - the script's own third sentence (Health ZONE, 16 Oct) */
+    math:!all||!per?'':(Math.abs(tot-per)<0.005?'wash':(tot<per?'gain':'partial'))}; }
 function reviewTokens(t){ var C=S.client||{}, R=reviewState(), T={}, m2=function(n){ return fmt2(+n||0); };
   var join=function(a){ return a.length<2?(a[0]||''):a.slice(0,-1).join(', ')+' and '+a[a.length-1]; };
   T['client.first']=((C.pname||'').trim().split(/\s+/)[0])||'';
@@ -4531,7 +4531,9 @@ function reviewWire(doc,t){ if(!doc||!doc.body) return; var T=reviewTokens(t), X
     else { v.textContent=v.dataset.ex; v.classList.add('pp-miss'); v.title='missing: '+k; } });
   var show=function(sel,on){ Array.prototype.forEach.call(doc.querySelectorAll(sel),function(x){ x.classList.toggle('pp-off',!on); }); };
   show('[data-rx="has"]',X.meds.length>0); show('[data-rx="none"]',!X.meds.length);
-  show('[data-rx-math="gain"]',X.math==='gain'); show('[data-rx-math="partial"]',X.math==='partial');
+  show('[data-rx-math="gain"]',X.math==='gain'); show('[data-rx-math="partial"]',X.math==='partial'); show('[data-rx-math="wash"]',X.math==='wash');
+  /* data-needs="key": the words around a value go with it when it's empty, so a spoken sentence still reads */
+  Array.prototype.forEach.call(doc.querySelectorAll('[data-needs]'),function(x){ var k=x.getAttribute('data-needs'); x.classList.toggle('pp-off',!(T[k]!=null&&String(T[k]).trim())); });
   show('[data-doctor="none"]',![I.docs1,I.docs2,I.docs3].some(function(d){ return String(d||'').trim(); }));
   show('[data-dental="yes"]',reviewDental(t)); show('[data-tier="below"]',reviewBelow(t));
   /* agent-only notes, the build line and the provenance line - same rule as the presentation script */
