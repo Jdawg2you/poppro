@@ -627,6 +627,14 @@
   .wl-you{margin:18px 20px 0;padding-top:14px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}.wl-you b{font-family:var(--serif);color:var(--navy);font-size:17px;margin-right:6px}.wl-you i{font-style:normal}.wl-you i.needfill-sum{color:#17824a;font-weight:700}
   #agentSetup{padding:8px 20px 4px}
   #setupModal{z-index:2000}
+  /* The Why */
+  .whyblock{border:1.5px solid #e6d3a3;background:#fffaf0;border-radius:12px;padding:10px 12px;margin-bottom:10px}
+  .whylab{font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:6px 0 4px}.whylab small{text-transform:none;letter-spacing:0;font-weight:500;margin-left:4px}
+  .whysay{margin-top:8px;font-size:14px;line-height:1.5;color:#1e2a44;background:#fff;border-left:3px solid #2c4a7c;border-radius:6px;padding:8px 11px}.whysay b{color:#2c4a7c;margin-right:4px}.whysay .ws-none{color:var(--muted)}
+  .pw-q{font-family:var(--serif);font-size:15px;color:var(--navy);margin:2px 0 4px;font-style:italic}.pw-tags{font-size:12px;color:var(--muted);margin:0 0 6px}.pw-none{font-size:12.5px;color:var(--muted);margin:0}
+  .pw-sub{font-size:12px;color:var(--muted);margin:6px 0 2px}.pw-row{border-top:1px dotted var(--line);padding:7px 0}.pw-row label{display:flex;gap:6px;align-items:center;font-size:13px;font-weight:700;color:var(--navy);cursor:pointer}.pw-row label em{font-style:normal;font-weight:600;font-size:11px;color:#8a5a00}
+  .pw-row textarea{width:100%;box-sizing:border-box;font:inherit;font-size:12.5px;border:1px solid var(--line);border-radius:6px;padding:5px 7px;margin-top:4px;background:#fff;opacity:.55;resize:vertical}.pw-row.on textarea{opacity:1;border-color:#9fd7b4;background:#f2fbf5}
+  .pw-row small{display:block;font-size:11px;color:var(--muted);margin-top:3px}.pw-no span{font-size:12.5px;color:var(--muted);font-weight:600}
   /* Recommended vs elected */
   .rg-box{border:1.5px solid #e0b9a6;background:#fff8f4;border-radius:12px;padding:12px 14px;margin:12px 0}.rg-box.rg-ok{border-color:#9fd7b4;background:#f2fbf5}.rg-box.rg-none{border-color:var(--line);background:#faf7ef;font-size:13.5px;color:var(--navy)}
   .rg-head{display:flex;gap:18px;flex-wrap:wrap;font-size:14px;color:var(--navy)}.rg-head b{font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-right:4px}.rg-head small{color:var(--muted);margin-left:4px}
@@ -1080,8 +1088,14 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
 
 
     <div class="intake-sec" id="sec_client">Client Information</div>
-    <div class="fld" style="margin-bottom:8px"><label>What matters most — their words <small>short · the one thing the plan has to do · read back to them on the presentation</small></label><input id="in_whymatters" placeholder="e.g. keep Dr. Patel · never get wiped out by a hospital bill"></div>
-    <div class="fld" style="margin-bottom:8px"><label>What prompted it / current-plan pain <small>the story, for you · not read aloud or printed</small></label><input id="in_whyshop" placeholder="e.g. premium jumped, deductible too high, lost group plan"></div>
+    <!-- One Why (Jesse, 2026-10-16): their exact words, quoted back on the presentation, plus what's behind it -->
+    <div class="whyblock">
+      <div class="fld" style="margin-bottom:6px"><label>Their why — in their words <small>exactly as they said it · quoted back to them on the presentation</small></label><input id="in_whymatters" placeholder="e.g. healthcare has just gotten so flippin' expensive"></div>
+      <div class="whylab">What’s behind it <small>click any</small></div>
+      <div class="chips" id="whyTagBox"></div>
+      <div class="whysay" id="whySay"></div>
+    </div>
+    <div class="fld" style="margin-bottom:8px"><label>Their story <small>for you · not read back or printed</small></label><input id="in_whyshop" placeholder="e.g. premium jumped in January, a claim that didn't pay, lost the group plan"></div>
     <div class="fld" style="margin-bottom:8px"><label>Plan they already found <small>what they landed on and what it costs</small></label><input id="in_foundplan" placeholder="e.g. Ambetter Silver, $612/mo"></div>
     <div class="intakegrid">
       <div class="fld"><label>Primary name</label><input id="in_pname" class="keyfield" placeholder="First and Last"></div>
@@ -3704,6 +3718,8 @@ function applySuiteClient(c, live){ var sm=$('setupModal'); if(sm&&!live&&sm.cla
   if(h.effDate)  I.effDate=suiteDate(h.effDate);
   if(h.whyShop)  I.whyShop=h.whyShop;
   if(h.whyMatters) I.whyMatters=h.whyMatters;
+  if(h.whyTags) I.whyTags=whyTagList(h.whyTags);
+  if(h.lastDay) I.lastDay=suiteDate(h.lastDay);
   var g1=glp1FromSuite(h); if(g1) I.glp1=g1;
   if(h.foundPlan) I.foundPlan=h.foundPlan;
 
@@ -4399,7 +4415,7 @@ function suiteFromNavProfile(P){
       incomeThis:P.income_this||"", incomeSpouse:P.sp_income||"", incomeHousehold:P.hh_income||"",
       retireAge:P.i_retire||"", spRetireAge:P.sp_retire||"", liquid:P.i_liquid||"", invest:P.asset_amt||"",
       protectable:P.asset_prot||"", invnote:P.asset_notes||"", budgetComfort:P.budget_comfort||"", budgetMax:P.budget_max||"",
-      healthNotes:P.health_notes||"", healthOther:P.health_other||"", whyShop:P.why_note||"", whyMatters:P.why_matters||"", foundPlan:P.found_plan||"", effDate:P.start_when||"", lastDay:P.last_day||"",
+      healthNotes:P.health_notes||"", healthOther:P.health_other||"", whyShop:P.why_note||"", whyMatters:P.why_matters||"", whyTags:P.why_tags||"", foundPlan:P.found_plan||"", effDate:P.start_when||"", lastDay:P.last_day||"",
       glp1On:P.glp1||"", glp1Drug:P.glp1_drug||"", glp1For:P.glp1_for||"", glp1Since:P.glp1_since||"", glp1Cost:P.glp1_cost||"", glp1Source:P.glp1_source||"",
       spGlp1On:P.sp_glp1||"", spGlp1Drug:P.sp_glp1_drug||"", spGlp1For:P.sp_glp1_for||"", spGlp1Since:P.sp_glp1_since||"", spGlp1Cost:P.sp_glp1_cost||"", spGlp1Source:P.sp_glp1_source||"",
       apptWhen:P.appt_when||"", apptWho:P.appt_who||"", apptNotes:P.appt_notes||"", occupation:P.occupation||"", occYears:P.occ_years||"",
@@ -4454,6 +4470,77 @@ function agentSetupFold(){ var miss=agentSetupMissing(), b=$('setupBtn'), n=$('s
 function fillAgent(){ $('in_agency').value=(S.agency&&S.agency!=='HealthFirst')?S.agency:(S.agency||''); $('in_agent').value=(S.client||{}).agent||''; $('in_aphone').value=S.agentPhone||''; $('in_aemail').value=S.agentEmail||''; $('in_anpn').value=S.agentNPN||''; $('in_aweb').value=S.agentWebsite||''; $('in_acard').value=S.agentCard||''; $('in_abook').value=S.agentBooking||''; $('in_abenefits').value=S.agentBenefits||''; agentSetupFold(); }
 /* Only the agent fields - captureIntake() would also read the client boxes, which are stale off the Intake step. */
 function readAgent(){ S.agency=($('in_agency').value||'').trim()||'HealthFirst'; S.client=S.client||{}; S.client.agent=$('in_agent').value; S.agentPhone=$('in_aphone').value; S.agentEmail=$('in_aemail').value; S.agentNPN=($('in_anpn').value||'').trim(); S.agentWebsite=($('in_aweb').value||'').trim(); S.agentCard=($('in_acard').value||'').trim(); S.agentBooking=($('in_abook').value||'').trim(); S.agentBenefits=($('in_abenefits').value||'').trim(); agentSetupFold(); autosave(); }
+/* ===== The client's Why (Jesse, 2026-10-16) =====
+   One Why, in their exact words, quoted back on the presentation ("you said, ..."), plus tags. The read-back only
+   repeats what THEY told us - their words and their own numbers - so it is always true. The answers (what our plan
+   does about it) are worked out from the quote and only say what the numbers support; each one is switched on or
+   off by the agent on Present, and only strong ones start on. Kept out of the post-call text and the emails (Jesse:
+   once they buy, we've moved past it). */
+var WHY_TAGS=['Too expensive','Deductible too high','Losing coverage','No coverage now','Doctor / network','Life change','Other'];
+function whyTagList(v){ return (Array.isArray(v)?v:String(v||'').split(/\s*,\s*/)).map(function(x){ return String(x||'').trim(); }).filter(function(x){ return WHY_TAGS.indexOf(x)>=0; }); }
+/* their words; an older file with no why but a one-line story still reads back - a long story never does */
+function whyQuote(I){ var m=String((I&&I.whyMatters)||'').trim(); if(!m){ var w=String((I&&I.whyShop)||'').trim(); if(w&&w.length<=80&&!/[\n.!?].+/.test(w)) m=w; }
+  return m.replace(/^["“”']+|["“”']+$/g,'').replace(/[.!\s]+$/,''); }
+function whyHouse(){ var k=householdKey(); return k==='f'||k==='c'?'you and your family':k==='s'?'you and your spouse':'you'; }
+function whyDocs(){ var I=S.intake||{}, out=[]; [I.docs1,I.docs2,I.docs3].forEach(function(x){ String(x||'').split(/[;,]|\s+and\s+/i).forEach(function(d){
+    d=d.replace(/\s*\(.*?\)\s*/g,' ').replace(/\s+[-–—]\s+.*$/,'').replace(/^\s*(dr\.?|doctor)\s+/i,'').trim(); if(d&&out.indexOf(d)<0) out.push(d); }); });
+  var dn=out.map(function(d){ return 'Dr '+d; }); return dn.length<2?(dn[0]||''):dn.slice(0,-1).join(', ')+' and '+dn[dn.length-1]; }
+/* "You told me ..." - only facts they gave us. A tag with no number behind it adds nothing. */
+function whyFacts(I,tags){ I=I||S.intake||{}; tags=tags||whyTagList(I.whyTags); var C=curIn(), m0=function(n){ return '$'+Math.round(+n||0).toLocaleString('en-US'); }, has=function(x){ return tags.indexOf(x)>=0; }, P=[];
+  var paying=+C.prem>0&&C.paying!==false;
+  if(has('Too expensive')&&paying){ P.push('you’re paying '+m0(C.prem)+' a month'+(has('Deductible too high')&&+C.ded>0?', with a '+m0(C.ded)+' deductible to get through first':'')); }
+  else if(has('Deductible too high')&&+C.ded>0) P.push('you’ve got a '+m0(C.ded)+' deductible to get through first');
+  if(has('Losing coverage')&&I.lastDay) P.push('your coverage ends '+I.lastDay);
+  if(has('No coverage now')) P.push('right now '+(whyHouse()==='you'?'you don’t have':'nobody in the family has')+' coverage');
+  if(has('Doctor / network')){ var dn=whyDocs(); if(dn) P.push('you want to keep '+dn); }
+  if(!P.length) return '';
+  return 'You told me '+(P.length<2?P[0]:P.slice(0,-1).join(', ')+', and that '+P[P.length-1])+'.'; }
+function whyReadBack(I){ I=I||S.intake||{}; var q=whyQuote(I), f=whyFacts(I);
+  return q?'Last time we talked, you said, “'+q+'.”'+(f?' '+f:'')+' That’s what I went looking for.':''; }
+/* The answers, per tag: strong = true and the point to make; angle = true but a different point (starts off);
+   nothing at all when the numbers don't support a claim. */
+function whyAnswers(t){ var I=S.intake||{}, tags=whyTagList(I.whyTags), out=[], has=function(x){ return tags.indexOf(x)>=0; };
+  if(!t||!S.packages[t]) return out; var pk=S.packages[t], mh=!tierNonMh(t)&&afcInPk(pk), m0=function(n){ return '$'+Math.round(Math.abs(+n)||0).toLocaleString('en-US'); };
+  if(has('Too expensive')){ var B=anchorBase(), tot=tierTotals(t);
+    if(B){ var sv=anchorSavings(B,pkgPremMo(t),tot.mo+tierTrue(t).extra), where=B.k==='cur'?'what you pay now':'the marketplace plan', yr=Math.round(sv.tru*12/100)*100;
+      var basis='premium '+fmt2(pkgPremMo(t))+' vs '+fmt2(B.prem)+' · yearly true cost '+fmt2((tot.mo+tierTrue(t).extra)*12)+' vs '+fmt2(B.mo*12);
+      if(sv.actual>=1) out.push({tag:'Too expensive',strong:true,text:'It comes in '+m0(sv.actual)+' a month under '+where+'.',basis:basis});
+      else if(mh&&yr>=100) out.push({tag:'Too expensive',strong:false,text:'It’s '+m0(sv.actual)+' more a month, but over a year you come out about '+m0(yr)+' ahead, because there’s no deductible to get through first.',basis:basis});
+      else out.push({tag:'Too expensive',none:true,basis:basis+' — no saving to claim'}); } }
+  if(has('Deductible too high')){ if(mh) out.push({tag:'Deductible too high',strong:true,text:'There’s no deductible to get through first — it pays from the first dollar.',basis:'ManhattanLife fixed benefits'});
+    else out.push({tag:'Deductible too high',none:true,basis:'this plan has a deductible of its own'}); }
+  if(has('Doctor / network')){ var dn=whyDocs(), net=!!(S.docs||{}).net, kaf=I.keepafc;
+    if(!dn) out.push({tag:'Doctor / network',none:true,basis:'no doctor on the Intake'});
+    else if(!net||!kaf) out.push({tag:'Doctor / network',none:true,basis:'network not checked yet — check First Health on the Intake'});
+    else if(kaf==='yes') out.push({tag:'Doctor / network',strong:true,text:dn+(/ and /.test(dn)?' are':' is')+' in the First Health network.',basis:'Intake: in network ✅'});
+    else if(mh) out.push({tag:'Doctor / network',strong:false,text:dn+(/ and /.test(dn)?' aren’t':' isn’t')+' in the network, but this plan pays you a set amount for the visit either way — you pay them and upload the receipt.',basis:'Intake: not in network ❌'});
+    else out.push({tag:'Doctor / network',none:true,basis:'not in network, and this plan doesn’t pay fixed amounts'}); }
+  if(has('Losing coverage')){ if(I.effDate) out.push({tag:'Losing coverage',strong:true,text:'You could be covered from '+I.effDate+'.',basis:'Intake: wants cover from '+I.effDate});
+    else out.push({tag:'Losing coverage',none:true,basis:'no start date on the Intake'}); }
+  if(has('No coverage now')) out.push({tag:'No coverage now',strong:true,text:'This gets '+whyHouse()+' covered.',basis:'tag'});
+  return out; }
+function whyOn(a){ var W=((S.present||{}).why)||{}; return a.none?false:(W[a.tag]!=null?!!W[a.tag]:!!a.strong); }
+function whyAnswerText(t){ return whyAnswers(t).filter(whyOn).map(function(a){ var E=((S.present||{}).whyText||{})[a.tag]; return String(E||a.text).trim(); }).filter(Boolean).join(' '); }
+function presentWhyBox(t){ var box=$('prWhy'); if(!box) return; var I=S.intake||{}, q=whyQuote(I), A=whyAnswers(t);
+  S.present=S.present||{}; S.present.why=S.present.why||{}; S.present.whyText=S.present.whyText||{};
+  if(!q&&!A.length){ box.innerHTML='<b>About their why</b><p class="pw-none">No why on the Intake yet — their words and tags fill this.</p>'; return; }
+  box.innerHTML='<b>About their why</b>'+(q?'<p class="pw-q">“'+esc(q)+'”</p>':'')+(whyTagList(I.whyTags).length?'<p class="pw-tags">'+whyTagList(I.whyTags).map(esc).join(' · ')+'</p>':'')
+    +(A.length?'<div class="pw-sub">What you’ll say at the close — only the ones switched on:</div>':'')
+    +A.map(function(a,i){ if(a.none) return '<div class="pw-row pw-no"><span>'+esc(a.tag)+': nothing to claim</span><small>'+esc(a.basis)+'</small></div>';
+      var on=whyOn(a), txt=S.present.whyText[a.tag]||a.text;
+      return '<div class="pw-row'+(on?' on':'')+'"><label><input type="checkbox" data-wi="'+i+'"'+(on?' checked':'')+'> '+esc(a.tag)+(a.strong?'':' <em>a different angle</em>')+'</label>'
+        +'<textarea data-wt="'+i+'" rows="3">'+esc(txt)+'</textarea><small>Based on: '+esc(a.basis)+'</small></div>'; }).join('');
+  var redo=function(){ autosave(); try{ var fr=$('prFrame'); if(fr&&fr.contentDocument) presentWire(fr.contentDocument,t); }catch(e){} };
+  box.querySelectorAll('[data-wi]').forEach(function(c){ c.onchange=function(){ var a=A[+c.dataset.wi]; S.present.why[a.tag]=c.checked; c.closest('.pw-row').classList.toggle('on',c.checked); redo(); }; });
+  box.querySelectorAll('[data-wt]').forEach(function(x){ x.oninput=function(){ var a=A[+x.dataset.wt]; var v=x.value.trim(); if(v&&v!==a.text) S.present.whyText[a.tag]=v; else delete S.present.whyText[a.tag]; redo(); }; }); }
+/* Intake: the tags as chips and a live "what you'll say back" */
+function whyChips(){ var host=$('whyTagBox'); if(!host||host.dataset.built) return; host.dataset.built='1';
+  host.innerHTML=WHY_TAGS.map(function(t){ return '<label class="chip"><input type="checkbox" data-why="'+esc(t)+'"> '+esc(t)+'</label>'; }).join('');
+  host.querySelectorAll('[data-why]').forEach(function(c){ c.addEventListener('change',function(){ c.closest('.chip').classList.toggle('on',c.checked); S.intake.whyTags=whyReadTags(); whySay(); autosave(); }); }); }
+function whyReadTags(){ return Array.prototype.filter.call(document.querySelectorAll('#whyTagBox [data-why]'),function(c){ return c.checked; }).map(function(c){ return c.dataset.why; }); }
+function whyFillTags(){ whyChips(); var tags=whyTagList((S.intake||{}).whyTags); document.querySelectorAll('#whyTagBox [data-why]').forEach(function(c){ c.checked=tags.indexOf(c.dataset.why)>=0; c.closest('.chip').classList.toggle('on',c.checked); }); whySay(); }
+function whySay(){ var el=$('whySay'); if(!el) return; var I=Object.assign({},S.intake||{},{whyMatters:($('in_whymatters')||{}).value,whyTags:whyReadTags()});
+  var r=whyReadBack(I); el.innerHTML=r?'<b>What you’ll say back:</b> '+esc(r):'<b>What you’ll say back:</b> <span class="ws-none">type their words above — it’s quoted back to them on the presentation.</span>'; }
 /* ===== Recommended vs elected (Jesse, 2026-10-16) =====
    Both are locked when they actually happen. The recommendation is what you PRESENT: ▶ Present saves that package,
    every product with its level and price (S.rec), the first time; a later Present only replaces it with a higher
@@ -4591,7 +4678,7 @@ function reviewWire(doc,t){ if(!doc||!doc.body) return; var T=reviewTokens(t), X
   show('[data-rx="has"]',X.meds.length>0); show('[data-rx="none"]',!X.meds.length);
   show('[data-rx-math="gain"]',X.math==='gain'); show('[data-rx-math="partial"]',X.math==='partial'); show('[data-rx-math="wash"]',X.math==='wash');
   /* data-needs="key": the words around a value go with it when it's empty, so a spoken sentence still reads */
-  Array.prototype.forEach.call(doc.querySelectorAll('[data-needs]'),function(x){ var k=x.getAttribute('data-needs'); x.classList.toggle('pp-off',!(T[k]!=null&&String(T[k]).trim())); });
+  Array.prototype.forEach.call(doc.querySelectorAll('[data-needs]:not([data-needs=""])'),function(x){ var k=x.getAttribute('data-needs'); x.classList.toggle('pp-off',!(T[k]!=null&&String(T[k]).trim())); });
   show('[data-doctor="none"]',![I.docs1,I.docs2,I.docs3].some(function(d){ return String(d||'').trim(); }));
   show('[data-dental="yes"]',reviewDental(t)); show('[data-tier="below"]',reviewBelow(t));
   /* agent-only notes, the build line and the provenance line - same rule as the presentation script */
@@ -4701,6 +4788,7 @@ var NEWS=[
   ['Booking fills the follow-up','The date and time you book at the end of the call land in Send the quote on the Quote page.'],
   ['GLP-1 questions','The call asks about Ozempic, Wegovy, Mounjaro, Zepbound and Saxenda. The Intake has a GLP-1 row for each person that opens only if they’re on one: which drug, diabetes or weight, how long, what they pay and where they get it. A GLP-1 on the medication list fills it in for you.'],
   ['Benefits Review','A sixth step for the call after approval: type the effective date, premium and draft date off the carrier’s confirmation, then walk the script while the client registers the portal, telehealth, the Easy Upload app and CareGuide. The one you’re on is boxed in green, with Open, Text them (Messages opens with a note and the link) and Copy link. CareGuide’s text includes a tap-to-save contact card. Their prescriptions are priced against the daily benefit, and only the true sentence is shown.'],
+  ['Their why, in their words','One Why on the call and the Intake: type exactly what they said, click what’s behind it, and see what you’ll say back. On Present it’s quoted back — “you said, …” — with their own numbers, and the close offers only the answers the quote actually supports, each one yours to switch on or off.'],
   ['Recommended vs what they bought','Presenting a plan records it as your recommendation, product by product. Enroll records what they actually bought and lists every gap — a lower package, products declined, levels lowered — with a box to tick each one they knowingly declined.'],
   ['Your benefits page in Setup','Add the link to your own client resource page (your ManhattanLife benefits page, flipbook or similar) in ⚙ Setup. The Benefits Review opens it for every client.'],
   ['A real story for big bills','In Present, “What if I have a major health issue?” now opens Kyle’s daughter’s story: a $211,000 ICU bill, eleven months of negotiation, and a $33,000 cheque, with what to say and what never to promise.'],
@@ -4901,7 +4989,7 @@ function readIntake(){
   S.intake.income=moneyVal($('in_income').value); S.intake.retage=$('in_retage').value;
   S.intake.savings=moneyVal($('in_savings').value); S.intake.invest=moneyVal($('in_invest').value); S.intake.invprot=$('in_invprot').checked; S.intake.invsra=$('in_invsra').checked; S.intake.invnote=$('in_invnote').value;
   S.intake.docs1=$('in_docs1').value; S.intake.docs2=$('in_docs2').value; S.intake.docs3=$('in_docs3').value;
-  glp1Read();
+  glp1Read(); S.intake.whyTags=whyReadTags();
   S.intake.keepaca=$('in_keepaca').value; S.intake.keepafc=$('in_keepafc').value; S.intake.docnote=$('in_docnote').value;
   S.intake.pheight=$('in_pheight').value; S.intake.pweight=$('in_pweight').value; S.intake.sheight=$('in_sheight').value; S.intake.sweight=$('in_sweight').value; S.intake.psex=$('in_psex').value; S.intake.ssex=$('in_ssex').value; S.intake.kidsNote=$('in_kids').value; S.intake.routeNote=$('in_routenote').value; S.intake.docsNote=$('in_docsnote').value; S.intake.whyShop=$('in_whyshop').value; S.intake.whyMatters=$('in_whymatters').value; S.intake.foundPlan=$('in_foundplan').value; S.intake.effDate=$('in_effdate').value;
   S.docs.net=$('in_net').checked; S.docs.rx=$('in_rx').checked; S.docs.famcancer=!!(S.intake.famcancer||S.intake.famheart);
@@ -4925,7 +5013,7 @@ function fillIntake(){
   $('in_pname').value=S.client.pname||''; $('in_sname').value=S.client.sname||''; $('in_agent').value=S.client.agent||'';
   $('in_state').value=S.client.state||''; $('in_zip').value=S.client.zip||''; $('in_page').value=S.client.page||''; $('in_sage').value=S.client.sage||''; $('in_date').value=S.client.date||''; $('in_sdob').value=S.client.sdob||''; $('in_address').value=S.client.address||'';
   $('in_phone').value=I.phone||''; $('in_email').value=I.email||'';
-  setTimeout(glp1Fill,0);
+  setTimeout(glp1Fill,0); setTimeout(whyFillTags,0);
   $('in_tobacco_p').checked=!!(I.tobaccoP!==undefined?I.tobaccoP:I.tobacco); $('in_tobacco_s').checked=!!I.tobaccoS; $('in_dv').checked=!!I.dv;
   var fillPS=function(k,legacy){ $('in_'+k+'_p').checked=!!(I[k+'P']!==undefined?I[k+'P']:legacy); $('in_'+k+'_s').checked=!!I[k+'S']; };
   fillPS('famcancer', I.famcancer||S.docs.famcancer); fillPS('famheart', I.famheart); fillPS('maternity', I.maternity); fillPS('mental', I.mental); fillPS('surg2yr', I.surg2yr);
@@ -5507,10 +5595,11 @@ function renderPresent(){ var host=$('presentHost'); if(!host) return; var t=pre
     +'<div class="pr-rail">'
     +'<div class="box"><b>Show them</b><button type="button" data-show="cmp">The plans side by side</button><button type="button" data-show="ev">The examples (what it pays)</button><button type="button" data-show="top">Their situation & options</button></div>'
     +'<div class="box"><b>Benefits in this plan</b>'+(S.packages[t].products||[]).filter(function(p){ return (+p.monthly||0)>0&&benFileFor(p.k,effCfg(t)); }).map(function(p){ return '<button type="button" data-ben="'+p.k+'">ⓘ '+esc(String(p.name).split(' — ')[0])+'</button>'; }).join('')+'</div>'
+    +'<div class="box pw-box" id="prWhy"></div>'
     +'<div class="box pr-qa" id="prQA"><b>Quick answers — objections</b></div>'
     +'<div class="box" id="prStories">'+PR_STORY_HEAD+'</div>'
     +'</div></div><div id="prPop" style="display:none"></div>';
-  host.innerHTML=h;
+  host.innerHTML=h; presentWhyBox(t);
   var fr=$('prFrame');
   fr.onload=function(){ try{ var doc=fr.contentDocument; presentPaginate(doc);
       benLoadSafe('afc').then(function(){ presentWire(doc,t); presentGo(+S.present.pg||0); });
@@ -5571,6 +5660,7 @@ function presentWhy(I){ var m=String((I&&I.whyMatters)||'').trim(); if(m) return
 function presentScriptTokens(t){ var T=presentTokens(t), C=S.client||{}, I=S.intake||{}, Cu=curIn(), pk=S.packages[t]||{products:[]}, c=effCfg(t), o=evTierPack(t), A=o.afc||{};
   var m0=function(n){ return '$'+Math.round(+n||0).toLocaleString('en-US'); };
   var who=I.who||{}, hh=who.kids?'you and your family':who.spouse?'you and your spouse':'you'; T['client.household_to']='to '+hh; T['client.household_for']='for '+hh;
+  T['client.why_quote']=whyQuote(I); T['client.why_facts']=whyFacts(I); T['why.answer']=whyAnswerText(t);
   T['agent.first']=((C.agent||'').trim().split(/\s+/)[0])||''; T['agent.phone']=S.agentPhone||''; T['agent.email']=S.agentEmail||'';
   T['agent.website']=S.agentWebsite||''; T['agent.card']=S.agentCard||''; T['agent.booking']=S.agentBooking||'';
   T['client.legal_name']=(C.pname||'').trim(); T['client.dob']=C.dob||C.date||''; T['client.phone']=I.phone||''; T['client.email']=I.email||'';
@@ -5839,6 +5929,8 @@ function presentWire(doc,t){ if(!doc||!doc.body) return 0; var T=presentScriptTo
   var lg=doc.querySelector('p.legend'); if(lg&&!lg.dataset.ppTags){ lg.dataset.ppTags='1'; var kids=Array.prototype.slice.call(lg.childNodes), cut=-1;
     kids.forEach(function(nd,i){ if(cut<0&&nd.nodeType===3&&/Source tags show/.test(nd.textContent)) cut=i; });
     if(cut>=0){ kids.slice(cut).forEach(function(nd){ nd.remove(); }); var prev=kids[cut-1]; if(prev&&prev.nodeName==='BR') prev.remove(); } }
+  /* data-needs="key" (valued) drops out with an empty key; a BARE data-needs is the agent-info block and is never hidden here */
+  Array.prototype.forEach.call(doc.querySelectorAll('[data-needs]:not([data-needs=""])'),function(x){ var k=x.getAttribute('data-needs'); x.classList.toggle('pp-off',!String(T[k]==null?'':T[k]).trim()); });
   T0=T; presentPendingEdits(doc);
   /* section 8: copy the partner-benefits picture from the script (same picture as the Quote page) */
   var bh=doc.querySelector('[data-screen="bonus"]'); if(bh&&!bh.querySelector('.pp-picbtn')){ var pbn=doc.createElement('button'); pbn.type='button'; pbn.className='pp-picbtn'; pbn.textContent='📋 Copy “Bonus Benefits”';
@@ -6090,6 +6182,7 @@ function bindInputs(){
   $('setupBtn').onclick=openSetup; $('closeSetup').onclick=closeSetup;
   ['p','s'].forEach(function(w){ $('in_glp1_'+w).addEventListener('change',function(){ if(this.value==='Yes'&&!$('in_glp1_'+w+'_drug').value) $('in_glp1_'+w+'_drug').value=glp1FromMeds(w); glp1Show(); glp1Need(); }); $('in_glp1_'+w+'_for').addEventListener('change',glp1Need); });
   if($('in_who_spouse')) $('in_who_spouse').addEventListener('change',glp1Show);
+  ['input','change'].forEach(function(ev){ var si=$('step-intake'); if(si) si.addEventListener(ev,function(e){ if(e.target&&e.target.closest&&!e.target.closest('#whyTagBox')) setTimeout(whySay,0); }); });
   $('newsBtn').onclick=openNews; $('newsClose').onclick=closeNews; $('newsScrim').onclick=closeNews;
   document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&$('newsPanel').classList.contains('open')) closeNews(); });
   newsBadge();

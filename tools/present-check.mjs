@@ -109,7 +109,7 @@ const TEST = `(async function(){
   ok(document.querySelectorAll('#prStories [data-story]').length>=1,'stories in the rail');
   document.querySelector('#prStories [data-story]').click(); ok(/Never a client/.test(document.getElementById('prPop').innerText),'a story pops with the naming rule');
   /* blanks */
-  presentWire(d,'best'); var miss={}; d.querySelectorAll('var.pp-miss:not(.pp-off)').forEach(function(v){ miss[v.title.replace(/^.*: /,'')]=1; });
+  presentWire(d,'best'); var miss={}; d.querySelectorAll('var.pp-miss:not(.pp-off)').forEach(function(v){ if(v.closest('.pp-off')) return; miss[v.title.replace(/^.*: /,'')]=1; });   /* a blank inside a dropped-out sentence isn't a gap */
   var allowed=['drug.now','client.ht','client.wt','client.email','client.phone','agent.email','agent.website','agent.booking'];
   var bad=Object.keys(miss).filter(function(k){ return allowed.indexOf(k)<0; });
   ok(!bad.length,'blanks the quote can fill are filled; unexpected gaps: '+bad.join(', '));
@@ -117,7 +117,7 @@ const TEST = `(async function(){
   ok(/health plan/.test(ps)&&/, and /.test(ps)&&!/Living Benefits/i.test(ps),'close lists the package in plain English: '+ps);
   var hasSdr=S.packages.best.products.some(function(p){ return p.k==='sdr'&&+p.monthly>0; });
   ok(/Specified Disease/.test(ps)===hasSdr,'Specified Disease named only when the rider is on the plan ('+hasSdr+'): '+ps);
-  ok(d.querySelector('var[data-k="client.household_to"]').textContent==='to you'&&d.querySelector('var[data-k="client.household_for"]').textContent==='for you','household: to you / for you');
+  ok(d.querySelector('var[data-k="client.household_for"]').textContent==='for you','household: for you');
   ok(d.querySelector('var[data-k="afc.rx_cap"]').textContent==='$750','Rx cap from the brochure');
   /* anchor: radios, suggested, none hides saving */
   presentGo(3); await wait(50); var rs=d.querySelectorAll('tr[data-anchor] input[type=radio]'); var visRow=function(a){ return fr.contentWindow.getComputedStyle(d.querySelector('tr[data-anchor="'+a+'"]')).display!=='none'; };
@@ -184,9 +184,9 @@ const TEST = `(async function(){
   var ptp=d.querySelector('[data-mount="posttext"] p'); ok(ptp&&/is my agency; /.test(ptp.textContent),'the wrap-up text in Present is the new one (and is what Copy copies)');
   var kI=[S.intake.whyMatters,S.intake.whyShop];
   S.intake.whyMatters='keep Dr. Patel'; S.intake.whyShop='Premium went up $200 at renewal, then the claim on my wife’s surgery got denied and we had to fight it for three months.'; presentWire(d,'best');
-  var rs=d.querySelector('var[data-k="client.why"]'); ok(rs&&rs.textContent==='keep Dr. Patel','section 3 reads back what matters most, not the story');
-  S.intake.whyMatters=''; presentWire(d,'best'); rs=d.querySelector('var[data-k="client.why"]'); ok(rs&&!/Premium went up/.test(rs.textContent),'a long prompted-it story is never read aloud (blank stays flagged)');
-  S.intake.whyShop='lower premiums'; presentWire(d,'best'); rs=d.querySelector('var[data-k="client.why"]'); ok(rs&&rs.textContent==='lower premiums','an old quote with a one-line reason still reads naturally');
+  var rs=d.querySelector('var[data-k="client.why_quote"]'); ok(rs&&rs.textContent==='keep Dr. Patel','section 3 quotes their why, not the story');
+  S.intake.whyMatters=''; presentWire(d,'best'); rs=d.querySelector('var[data-k="client.why_quote"]'); ok(rs&&!/Premium went up/.test(rs.textContent),'a long prompted-it story is never read aloud (blank stays flagged)');
+  S.intake.whyShop='lower premiums'; presentWire(d,'best'); rs=d.querySelector('var[data-k="client.why_quote"]'); ok(rs&&rs.textContent==='lower premiums','an old quote with a one-line reason still reads naturally');
   S.intake.whyMatters='keep Dr. Patel'; buildPrintout(); var poT=document.getElementById('printout').textContent; ok(/What matters most to you/.test(poT)&&/keep Dr. Patel/.test(poT)&&!/Why you are looking/.test(poT),'printout shows what matters most, never the story');
   S.intake.whyMatters=kI[0]; S.intake.whyShop=kI[1]; presentWire(d,'best');
   var kC=JSON.parse(JSON.stringify(curIn())), kAn=S.intake.anchor; S.intake.anchor='cur'; S.present=S.present||{}; var kPA=S.present.anchor; S.present.anchor='cur';

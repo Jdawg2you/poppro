@@ -119,6 +119,8 @@ try {
     glp1_since: ['^intake\\.glp1\\.p\\.since=M_glp1_since'], glp1_cost: ['^intake\\.glp1\\.p\\.cost=1\\d{4}'], glp1_source: ['^intake\\.glp1\\.p\\.source=Other'],
     sp_glp1: ['^intake\\.glp1\\.s\\.on=Yes'], sp_glp1_drug: ['^intake\\.glp1\\.s\\.drug=M_sp_glp1_drug'], sp_glp1_for: ['^intake\\.glp1\\.s\\.for=Both'],
     sp_glp1_since: ['^intake\\.glp1\\.s\\.since=M_sp_glp1_since'], sp_glp1_cost: ['^intake\\.glp1\\.s\\.cost=1\\d{4}'], sp_glp1_source: ['^intake\\.glp1\\.s\\.source=Other'],
+    /* the Why (Jesse, 16 Oct): tags must arrive as a real list, not notes */
+    why_tags: ['^intake\\.whyTags\\.0=Other'], why_matters: ['^intake\\.whyMatters=M_why_matters'],
     married: ['^intake\\.who\\.spouse=true'], kids: ['^intake\\.who\\.kids=true', '^intake\\.kids\\.0\\.n='],
   };
   const NOT = { recent_stay: ['^intake\\.surg2yrP=true'] };
@@ -137,7 +139,7 @@ try {
   const rt = await ev(`(function(o){ curScript='health'; var back=fromPopPro(o), keys=['first','last','dob','age','sex','phone','email','state','zip','sp_name','sp_age','height','weight','sp_height','tobacco',
     'why_note','start_when','cur_carrier','cur_plan','cur_prem','cur_emp_prem','cur_ded','cur_oop','cur_copay','cur_visits','cur_is_aca','cur_subsidy','fh_cancer','fh_heart','mat_needs',
     'income_this','sp_income','hh_income','i_retire','i_liquid','asset_amt','budget_comfort','budget_max','want_dental','meds_list','deps','docs','kids','married',
-    'glp1','glp1_drug','glp1_for','glp1_since','glp1_cost','glp1_source','sp_glp1','sp_glp1_drug','sp_glp1_for','sp_glp1_since','sp_glp1_cost','sp_glp1_source'];
+    'why_matters','why_tags','glp1','glp1_drug','glp1_for','glp1_since','glp1_cost','glp1_source','sp_glp1','sp_glp1_drug','sp_glp1_for','sp_glp1_since','sp_glp1_cost','sp_glp1_source'];
     var miss=keys.filter(function(k){ var v=back[k]; return v==null||v===''||(Array.isArray(v)&&!v.length); });
     return {n:keys.length, miss:miss}; })(${saved})`);
   console.log(`ROUNDTRIP ${rt.n - rt.miss.length}/${rt.n}${rt.miss.length ? ' missing ' + rt.miss.join(',') : ''}`);
