@@ -1578,6 +1578,8 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
       <div class="fld"><label>Digital business card <small>in emails + text</small></label><input id="in_acard" placeholder="yourcard.com/you"></div>
       <div class="fld"><label>Booking link <small>in emails + text</small></label><input id="in_abook" placeholder="calendly.com/you"></div>
       <div class="fld"><label>Your benefits page <small>for the Benefits Review</small></label><input id="in_abenefits" placeholder="yoursite.com/manhattanlife"></div>
+      <div class="fld"><label>Direction Rx link <small>GLP-1 discount, weight loss</small></label><input id="in_adrxlink" placeholder="your Direction Rx link"></div>
+      <div class="fld"><label>Direction Rx code <small>the client uses it for 35% off</small></label><input id="in_adrxcode" placeholder="your code"></div>
     </div>
     <div class="goatgrab" id="goatGrab">
       <b>Don&rsquo;t have the last three yet? All three are free.</b> <span class="freetag">NO COST</span>
@@ -2622,6 +2624,7 @@ function enrollEmail(){ var L=brochList(), first=((S.client.pname||'').trim().sp
     +(L.list.length?'So you have everything in one place, here are the brochures for each part of your plan:\n'+brochLines(L)+'\n\n':'')
     +(function(){ var LB=lbSummary(L.t); if(!LB.length) return ''; return 'Your plan also includes living benefits:\n'+LB.map(function(x){ return '• '+x.who+' — '+(x.face?'$'+x.face.toLocaleString('en-US')+' of ':'')+(x.term?x.term+' ':'')+'Living Benefits coverage with Term Life Protection with '+x.carrier; }).join('\n')+'\n'+LB_BLURB+'\n\n'; })()
     +(afcInPk(S.packages[TIERCFG[L.t]?L.t:(chosenTier()||S.activeTab||'best')])?'Your Affordable Choice plan also comes with these partner benefits built in, at no extra cost:\n'+afcPartnerLines()+'\n\n':'')
+    +(drxWho().length?drxHowTo()+' I’ll walk you through it on our benefits review call.\n\n':'')
     +'I’ll be reaching out over the next few days with an update.'+(book?' If anything comes up before then, you can book a time to reconnect here: '+book+' — or just call or text me.':' If anything comes up before then, just call or text me.')+'\n\n'
     +'And know that I’m your agent for life. Insurance can be a lot to navigate, and that’s my job — whenever you have a question, a claim or a change in your life, I’m the person to call.\n\n'
     +'Best,\n'+(agent||agency)+(agent&&agency?'\n'+agency:'')+(S.agentPhone?'\n'+S.agentPhone:'')+(S.agentEmail?'\n'+S.agentEmail:'')+(site?'\n'+site:'')+(String(S.agentNPN||'').trim()?'\nNational Producer Number: '+String(S.agentNPN).trim():'');
@@ -4446,7 +4449,7 @@ function suiteFromNavProfile(P){
 }
 /* The agent's own details (agency, name, phone, email) belong to whoever is running the tool, not to a
    file. A loaded file keeps them unless it carries its own - loading a client never wipes the agent. */
-function agentOf(st){ return {agency:st.agency, agent:(st.client||{}).agent, phone:st.agentPhone, email:st.agentEmail, npn:st.agentNPN, web:st.agentWebsite, card:st.agentCard, book:st.agentBooking, ben:st.agentBenefits}; }
+function agentOf(st){ return {agency:st.agency, agent:(st.client||{}).agent, phone:st.agentPhone, email:st.agentEmail, npn:st.agentNPN, web:st.agentWebsite, card:st.agentCard, book:st.agentBooking, ben:st.agentBenefits, drxl:st.agentDrxLink, drxc:st.agentDrxCode}; }
 /* Agent setup folds closed once agency, name, phone and email are all in; it opens again if any of those four is
    missing. NPN, website and booking are optional and never hold it open. (Jesse, 2026-10-08) */
 /* Jesse, 2026-10-09: the fold now waits for ALL of them, not the four the tool cannot run without.
@@ -4473,9 +4476,36 @@ function agentGlow(){ var empty=[]; AGENT_BOXES.forEach(function(b){ var el=$(b[
 function agentSetupFold(){ var miss=agentSetupMissing(), b=$('setupBtn'), n=$('setupNeed'); if(b){ b.classList.toggle('need',!!miss.length); b.title=miss.length?'Still to fill in: '+miss.join(', '):'Your agency, name, phone, email, NPN and links'; } if(n) n.textContent=miss.length?String(miss.length):'';
   var ws=$('wlSetupState'); if(ws){ ws.textContent=miss.length?miss.length+' to fill in ↓':'✓ Done'; ws.className=miss.length?'todo':''; }
   var d=$('agentSetup'); if(d) d.classList.toggle('goat-skipped',goatSkipped()); agentGlow(); }
-function fillAgent(){ $('in_agency').value=(S.agency&&S.agency!=='HealthFirst')?S.agency:(S.agency||''); $('in_agent').value=(S.client||{}).agent||''; $('in_aphone').value=S.agentPhone||''; $('in_aemail').value=S.agentEmail||''; $('in_anpn').value=S.agentNPN||''; $('in_aweb').value=S.agentWebsite||''; $('in_acard').value=S.agentCard||''; $('in_abook').value=S.agentBooking||''; $('in_abenefits').value=S.agentBenefits||''; agentSetupFold(); }
+function fillAgent(){ $('in_agency').value=(S.agency&&S.agency!=='HealthFirst')?S.agency:(S.agency||''); $('in_agent').value=(S.client||{}).agent||''; $('in_aphone').value=S.agentPhone||''; $('in_aemail').value=S.agentEmail||''; $('in_anpn').value=S.agentNPN||''; $('in_aweb').value=S.agentWebsite||''; $('in_acard').value=S.agentCard||''; $('in_abook').value=S.agentBooking||''; $('in_abenefits').value=S.agentBenefits||''; $('in_adrxlink').value=S.agentDrxLink||''; $('in_adrxcode').value=S.agentDrxCode||''; agentSetupFold(); }
 /* Only the agent fields - captureIntake() would also read the client boxes, which are stale off the Intake step. */
-function readAgent(){ S.agency=($('in_agency').value||'').trim()||'HealthFirst'; S.client=S.client||{}; S.client.agent=$('in_agent').value; S.agentPhone=$('in_aphone').value; S.agentEmail=$('in_aemail').value; S.agentNPN=($('in_anpn').value||'').trim(); S.agentWebsite=($('in_aweb').value||'').trim(); S.agentCard=($('in_acard').value||'').trim(); S.agentBooking=($('in_abook').value||'').trim(); S.agentBenefits=($('in_abenefits').value||'').trim(); agentSetupFold(); autosave(); }
+function readAgent(){ S.agency=($('in_agency').value||'').trim()||'HealthFirst'; S.client=S.client||{}; S.client.agent=$('in_agent').value; S.agentPhone=$('in_aphone').value; S.agentEmail=$('in_aemail').value; S.agentNPN=($('in_anpn').value||'').trim(); S.agentWebsite=($('in_aweb').value||'').trim(); S.agentCard=($('in_acard').value||'').trim(); S.agentBooking=($('in_abook').value||'').trim(); S.agentBenefits=($('in_abenefits').value||'').trim(); S.agentDrxLink=($('in_adrxlink').value||'').trim(); S.agentDrxCode=($('in_adrxcode').value||'').trim(); agentSetupFold(); autosave(); }
+/* ===== Direction Rx for GLP-1s used for weight loss (Jesse, 2026-10-16) =====
+   The client PAYS for the medication; what they get through us is the discount - 35% off as a client with an active
+   ManhattanLife product, using the agent's code on Direction Rx's site. So it is a discount they have access to, never
+   "covered" and never free. Only for weight loss ("Both" counts); diabetes is pinned. Each agent's link and code live in
+   Setup. No dollar saving is worked out - prices depend on the drug and dose - their current cost is said as theirs. */
+var DRX_PCT='35%';
+function drxWho(){ var G=(S.intake&&S.intake.glp1)||{}, C=S.client||{}, out=[];
+  [['p',(C.pname||'').trim().split(/\s+/)[0]],['s',(C.sname||'').trim().split(/\s+/)[0]]].forEach(function(x){ var g=G[x[0]]||{};
+    if(g.on==='Yes'&&(g.for==='Weight loss'||g.for==='Both')) out.push({w:x[0],name:x[1]||(x[0]==='s'?'your spouse':'you'),drug:medBase(g.drug||'')||'your GLP-1',cost:+g.cost||0}); });
+  return out; }
+function drxLink(){ var u=String(S.agentDrxLink||'').trim(); return u?(/^https?:\/\//i.test(u)?u:'https://'+u):''; }
+function drxOn(){ var P=S.present||{}; return P.drx==null?true:!!P.drx; }
+/* the Bonus benefits line on Present */
+function drxLine(){ var W=drxWho(); if(!W.length||!drxOn()) return ''; var one=W.length===1, x=W[0];
+  var who=one?(x.w==='s'?x.name+' is':'you’re'):'you’re both', drug=one?x.drug:'your GLP-1s';
+  var cost=W.filter(function(y){ return y.cost>0; }).map(function(y){ return (one?(y.w==='s'?y.name+' is':'you’re'):(y.w==='s'?y.name+' is':'you’re'))+' paying $'+Math.round(y.cost).toLocaleString('en-US')+' a month for it now'; });
+  return 'And since '+who+' on '+drug+' for weight loss — because you’ll have an active ManhattanLife plan with us, you get access to Direction Rx. You still pay for the medication, but as our client it’s '+DRX_PCT+' off their prices.'+(cost.length?' You told me '+cost.join(', and ')+'.':''); }
+function presentDrxBox(){ var box=$('prDrx'); if(!box) return; var W=drxWho(); if(!W.length){ box.style.display='none'; return; } box.style.display='';
+  S.present=S.present||{}; var on=drxOn();
+  box.innerHTML='<b>Direction Rx — GLP-1 for weight loss</b>'+W.map(function(x){ return '<p class="pw-tags">'+esc(x.name)+': '+esc(x.drug)+(x.cost?' · pays '+fmt2(x.cost)+'/mo now':'')+'</p>'; }).join('')
+    +'<div class="pw-row'+(on?' on':'')+'"><label><input type="checkbox" id="drxOn"'+(on?' checked':'')+'> Mention it in Bonus benefits</label><small>'+esc(drxLine()||'')+'</small>'
+    +(String(S.agentDrxCode||'').trim()?'':'<small style="color:#b42318">No Direction Rx code in ⚙ Setup yet — add it before the Benefits Review.</small>')+'</div>';
+  $('drxOn').onchange=function(){ S.present.drx=this.checked; autosave(); presentDrxBox(); try{ var fr=$('prFrame'); if(fr&&fr.contentDocument) presentWire(fr.contentDocument,presentTier()); }catch(e){} }; }
+/* the follow-up they keep: how to use it */
+function drxHowTo(){ var W=drxWho(); if(!W.length) return ''; var R=(S.review||{}), eff=R.eff?reviewDate(R.eff):'', code=String(S.agentDrxCode||'').trim(), link=drxLink();
+  return 'Direction Rx, for '+(W.length>1?'your GLP-1s':W[0].drug)+': as a ManhattanLife client with an active plan, you get '+DRX_PCT+' off. You pay for the medication; the discount comes from being our client. '
+    +'Once your plan is active'+(eff?' on '+eff:'')+', go to '+(link||'the Direction Rx website')+(code?' and use code '+code:' — I’ll send you your code')+'.'; }
 /* ===== The client's Why (Jesse, 2026-10-16) =====
    One Why, in their exact words, quoted back on the presentation ("you said, ..."), plus tags. The read-back only
    repeats what THEY told us - their words and their own numbers - so it is always true. The answers (what our plan
@@ -4658,6 +4688,7 @@ function reviewTokens(t){ var C=S.client||{}, R=reviewState(), T={}, m2=function
     if(X.math==='partial'){ T['client.rx_covered']=m2(X.per)+' of it'; T['client.rx_short']=m2(X.total-X.per); } }
   T['careguide.threshold']='$2,500';
   T['tier.elected']=TIER_NAME[t]||''; T['tier.recommended']=TIER_NAME[(S.rec&&S.rec.tier)||S.recommended]||'';
+  T['drx.howto']=drxHowTo();
   T['review.month']=R.month||(R.eff?MONTHS[+String(R.eff).slice(5,7)-1]:'');
   return T; }
 var REVIEW_CSS='.rv-tick{margin:10px 0 4px;padding:10px 14px;border:2px dashed #2f7d4a;border-radius:10px;background:#f2fbf5;font:inherit;font-size:14px;display:flex;align-items:center;gap:10px;cursor:pointer}'
@@ -4700,9 +4731,10 @@ function reviewWire(doc,t){ if(!doc||!doc.body) return; var T=reviewTokens(t), X
 function reviewTick(k,on){ var R=reviewState(); if(on) R.ticks[k]=new Date().toISOString(); else delete R.ticks[k]; autosave(); reviewRail(); var fr=$('rvFrame'); if(fr&&fr.contentDocument) reviewWire(fr.contentDocument,chosenTier()); }
 /* the registration the script is on right now - its row is boxed in green, so the agent sends one thing at a time */
 function reviewCurTick(){ var t=chosenTier(), R=reviewState(), p=reviewPages(t)[+R.pg||0]; return (p&&p.tick)||''; }
-function reviewRail(){ var R=reviewState(), box=$('rvTicks'); if(!box) return; var ph=String((S.intake||{}).phone||'').replace(/[^\d+]/g,''); if(/^\d{10}$/.test(ph)) ph='+1'+ph; else if(/^1\d{10}$/.test(ph)) ph='+'+ph;
+function reviewTicks(){ var L=REVIEW_TICKS.slice(); if(drxWho().length) L.push({k:'drx',t:'Direction Rx code sent (GLP-1)',open:'Open Direction Rx',url:drxLink()||'#',copy:String(S.agentDrxCode||'').trim()||drxLink(),copyLabel:String(S.agentDrxCode||'').trim()?'Copy code':'Copy link',sms:function(f){ return 'Hi '+f+'! '+drxHowTo(); }}); return L; }
+function reviewRail(){ var REVIEW_TICKS=reviewTicks(), R=reviewState(), box=$('rvTicks'); if(!box) return; var ph=String((S.intake||{}).phone||'').replace(/[^\d+]/g,''); if(/^\d{10}$/.test(ph)) ph='+1'+ph; else if(/^1\d{10}$/.test(ph)) ph='+'+ph;
   var first=((S.client||{}).pname||'').trim().split(/\s+/)[0]||'there', n=REVIEW_TICKS.filter(function(x){ return R.ticks[x.k]; }).length;
-  box.innerHTML='<b>Done on the call · '+n+' of 4</b>'+(ph?'':'<span class="rv-miss">No phone on the Intake — Text opens a blank message.</span>')+REVIEW_TICKS.map(function(x){ var on=!!R.ticks[x.k];
+  box.innerHTML='<b>Done on the call · '+n+' of '+REVIEW_TICKS.length+'</b>'+(ph?'':'<span class="rv-miss">No phone on the Intake — Text opens a blank message.</span>')+REVIEW_TICKS.map(function(x){ var on=!!R.ticks[x.k];
     var ext=/^https?:/.test(x.url), open='<a href="'+esc(x.url)+'"'+(ext?' target="_blank" rel="noopener"':'')+'>'+esc(x.open)+(ext?' ↗':'')+'</a>';
     var text='<a href="sms:'+esc(ph)+'?&body='+encodeURIComponent(x.sms(first))+'">Text them</a>';
     var copy='<a href="#" data-copy="'+esc(x.copy||x.url)+'">'+esc(x.copyLabel||'Copy link')+'</a>';
@@ -4794,6 +4826,7 @@ var NEWS=[
   ['Booking fills the follow-up','The date and time you book at the end of the call land in Send the quote on the Quote page.'],
   ['GLP-1 questions','The call asks about Ozempic, Wegovy, Mounjaro, Zepbound and Saxenda. The Intake has a GLP-1 row for each person that opens only if they’re on one: which drug, diabetes or weight, how long, what they pay and where they get it. A GLP-1 on the medication list fills it in for you.'],
   ['Benefits Review','A sixth step for the call after approval: type the effective date, premium and draft date off the carrier’s confirmation, then walk the script while the client registers the portal, telehealth, the Easy Upload app and CareGuide. The one you’re on is boxed in green, with Open, Text them (Messages opens with a note and the link) and Copy link. CareGuide’s text includes a tap-to-save contact card. Their prescriptions are priced against the daily benefit, and only the true sentence is shown.'],
+  ['Direction Rx for GLP-1 weight loss','When someone is on a GLP-1 for weight loss, Present offers a Bonus benefits line about Direction Rx — they pay for the medication, but as our client it’s 35% off. The Benefits Review gets a step to text them the link and your code, and the enrollment email explains how to use it. Add your Direction Rx link and code in ⚙ Setup.'],
   ['Their why, in their words','One Why on the call and the Intake: type exactly what they said, click what’s behind it, and see what you’ll say back. On Present it’s quoted back — “you said, …” — with their own numbers, and the close offers only the answers the quote actually supports, each one yours to switch on or off.'],
   ['Recommended vs what they bought','Presenting a plan records it as your recommendation, product by product. Enroll records what they actually bought and lists every gap — a lower package, products declined, levels lowered — with a box to tick each one they knowingly declined.'],
   ['Your benefits page in Setup','Add the link to your own client resource page (your ManhattanLife benefits page, flipbook or similar) in ⚙ Setup. The Benefits Review opens it for every client.'],
@@ -4916,7 +4949,7 @@ function keepAgent(ag){
   S.client=S.client||{}; if(ag.agent && !S.client.agent) S.client.agent=ag.agent;
   if(ag.phone && !S.agentPhone) S.agentPhone=ag.phone;
   if(ag.email && !S.agentEmail) S.agentEmail=ag.email;
-  if(ag.npn && !S.agentNPN) S.agentNPN=ag.npn; if(ag.web && !S.agentWebsite) S.agentWebsite=ag.web; if(ag.card && !S.agentCard) S.agentCard=ag.card; if(ag.book && !S.agentBooking) S.agentBooking=ag.book; if(ag.ben && !S.agentBenefits) S.agentBenefits=ag.ben; }
+  if(ag.npn && !S.agentNPN) S.agentNPN=ag.npn; if(ag.web && !S.agentWebsite) S.agentWebsite=ag.web; if(ag.card && !S.agentCard) S.agentCard=ag.card; if(ag.book && !S.agentBooking) S.agentBooking=ag.book; if(ag.ben && !S.agentBenefits) S.agentBenefits=ag.ben; if(ag.drxl && !S.agentDrxLink) S.agentDrxLink=ag.drxl; if(ag.drxc && !S.agentDrxCode) S.agentDrxCode=ag.drxc; }
 /* Portable client file (Jesse, 14 Oct): one file per client opens in POP Pro or the Script Navigator. A POP Pro save
    carries the whole navigator call (S.nav); a navigator save carries the POP Pro quote it came with (_pop). Opening a
    navigator file: its POP Pro quote is the base and the navigator's answers - the newer save - go on top. */
@@ -4974,7 +5007,7 @@ function restore(){ try{ var s=localStorage.getItem('hf_pop_last'); if(s){ var r
 /* ========== INTAKE + RECOMMENDATION ENGINE ========== */
 function readIntake(){
   S.intake=S.intake||{};
-  S.agency=($('in_agency').value||'').trim()||'HealthFirst'; S.agentPhone=$('in_aphone').value; S.agentEmail=$('in_aemail').value; S.agentNPN=($('in_anpn').value||'').trim(); S.agentWebsite=($('in_aweb').value||'').trim(); S.agentCard=($('in_acard').value||'').trim(); S.agentBooking=($('in_abook').value||'').trim(); S.agentBenefits=($('in_abenefits').value||'').trim(); agentSetupFold();
+  S.agency=($('in_agency').value||'').trim()||'HealthFirst'; S.agentPhone=$('in_aphone').value; S.agentEmail=$('in_aemail').value; S.agentNPN=($('in_anpn').value||'').trim(); S.agentWebsite=($('in_aweb').value||'').trim(); S.agentCard=($('in_acard').value||'').trim(); S.agentBooking=($('in_abook').value||'').trim(); S.agentBenefits=($('in_abenefits').value||'').trim(); S.agentDrxLink=($('in_adrxlink').value||'').trim(); S.agentDrxCode=($('in_adrxcode').value||'').trim(); agentSetupFold();
   S.intake.who={app:$('in_who_app').checked,spouse:$('in_who_spouse').checked,kids:$('in_who_kids').checked};
   S.intake.phone=$('in_phone').value; S.intake.email=$('in_email').value;
   S.intake.tobaccoP=$('in_tobacco_p').checked; S.intake.tobaccoS=$('in_tobacco_s').checked;
@@ -5015,7 +5048,7 @@ function fillIntake(){
   if(typeof renderKids==='function') setTimeout(renderKids,0);
   var I=S.intake||{}; var w=I.who||{app:true};
   $('in_who_app').checked=w.app!==false; $('in_who_spouse').checked=!!w.spouse; $('in_who_kids').checked=!!w.kids;
-  $('in_agency').value=(S.agency&&S.agency!=='HealthFirst')?S.agency:(S.agency||''); $('in_aphone').value=S.agentPhone||''; $('in_aemail').value=S.agentEmail||''; $('in_anpn').value=S.agentNPN||''; $('in_aweb').value=S.agentWebsite||''; $('in_acard').value=S.agentCard||''; $('in_abook').value=S.agentBooking||''; $('in_abenefits').value=S.agentBenefits||''; agentSetupFold();
+  $('in_agency').value=(S.agency&&S.agency!=='HealthFirst')?S.agency:(S.agency||''); $('in_aphone').value=S.agentPhone||''; $('in_aemail').value=S.agentEmail||''; $('in_anpn').value=S.agentNPN||''; $('in_aweb').value=S.agentWebsite||''; $('in_acard').value=S.agentCard||''; $('in_abook').value=S.agentBooking||''; $('in_abenefits').value=S.agentBenefits||''; $('in_adrxlink').value=S.agentDrxLink||''; $('in_adrxcode').value=S.agentDrxCode||''; agentSetupFold();
   $('in_pname').value=S.client.pname||''; $('in_sname').value=S.client.sname||''; $('in_agent').value=S.client.agent||'';
   $('in_state').value=S.client.state||''; $('in_zip').value=S.client.zip||''; $('in_page').value=S.client.page||''; $('in_sage').value=S.client.sage||''; $('in_date').value=S.client.date||''; $('in_sdob').value=S.client.sdob||''; $('in_address').value=S.client.address||'';
   $('in_phone').value=I.phone||''; $('in_email').value=I.email||'';
@@ -5602,10 +5635,11 @@ function renderPresent(){ var host=$('presentHost'); if(!host) return; var t=pre
     +'<div class="box"><b>Show them</b><button type="button" data-show="cmp">The plans side by side</button><button type="button" data-show="ev">The examples (what it pays)</button><button type="button" data-show="top">Their situation & options</button></div>'
     +'<div class="box"><b>Benefits in this plan</b>'+(S.packages[t].products||[]).filter(function(p){ return (+p.monthly||0)>0&&benFileFor(p.k,effCfg(t)); }).map(function(p){ return '<button type="button" data-ben="'+p.k+'">ⓘ '+esc(String(p.name).split(' — ')[0])+'</button>'; }).join('')+'</div>'
     +'<div class="box pw-box" id="prWhy"></div>'
+    +'<div class="box pw-box" id="prDrx" style="display:none"></div>'
     +'<div class="box pr-qa" id="prQA"><b>Quick answers — objections</b></div>'
     +'<div class="box" id="prStories">'+PR_STORY_HEAD+'</div>'
     +'</div></div><div id="prPop" style="display:none"></div>';
-  host.innerHTML=h; presentWhyBox(t);
+  host.innerHTML=h; presentWhyBox(t); presentDrxBox();
   var fr=$('prFrame');
   fr.onload=function(){ try{ var doc=fr.contentDocument; presentPaginate(doc);
       benLoadSafe('afc').then(function(){ presentWire(doc,t); presentGo(+S.present.pg||0); });
@@ -5666,7 +5700,7 @@ function presentWhy(I){ var m=String((I&&I.whyMatters)||'').trim(); if(m) return
 function presentScriptTokens(t){ var T=presentTokens(t), C=S.client||{}, I=S.intake||{}, Cu=curIn(), pk=S.packages[t]||{products:[]}, c=effCfg(t), o=evTierPack(t), A=o.afc||{};
   var m0=function(n){ return '$'+Math.round(+n||0).toLocaleString('en-US'); };
   var who=I.who||{}, hh=who.kids?'you and your family':who.spouse?'you and your spouse':'you'; T['client.household_to']='to '+hh; T['client.household_for']='for '+hh;
-  T['client.why_quote']=whyQuote(I); T['client.why_facts']=whyFacts(I); T['why.answer']=whyAnswerText(t);
+  T['client.why_quote']=whyQuote(I); T['client.why_facts']=whyFacts(I); T['why.answer']=whyAnswerText(t); T['drx.line']=drxLine();
   T['agent.first']=((C.agent||'').trim().split(/\s+/)[0])||''; T['agent.phone']=S.agentPhone||''; T['agent.email']=S.agentEmail||'';
   T['agent.website']=S.agentWebsite||''; T['agent.card']=S.agentCard||''; T['agent.booking']=S.agentBooking||'';
   T['client.legal_name']=(C.pname||'').trim(); T['client.dob']=C.dob||C.date||''; T['client.phone']=I.phone||''; T['client.email']=I.email||'';

@@ -66,10 +66,22 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  /* notes never stack across handoffs (Jesse, 16 Oct: four copies of "Also wants: dental") */
  S=blankState(); S.intake.notes='Agent typed this'; for(var i=0;i<5;i++){ applySuiteClient({first:'Syed',last:'O',state:'TX',kids:[],health:{wantDental:'Yes',notes:S.intake.notes+(i===2?String.fromCharCode(10)+'Call note: evenings':'')}},true); }
  var nl=S.intake.notes.split(String.fromCharCode(10)); ok(nl.filter(function(l){ return l.indexOf('From the discovery call')===0; }).length===1&&nl.filter(function(l){ return l==='Agent typed this'; }).length===1&&nl.indexOf('Call note: evenings')>=0,'five round trips: one summary line, every agent note once: '+nl.join(' | '));
+ /* Direction Rx: GLP-1 for weight loss only (Jesse, 16 Oct) */
+ S=blankState(); applySuiteClient({first:'Pat',last:'Drx',state:'TX',age:'45',kids:[],health:{glp1On:'Yes',glp1Drug:'Wegovy',glp1For:'Weight loss',glp1Cost:'1100',spGlp1On:'Yes',spGlp1Drug:'Ozempic',spGlp1For:'Diabetes'}});
+ S.client.sname='Jane Drx'; S.agentDrxLink='bit.ly/x'; S.agentDrxCode='OPT35'; S.review={eff:'2026-11-01',ticks:{}};
+ var dw=drxWho(); ok(dw.length===1&&dw[0].w==='p','weight loss gets Direction Rx; diabetes (pinned) does not');
+ var dl=drxLine(); ok(/You still pay for the medication/.test(dl)&&dl.indexOf('35% off')>0&&dl.indexOf('$1,100 a month')>0&&!/free|covered by/i.test(dl),'the line says they pay, 35% as our client, their own cost: '+dl);
+ ok(/use code OPT35/.test(drxHowTo())&&/November 1, 2026/.test(drxHowTo()),'the how-to carries the code and the active date');
+ ok(/Direction Rx/.test(enrollEmail().body),'the enrollment email explains how to use it');
+ S.intake.glp1.s.for='Both'; ok(drxWho().length===2,'"Both" counts as weight loss');
+ S.intake.glp1={p:{on:'Yes',for:'Diabetes'},s:{}}; ok(!drxWho().length&&!/Direction Rx/.test(enrollEmail().body)&&drxLine()==='','no weight-loss GLP-1: no line, no email paragraph');
+ ok(reviewTicks().length===4,'no Direction Rx step in the Benefits Review without it');
+ S.intake.glp1={p:{on:'Yes',for:'Weight loss',drug:'Zepbound'},s:{}}; ok(reviewTicks().length===5&&reviewTicks()[4].k==='drx','with it, a fifth Benefits Review step');
+ S.present={drx:false}; ok(drxLine()===''&&presentScriptTokens('better')['drx.line']==='','switched off on Present: nothing said'); S.present={};
  /* an old file keeps its why */
  S=blankState(); applySuiteClient({first:'Old',last:'File',state:'TX',age:'50',kids:[],health:{whyMatters:'keep Dr. Patel',whyShop:'premium jumped'}});
  ok(S.intake.whyMatters==='keep Dr. Patel'&&S.intake.whyShop==='premium jumped'&&whyTagList(S.intake.whyTags).length===0,'an older file without tags still loads its why and story');
- return {n:29, fails:fails}; })()`;
+ return {n:38, fails:fails}; })()`;
 try {
   let l; for (let i = 0; i < 60 && !l; i++) { await sleep(150); l = await fetch(`http://127.0.0.1:${DBG}/json/list`).then(r => r.json()).catch(() => null); }
   ws = new WebSocket(l.find(t => t.type === 'page').webSocketDebuggerUrl);
