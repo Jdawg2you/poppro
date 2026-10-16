@@ -28,7 +28,7 @@
   }
   *{box-sizing:border-box}
   body{margin:0;background:var(--paper);color:var(--ink);font:14px/1.45 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
-  .wrap{max-width:1120px;margin:0 auto;padding:16px 14px 40px}
+  .wrap{max-width:1600px;margin:0 auto;padding:16px 14px 40px}   /* grows with the window (Jesse, 16 Oct) */
   .card{background:var(--white);border:1px solid var(--line);border-radius:14px;box-shadow:0 1px 4px rgba(30,25,10,.05);margin:16px 0;overflow:hidden}
   .pad{padding:18px}
   h1,h2,h3{margin:0}
@@ -3775,6 +3775,8 @@ function applySuiteClient(c, live){ var sm=$('setupModal'); if(sm&&!live&&sm.cla
   if(h.lastDay)     extra.push("Current cover ends: "+h.lastDay);
   if(h.hasHsa==="Yes")     extra.push("Already has an HSA");
   if(h.empOffer==="Yes")   extra.push("Health coverage offered through work — check affordability; it can remove the marketplace subsidy");
+  if(h.spEmpOffer==="Yes") extra.push("Health coverage offered through the spouse's work — check affordability; it can remove the marketplace subsidy");
+  if(String(h.whyOther||"").trim()) extra.push("Why — other: "+String(h.whyOther).trim());
   if(h.pregnant==="Yes")   extra.push("PREGNANT NOW (applicant)");
   if(h.spPregnant==="Yes") extra.push("PREGNANT NOW (spouse)");
   if(h.planned)     extra.push("Planned in the next 12 months: "+h.planned);
@@ -4432,7 +4434,7 @@ function suiteFromNavProfile(P){
       losing:P.losing||"", nextSame:P.next_same||"",
       curOop:P.cur_oop||"", curIsAca:P.cur_is_aca||"", curPaying:P.cur_paying||"", curSubsidy:P.cur_subsidy||"", hasHsa:P.has_hsa||"",
       pregnant:P.pregnant||"", spPregnant:P.sp_pregnant||"", planned:P.planned||"",
-      empOffer:P.emp_offer||"", lifeNow:P.life_now||"", billTomorrow:P.bill_tomorrow||"", bankKind:P.bank_kind||"",
+      empOffer:P.emp_offer||"", spEmpOffer:P.sp_emp_offer||"", whyOther:P.why_other||"", lifeNow:P.life_now||"", billTomorrow:P.bill_tomorrow||"", bankKind:P.bank_kind||"",
       apptDate:P.appt_date||"", apptTime:P.appt_time||"", notes:P.notes||"",
       doctors:docs.map(function(d){ return {name:d.n||"", practice:d.prac||"", keep:d.keep||"", aca:d.aca||""}; })
     }
@@ -6043,7 +6045,7 @@ function clientStripSum(){ var el=$('csSum'), cs=$('clientStrip'); if(!el||!cs) 
 var NAV_BASE=location.port==='8767'?'http://127.0.0.1:8777/':'https://script.ffloptimum.com/';
 function callAgent(){ var C=S.client||{}; return {a_name:C.agent||'',a_agency:(S.agency&&S.agency!=='HealthFirst')?S.agency:'',a_npn:S.agentNPN||'',a_phone:S.agentPhone||'',a_email:S.agentEmail||'',a_web:S.agentWebsite||'',a_book:S.agentBooking||''}; }
 function callInit(){ var f=$('callFrame'); if(!f||!f.contentWindow) return; try{ f.contentWindow.postMessage({source:'optimum-poppro',type:'call-init',v:1,pop:currentQuote(),agent:callAgent()},NAV_BASE.replace(/\/$/,'')); }catch(e){} }
-function callOpen(){ var f=$('callFrame'); if(!f) return; if(!f.getAttribute('src')) f.src=NAV_BASE+'?embed=1&script=health&host=poppro'; else callInit(); }
+function callOpen(){ var f=$('callFrame'); if(!f) return; if(!f.getAttribute('src')) f.src=NAV_BASE+'?embed=1&script=health&host=poppro'+(location.port==='8767'?'&v='+Date.now():''); else callInit(); }   /* the sandbox's navigator server caches; always fetch the newest there */
 window.addEventListener('message',function(e){ var f=$('callFrame'); if(!f||e.source!==f.contentWindow) return; var d=e.data||{};
   if(d.source==='insurance-script-navigator'&&d.type==='call-ready') callInit();
 });
