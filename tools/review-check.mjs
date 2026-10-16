@@ -70,9 +70,21 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  ok(decodeURIComponent(document.querySelector('#rvTicks [data-row="cg"] a[href^="sms:"]').getAttribute('href')).indexOf('mypoppro.com/tool/careguide.vcf')>0,'CareGuide text carries the contact-card link');
  var cur=function(t){ reviewGo(pages.indexOf(t)); var c=document.querySelector('#rvTicks .rv-row.cur'); return c?c.dataset.row:''; };
  ok(cur('Telehealth — do it live')==='ecg'&&cur('CareGuide')==='cg'&&cur('The money line')==='','the row being talked about is boxed, and only then');
+ /* recommended vs elected: locked when they happen (Jesse, 16 Oct) */
+ S.rec=null; S.elected=null; S.decl={}; S.chosen={tier:'best'}; presentOpen(); await w(300);
+ ok(S.rec&&S.rec.tier==='best'&&S.rec.products.length>2,'Present locks the recommendation with its products');
+ S.chosen={tier:'better'}; presentOpen(); await w(200); ok(S.rec.tier==='best','presenting a lower package later does not move the recommendation');
+ goStep('enroll'); await w(300); ok(S.elected&&S.elected.tier==='better','Enroll locks what they bought');
+ var g=recGap(); ok(g[0]&&g[0].kind==='below'&&g.some(function(x){ return x.kind==='declined'||x.kind==='lowered'; }),'Enroll lists the gap: package and products ('+g.length+')');
+ ok(document.querySelectorAll('#enDiff [data-gk]').length===g.length,'one acknowledgment line per gap');
+ var cb=document.querySelector('#enDiff [data-gk="tier"]'); cb.click(); ok(!!(JSON.parse(localStorage.getItem('hf_pop_last')).decl.tier||{}).ack,'an acknowledgment is saved with the client');
+ S.recommended='better'; ok(reviewBelow('better')===true,'the Benefits Review reads the locked recommendation, not the tool\u2019s REC');
+ S.chosen={tier:'best'}; goStep('enroll'); await w(200); ok(recGap().length===0&&/took what you recommended/.test(document.getElementById('enDiff').textContent),'no gap when they take the recommendation');
+ S.rec=null; renderRecGap(); ok(/No recommendation on record/.test(document.getElementById('enDiff').textContent),'never presented: says so, offers the tool\u2019s REC');
+ S.chosen={tier:'better'}; S.recommended='best';
  /* setup asks for the benefits page */
  S.agentBenefits=''; ok(agentSetupMissing().indexOf('benefits page')>=0,'Setup counts the benefits page until it is filled');
- return {n:33, fails:fails}; })()`;
+ return {n:42, fails:fails}; })()`;
 try {
   let l; for (let i = 0; i < 60 && !l; i++) { await sleep(150); l = await fetch(`http://127.0.0.1:${DBG}/json/list`).then(r => r.json()).catch(() => null); }
   ws = new WebSocket(l.find(t => t.type === 'page').webSocketDebuggerUrl);

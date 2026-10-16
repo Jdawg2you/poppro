@@ -627,6 +627,13 @@
   .wl-you{margin:18px 20px 0;padding-top:14px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}.wl-you b{font-family:var(--serif);color:var(--navy);font-size:17px;margin-right:6px}.wl-you i{font-style:normal}.wl-you i.needfill-sum{color:#17824a;font-weight:700}
   #agentSetup{padding:8px 20px 4px}
   #setupModal{z-index:2000}
+  /* Recommended vs elected */
+  .rg-box{border:1.5px solid #e0b9a6;background:#fff8f4;border-radius:12px;padding:12px 14px;margin:12px 0}.rg-box.rg-ok{border-color:#9fd7b4;background:#f2fbf5}.rg-box.rg-none{border-color:var(--line);background:#faf7ef;font-size:13.5px;color:var(--navy)}
+  .rg-head{display:flex;gap:18px;flex-wrap:wrap;font-size:14px;color:var(--navy)}.rg-head b{font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-right:4px}.rg-head small{color:var(--muted);margin-left:4px}
+  .rg-match{margin-top:6px;font-weight:700;color:#17824a}.rg-sub{font-size:12.5px;color:var(--muted);margin:6px 0 4px}
+  .rg-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:7px 0;border-top:1px dotted #e7cfc2}.rg-row label{display:flex;gap:8px;align-items:center;flex:1 1 320px;font-size:14px;font-weight:600;color:#7a2e10;cursor:pointer}.rg-row input[type=checkbox]{width:17px;height:17px}
+  .rg-row.rg-lowered label{color:#8a5a00}.rg-why{flex:1 1 220px;font:inherit;font-size:13px;padding:6px 8px;border:1px solid var(--line);border-radius:7px;background:#fff}
+  .rg-btn{font:inherit;font-size:12.5px;font-weight:700;border:1px solid var(--navy);background:#fff;color:var(--navy);border-radius:8px;padding:5px 10px;cursor:pointer;margin-left:6px}
   /* Benefits Review */
   .rv-conf{border:1px solid #e6d3a3;background:#fffaf0;border-radius:12px;padding:12px 14px;margin:10px 0 14px}
   .rv-ch{font-family:var(--serif);font-weight:700;color:var(--navy);font-size:16px;margin-bottom:8px}.rv-ch small{font-family:inherit;font-weight:500;font-size:12.5px;color:var(--muted);margin-left:6px}
@@ -1464,6 +1471,7 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
    <div class="card pad">
     <div class="sectitle"><span class="dot">●</span> Enroll</div>
     <div class="note" style="padding-top:2px">In call order: the life application first (it has the health questions), each person’s details, the finish — then the health carriers after the call.</div>
+    <div id="enDiff" class="hidein-client"></div>
     <div id="enrollSummary" style="margin:14px 0"></div>
     <div class="enroll-card" id="enLife">
       <div class="en-step"><span>1</span> Open your life application <small class="en-hint">— use the information below</small></div>
@@ -3064,7 +3072,7 @@ function blankState(){
     negot:{on:true,pct:40,min:2500,cards:{}},   // Medical Bill Saver (CareGuide) - a conservative 40% illustration; no carrier average is published
     intake:{who:{app:true,spouse:false,kids:false},phone:'',email:'',tobaccoP:false,tobaccoS:false,maternityP:false,maternityS:false,maternity:false,dv:false,famcancerP:false,famcancerS:false,famcancer:false,famheartP:false,famheartS:false,famheart:false,mentalP:false,mentalS:false,mental:false,surg2yrP:false,surg2yrS:false,surg2yr:false,majorcond:false,majorcondNote:'',diabetic:false,diabeticNote:'',health:'',income:0,pincome:0,sincome:0,hhManual:false,retage:'',savings:0,invest:0,invprot:false,invsra:false,invnote:'',docs1:'',docs2:'',docs3:'',keepaca:'',keepafc:'',docnote:'',medList:[],budget:0,priority:'coverage',notes:'',carrier:'',plan:'',pheight:'',pweight:'',sheight:'',sweight:'',psex:'',ssex:'',kidsNote:'',routeNote:'',docsNote:'',whyShop:'',whyMatters:'',foundPlan:'',effDate:''},
     recommended:'best',
-    review:{},
+    review:{}, rec:null, elected:null, decl:{},
     chosen:{tier:null},   // the package the client picked - carries from the builder / Client View to Enroll
     include:{good:true,better:true,best:true},   // agent toggle — which tiers reach the client view & printout
     showTfra:true,                                // agent toggle — hide the TFRA section from client view & printout
@@ -4446,6 +4454,45 @@ function agentSetupFold(){ var miss=agentSetupMissing(), b=$('setupBtn'), n=$('s
 function fillAgent(){ $('in_agency').value=(S.agency&&S.agency!=='HealthFirst')?S.agency:(S.agency||''); $('in_agent').value=(S.client||{}).agent||''; $('in_aphone').value=S.agentPhone||''; $('in_aemail').value=S.agentEmail||''; $('in_anpn').value=S.agentNPN||''; $('in_aweb').value=S.agentWebsite||''; $('in_acard').value=S.agentCard||''; $('in_abook').value=S.agentBooking||''; $('in_abenefits').value=S.agentBenefits||''; agentSetupFold(); }
 /* Only the agent fields - captureIntake() would also read the client boxes, which are stale off the Intake step. */
 function readAgent(){ S.agency=($('in_agency').value||'').trim()||'HealthFirst'; S.client=S.client||{}; S.client.agent=$('in_agent').value; S.agentPhone=$('in_aphone').value; S.agentEmail=$('in_aemail').value; S.agentNPN=($('in_anpn').value||'').trim(); S.agentWebsite=($('in_aweb').value||'').trim(); S.agentCard=($('in_acard').value||'').trim(); S.agentBooking=($('in_abook').value||'').trim(); S.agentBenefits=($('in_abenefits').value||'').trim(); agentSetupFold(); autosave(); }
+/* ===== Recommended vs elected (Jesse, 2026-10-16) =====
+   Both are locked when they actually happen. The recommendation is what you PRESENT: ▶ Present saves that package,
+   every product with its level and price (S.rec), the first time; a later Present only replaces it with a higher
+   package. What they bought is saved when you reach Enroll (S.elected, refreshed while you're there). The gap
+   between the two (lower package, products declined, levels lowered, living benefits offered and not taken) drives
+   the Enroll panel, the Benefits Review's "below my recommendation" screen and, later, the declination page. */
+function pkSnap(t){ if(!t||!S.packages[t]) return null; var c=effCfg(t), pk=S.packages[t];
+  return {tier:t, name:TIER_NAME[t]||t, monthly:Math.round((tierTotals(t).mo||0)*100)/100, at:new Date().toISOString().slice(0,10),
+    products:(pk.products||[]).filter(function(p){ return (+p.monthly||0)>0; }).map(function(p){
+      return {k:p.k, name:String(p.name||'').split(' — ')[0], monthly:+p.monthly||0, sum:pbSummary(p.k,c,p)||''}; })}; }
+function recLock(t){ var cur=S.rec, snap=pkSnap(t); if(!snap) return;
+  if(!cur||(TIER_ORDER[t]!=null&&TIER_ORDER[cur.tier]!=null&&TIER_ORDER[t]>TIER_ORDER[cur.tier])){ snap.by='presented'; S.rec=snap; autosave(); } }
+function electedLock(){ var t=chosenTier(); if(!t) return; S.elected=pkSnap(t); autosave(); }
+var LB_K={lbp:1,lbs:1};
+/* every way what they bought falls short of what was recommended, each with a stable key for its acknowledgment */
+function recGap(){ var R=S.rec, E=S.elected, out=[]; if(!R||!E) return out;
+  if(TIER_ORDER[E.tier]<TIER_ORDER[R.tier]) out.push({key:'tier',kind:'below',text:'Below our recommendation: '+E.name+' instead of '+R.name+' ('+fmt2(E.monthly)+' vs '+fmt2(R.monthly)+' a month)'});
+  var has={}; E.products.forEach(function(p){ has[p.k]=p; });
+  R.products.forEach(function(p){ var e=has[p.k];
+    if(!e) out.push({key:'p:'+p.k,kind:'declined',text:'Declined: '+p.name+(p.sum?' ('+p.sum+')':'')+' — '+fmt2(p.monthly)+' a month'});
+    else if(e.monthly<p.monthly-0.005&&e.sum!==p.sum) out.push({key:'l:'+p.k,kind:'lowered',text:'Lowered: '+p.name+' — '+(p.sum||fmt2(p.monthly))+' → '+(e.sum||fmt2(e.monthly))}); });
+  /* living benefits are priced live at the pivot, so they're "recommended" once that screen was shown */
+  if(R.lbOffered&&!E.products.some(function(p){ return LB_K[p.k]; })&&!R.products.some(function(p){ return LB_K[p.k]; }))
+    out.push({key:'lb',kind:'declined',text:'Declined: living benefits (offered at the pivot)'});
+  return out; }
+function renderRecGap(){ var host=$('enDiff'); if(!host) return; var R=S.rec, E=S.elected, A=(S.decl=S.decl||{});
+  if(!E){ host.innerHTML=''; return; }
+  if(!R){ host.innerHTML='<div class="rg-box rg-none"><b>No recommendation on record.</b> This plan was never presented in MyPopPro, so there is nothing to compare it with. '
+      +(S.recommended?'<button type="button" class="rg-btn" id="rgUseRec">Record '+esc(TIER_NAME[S.recommended])+' (the tool’s REC) as our recommendation</button>':'')+'</div>';
+    if($('rgUseRec')) $('rgUseRec').onclick=function(){ var s=pkSnap(S.recommended); if(s){ s.by='marked on Enroll'; S.rec=s; autosave(); renderRecGap(); } };
+    return; }
+  var gap=recGap(), head='<div class="rg-head"><span><b>Recommended</b> '+esc(R.name)+' · '+fmt2(R.monthly)+'/mo <small>'+esc(R.by||'presented')+' '+esc(R.at||'')+'</small></span><span><b>Elected</b> '+esc(E.name)+' · '+fmt2(E.monthly)+'/mo</span></div>';
+  if(!gap.length){ host.innerHTML='<div class="rg-box rg-ok">'+head+'<div class="rg-match">✓ They took what you recommended.</div></div>'; return; }
+  host.innerHTML='<div class="rg-box">'+head+'<div class="rg-sub">Where it falls short of the recommendation — tick each one the client knowingly declined. This is the record the declination page and the Benefits Review will use.</div>'
+    +gap.map(function(g){ var a=A[g.key]||{}; return '<div class="rg-row rg-'+g.kind+'"><label><input type="checkbox" data-gk="'+esc(g.key)+'"'+(a.ack?' checked':'')+'> <span>'+esc(g.text)+'</span></label>'
+      +'<input class="rg-why" data-gw="'+esc(g.key)+'" placeholder="why (optional) — budget, has it through work…" value="'+esc(a.why||'')+'"></div>'; }).join('')
+    +'</div>';
+  host.querySelectorAll('[data-gk]').forEach(function(c){ c.onchange=function(){ var k=c.dataset.gk; A[k]=A[k]||{}; A[k].ack=c.checked?new Date().toISOString().slice(0,10):''; autosave(); }; });
+  host.querySelectorAll('[data-gw]').forEach(function(i){ i.oninput=function(){ var k=i.dataset.gw; A[k]=A[k]||{}; A[k].why=i.value; autosave(); }; }); }
 /* ===== Benefits Review (Jesse + Health ZONE, 2026-10-16) =====
    The call after approval and before the effective date. Script: tool/benefits-review.html (Health ZONE's; its
    source and gate live in Health Insurance/_training/benefits-review/). Paged by data-screen, the way Present is.
@@ -4491,7 +4538,7 @@ function reviewLink(){ var R=reviewState(); return reviewUrl(R.link||S.agentBene
 function reviewDate(v){ var m=String(v||'').match(/^(\d{4})-(\d{2})-(\d{2})$/); if(!m) return ''; return new Date(+m[1],+m[2]-1,+m[3]).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}); }
 var TIER_ORDER={good:0,better:1,best:2};
 function reviewDental(t){ return ((S.packages[t]||{}).products||[]).some(function(p){ return p.k==='dvh'&&(+p.monthly||0)>0; }); }
-function reviewBelow(t){ var r=S.recommended; return !!(t&&r&&TIER_ORDER[t]!=null&&TIER_ORDER[r]!=null&&TIER_ORDER[t]<TIER_ORDER[r]); }
+function reviewBelow(t){ var r=(S.rec&&S.rec.tier)||S.recommended; return !!(t&&r&&TIER_ORDER[t]!=null&&TIER_ORDER[r]!=null&&TIER_ORDER[t]<TIER_ORDER[r]); }
 function reviewPages(t){ return REVIEW_PAGES.filter(function(p){ return !p.when||(p.when==='dental'?reviewDental(t):reviewBelow(t)); }); }
 /* Prescriptions: the day's fills against the per-day benefit. "You made $X" only when the fills really come to less
    (Health ZONE's gate); a med with no price means no priced list, and then neither sentence is served. */
@@ -4517,7 +4564,7 @@ function reviewTokens(t){ var C=S.client||{}, R=reviewState(), T={}, m2=function
     if(X.math==='gain') T['client.rx_gain']=m2(X.per-X.total);
     if(X.math==='partial'){ T['client.rx_covered']=m2(X.per)+' of it'; T['client.rx_short']=m2(X.total-X.per); } }
   T['careguide.threshold']='$2,500';
-  T['tier.elected']=TIER_NAME[t]||''; T['tier.recommended']=TIER_NAME[S.recommended]||'';
+  T['tier.elected']=TIER_NAME[t]||''; T['tier.recommended']=TIER_NAME[(S.rec&&S.rec.tier)||S.recommended]||'';
   T['review.month']=R.month||(R.eff?MONTHS[+String(R.eff).slice(5,7)-1]:'');
   return T; }
 var REVIEW_CSS='.rv-tick{margin:10px 0 4px;padding:10px 14px;border:2px dashed #2f7d4a;border-radius:10px;background:#f2fbf5;font:inherit;font-size:14px;display:flex;align-items:center;gap:10px;cursor:pointer}'
@@ -4654,6 +4701,7 @@ var NEWS=[
   ['Booking fills the follow-up','The date and time you book at the end of the call land in Send the quote on the Quote page.'],
   ['GLP-1 questions','The call asks about Ozempic, Wegovy, Mounjaro, Zepbound and Saxenda. The Intake has a GLP-1 row for each person that opens only if they’re on one: which drug, diabetes or weight, how long, what they pay and where they get it. A GLP-1 on the medication list fills it in for you.'],
   ['Benefits Review','A sixth step for the call after approval: type the effective date, premium and draft date off the carrier’s confirmation, then walk the script while the client registers the portal, telehealth, the Easy Upload app and CareGuide. The one you’re on is boxed in green, with Open, Text them (Messages opens with a note and the link) and Copy link. CareGuide’s text includes a tap-to-save contact card. Their prescriptions are priced against the daily benefit, and only the true sentence is shown.'],
+  ['Recommended vs what they bought','Presenting a plan records it as your recommendation, product by product. Enroll records what they actually bought and lists every gap — a lower package, products declined, levels lowered — with a box to tick each one they knowingly declined.'],
   ['Your benefits page in Setup','Add the link to your own client resource page (your ManhattanLife benefits page, flipbook or similar) in ⚙ Setup. The Benefits Review opens it for every client.'],
   ['A real story for big bills','In Present, “What if I have a major health issue?” now opens Kyle’s daughter’s story: a $211,000 ICU bill, eleven months of negotiation, and a $33,000 cheque, with what to say and what never to promise.'],
   ['⚙ Setup and a walk-through','Your agent details moved to ⚙ Setup at the top, with a six-step walk-through of the tool. The button glows until everything is filled in.'],
@@ -5313,7 +5361,7 @@ function nonMhNotice(t){ var N=tierNonMh(t); if(!N) return; var first=((S.client
     +'<p style="margin:0;padding:10px 12px;background:#fff8e6;border:1px solid #e6d3a3;border-radius:8px"><b>💾 Save Quote/Package of Protection when you’re done.</b> It keeps everything you collected; <b>Load Quote</b> brings it all back later.</p>';
   $('nmhModal').classList.add('open'); }
 function presentOpen(){ if(tierNonMh(chosenTier())){ nonMhNotice(chosenTier()); return; } if(!chosenTier()){ var t=S.activeTab||'best'; if(!confirm('No package is marked as their plan yet. Present '+TIER_NAME[t]+'?')) return; chooseTier(t); }
-  S.present=S.present||{}; S.present.pg=S.present.pg||0; goStep('present'); }
+  S.present=S.present||{}; S.present.pg=S.present.pg||0; recLock(chosenTier()); goStep('present'); }
 function presentHas(t,cond){ if(!cond) return true; var m=String(cond).match(/^(has|base):(\w+)$/); if(!m) return true;
   if(m[1]==='base') return (effCfg(t).base||'afc')===m[2];
   var pk=S.packages[t]||{}; return (pk.products||[]).some(function(p){ return (p.k===m[2]||(m[2]==='lb'&&(p.k==='lbp'||p.k==='lbs')))&&(+p.monthly||0)>0; }); }
@@ -5478,7 +5526,8 @@ function renderPresent(){ var host=$('presentHost'); if(!host) return; var t=pre
   host.querySelectorAll('[data-show]').forEach(function(b){ b.onclick=function(){ presentShow(b.dataset.show); }; });
 }
 /* flip to a screen without reloading the script (its state, notes and picks stay put) */
-function presentGo(pg){ var pages=presentPages(), nav=presentNav(), t=presentTier(); if(nav.indexOf(pg)<0) pg=nav[0]; S.present.pg=pg; autosave();
+function presentGo(pg){ var pages=presentPages(), nav=presentNav(), t=presentTier(); if(nav.indexOf(pg)<0) pg=nav[0]; S.present.pg=pg;
+  if(pages[pg]&&pages[pg].sc==='lb-price'&&S.rec&&!S.rec.lbOffered){ S.rec.lbOffered=true; } autosave();
   var fr=$('prFrame'), doc=fr&&fr.contentDocument, pos=nav.indexOf(pg);
   presentShowPage(doc,pg); try{ presentWire(doc,t); }catch(e){}
   fr.style.height='60px'; fr.style.height=(doc.documentElement.scrollHeight+8)+'px';
@@ -5914,7 +5963,7 @@ function goStep(s){
   document.body.classList.toggle('step-present',s==='present'); clientStripSum();
   if(s==='intake') fillIntake();
   if(s==='call') callOpen();
-  if(s==='enroll') renderEnroll();
+  if(s==='enroll'){ electedLock(); renderEnroll(); renderRecGap(); }
   if(s==='review') renderReview();
   if(s==='present') renderPresent();
   if(s==='quote'){ syncRateBasis(); acaSync(); autoPriceTiers(); fill(); compute(); }
@@ -6447,7 +6496,7 @@ var TIER_NAME={good:'Essential',better:'Complete',best:'Comprehensive'};
 /* "▶ Present Comprehensive Plan" - the plan's name in italics; one label for the builder's button and the one under Send the quote */
 function presentBtnLabel(){ var t=chosenTier(), N=tierNonMh(t); if(N) return 'ⓘ '+N.name+' plan — how to present it'; return '▶ Present '+(t?'<i>'+TIER_NAME[t]+'</i> Plan':'a plan'); }
 function chosenTier(){ return (S.chosen&&S.chosen.tier)||null; }
-function chooseTier(t){ S.chosen=S.chosen||{}; S.chosen.tier=(S.chosen.tier===t)?null:t; if(S.chosen.tier) celebrate('thumbs'); if(S.chosen.tier&&tierNonMh(t)) setTimeout(function(){ nonMhNotice(t); },0); if(S.chosen.tier){ S.activeTab=t; S.include=S.include||{}; S.include[t]=true; } compute(); autosave(); }
+function chooseTier(t){ S.chosen=S.chosen||{}; S.chosen.tier=(S.chosen.tier===t)?null:t; if(S.step==='enroll'&&S.chosen.tier){ electedLock(); setTimeout(renderRecGap,0); } if(S.chosen.tier) celebrate('thumbs'); if(S.chosen.tier&&tierNonMh(t)) setTimeout(function(){ nonMhNotice(t); },0); if(S.chosen.tier){ S.activeTab=t; S.include=S.include||{}; S.include[t]=true; } compute(); autosave(); }
 function tierHasDental(t){ return ((S.packages[t]||{}).products||[]).some(function(p){ return p.k==='dvh'&&(+p.monthly||0)>0; }); }
 function dentalPrice(t){ try{ var r=pDVH(HF_RATES,ratingAge(),householdKey(),effCfg(t).dvh,(S.client.state||'').toUpperCase()); return r&&r.price!=null?+r.price:null; }catch(e){ return null; } }
 /* Dental stays a yes/no after the choice: the three packages are compared without it, then the
