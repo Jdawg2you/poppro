@@ -5827,9 +5827,9 @@ function renderPresent(){ var host=$('presentHost'); if(!host) return; var t=pre
     +'<div class="box" id="prStories">'+PR_STORY_HEAD+'</div>'
     +'</div></div><div id="prPop" style="display:none"></div>'
     +'<div id="prEdit" class="pr-edit" style="display:none"><div class="rv-ch">Enrolling with plan edits <small>make the changes with them — the price and the side-by-side follow — then enroll.</small></div><div id="prEditBody"></div>'
-    +'<div class="pr-editgo"><button type="button" data-pe="cancel">Cancel — back to as presented</button><button type="button" class="go" data-pe="go">✓ They’re in — enroll with these adjustments →</button></div></div>';
+    +'<div class="pr-editgo"><button type="button" data-pe="cancel">Cancel edits — enroll what was presented →</button><button type="button" class="go" data-pe="go">✓ They’re in — enroll with these adjustments →</button></div></div>';
   host.innerHTML=h; presentWhyBox(t); presentDrxBox();
-  host.querySelectorAll('[data-pe]').forEach(function(b){ b.onclick=function(){ if(b.dataset.pe==='cancel'){ $('prEdit').style.display='none'; return; }
+  host.querySelectorAll('[data-pe]').forEach(function(b){ b.onclick=function(){ if(b.dataset.pe==='cancel'){ var pt=presentTier(); S.chosen={tier:pt}; actualSeed(pt); S.actual.how='presented'; autosave(); celebrate('confetti',enrollCheer()); goStep('enroll'); return; }
     S.chosen={tier:S.actual.from}; S.actual.how='edited'; autosave(); celebrate('confetti',enrollCheer()); goStep('enroll'); }; });
   var fr=$('prFrame');
   fr.onload=function(){ try{ var doc=fr.contentDocument; presentPaginate(doc);
