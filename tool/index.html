@@ -5896,6 +5896,8 @@ function presentWire(doc,t){ if(!doc||!doc.body) return 0; var T=presentScriptTo
   /* section 5's doctor (Jesse, 9 Oct): 👍 above the name once the Intake says the doctor is in First Health, ❓ until
      then - and the ❓ jumps to the network check. */
   var netV=!!(S.docs||{}).net, kaf=(S.intake||{}).keepafc, docSt=!netV||!kaf?'q':(kaf==='yes'?'ok':'no');
+  /* the doctor's network status picks the sentence (Health ZONE's data-docnet blocks): in, or out-of-network - not checked shows the in version with its ❓ */
+  Array.prototype.forEach.call(doc.querySelectorAll('[data-docnet]'),function(x){ var w=x.getAttribute('data-docnet'); x.classList.toggle('pp-off',w==='out'?docSt!=='no':docSt==='no'); });
   Array.prototype.forEach.call(doc.querySelectorAll('var[data-k="doctor.name"]'),function(v){ if(!v.classList.contains('pp-ok')) return;
     v.classList.toggle('pp-docok',docSt==='ok'); v.classList.toggle('pp-docno',docSt==='no'); v.classList.toggle('pp-docq',docSt==='q'); v.classList.toggle('pp-fix',docSt!=='ok');
     v.title=docSt==='ok'?'Verified: in the First Health network':docSt==='no'?'Verified: NOT in the First Health network — don’t say they’re in it':'Network not verified yet — click to verify it on the Intake'; });
