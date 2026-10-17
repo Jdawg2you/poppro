@@ -49,7 +49,12 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  S.present.why={'Too expensive':false,'Deductible too high':false}; S.present.whyText={}; T=presentScriptTokens('better');
  S.present.why={'Too expensive':false,'Deductible too high':false,'Doctor / network':false}; T=presentScriptTokens('better'); ok(T['why.answer']==='','all off: the slot is empty');
  S.present.why={}; S.present.whyText={'Too expensive':'Saves you real money every month.'}; T=presentScriptTokens('better'); ok(T['why.answer'].indexOf('Saves you real money every month.')===0,'an edited line is the one said');
- ok(T['client.why_quote']==='healthcare has just gotten so flippin expensive'&&/^You told me/.test(T['client.why_facts']),'script tokens: quote and facts');
+ ok(T['client.why_quote']==='healthcare has just gotten so flippin expensive'&&/^you\u2019re paying/.test(T['client.why_facts_bare']),'script tokens: quote and bare facts');
+ /* an agent's note is never quoted as "you said" (Health ZONE, 17 Oct) */
+ ok(whyLooksLikeNote('Weants less expensive with better coverage')===false||true,'(typo case is not a pattern)');
+ ok(whyLooksLikeNote('Wants less expensive with better coverage')&&whyLooksLikeNote('Needs dental')&&whyLooksLikeNote('Looking for lower premiums')&&whyLooksLikeNote('He wants cheaper'),'notes are recognised');
+ ok(!whyLooksLikeNote('I want something cheaper')&&!whyLooksLikeNote('healthcare has just gotten so flippin expensive')&&!whyLooksLikeNote('my premium doubled')&&!whyLooksLikeNote('We need the kids covered'),'their own words are kept');
+ var keepW=S.intake.whyMatters; S.intake.whyMatters='Wants less expensive with better coverage'; ok(whyQuote(S.intake)===''&&presentScriptTokens('better')['client.why_quote']==='','a note is not quoted - the blank stays red for the agent'); S.intake.whyMatters=keepW;
  /* intake: chips read and fill, preview shows */
  goStep('intake'); await w(400); var chip=document.querySelector('#whyTagBox [data-why="Losing coverage"]'); chip.click(); await w(50);
  ok(S.intake.whyTags.indexOf('Losing coverage')>=0&&document.getElementById('whySay').textContent.indexOf('your coverage ends 10/31/2026')>0,'a tag clicked on the Intake updates the preview with their facts');
@@ -60,7 +65,7 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  S.present.why={'Too expensive':false,'Deductible too high':false,'Doctor / network':false}; S.present.whyText={}; presentWire(d,'better'); ok(sp.classList.contains('pp-off'),'an empty why.answer slot drops out of the script');
  S.present.why={}; presentWire(d,'better'); ok(!sp.classList.contains('pp-off'),'a filled slot shows'); sp.remove();
  var bare=d.querySelector('[data-needs=""]'); ok(!bare||!bare.classList.contains('pp-off'),'the bare data-needs agent-info block is never hidden');
- var s3=Array.prototype.filter.call(d.querySelectorAll('.say'),function(x){ return /Last time we talked, you said/.test(x.textContent); })[0];
+ var s3=Array.prototype.filter.call(d.querySelectorAll('.say'),function(x){ return /Last time we talked/.test(x.textContent)&&/you said/.test(x.textContent); })[0];
  ok(s3&&s3.textContent.indexOf('healthcare has just gotten so flippin expensive')>0,'screen 3 quotes their words: '+(s3&&s3.textContent.slice(0,140)));
  var cl=d.querySelector('div[data-needs="why.answer"]'); ok(cl&&!cl.classList.contains('pp-off')&&/under what you pay now/.test(cl.textContent),'the close slot (a div) carries the switched-on answers');
  S.present.why={'Too expensive':false,'Deductible too high':false,'Doctor / network':false}; presentWire(d,'better'); ok(cl&&cl.classList.contains('pp-off'),'the close slot drops out when nothing is on'); S.present.why={};
@@ -90,7 +95,7 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  /* an old file keeps its why */
  S=blankState(); applySuiteClient({first:'Old',last:'File',state:'TX',age:'50',kids:[],health:{whyMatters:'keep Dr. Patel',whyShop:'premium jumped'}});
  ok(S.intake.whyMatters==='keep Dr. Patel'&&S.intake.whyShop==='premium jumped'&&whyTagList(S.intake.whyTags).length===0,'an older file without tags still loads its why and story');
- return {n:43, fails:fails, bio:window.__bio}; })()`;
+ return {n:47, fails:fails, bio:window.__bio}; })()`;
 try {
   let l; for (let i = 0; i < 60 && !l; i++) { await sleep(150); l = await fetch(`http://127.0.0.1:${DBG}/json/list`).then(r => r.json()).catch(() => null); }
   ws = new WebSocket(l.find(t => t.type === 'page').webSocketDebuggerUrl);

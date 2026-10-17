@@ -634,6 +634,7 @@
   /* The Why */
   .whyblock{border:1.5px solid #e6d3a3;background:#fffaf0;border-radius:12px;padding:10px 12px;margin-bottom:10px}
   .whylab{font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:6px 0 4px}.whylab small{text-transform:none;letter-spacing:0;font-weight:500;margin-left:4px}
+  .whysay .ws-warn{color:#b42318}
   .whysay{margin-top:8px;font-size:14px;line-height:1.5;color:#1e2a44;background:#fff;border-left:3px solid #2c4a7c;border-radius:6px;padding:8px 11px}.whysay b{color:#2c4a7c;margin-right:4px}.whysay .ws-none{color:var(--muted)}
   .pw-q{font-family:var(--serif);font-size:15px;color:var(--navy);margin:2px 0 4px;font-style:italic}.pw-tags{font-size:12px;color:var(--muted);margin:0 0 6px}.pw-none{font-size:12.5px;color:var(--muted);margin:0}
   .pw-sub{font-size:12px;color:var(--muted);margin:6px 0 2px}.pw-row{border-top:1px dotted var(--line);padding:7px 0}.pw-row label{display:flex;gap:6px;align-items:center;font-size:13px;font-weight:700;color:var(--navy);cursor:pointer}.pw-row label em{font-style:normal;font-weight:600;font-size:11px;color:#8a5a00}
@@ -1088,7 +1089,7 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
     <div class="intake-sec" id="sec_client">Client Information</div>
     <!-- One Why (Jesse, 2026-10-16): their exact words, quoted back on the presentation, plus what's behind it -->
     <div class="whyblock">
-      <div class="fld" style="margin-bottom:6px"><label>Their why — in their words <small>exactly as they said it · quoted back to them on the presentation</small></label><input id="in_whymatters" placeholder="e.g. healthcare has just gotten so flippin' expensive"></div>
+      <div class="fld" style="margin-bottom:6px"><label>Their why — in their words, as they said it <small>quoted back to them: “you said, …”</small></label><input id="in_whymatters" placeholder="e.g. I’m paying way too much for what I get"></div>
       <div class="whylab">What’s behind it <small>click any</small></div>
       <div class="chips" id="whyTagBox"></div>
       <div class="whysay" id="whySay"></div>
@@ -4476,7 +4477,13 @@ var WHY_TAGS=['Too expensive','Deductible too high','Losing coverage','No covera
 function whyTagList(v){ return (Array.isArray(v)?v:String(v||'').split(/\s*,\s*/)).map(function(x){ return String(x||'').trim(); }).filter(function(x){ return WHY_TAGS.indexOf(x)>=0; }); }
 /* their words only - never the story, which may be the agent's own shorthand ("wants lower premium") and must not be
    quoted back as "you said". No why: the blank stays red and the agent asks. (Health ZONE, 16 Oct) */
-function whyQuote(I){ return String((I&&I.whyMatters)||'').trim().replace(/^["“”']+|["“”']+$/g,'').replace(/[.!\s]+$/,''); }
+function whyQuote(I){ var q=whyRaw(I); return whyLooksLikeNote(q)?'':q; }
+function whyRaw(I){ return String((I&&I.whyMatters)||'').trim().replace(/^["“”']+|["“”']+$/g,'').replace(/[.!\s]+$/,''); }
+/* An agent's note ("Wants less expensive with better coverage") read back as "you said, ..." puts words in their
+   mouth (Health ZONE, 17 Oct). No I / my / we AND it opens like a note = not quoted; the agent asks instead. */
+function whyLooksLikeNote(q){ q=String(q||'').trim(); if(!q) return false;
+  if(/\b(i|i'm|i’m|im|i've|i’ve|i'd|i’d|my|me|mine|we|we're|we’re|our|us)\b/i.test(q)) return false;
+  return /^(wants?|needs?|looking|seeking|interested|prefers?|client|clt|he|she|they|husband|wife|spouse|family)\b/i.test(q); }
 function whyHouse(){ var k=householdKey(); return k==='f'||k==='c'?'you and your family':k==='s'?'you and your spouse':'you'; }
 function whyDocs(){ var I=S.intake||{}, out=[]; [I.docs1,I.docs2,I.docs3].forEach(function(x){ String(x||'').split(/[;,]|\s+and\s+/i).forEach(function(d){
     d=d.replace(/\s*\(.*?\)\s*/g,' ').replace(/\s+[-–—]\s+.*$/,'').replace(/^\s*(dr\.?|doctor)\s+/i,'').trim(); if(d&&out.indexOf(d)<0) out.push(d); }); });
@@ -4540,7 +4547,9 @@ function whyChips(){ var host=$('whyTagBox'); if(!host||host.dataset.built) retu
 function whyReadTags(){ return Array.prototype.filter.call(document.querySelectorAll('#whyTagBox [data-why]'),function(c){ return c.checked; }).map(function(c){ return c.dataset.why; }); }
 function whyFillTags(){ whyChips(); var tags=whyTagList((S.intake||{}).whyTags); document.querySelectorAll('#whyTagBox [data-why]').forEach(function(c){ c.checked=tags.indexOf(c.dataset.why)>=0; c.closest('.chip').classList.toggle('on',c.checked); }); whySay(); }
 function whySay(){ var el=$('whySay'); if(!el) return; var I=Object.assign({},S.intake||{},{whyMatters:($('in_whymatters')||{}).value,whyTags:whyReadTags()});
-  var r=whyReadBack(I); el.innerHTML=r?'<b>What you’ll say back:</b> '+esc(r):'<b>What you’ll say back:</b> <span class="ws-none">type their words above — it’s quoted back to them on the presentation.</span>'; }
+  var raw=whyRaw(I), note=whyLooksLikeNote(raw), r=whyReadBack(I);
+  el.innerHTML=note?'<b class="ws-warn">That reads like a note, not their words</b> — it won’t be quoted back as “you said”. Type it the way they said it: <i>“I’m paying way too much for what I get.”</i>'
+    :r?'<b>What you’ll say back:</b> '+esc(r):'<b>What you’ll say back:</b> <span class="ws-none">type their words above — it’s quoted back to them on the presentation.</span>'; }
 /* ===== Recommended vs elected (Jesse, 2026-10-16) =====
    Both are locked when they actually happen. The recommendation is what you PRESENT: ▶ Present saves that package,
    every product with its level and price (S.rec), the first time; a later Present only replaces it with a higher
@@ -5665,7 +5674,7 @@ function presentWhy(I){ var m=String((I&&I.whyMatters)||'').trim(); if(m) return
 function presentScriptTokens(t){ var T=presentTokens(t), C=S.client||{}, I=S.intake||{}, Cu=curIn(), pk=S.packages[t]||{products:[]}, c=effCfg(t), o=evTierPack(t), A=o.afc||{};
   var m0=function(n){ return '$'+Math.round(+n||0).toLocaleString('en-US'); };
   var who=I.who||{}, hh=who.kids?'you and your family':who.spouse?'you and your spouse':'you'; T['client.household_to']='to '+hh; T['client.household_for']='for '+hh;
-  T['client.why_quote']=whyQuote(I); T['client.why_facts']=whyFacts(I); T['client.why_facts_bare']=whyFactsBare(I); T['why.answer']=whyAnswerText(t); var DP=drxParts(); T['drx.drug']=DP.drug; T['drx.pct']=DP.pct; T['drx.cost']=DP.cost;
+  T['client.why_quote']=whyQuote(I); T['client.why_facts_bare']=whyFactsBare(I); T['why.answer']=whyAnswerText(t); var DP=drxParts(); T['drx.drug']=DP.drug; T['drx.pct']=DP.pct; T['drx.cost']=DP.cost;
   T['agent.first']=((C.agent||'').trim().split(/\s+/)[0])||''; T['agent.phone']=S.agentPhone||''; T['agent.email']=S.agentEmail||'';
   T['agent.website']=S.agentWebsite||''; T['agent.card']=S.agentCard||''; T['agent.booking']=S.agentBooking||'';
   T['client.legal_name']=(C.pname||'').trim(); T['client.dob']=C.dob||C.date||''; T['client.phone']=I.phone||''; T['client.email']=I.email||'';
