@@ -627,6 +627,7 @@
   .wl-you{margin:18px 20px 0;padding-top:14px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}.wl-you b{font-family:var(--serif);color:var(--navy);font-size:17px;margin-right:6px}.wl-you i{font-style:normal}.wl-you i.needfill-sum{color:#17824a;font-weight:700}
   #agentSetup{padding:8px 20px 4px}
   #setupModal{z-index:2000}
+  .setlink{font-size:10.5px;font-weight:600;letter-spacing:0;text-transform:none;color:#2c4a7c;margin-left:4px}.goatgrab.flash{box-shadow:0 0 0 3px rgba(198,154,60,.6);transition:box-shadow .3s}
   .wl-flowbox>summary{cursor:pointer;margin:14px 20px 0;font-family:var(--serif);font-weight:700;color:var(--navy);font-size:15px}.wl-flowbox>summary small{font-family:inherit;font-weight:500;font-size:12.5px;color:var(--muted);margin-left:6px}
   .fld.agbio{grid-column:1/-1}.fld.agbio textarea{width:100%;box-sizing:border-box;font:inherit;font-size:14px;line-height:1.5;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:#fbfaf6;resize:vertical}.fld.agbio .picbtn{margin-top:6px}
   /* The Why */
@@ -1578,9 +1579,9 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
       <div class="fld"><label>Agent phone</label><input id="in_aphone" placeholder="(000) 000-0000"></div>
       <div class="fld"><label>Agent email</label><input id="in_aemail" placeholder="you@agency.com"></div>
       <div class="fld"><label>NPN <small>in your signature</small></label><input id="in_anpn" inputmode="numeric" placeholder="National Producer Number"></div>
-      <div class="fld"><label>Website <small>in emails + text</small></label><input id="in_aweb" placeholder="yourwebsite.com"></div>
-      <div class="fld"><label>Digital business card <small>in emails + text</small></label><input id="in_acard" placeholder="yourcard.com/you"></div>
-      <div class="fld"><label>Booking link <small>in emails + text</small></label><input id="in_abook" placeholder="calendly.com/you"></div>
+      <div class="fld"><label>Website <small>in emails + text</small> <a href="#goatGrab" class="setlink" data-goat="1">(set up)</a></label><input id="in_aweb" placeholder="yourwebsite.com"></div>
+      <div class="fld"><label>Digital business card <small>in emails + text</small> <a href="#goatGrab" class="setlink" data-goat="1">(set up)</a></label><input id="in_acard" placeholder="yourcard.com/you"></div>
+      <div class="fld"><label>Booking link <small>in emails + text</small> <a href="#goatGrab" class="setlink" data-goat="1">(set up)</a></label><input id="in_abook" placeholder="calendly.com/you"></div>
       <div class="fld"><label>Your benefits page <small>for the Benefits Review</small></label><input id="in_abenefits" placeholder="yoursite.com/manhattanlife"></div>
       <div class="fld agbio"><label>Your bio <small>who you are · read at the start of every discovery call (2.3) · empty = the default</small></label><textarea id="in_abio" rows="4" placeholder="Leave empty to use the default"></textarea><button type="button" class="picbtn" id="bioDefault">Use the default</button></div>
       <div class="fld"><label>Direction Rx link <small>GLP-1 discount, weight loss</small></label><input id="in_adrxlink" placeholder="your Direction Rx link"></div>
@@ -6234,6 +6235,8 @@ function bindInputs(){
   ['in_anpn','in_aweb','in_acard','in_abook'].forEach(function(id){ $(id).addEventListener('input',function(){ captureIntake(); }); });
   if($('goatSkip')) $('goatSkip').onclick=function(){ try{ localStorage.setItem('pp_goat_skip','1'); }catch(e){} agentSetupFold(); };
   $('bioDefault').onclick=function(){ $('in_abio').value=DEFAULT_BIO; readAgent(); };
+  /* (set up) beside the three link boxes: jump to the free GOAT how-to below, even if it was folded away */
+  document.querySelectorAll('#agentSetup [data-goat]').forEach(function(a){ a.onclick=function(e){ e.preventDefault(); var d=$('agentSetup'); if(d) d.classList.remove('goat-skipped'); var g=$('goatGrab'); if(g){ g.scrollIntoView({behavior:'smooth',block:'center'}); g.classList.add('flash'); setTimeout(function(){ g.classList.remove('flash'); },1600); } }; });
   $('setupBtn').onclick=openSetup; $('closeSetup').onclick=closeSetup;
   ['p','s'].forEach(function(w){ $('in_glp1_'+w).addEventListener('change',function(){ if(this.value==='Yes'&&!$('in_glp1_'+w+'_drug').value) $('in_glp1_'+w+'_drug').value=glp1FromMeds(w); glp1Show(); glp1Need(); }); $('in_glp1_'+w+'_for').addEventListener('change',glp1Need); });
   if($('in_who_spouse')) $('in_who_spouse').addEventListener('change',glp1Show);
