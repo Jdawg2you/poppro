@@ -627,6 +627,13 @@
   .wl-you{margin:18px 20px 0;padding-top:14px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}.wl-you b{font-family:var(--serif);color:var(--navy);font-size:17px;margin-right:6px}.wl-you i{font-style:normal}.wl-you i.needfill-sum{color:#17824a;font-weight:700}
   #agentSetup{padding:8px 20px 4px}
   #setupModal{z-index:2000}
+  /* health history marks */
+  .pbrow.hist{box-shadow:inset 0 0 0 2px #c69a3c;border-radius:8px;background:#fffaf0}
+  .pbrow.histself .histnote{margin:4px 10px 6px;font-size:12px;line-height:1.4;color:#8a1f12;background:#fdecea;border:1px solid #f3c2bb;border-radius:6px;padding:5px 8px}
+  .histkey{display:flex;align-items:center;gap:8px;font-size:12.5px;color:#7a5a12;margin:10px 4px 0}.histsw{width:22px;height:12px;border-radius:4px;box-shadow:inset 0 0 0 2px #c69a3c;background:#fffaf0}
+  .histstrip{margin:0 0 12px;padding:9px 12px;border:1.5px solid #c69a3c;border-radius:10px;background:#fffaf0;font-size:13.5px;color:var(--navy);line-height:1.5}.histstrip div+div{margin-top:4px}.histstrip .hs-red{color:#8a1f12}
+  #printout .po-li.po-hist{box-shadow:inset 3px 0 0 #c69a3c;background:#fffaf0}#printout .po-histtag{display:block;font-family:inherit;font-size:10.5px;font-weight:700;color:#a07a1f;letter-spacing:.02em}
+  .famwho{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--navy)}.famwho small{font-weight:500;color:var(--muted)}.famwho input{font:inherit;font-size:13px;padding:5px 8px;border:1px solid var(--line);border-radius:7px;min-width:220px}
   .askq.kidsq{flex-wrap:wrap}.askq.kidsq textarea{flex:1 1 100%;width:100%;box-sizing:border-box;font:inherit;font-size:14px;line-height:1.45;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#fff;margin-top:6px;resize:vertical}
   .setlink{font-size:10.5px;font-weight:600;letter-spacing:0;text-transform:none;color:#2c4a7c;margin-left:4px}.goatgrab.flash{box-shadow:0 0 0 3px rgba(198,154,60,.6);transition:box-shadow .3s}
   .wl-flowbox>summary{cursor:pointer;margin:14px 20px 0;font-family:var(--serif);font-weight:700;color:var(--navy);font-size:15px}.wl-flowbox>summary small{font-family:inherit;font-weight:500;font-size:12.5px;color:var(--muted);margin-left:6px}
@@ -1173,6 +1180,7 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
     <div class="chips">
       <span class="ps-ctrl">Family history of cancer? <label class="tob"><input type="checkbox" id="in_famcancer_p"> P</label><label class="tob"><input type="checkbox" id="in_famcancer_s"> S</label></span>
       <span class="ps-ctrl">Family history of heart attack / stroke? <label class="tob"><input type="checkbox" id="in_famheart_p"> P</label><label class="tob"><input type="checkbox" id="in_famheart_s"> S</label></span>
+      <label class="famwho" id="famWhoWrap" style="display:none">Who in the family? <small>optional</small> <input id="in_famwho" placeholder="e.g. Dad — heart attack"></label>
       <span class="ps-ctrl">Tobacco use? <label class="tob"><input type="checkbox" id="in_tobacco_p"> P</label><label class="tob"><input type="checkbox" id="in_tobacco_s"> S</label></span>
       <span class="ps-ctrl red">Needs maternity? <label class="tob"><input type="checkbox" id="in_maternity_p"> P</label><label class="tob"><input type="checkbox" id="in_maternity_s"> S</label></span>
       <label class="chip tone-green"><input type="checkbox" id="in_dv"> Wants dental / vision?</label>
@@ -3568,6 +3576,10 @@ function applySuiteClient(c, live){ var sm=$('setupModal'); if(sm&&!live&&sm.cla
   if(h.spFhCancer!=null) I.famcancerS=yn(h.spFhCancer);
   if(h.fhHeart!=null)    I.famheartP=yn(h.fhHeart);
   if(h.spFhHeart!=null)  I.famheartS=yn(h.spFhHeart);
+  /* a family stroke is the heart/stroke box (the Intake asks "heart attack / stroke") */
+  if(yn(h.fhStroke)) I.famheartP=true; if(yn(h.spFhStroke)) I.famheartS=true;
+  if(h.fhWho) I.famWho=String(h.fhWho);
+  I.famcancer=!!(I.famcancerP||I.famcancerS); I.famheart=!!(I.famheartP||I.famheartS);
   if(h.mhNeeds!=null)    I.mentalP=yn(h.mhNeeds);
   if(h.spMhNeeds!=null)  I.mentalS=yn(h.spMhNeeds);
   if(h.matNeeds!=null)   I.maternityP=yn(h.matNeeds);
@@ -3659,7 +3671,7 @@ function applySuiteClient(c, live){ var sm=$('setupModal'); if(sm&&!live&&sm.cla
   var names=(c.conds||[]).map(function(x){ return String(x.name||"").toLowerCase(); }).join(", ");
   if(/diabet/.test(names)) I.diabetic=true;
   if(/anxiety|depress|ptsd|bipolar|schizo/.test(names)) I.mentalP=true;
-  if(/cancer/.test(names)) I.majorcond=true;
+  if(/cancer|heart attack|stroke|stent|bypass/.test(names)) I.majorcond=true;
   /* The script asks surgery or an overnight stay over FIVE years; this box is two. It goes to the notes. */
   if(h.hospStay2===true) I.surg2yrP=true;
 
@@ -4221,9 +4233,10 @@ function buildPrintout(){
       var isCh=chosenTier()===x.t;
       html+='<div class="po-col'+(isCh?' chosen':'')+'">'+(isCh?'<div class="po-ribbon">Your new plan</div>':'')+'<div class="po-hd"><h3>'+lab[0]+'<small>'+esc(lab[1])+'</small></h3>'
         +(pop?'<div class="popchip" style="border-color:'+pc+';color:'+pc+'"><span>POP Score</span><b>'+pop.score+'</b>'+(pop.s.provisional?'<small>provisional</small>':'')+'</div>':'')+'</div><div class="po-items">';
-      (x.pk.products||[]).forEach(function(p){ if(!(+p.monthly)) return;
-        html+='<div class="po-li"><span>'+esc(p.name)+'</span><span>'+fmt2(+p.monthly||0)+'</span></div>'; });
-      if(+x.pk.lb>0) html+='<div class="po-li"><span>Living Benefits'+(x.pk.lbCarrier?' — '+esc(x.pk.lbCarrier):'')+'</span><span>'+fmt2(+x.pk.lb)+'</span></div>';
+      var HF=histFam(), htag=HF.any?'<small class="po-histtag">Because of your family history</small>':'';
+      (x.pk.products||[]).forEach(function(p){ if(!(+p.monthly)) return; var hi=HF.any&&HIST_KEYS.indexOf(p.k)>=0;
+        html+='<div class="po-li'+(hi?' po-hist':'')+'"><span>'+esc(p.name)+(hi?htag:'')+'</span><span>'+fmt2(+p.monthly||0)+'</span></div>'; });
+      if(+x.pk.lb>0) html+='<div class="po-li'+(HF.any?' po-hist':'')+'"><span>Living Benefits'+(x.pk.lbCarrier?' — '+esc(x.pk.lbCarrier):'')+(HF.any?htag:'')+'</span><span>'+fmt2(+x.pk.lb)+'</span></div>';
       if(+x.pk.med>0) html+='<div class="po-li"><span>Medications (net)</span><span>'+fmt2(+x.pk.med)+'</span></div>';
       html+='</div><div class="po-tot"><div class="m"><span>Monthly</span><b>'+fmt2(x.mo)+'</b></div><div class="a"><span>Annual</span><span>'+fmt2(x.yr)+'</span></div></div>';
       if(base){ var ttx=tierTrue(x.t), sv=anchorSavings(base,pkgPremMo(x.t),x.mo+ttx.extra), cpn=copayNote(B,x.t), vs=base.k==='aca'?'your marketplace plan':'your current plan';
@@ -4380,7 +4393,7 @@ function suiteFromNavProfile(P){
       kidsHealth:P.kids_health||"", wantDental:P.want_dental||"", wantVision:P.want_vision||"", wantHearing:P.want_hearing||"",
       curCarrier:P.cur_carrier||"", curPlan:P.cur_plan||"", curPrem:P.cur_prem||"", curEmpPrem:P.cur_emp_prem||"", curTotal:P.cur_total||"",
       curDed:P.cur_ded||"", curVisits:P.cur_visits||"", curCopay:P.cur_copay||"", covGap:P.cov_gap||"",
-      fhCancer:P.fh_cancer||"", fhHeart:P.fh_heart||"", fhStroke:P.fh_stroke||"", mhNeeds:P.mh_needs||"", matNeeds:P.mat_needs||"",
+      fhCancer:P.fh_cancer||"", fhHeart:P.fh_heart||"", fhStroke:P.fh_stroke||"", fhWho:P.fh_who||"", mhNeeds:P.mh_needs||"", matNeeds:P.mat_needs||"",
       spFhCancer:P.sp_fh_cancer||"", spFhHeart:P.sp_fh_heart||"", spFhStroke:P.sp_fh_stroke||"", spMhNeeds:P.sp_mh_needs||"", spMatNeeds:P.sp_mat_needs||"",
       spSurgery:P.sp_recent_stay||"", spSurgeryWhat:P.sp_recent_what||"", spHospStay:P.sp_hosp_stay||"", spHealthNotes:P.sp_health_notes||"",
       incomeNext:P.income_next||"", spIncomeNext:P.sp_income_next||"", hhIncomeNext:P.hh_income_next||"",
@@ -4433,6 +4446,29 @@ function navLifeNow(P){ if(P.life_has==="No") return "None"; if(P.life_has!=="Ye
   var bits=[P.life_src?(P.life_src==="Work"?"through work":P.life_src==="Private"?"private":"work and private"):"", (P.life_type&&P.life_type!=="Not sure")?String(P.life_type).toLowerCase():"",
     P.life_amt?P.life_amt+" coverage":"", P.life_who?(P.life_who==="Them"?"covers them":P.life_who==="Spouse"?"covers the spouse":"covers both"):"", P.life_cost?P.life_cost+"/mo":""].filter(Boolean);
   return "Yes"+(bits.length?" — "+bits.join(", "):"")+(String(P.life_now||"").trim()?" · "+String(P.life_now).trim():""); }
+function famWhoShow(){ var on=['in_famcancer_p','in_famcancer_s','in_famheart_p','in_famheart_s'].some(function(id){ return $(id)&&$(id).checked; }); var w=$('famWhoWrap'); if(w) w.style.display=on?'':'none'; }
+/* ===== Health history: family vs their own (Jesse, 17 Oct) =====
+   FAMILY history of cancer, heart attack or stroke: they qualify for, and really should have, the cancer / heart & stroke
+   cover and living benefits - so those lines are outlined in gold on the packages (the client sees it too), a strip
+   reminds the agent on Quote and Present, and the presentation script gets the history and one sourced figure.
+   THEIR OWN history of it: term living benefits are likely off the table - flagged in red on that line so the agent
+   looks at whole life (added as Other). Flag only; nothing is removed. */
+var HIST_KEYS=['chas','lbp','lbs'];
+function histFam(){ var I=S.intake||{}, c=!!(I.famcancer||I.famcancerP||I.famcancerS), h=!!(I.famheart||I.famheartP||I.famheartS);
+  var parts=[]; if(c) parts.push('cancer'); if(h) parts.push('heart attack or stroke');
+  return {any:c||h, cancer:c, heart:h, label:parts.join(' and '), who:String(I.famWho||'').trim()}; }
+function histSelf(){ var I=S.intake||{}, out=[];
+  (I.conds||[]).forEach(function(c){ var n=String(c&&c.name||''); if(/cancer/i.test(n)&&out.indexOf('cancer')<0) out.push('cancer'); if(/heart attack|stent|bypass|angioplasty|heart surgery/i.test(n)&&out.indexOf('a heart attack')<0) out.push('a heart attack'); if(/stroke|tia/i.test(n)&&out.indexOf('a stroke')<0) out.push('a stroke'); });
+  return out; }
+/* sourced figures only (17 Oct): ACS lifetime risk 39.9% men / 39.0% women; CDC: heart disease is the leading cause of death for men and women */
+function histStat(F){ F=F||histFam(); var a=[];
+  if(F.cancer) a.push('about 4 in 10 people, men and women alike, are diagnosed with cancer at some point');
+  if(F.heart) a.push('heart disease is the number one cause of death for both men and women');
+  return a.join(', and '); }
+function histStrip(where){ var F=histFam(), me=histSelf(), bits=[];
+  if(F.any) bits.push('<b>Family history: '+esc(F.label)+'</b>'+(F.who?' ('+esc(F.who)+')':'')+' — hit it when you show '+(F.heart&&!F.cancer?'heart & stroke cover':F.cancer&&!F.heart?'cancer cover':'cancer / heart & stroke cover')+' and living benefits. Outlined in gold.');
+  if(me.length) bits.push('<b class="hs-red">They’ve had '+esc(me.join(' and '))+'</b> — term living benefits are likely off the table; look at whole life (add it as Other).');
+  return bits.length?'<div class="histstrip noprint hidein-client">'+bits.map(function(b){ return '<div>'+b+'</div>'; }).join('')+'</div>':''; }
 /* ===== Direction Rx for GLP-1s used for weight loss (Jesse, 2026-10-16) =====
    The client PAYS for the medication; what they get through us is the discount - 35% off as a client with an active
    ManhattanLife product, using the agent's code on Direction Rx's site. So it is a discount they have access to, never
@@ -4986,7 +5022,7 @@ function readIntake(){
   S.intake.phone=$('in_phone').value; S.intake.email=$('in_email').value;
   S.intake.tobaccoP=$('in_tobacco_p').checked; S.intake.tobaccoS=$('in_tobacco_s').checked;
   var ps=function(k){ var p=$('in_'+k+'_p').checked, s=$('in_'+k+'_s').checked; S.intake[k+'P']=p; S.intake[k+'S']=s; S.intake[k]=p||s; };
-  ps('famcancer'); ps('famheart'); ps('maternity'); ps('mental'); ps('surg2yr');
+  ps('famcancer'); ps('famheart'); S.intake.famWho=($('in_famwho').value||'').trim(); ps('maternity'); ps('mental'); ps('surg2yr');
   S.intake.dv=$('in_dv').checked;
   S.intake.majorcond=$('in_majorcond').checked; S.intake.majorcondNote=$('in_majorcond_note').value;
   S.intake.diabetic=$('in_diabetic').checked; S.intake.diabeticNote=$('in_diabetic_note').value;
@@ -5029,7 +5065,7 @@ function fillIntake(){
   setTimeout(glp1Fill,0); setTimeout(whyFillTags,0);
   $('in_tobacco_p').checked=!!(I.tobaccoP!==undefined?I.tobaccoP:I.tobacco); $('in_tobacco_s').checked=!!I.tobaccoS; $('in_dv').checked=!!I.dv;
   var fillPS=function(k,legacy){ $('in_'+k+'_p').checked=!!(I[k+'P']!==undefined?I[k+'P']:legacy); $('in_'+k+'_s').checked=!!I[k+'S']; };
-  fillPS('famcancer', I.famcancer||S.docs.famcancer); fillPS('famheart', I.famheart); fillPS('maternity', I.maternity); fillPS('mental', I.mental); fillPS('surg2yr', I.surg2yr);
+  fillPS('famcancer', I.famcancer||S.docs.famcancer); fillPS('famheart', I.famheart); $('in_famwho').value=I.famWho||''; famWhoShow(); fillPS('maternity', I.maternity); fillPS('mental', I.mental); fillPS('surg2yr', I.surg2yr);
   $('in_majorcond').checked=!!I.majorcond; $('in_majorcond_note').value=I.majorcondNote||''; autoGrow($('in_majorcond_note'));
   $('in_diabetic').checked=!!I.diabetic; $('in_diabetic_note').value=I.diabeticNote||''; autoGrow($('in_diabetic_note'));
   $('in_docs1').value=I.docs1||''; $('in_docs2').value=I.docs2||''; $('in_docs3').value=I.docs3||'';
@@ -5140,7 +5176,7 @@ function recommendBundles(){
     best:{products:[],dropped:['dvh'],lb:0,lbCarrier:'',lbCov:'',med:0,rxBenefit:0}
   };
   autoPriceTiers();
-  if((I.famcancer||I.famheart)&&!(S.cfg.better&&S.cfg.better.chas)){ effCfg('better').chas={cancer:20000,hs:0}; autoPriceTiers(); }   // family history: cancer in Complete too
+  if((I.famcancer||I.famheart)&&!(S.cfg.better&&S.cfg.better.chas)){ effCfg('better').chas={cancer:20000,hs:I.famheart?10000:0}; autoPriceTiers(); }   // family history: cancer in Complete too, and heart & stroke when it's heart (Jesse, 17 Oct)
   var cap=Infinity;
   var bcap=(+I.budget)||(+I.budgetComfort)||0; if(bcap>0) cap=Math.min(cap,bcap);   // max, else comfortable
   if(S.aca.prem>0) cap=Math.min(cap,S.aca.prem);
@@ -5602,6 +5638,7 @@ function renderPresent(){ var host=$('presentHost'); if(!host) return; var t=pre
   var who=(T['client.first']||'the client')+(S.client&&S.client.sname?' & '+enSplit(S.client.sname)[0]:'');
   var h='<div class="pr-top"><div><h3>Presenting the <em class="pr-plan">'+esc(TIER_NAME[t])+'</em> plan to '+esc(who)+'</h3><small>Agent-only — never on Client View or the printout. Blue blanks fill from this quote; red ones are missing.</small></div>'
     +'<button type="button" data-pr="quote" style="font:inherit;font-weight:700;border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 13px;cursor:pointer">← Back to the Quote</button></div>';
+  h+=histStrip('present');
   h+='<div class="pr-prog" id="prChips"></div><div class="pr-grid"><div>'
     +'<iframe id="prFrame" src="presentation.html" title="Presentation script" style="width:100%;border:1px solid var(--line);border-radius:12px;background:#fff;min-height:200px"></iframe>'
     +'<div class="pr-nav" id="prNav"></div></div>'
@@ -5674,7 +5711,7 @@ function presentWhy(I){ var m=String((I&&I.whyMatters)||'').trim(); if(m) return
 function presentScriptTokens(t){ var T=presentTokens(t), C=S.client||{}, I=S.intake||{}, Cu=curIn(), pk=S.packages[t]||{products:[]}, c=effCfg(t), o=evTierPack(t), A=o.afc||{};
   var m0=function(n){ return '$'+Math.round(+n||0).toLocaleString('en-US'); };
   var who=I.who||{}, hh=who.kids?'you and your family':who.spouse?'you and your spouse':'you'; T['client.household_to']='to '+hh; T['client.household_for']='for '+hh;
-  T['client.why_quote']=whyQuote(I); T['client.why_facts_bare']=whyFactsBare(I); T['why.answer']=whyAnswerText(t); var DP=drxParts(); T['drx.drug']=DP.drug; T['drx.pct']=DP.pct; T['drx.cost']=DP.cost;
+  T['client.why_quote']=whyQuote(I); T['client.why_facts_bare']=whyFactsBare(I); T['why.answer']=whyAnswerText(t); var DP=drxParts(); T['drx.drug']=DP.drug; var HFx=histFam(); T['fam.history']=HFx.any?HFx.label:''; T['fam.who']=HFx.who; T['fam.stat']=HFx.any?histStat(HFx):''; T['drx.pct']=DP.pct; T['drx.cost']=DP.cost;
   T['agent.first']=((C.agent||'').trim().split(/\s+/)[0])||''; T['agent.phone']=S.agentPhone||''; T['agent.email']=S.agentEmail||'';
   T['agent.website']=S.agentWebsite||''; T['agent.card']=S.agentCard||''; T['agent.booking']=S.agentBooking||'';
   T['client.legal_name']=(C.pname||'').trim(); T['client.dob']=C.dob||C.date||''; T['client.phone']=I.phone||''; T['client.email']=I.email||'';
@@ -6205,6 +6242,7 @@ function bindInputs(){
   ['p','s'].forEach(function(w){ $('in_glp1_'+w).addEventListener('change',function(){ if(this.value==='Yes'&&!$('in_glp1_'+w+'_drug').value) $('in_glp1_'+w+'_drug').value=glp1FromMeds(w); glp1Show(); glp1Need(); }); $('in_glp1_'+w+'_for').addEventListener('change',glp1Need); });
   if($('in_who_spouse')) $('in_who_spouse').addEventListener('change',glp1Show);
   ['input','change'].forEach(function(ev){ var si=$('step-intake'); if(si) si.addEventListener(ev,function(e){ if(e.target&&e.target.closest&&!e.target.closest('#whyTagBox')) setTimeout(whySay,0); }); });
+  ['in_famcancer_p','in_famcancer_s','in_famheart_p','in_famheart_s'].forEach(function(id){ $(id).addEventListener('change',famWhoShow); });
   $('newsBtn').onclick=openNews; $('newsClose').onclick=closeNews; $('newsScrim').onclick=closeNews;
   document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&$('newsPanel').classList.contains('open')) closeNews(); });
   newsBadge();
@@ -6670,9 +6708,11 @@ function renderBuilder(){
       var prHtml=open?'<span class="pr"><span style="font-weight:600;color:var(--muted)">$</span><input class="pbprice" type="number" step="0.01" min="0" data-k="'+k+'" value="'+(+price).toFixed(2)+'" aria-label="Monthly price for '+sl.name+'"></span>'
                     :'<span class="pr">'+pbMoney(price)+'</span>';
       var info=benFileFor(k,c)?'<button type="button" class="pbinfo" data-ben="'+k+'" title="Benefits — '+sl.name+'" aria-label="Benefits for '+sl.name+'">i</button>':'';
-      html+='<div class="pbrow'+(edited?' edited':'')+'"><div class="pbhead"><span class="nm">'+sl.name+info+(edited?' <span class="edtag">edited</span>':'')+'<span class="cov">'+esc(pbSummary(k,c,live)||'')+'</span></span>'+prHtml
+      var hf=histFam(), hm=histSelf(), hiK=HIST_KEYS.indexOf(k)>=0, selfLB=(k==='lbp'||k==='lbs')&&hm.length;
+      html+='<div class="pbrow'+(edited?' edited':'')+(hf.any&&hiK?' hist':'')+(selfLB?' histself':'')+'"><div class="pbhead"><span class="nm">'+sl.name+info+(edited?' <span class="edtag">edited</span>':'')+'<span class="cov">'+esc(pbSummary(k,c,live)||'')+'</span></span>'+prHtml
         +'<button class="pbib" data-act="tog" data-k="'+k+'" aria-label="Change '+sl.name+'">'+(open?'▴':'▾')+'</button>'
         +'<button class="pbib" data-act="rm" data-k="'+k+'" title="Remove" aria-label="Remove '+sl.name+'">✕</button></div>'
+        +(selfLB?'<div class="histnote">They’ve had '+esc(hm.join(' and '))+' — term living benefits likely won’t be available. Look at whole life: add it as <b>Other</b>.</div>':'')
         +(open?'<div class="pbbody" data-k="'+k+'">'+pbControls(k,c)
           +(edited?'<div style="font-size:12px;color:var(--maroon)">Price typed in by hand. <a href="#" data-act="unedit" data-k="'+k+'">↺ Use the rate-table price</a></div>'
                   :'<div style="font-size:11.5px;color:var(--muted)">Click the price to type over it if a rate looks wrong.</div>')
@@ -6724,6 +6764,7 @@ function renderBuilder(){
         +'<label style="display:flex;gap:5px;align-items:center;font-size:13px"><input type="checkbox" data-act="dvhr" data-f="hear"'+(dvhRiders(cB.dvh).hear?' checked':'')+'> Hearing rider</label>')
     +'<span style="flex:1"></span><b>'+(dv.price!=null?pbMoney(dv.price)+'/mo':'<span style="color:var(--muted);font-weight:500">'+(dv.note||'not available')+'</span>')+'</b>'
     +'<label style="display:flex;gap:6px;align-items:center;font-size:13px"><input type="checkbox" data-act="dvhinc"'+(inAll?' checked':'')+'> Add to all three packages</label></div>';
+  (function(){ var F=histFam(); if(F.any) html+='<div class="histkey"><span class="histsw"></span> Outlined in gold: speaks to their family history of '+esc(F.label)+(F.who?' ('+esc(F.who)+')':'')+'.</div>'; html=histStrip('quote')+html; })();
   host.innerHTML=html;
   host.querySelectorAll('[data-jumpto]').forEach(function(a){ a.onclick=function(e){ e.preventDefault(); goStep('intake'); setTimeout(function(){ intakeJump(a.dataset.jumpto); },80); }; });
   host.querySelectorAll('.pbinfo').forEach(function(b){ b.onclick=function(e){ e.stopPropagation(); var col=b.closest('.pbcol'); benOpen(col?col.dataset.t:(b.dataset.bt||'best'),b.dataset.ben); }; });

@@ -92,10 +92,22 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  document.getElementById('bioDefault').click(); ok(S.agentBio===DEFAULT_BIO,'Use the default puts the default back');
  document.getElementById('in_abio').value=''; document.getElementById('in_abio').dispatchEvent(new Event('input',{bubbles:true})); ok(callAgent().a_bio==='','empty means the call reads its own default'); closeSetup();
  window.__bio=DEFAULT_BIO;
+ /* health history (Jesse, 17 Oct): family = gold + strip + script facts; their own = red flag on living benefits */
+ S=blankState(); applySuiteClient({first:'Pat',last:'Hist',state:'TX',age:'52',dob:'01/01/1974',kids:[],conds:[{name:'Cancer'}],health:{fhStroke:'Yes',fhWho:'Dad - stroke'}});
+ ok(S.intake.famheartP===true&&S.intake.famheart===true&&S.intake.famWho==='Dad - stroke','a family stroke from the call ticks the heart/stroke box, with who');
+ ok(S.intake.majorcond===true&&histSelf().join()==='cancer','their own cancer is a major condition and their own history');
+ ['good','better','best'].forEach(function(t){ S.include[t]=true; }); recommendBundles(); autoPriceTiers(); compute(); goStep('quote'); await w(500);
+ ok(JSON.stringify((S.cfg.better||{}).chas)==='{"cancer":20000,"hs":10000}','a heart/stroke family history puts heart & stroke cover in Complete');
+ ok(document.querySelectorAll('#sec_builder .pbrow.hist').length>=3&&!!document.querySelector('#sec_builder .histstrip')&&!!document.querySelector('.histkey'),'gold rows, the reminder strip and the key show on the builder');
+ ok(document.querySelectorAll('#sec_builder .histnote').length>=1&&/whole life/.test(document.querySelector('#sec_builder .histnote').textContent),'their own cancer flags the living-benefits line: look at whole life');
+ setView('client'); buildPrintout(); await w(200); ok(document.querySelectorAll('#printout .po-histtag').length>=2&&!document.querySelector('#printout .histnote, #printout .histstrip'),'the client sees the gold lines, not the agent flags'); setView('agent');
+ var TT=presentScriptTokens('best'); ok(TT['fam.history']==='heart attack or stroke'&&/number one cause of death/.test(TT['fam.stat'])&&TT['fam.who']==='Dad - stroke','script tokens: history, who, and the sourced figure');
+ S.intake.famheartP=S.intake.famheartS=S.intake.famheart=false; S.intake.famcancerP=S.intake.famcancer=true; ok(/4 in 10/.test(histStat())&&!/heart/.test(histStat()),'cancer history: the cancer figure only');
+ S.intake.famcancerP=S.intake.famcancer=false; ok(presentScriptTokens('best')['fam.history']===''&&histStrip()===''+(histSelf().length?histStrip():''),'no family history: no script line');
  /* an old file keeps its why */
  S=blankState(); applySuiteClient({first:'Old',last:'File',state:'TX',age:'50',kids:[],health:{whyMatters:'keep Dr. Patel',whyShop:'premium jumped'}});
  ok(S.intake.whyMatters==='keep Dr. Patel'&&S.intake.whyShop==='premium jumped'&&whyTagList(S.intake.whyTags).length===0,'an older file without tags still loads its why and story');
- return {n:47, fails:fails, bio:window.__bio}; })()`;
+ return {n:56, fails:fails, bio:window.__bio}; })()`;
 try {
   let l; for (let i = 0; i < 60 && !l; i++) { await sleep(150); l = await fetch(`http://127.0.0.1:${DBG}/json/list`).then(r => r.json()).catch(() => null); }
   ws = new WebSocket(l.find(t => t.type === 'page').webSocketDebuggerUrl);
