@@ -25,7 +25,8 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  S.cur={show:true,prem:612,ded:6000,paying:true}; S.intake.anchor='cur'; S.intake.docs1='Dr. Patel (primary care)';
  var rb=whyReadBack(S.intake);
  ok(rb.indexOf('you said, “healthcare has just gotten so flippin expensive.”')>0,'their words are quoted back verbatim: '+rb);
- ok(rb.indexOf('You told me you’re paying $612 a month, with a $6,000 deductible')>0&&rb.indexOf('keep Dr Patel')>0,'their own facts follow: '+rb);
+ ok(rb.indexOf('you told me you’re paying $612 a month, with a $6,000 deductible')>0&&rb.indexOf('keep Dr Patel')>0&&rb.indexOf('you told me')<rb.indexOf('you said'),'their numbers come first, then their words: '+rb);
+ ok(presentScriptTokens('better')['client.why_facts_bare'].indexOf('you’re paying $612 a month')===0,'the bare facts token has no opener');
  S.cur={}; ok(whyFacts(S.intake)==='You told me you want to keep Dr Patel.','a tag with no number behind it adds nothing');
  S.cur={show:true,prem:612,ded:6000,paying:true};
  var A=whyAnswers('better'), by=function(tag){ return A.filter(function(a){ return a.tag===tag; })[0]||{}; };
@@ -89,7 +90,7 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  /* an old file keeps its why */
  S=blankState(); applySuiteClient({first:'Old',last:'File',state:'TX',age:'50',kids:[],health:{whyMatters:'keep Dr. Patel',whyShop:'premium jumped'}});
  ok(S.intake.whyMatters==='keep Dr. Patel'&&S.intake.whyShop==='premium jumped'&&whyTagList(S.intake.whyTags).length===0,'an older file without tags still loads its why and story');
- return {n:42, fails:fails, bio:window.__bio}; })()`;
+ return {n:43, fails:fails, bio:window.__bio}; })()`;
 try {
   let l; for (let i = 0; i < 60 && !l; i++) { await sleep(150); l = await fetch(`http://127.0.0.1:${DBG}/json/list`).then(r => r.json()).catch(() => null); }
   ws = new WebSocket(l.find(t => t.type === 'page').webSocketDebuggerUrl);

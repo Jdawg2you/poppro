@@ -4490,9 +4490,13 @@ function whyFacts(I,tags){ I=I||S.intake||{}; tags=tags||whyTagList(I.whyTags); 
   if(has('No coverage now')) P.push('right now '+(whyHouse()==='you'?'you don’t have':'nobody in the family has')+' coverage');
   if(has('Doctor / network')){ var dn=whyDocs(); if(dn) P.push('you want to keep '+dn); }
   if(!P.length) return '';
-  return 'You told me '+(P.length<2?P[0]:P.slice(0,-1).join(', ')+', and that '+P[P.length-1])+'.'; }
-function whyReadBack(I){ I=I||S.intake||{}; var q=whyQuote(I), f=whyFacts(I);
-  return q?'Last time we talked, you said, “'+q+'.”'+(f?' '+f:'')+' That’s what I went looking for.':''; }
+  return 'You told me '+whyJoin(P)+'.'; }
+function whyJoin(P){ return P.length<2?P[0]:P.slice(0,-1).join(', ')+', and that '+P[P.length-1]; }
+/* the same facts with no opener and no full stop - the read-back now leads with their numbers, then their words (Jesse, 17 Oct) */
+function whyFactsBare(I){ var f=whyFacts(I); return f?f.replace(/^You told me /,'').replace(/\.$/,''):''; }
+function whyReadBack(I){ I=I||S.intake||{}; var q=whyQuote(I), f=whyFactsBare(I);
+  if(!q) return '';
+  return 'Last time we talked, '+(f?'you told me '+f+' — and you said, “'+q+'.”':'you said, “'+q+'.”')+' That’s what I went looking for.'; }
 /* The answers, per tag: strong = true and the point to make; angle = true but a different point (starts off);
    nothing at all when the numbers don't support a claim. */
 function whyAnswers(t){ var I=S.intake||{}, tags=whyTagList(I.whyTags), out=[], has=function(x){ return tags.indexOf(x)>=0; };
@@ -5661,7 +5665,7 @@ function presentWhy(I){ var m=String((I&&I.whyMatters)||'').trim(); if(m) return
 function presentScriptTokens(t){ var T=presentTokens(t), C=S.client||{}, I=S.intake||{}, Cu=curIn(), pk=S.packages[t]||{products:[]}, c=effCfg(t), o=evTierPack(t), A=o.afc||{};
   var m0=function(n){ return '$'+Math.round(+n||0).toLocaleString('en-US'); };
   var who=I.who||{}, hh=who.kids?'you and your family':who.spouse?'you and your spouse':'you'; T['client.household_to']='to '+hh; T['client.household_for']='for '+hh;
-  T['client.why_quote']=whyQuote(I); T['client.why_facts']=whyFacts(I); T['why.answer']=whyAnswerText(t); var DP=drxParts(); T['drx.drug']=DP.drug; T['drx.pct']=DP.pct; T['drx.cost']=DP.cost;
+  T['client.why_quote']=whyQuote(I); T['client.why_facts']=whyFacts(I); T['client.why_facts_bare']=whyFactsBare(I); T['why.answer']=whyAnswerText(t); var DP=drxParts(); T['drx.drug']=DP.drug; T['drx.pct']=DP.pct; T['drx.cost']=DP.cost;
   T['agent.first']=((C.agent||'').trim().split(/\s+/)[0])||''; T['agent.phone']=S.agentPhone||''; T['agent.email']=S.agentEmail||'';
   T['agent.website']=S.agentWebsite||''; T['agent.card']=S.agentCard||''; T['agent.booking']=S.agentBooking||'';
   T['client.legal_name']=(C.pname||'').trim(); T['client.dob']=C.dob||C.date||''; T['client.phone']=I.phone||''; T['client.email']=I.email||'';
