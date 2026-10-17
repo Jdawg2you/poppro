@@ -4831,6 +4831,35 @@ function renderActual(){ var pr=S.step==='present', host=pr?$('prEditBody'):$('r
   var nm=host.querySelector('[data-act="actname"]'); if(nm) nm.onchange=function(){ S.actual.tier=nm.value; autosave(); actualRedraw(); };
   var rp=$('rvRecSet'); if(rp) rp.onclick=function(){ var sn=pkSnap($('rvRecPick').value); if(sn){ sn.by='marked on the Benefits Review'; S.rec=sn; autosave(); actualRedraw(); } };
   var rs=host.querySelector('[data-act="actreset"]'); if(rs) rs.onclick=function(){ var how=S.actual.how; actualSeed(pr?presentTier():chosenTier()); if(how) S.actual.how=how; autosave(); actualRedraw(); }; }
+/* Section 11 in the client's language (Jesse, 17 Oct): what they did - stayed on the plan and lowered levels, went to a
+   lower plan, or went lower and added coverage on top - with the products named the way you'd say them. */
+function gapSpokenName(k,list){ var sp=enSplit((S.client||{}).sname)[0]||'your spouse';
+  if(k==='lbp') return list.indexOf('lbs')>=0?'living benefits for both of you':'your living benefits';
+  if(k==='lbs') return list.indexOf('lbp')>=0?'':sp+'’s living benefits';
+  return {afc:'Affordable Choice level',his:'hospital indemnity',acc:'accident coverage',gap:'out-of-pocket protection',chas:'cancer, heart attack and stroke coverage',sdr:'specified disease coverage',dvh:'dental',hhc:'home health care',lb:'living benefits'}[k]||''; }
+function gapSpoken(R,A){ var join=function(a){ a=a.filter(Boolean); return a.length<2?(a[0]||''):a.slice(0,-1).join(', ')+' and '+a[a.length-1]; };
+  var G=gapOf(R,A), kk=function(kind){ return G.filter(function(g){ return g.kind===kind; }).map(function(g){ return g.key.replace(/^[pl]:/,''); }); };
+  var miss=kk('declined'), low=kk('lowered'), out={missing:join(miss.map(function(k){ return gapSpokenName(k,miss); })),lowered:join(low.map(function(k){ return gapSpokenName(k,low); })),added:'',kind:''};
+  if(!G.length) return out;
+  var ro=TIER_ORDER[R.tier], ao=TIER_ORDER[A.tier];
+  if(ro==null||ao==null||ao>=ro) out.kind='same';
+  else { var base=pkSnap(A.tier), up=base?gapOf(A,base):[], add=up.map(function(g){ return g.key.replace(/^[pl]:/,''); }).filter(function(k){ return k!=='lb'&&k!=='tier'; });
+    out.added=join(add.map(function(k){ return gapSpokenName(k,add).replace(/ level$/,''); })); out.kind=add.length?'lowerplus':'lower'; }
+  return out; }
+/* Until Health ZONE's source carries it, section 11 is rewritten on screen (pending item in benefits-review/PENDING_FROM_MYPOPPRO.txt) */
+function reviewPendingEdits(doc){ var h=doc.querySelector('[data-screen="tierdown"]'); if(!h) return; var say=h.nextElementSibling; while(say&&!say.classList.contains('say')) say=say.nextElementSibling;
+  if(!say||say.dataset.ppEd||!/own family/.test(say.textContent)) return;
+  var v=function(k,ex){ return '<var data-k="'+k+'">&lt;'+ex+'&gt;</var>'; };
+  var a=doc.createElement('div'); a.className='say'; a.dataset.tier='below'; a.dataset.ppEd='1';
+  a.innerHTML='When we first spoke, I recommended the '+v('tier.recommended','tier recommended')+' plan, with a package of protection built around what you told me mattered most. '
+    +'<span data-gap="same">You stayed with '+v('tier.elected','tier elected')+', and lowered some of the levels of coverage<span data-needs="gap.lowered"> &mdash; your '+v('gap.lowered','what was lowered')+'</span><span data-needs="gap.missing">, and left out '+v('gap.missing','what was left out')+'</span>.</span>'
+    +'<span data-gap="lower">You went with the '+v('tier.elected','tier elected')+' plan<span data-needs="gap.missing">, without '+v('gap.missing','what was left out')+'</span>.</span>'
+    +'<span data-gap="lowerplus">You went with the '+v('tier.elected','tier elected')+' plan, and added some coverage on top of it<span data-needs="gap.added"> &mdash; '+v('gap.added','what was added')+'</span> &mdash; so you beefed that plan up.</span>';
+  var b=doc.createElement('div'); b.className='say'; b.dataset.tier='below'; b.dataset.ppEd='1';
+  b.innerHTML='I appreciate you wanting to keep the cost where you&rsquo;re comfortable &mdash; that savings is real. If you ever want to increase your coverage, I&rsquo;m always here for it. We&rsquo;ll go over your levels of coverage together at your policy review every year<span data-needs="review.month"> &mdash; the next one is in '+v('review.month','review month')+'</span> &mdash; and of course, you can call me any time.';
+  if(say.dataset.rv!=null){ a.dataset.rv=say.dataset.rv; b.dataset.rv=say.dataset.rv; a.style.display=b.style.display=say.style.display; }   /* keep them on the page they replace */
+  say.parentNode.insertBefore(a,say); say.parentNode.insertBefore(b,say); say.remove();
+  var as=b.nextElementSibling; if(as&&as.classList.contains('aside')) as.textContent='No pressure, and it is on the record. Say what they did, thank them for the savings, and leave the door open. It is also where next year’s policy review starts.'; }
 function reviewDental(t){ t=reviewT()||t; return ((S.packages[t]||{}).products||[]).some(function(p){ return p.k==='dvh'&&(+p.monthly||0)>0; }); }
 function reviewBelow(t){ if(actualOn()&&S.rec) return gapOf(S.rec,actualSnap()).length>0; var r=(S.rec&&S.rec.tier)||S.recommended; return !!(t&&r&&TIER_ORDER[t]!=null&&TIER_ORDER[r]!=null&&TIER_ORDER[t]<TIER_ORDER[r]); }
 function reviewPages(t){ return REVIEW_PAGES.filter(function(p){ return !p.when||(p.when==='dental'?reviewDental(t):reviewBelow(t)); }); }
@@ -4859,7 +4888,7 @@ function reviewTokens(t){ t=reviewT()||t; var C=S.client||{}, R=reviewState(), T
     if(X.math==='partial'){ T['client.rx_covered']=m2(X.per)+' of it'; T['client.rx_short']=m2(X.total-X.per); } }
   T['careguide.threshold']='$2,500';
   T['tier.elected']=actualOn()?actualSnap().name:(TIER_NAME[t]||'');
-  if(actualOn()&&S.rec){ var G=gapOf(S.rec,actualSnap()); T['gap.missing']=join(G.filter(function(g){ return g.kind==='declined'; }).map(function(g){ return g.name; })); T['gap.lowered']=join(G.filter(function(g){ return g.kind==='lowered'; }).map(function(g){ return g.name; })); } T['tier.recommended']=TIER_NAME[(S.rec&&S.rec.tier)||S.recommended]||'';
+  if(actualOn()&&S.rec){ var GS=gapSpoken(S.rec,actualSnap()); T['gap.missing']=GS.missing; T['gap.lowered']=GS.lowered; T['gap.added']=GS.added; T['gap.kind']=GS.kind; } T['tier.recommended']=TIER_NAME[(S.rec&&S.rec.tier)||S.recommended]||'';
   var DQ=drxParts(); T['drx.drug']=drxWho().length?DQ.drug||drxWho()[0].drug:''; T['drx.pct']=DRX_PCT; T['drx.link']=drxLink(); T['drx.code']=String(S.agentDrxCode||'').trim(); T['drx.howto']=drxWho().length?'1':'';   /* the block's switch; its words are Health ZONE's */
   T['review.month']=R.month||(R.eff?MONTHS[+String(R.eff).slice(5,7)-1]:'');
   return T; }
@@ -4877,7 +4906,7 @@ function reviewPaginate(doc,t){ if(!doc||!doc.body) return; var pages=REVIEW_PAG
     if(before) doc.body.insertBefore(d,before); else doc.body.appendChild(d);
     d.querySelector('input').onchange=function(){ reviewTick(p.tick,this.checked); }; });
   doc.body.dataset.rvp='1'; }
-function reviewWire(doc,t){ if(!doc||!doc.body) return; var T=reviewTokens(t), X=reviewRx(t), I=S.intake||{};
+function reviewWire(doc,t){ if(!doc||!doc.body) return; reviewPendingEdits(doc); var T=reviewTokens(t), X=reviewRx(t), I=S.intake||{};
   if(!doc.getElementById('ppcss')){ var st=doc.createElement('style'); st.id='ppcss'; st.textContent=PRESENT_CSS+REVIEW_CSS; doc.head.appendChild(st); }
   Array.prototype.forEach.call(doc.querySelectorAll('var[data-k]'),function(v){ var k=v.getAttribute('data-k');
     if(v.dataset.ex==null) v.dataset.ex=v.textContent; var val=T[k]; v.classList.remove('pp-ok','pp-miss');
@@ -4890,6 +4919,7 @@ function reviewWire(doc,t){ if(!doc||!doc.body) return; var T=reviewTokens(t), X
   Array.prototype.forEach.call(doc.querySelectorAll('[data-needs]:not([data-needs=""])'),function(x){ var k=x.getAttribute('data-needs'); x.classList.toggle('pp-off',!(T[k]!=null&&String(T[k]).trim())); });
   show('[data-doctor="none"]',![I.docs1,I.docs2,I.docs3].some(function(d){ return String(d||'').trim(); }));
   show('[data-dental="yes"]',reviewDental(t)); show('[data-tier="below"]',reviewBelow(t));
+  ['same','lower','lowerplus'].forEach(function(g){ show('[data-gap="'+g+'"]',T['gap.kind']===g); });
   /* agent-only notes, the build line and the provenance line - same rule as the presentation script */
   show('[data-author="note"]',false); show('p.sub0',false);
   var lg=doc.querySelector('p.legend'); if(lg&&!lg.dataset.rvLg){ lg.dataset.rvLg='1'; var cut=false;

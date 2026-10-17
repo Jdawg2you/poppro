@@ -99,7 +99,7 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  ok(JSON.stringify(S.packages.better.products)===betterBefore&&JSON.stringify(S.rec)===recBefore&&JSON.stringify(S.elected)===elBefore,'the quote, the recommendation and the Enroll choice are untouched');
  ok(/Changed since Enroll:.*Accident/.test(host.textContent),'the card lists the difference from what they chose');
  var G=gapOf(S.rec,actualSnap()); ok(G.some(function(g){ return g.key==='p:acc'; }),'the gap against the recommendation names Accident');
- ok(reviewTokens('better')['gap.missing'].indexOf('Accident')>=0,'gap.missing token: '+reviewTokens('better')['gap.missing']);
+ ok(/accident/i.test(reviewTokens('better')['gap.missing']),'gap.missing token: '+reviewTokens('better')['gap.missing']);
  S.actual.tier='best'; ok(reviewBelow('best'),'same plan name but a product missing still opens the below-recommendation page');
  S.rec=actualSnap(); S.rec.by='presented'; ok(!reviewBelow('best'),'matching the recommendation skips it');
  set('rv_prem','$1.00'); await w(100); ok(/Confirm the premium/.test(document.getElementById('rv_warn').textContent),'a typed premium that does not match the plan asks to confirm it');
@@ -153,7 +153,16 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  var px=document.querySelector('#prEditBody [data-act="rm"][data-k="acc"]'); if(px) px.click(); await w(300); var cb2=document.querySelector('[data-pe="cancel"]');
  ok(/Cancel edits/.test(cb2.textContent)&&document.querySelectorAll('#prEdit [data-pe="go"]').length===2&&document.querySelectorAll('#prEdit [data-pe="cancel"]').length===2,'both buttons sit above and below the edit section'); cb2.click(); await w(500);
  ok(S.step==='enroll'&&S.actual.how==='presented'&&S.elected.products.some(function(p){ return p.k==='acc'; }),'cancel edits enrolls the plan as presented');
- return {n:90, fails:fails}; })()`;
+  /* section 11 says what they did (Jesse, 17 Oct) */
+ S.chosen={tier:'better'}; S.client.sname='Kristal Stamm'; S.rec=pkSnap('best'); S.rec.by='presented'; actualSeed('best'); S.cfg.actual.afc='Elite'; priceTier('actual');
+ var g1=gapSpoken(S.rec,actualSnap()); ok(g1.kind==='same'&&/Affordable Choice level/.test(g1.lowered),'same plan, a level lowered: '+JSON.stringify(g1));
+ actualSeed('good'); var g2=gapSpoken(S.rec,actualSnap()); ok(g2.kind==='lower'&&!g2.added,'a lower plan as quoted: '+g2.kind);
+ S.cfg.actual.his.ben=10000; S.cfg.actual.his.outp=1500; priceTier('actual'); var g3=gapSpoken(S.rec,actualSnap()); ok(g3.kind==='lowerplus'&&/hospital indemnity/.test(g3.added),'a lower plan with coverage added on top: '+JSON.stringify(g3));
+ actualSeed('best'); (S.packages.actual.dropped=S.packages.actual.dropped||[]).push('lbs','lbp'); priceTier('actual'); ok(/living benefits/.test(gapSpoken(S.rec,actualSnap()).missing)&&gapSpokenName('lbp',['lbp','lbs'])==='living benefits for both of you'&&gapSpokenName('lbs',['lbp','lbs'])===''&&gapSpokenName('lbs',['lbs'])==='Kristal’s living benefits','living benefits say whose ("for both of you", "Kristal’s")');
+ S.chosen={tier:'better'}; actualSeed('better'); goStep('review'); await w(1800); var rv=document.getElementById('rvFrame').contentDocument; reviewWire(rv,'better');
+ var s11=Array.prototype.filter.call(rv.querySelectorAll('[data-tier="below"]'),function(x){ return x.dataset.ppEd; }); ok(s11.length===2&&!/own family/.test(rv.body.textContent)&&/When we first spoke/.test(s11[0].textContent),'section 11 is the softer version on screen');
+ ok(s11.every(function(x){ return x.dataset.rv!=null; }),'the new lines stay on their own page');
+ return {n:96, fails:fails}; })()`;
 try {
   let l; for (let i = 0; i < 60 && !l; i++) { await sleep(150); l = await fetch(`http://127.0.0.1:${DBG}/json/list`).then(r => r.json()).catch(() => null); }
   ws = new WebSocket(l.find(t => t.type === 'page').webSocketDebuggerUrl);
