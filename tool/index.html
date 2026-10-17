@@ -4447,7 +4447,7 @@ function suiteFromNavProfile(P){
       losing:P.losing||"", nextSame:P.next_same||"",
       curOop:P.cur_oop||"", curIsAca:P.cur_is_aca||"", curPaying:P.cur_paying||"", curSubsidy:P.cur_subsidy||"", hasHsa:P.has_hsa||"",
       pregnant:P.pregnant||"", spPregnant:P.sp_pregnant||"", planned:P.planned||"",
-      empOffer:P.emp_offer||"", spEmpOffer:P.sp_emp_offer||"", assetRisk:P.asset_risk||"", whyOther:P.why_other||"", lifeNow:P.life_now||"", billTomorrow:P.bill_tomorrow||"", bankKind:P.bank_kind||"",
+      empOffer:P.emp_offer||"", spEmpOffer:P.sp_emp_offer||"", assetRisk:P.asset_risk||"", whyOther:P.why_other||"", lifeNow:navLifeNow(P), billTomorrow:P.bill_tomorrow||"", bankKind:P.bank_kind||"",
       apptDate:P.appt_date||"", apptTime:P.appt_time||"", notes:P.notes||"",
       doctors:docs.map(function(d){ return {name:d.n||"", practice:d.prac||"", keep:d.keep||"", aca:d.aca||""}; })
     }
@@ -4485,6 +4485,11 @@ function agentSetupFold(){ var miss=agentSetupMissing(), b=$('setupBtn'), n=$('s
 function fillAgent(){ $('in_agency').value=(S.agency&&S.agency!=='HealthFirst')?S.agency:(S.agency||''); $('in_agent').value=(S.client||{}).agent||''; $('in_aphone').value=S.agentPhone||''; $('in_aemail').value=S.agentEmail||''; $('in_anpn').value=S.agentNPN||''; $('in_aweb').value=S.agentWebsite||''; $('in_acard').value=S.agentCard||''; $('in_abook').value=S.agentBooking||''; $('in_abenefits').value=S.agentBenefits||''; $('in_adrxlink').value=S.agentDrxLink||''; $('in_adrxcode').value=S.agentDrxCode||''; $('in_abio').value=S.agentBio||''; agentSetupFold(); }
 /* Only the agent fields - captureIntake() would also read the client boxes, which are stale off the Intake step. */
 function readAgent(){ S.agency=($('in_agency').value||'').trim()||'HealthFirst'; S.client=S.client||{}; S.client.agent=$('in_agent').value; S.agentPhone=$('in_aphone').value; S.agentEmail=$('in_aemail').value; S.agentNPN=($('in_anpn').value||'').trim(); S.agentWebsite=($('in_aweb').value||'').trim(); S.agentCard=($('in_acard').value||'').trim(); S.agentBooking=($('in_abook').value||'').trim(); S.agentBenefits=($('in_abenefits').value||'').trim(); S.agentDrxLink=($('in_adrxlink').value||'').trim(); S.agentDrxCode=($('in_adrxcode').value||'').trim(); S.agentBio=($('in_abio').value||'').trim(); agentSetupFold(); autosave(); }
+/* a saved navigator profile's life-insurance answers as one note line - the same as the navigator's lifeNowLine() */
+function navLifeNow(P){ if(P.life_has==="No") return "None"; if(P.life_has!=="Yes") return P.life_now||"";
+  var bits=[P.life_src?(P.life_src==="Work"?"through work":P.life_src==="Private"?"private":"work and private"):"", (P.life_type&&P.life_type!=="Not sure")?String(P.life_type).toLowerCase():"",
+    P.life_amt?P.life_amt+" coverage":"", P.life_who?(P.life_who==="Them"?"covers them":P.life_who==="Spouse"?"covers the spouse":"covers both"):"", P.life_cost?P.life_cost+"/mo":""].filter(Boolean);
+  return "Yes"+(bits.length?" — "+bits.join(", "):"")+(String(P.life_now||"").trim()?" · "+String(P.life_now).trim():""); }
 /* ===== Direction Rx for GLP-1s used for weight loss (Jesse, 2026-10-16) =====
    The client PAYS for the medication; what they get through us is the discount - 35% off as a client with an active
    ManhattanLife product, using the agent's code on Direction Rx's site. So it is a discount they have access to, never

@@ -120,7 +120,7 @@ try {
     sp_glp1: ['^intake\\.glp1\\.s\\.on=Yes'], sp_glp1_drug: ['^intake\\.glp1\\.s\\.drug=M_sp_glp1_drug'], sp_glp1_for: ['^intake\\.glp1\\.s\\.for=Both'],
     sp_glp1_since: ['^intake\\.glp1\\.s\\.since=M_sp_glp1_since'], sp_glp1_cost: ['^intake\\.glp1\\.s\\.cost=1\\d{4}'], sp_glp1_source: ['^intake\\.glp1\\.s\\.source=Other'],
     /* the Why (Jesse, 16 Oct): tags must arrive as a real list, not notes */
-    why_tags: ['^intake\\.whyTags\\.0=Other'], why_other: ['notes=.*Why — other: M_why_other'], asset_risk: ['notes=.*Retirement money'], conds: ['^intake\\.conds\\.0\\.name=Diabetes'], sp_conds: ['^intake\\.conds\\.0\\.forS=true'], meds: ['^intake\\.medList\\.0\\.name=Metformin'], sp_emp_offer: ['notes=.*through the spouse'], why_matters: ['^intake\\.whyMatters=M_why_matters'],
+    why_tags: ['^intake\\.whyTags\\.0=Other'], why_other: ['notes=.*Why — other: M_why_other'], asset_risk: ['notes=.*Retirement money'], life_has: ['notes=.*Life insurance now: Yes'], life_amt: ['notes=.*Life insurance now: Yes.*coverage'], conds: ['^intake\\.conds\\.0\\.name=Diabetes'], sp_conds: ['^intake\\.conds\\.0\\.forS=true'], meds: ['^intake\\.medList\\.0\\.name=Metformin'], sp_emp_offer: ['notes=.*through the spouse'], why_matters: ['^intake\\.whyMatters=M_why_matters'],
     married: ['^intake\\.who\\.spouse=true'], kids: ['^intake\\.who\\.kids=true', '^intake\\.kids\\.0\\.n='],
   };
   const NOT = { recent_stay: ['^intake\\.surg2yrP=true'] };
