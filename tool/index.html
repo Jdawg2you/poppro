@@ -633,6 +633,7 @@
   .histkey{display:flex;align-items:center;gap:8px;font-size:12.5px;color:#7a5a12;margin:10px 4px 0}.histsw{width:22px;height:12px;border-radius:4px;box-shadow:inset 0 0 0 2px #c69a3c;background:#fffaf0}
   .histstrip{margin:0 0 12px;padding:9px 12px;border:1.5px solid #c69a3c;border-radius:10px;background:#fffaf0;font-size:13.5px;color:var(--navy);line-height:1.5}.histstrip div+div{margin-top:4px}.histstrip .hs-red{color:#8a1f12}
   #printout .po-li.po-hist{box-shadow:inset 3px 0 0 #c69a3c;background:#fffaf0}#printout .po-histtag{display:block;font-family:inherit;font-size:10.5px;font-weight:700;color:#a07a1f;letter-spacing:.02em}
+  .famrel{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:4px 0 2px;font-size:12.5px}.famrel:empty{display:none}.famrel-l{font-weight:700;color:var(--navy)}.famrel-g{display:inline-flex;align-items:center;gap:5px}.famrel-g i{font-style:normal;color:var(--muted)}.famrel-b{font:inherit;font-size:12px;font-weight:600;border:1px solid var(--line);background:#fff;color:var(--muted);border-radius:999px;padding:2px 9px;cursor:pointer}.famrel-b.on{border-color:#c69a3c;background:#fffaf0;color:var(--navy)}
   .famwho{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--navy)}.famwho small{font-weight:500;color:var(--muted)}.famwho input{font:inherit;font-size:13px;padding:5px 8px;border:1px solid var(--line);border-radius:7px;min-width:220px}
   .askq.kidsq{flex-wrap:wrap}.askq.kidsq textarea{flex:1 1 100%;width:100%;box-sizing:border-box;font:inherit;font-size:14px;line-height:1.45;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#fff;margin-top:6px;resize:vertical}
   .setlink{font-size:10.5px;font-weight:600;letter-spacing:0;text-transform:none;color:#2c4a7c;margin-left:4px}.goatgrab.flash{box-shadow:0 0 0 3px rgba(198,154,60,.6);transition:box-shadow .3s}
@@ -1180,7 +1181,7 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
     <div class="chips">
       <span class="ps-ctrl">Family history of cancer? <label class="tob"><input type="checkbox" id="in_famcancer_p"> P</label><label class="tob"><input type="checkbox" id="in_famcancer_s"> S</label></span>
       <span class="ps-ctrl">Family history of heart attack / stroke? <label class="tob"><input type="checkbox" id="in_famheart_p"> P</label><label class="tob"><input type="checkbox" id="in_famheart_s"> S</label></span>
-      <label class="famwho" id="famWhoWrap" style="display:none">Who in the family? <small>optional</small> <input id="in_famwho" placeholder="e.g. Dad — heart attack"></label>
+      <div class="famrel" id="famRelBox"></div>
       <span class="ps-ctrl">Tobacco use? <label class="tob"><input type="checkbox" id="in_tobacco_p"> P</label><label class="tob"><input type="checkbox" id="in_tobacco_s"> S</label></span>
       <span class="ps-ctrl red">Needs maternity? <label class="tob"><input type="checkbox" id="in_maternity_p"> P</label><label class="tob"><input type="checkbox" id="in_maternity_s"> S</label></span>
       <label class="chip tone-green"><input type="checkbox" id="in_dv"> Wants dental / vision?</label>
@@ -3579,6 +3580,9 @@ function applySuiteClient(c, live){ var sm=$('setupModal'); if(sm&&!live&&sm.cla
   /* a family stroke is the heart/stroke box (the Intake asks "heart attack / stroke") */
   if(yn(h.fhStroke)) I.famheartP=true; if(yn(h.spFhStroke)) I.famheartS=true;
   if(h.fhWho) I.famWho=String(h.fhWho);
+  var rl=function(v){ return String(v||'').split(/\s*,\s*/).filter(function(x){ return x==='Mom'||x==='Dad'; }); };
+  if(h.fhCancerWho!=null||h.fhHeartWho!=null||h.spFhCancerWho!=null||h.spFhHeartWho!=null||h.fhStrokeWho!=null||h.spFhStrokeWho!=null)
+    I.famRel={cancerP:rl(h.fhCancerWho), heartP:rl(h.fhHeartWho), strokeP:rl(h.fhStrokeWho), cancerS:rl(h.spFhCancerWho), heartS:rl(h.spFhHeartWho), strokeS:rl(h.spFhStrokeWho)};
   I.famcancer=!!(I.famcancerP||I.famcancerS); I.famheart=!!(I.famheartP||I.famheartS);
   if(h.mhNeeds!=null)    I.mentalP=yn(h.mhNeeds);
   if(h.spMhNeeds!=null)  I.mentalS=yn(h.spMhNeeds);
@@ -4393,7 +4397,8 @@ function suiteFromNavProfile(P){
       kidsHealth:P.kids_health||"", wantDental:P.want_dental||"", wantVision:P.want_vision||"", wantHearing:P.want_hearing||"",
       curCarrier:P.cur_carrier||"", curPlan:P.cur_plan||"", curPrem:P.cur_prem||"", curEmpPrem:P.cur_emp_prem||"", curTotal:P.cur_total||"",
       curDed:P.cur_ded||"", curVisits:P.cur_visits||"", curCopay:P.cur_copay||"", covGap:P.cov_gap||"",
-      fhCancer:P.fh_cancer||"", fhHeart:P.fh_heart||"", fhStroke:P.fh_stroke||"", fhWho:P.fh_who||"", mhNeeds:P.mh_needs||"", matNeeds:P.mat_needs||"",
+      fhCancer:P.fh_cancer||"", fhHeart:P.fh_heart||"", fhStroke:P.fh_stroke||"", fhWho:P.fh_who||"",
+      fhCancerWho:P.fh_cancer_who||"", fhHeartWho:P.fh_heart_who||"", fhStrokeWho:P.fh_stroke_who||"", spFhCancerWho:P.sp_fh_cancer_who||"", spFhHeartWho:P.sp_fh_heart_who||"", spFhStrokeWho:P.sp_fh_stroke_who||"", mhNeeds:P.mh_needs||"", matNeeds:P.mat_needs||"",
       spFhCancer:P.sp_fh_cancer||"", spFhHeart:P.sp_fh_heart||"", spFhStroke:P.sp_fh_stroke||"", spMhNeeds:P.sp_mh_needs||"", spMatNeeds:P.sp_mat_needs||"",
       spSurgery:P.sp_recent_stay||"", spSurgeryWhat:P.sp_recent_what||"", spHospStay:P.sp_hosp_stay||"", spHealthNotes:P.sp_health_notes||"",
       incomeNext:P.income_next||"", spIncomeNext:P.sp_income_next||"", hhIncomeNext:P.hh_income_next||"",
@@ -4446,7 +4451,22 @@ function navLifeNow(P){ if(P.life_has==="No") return "None"; if(P.life_has!=="Ye
   var bits=[P.life_src?(P.life_src==="Work"?"through work":P.life_src==="Private"?"private":"work and private"):"", (P.life_type&&P.life_type!=="Not sure")?String(P.life_type).toLowerCase():"",
     P.life_amt?P.life_amt+" coverage":"", P.life_who?(P.life_who==="Them"?"covers them":P.life_who==="Spouse"?"covers the spouse":"covers both"):"", P.life_cost?P.life_cost+"/mo":""].filter(Boolean);
   return "Yes"+(bits.length?" — "+bits.join(", "):"")+(String(P.life_now||"").trim()?" · "+String(P.life_now).trim():""); }
-function famWhoShow(){ var on=['in_famcancer_p','in_famcancer_s','in_famheart_p','in_famheart_s'].some(function(id){ return $(id)&&$(id).checked; }); var w=$('famWhoWrap'); if(w) w.style.display=on?'':'none'; }
+/* Who in the family, as clicks (Jesse, 17 Oct): Mom and/or Dad under each family-history tick, client and spouse.
+   S.intake.famRel = {cancerP, heartP, strokeP, cancerS, heartS, strokeS} - each a list of 'Mom' / 'Dad'. The Intake's
+   heart box is heart attack OR stroke, so it edits heart and shows stroke's picks with it. */
+var FAMREL_ROWS=[['cancerP','in_famcancer_p','Client — cancer'],['heartP','in_famheart_p','Client — heart attack / stroke'],['cancerS','in_famcancer_s','Spouse — cancer'],['heartS','in_famheart_s','Spouse — heart attack / stroke']];
+function famRelRender(){ var box=$('famRelBox'); if(!box) return; var R=(S.intake.famRel=S.intake.famRel||{});
+  var rows=FAMREL_ROWS.filter(function(r){ return $(r[1])&&$(r[1]).checked; });
+  box.innerHTML=rows.length?'<span class="famrel-l">Who in the family?</span>'+rows.map(function(r){ var stroke=r[0].replace('heart','stroke'), cur=(R[r[0]]||[]).concat(r[0].indexOf('heart')===0?(R[stroke]||[]):[]);
+      return '<span class="famrel-g"><i>'+r[2]+'</i>'+['Mom','Dad'].map(function(m){ var on=cur.indexOf(m)>-1; return '<button type="button" class="famrel-b'+(on?' on':'')+'" data-fr="'+r[0]+'" data-m="'+m+'">'+(on?'● ':'○ ')+m+'</button>'; }).join('')+'</span>'; }).join(''):'';
+  box.querySelectorAll('[data-fr]').forEach(function(b){ b.onclick=function(){ var k=b.dataset.fr, m=b.dataset.m, L=(R[k]=R[k]||[]), st=k.replace('heart','stroke'), on=L.indexOf(m)>-1||(k.indexOf('heart')===0&&(R[st]||[]).indexOf(m)>-1);
+      if(on){ R[k]=L.filter(function(x){ return x!==m; }); if(R[st]) R[st]=R[st].filter(function(x){ return x!==m; }); } else L.push(m);
+      autosave(); famRelRender(); }; }); }
+/* "your dad (cancer); your spouse's mom (heart attack or stroke)" - for the agent cue and the reminders */
+function famRelPhrase(){ var R=(S.intake&&S.intake.famRel)||{}, out=[];
+  [['P','your'],['S','your spouse’s']].forEach(function(w){ var by={}; [['cancer','cancer'],['heart','heart attack'],['stroke','stroke']].forEach(function(c){ (R[c[0]+w[0]]||[]).forEach(function(m){ (by[m]=by[m]||[]).indexOf(c[1])<0&&by[m].push(c[1]); }); });
+    ['Mom','Dad'].forEach(function(m){ if(by[m]) out.push(w[1]+' '+m.toLowerCase()+' ('+by[m].join(', ')+')'); }); });
+  return out.join('; '); }
 /* ===== Health history: family vs their own (Jesse, 17 Oct) =====
    FAMILY history of cancer, heart attack or stroke: they qualify for, and really should have, the cancer / heart & stroke
    cover and living benefits - so those lines are outlined in gold on the packages (the client sees it too), a strip
@@ -4456,7 +4476,7 @@ function famWhoShow(){ var on=['in_famcancer_p','in_famcancer_s','in_famheart_p'
 var HIST_KEYS=['chas','lbp','lbs'];
 function histFam(){ var I=S.intake||{}, c=!!(I.famcancer||I.famcancerP||I.famcancerS), h=!!(I.famheart||I.famheartP||I.famheartS);
   var parts=[]; if(c) parts.push('cancer'); if(h) parts.push('heart attack or stroke');
-  return {any:c||h, cancer:c, heart:h, label:parts.join(' and '), who:String(I.famWho||'').trim()}; }
+  return {any:c||h, cancer:c, heart:h, label:parts.join(' and '), who:famRelPhrase()||String(I.famWho||'').trim()}; }
 function histSelf(){ var I=S.intake||{}, out=[];
   (I.conds||[]).forEach(function(c){ var n=String(c&&c.name||''); if(/cancer/i.test(n)&&out.indexOf('cancer')<0) out.push('cancer'); if(/heart attack|stent|bypass|angioplasty|heart surgery/i.test(n)&&out.indexOf('a heart attack')<0) out.push('a heart attack'); if(/stroke|tia/i.test(n)&&out.indexOf('a stroke')<0) out.push('a stroke'); });
   return out; }
@@ -5022,7 +5042,7 @@ function readIntake(){
   S.intake.phone=$('in_phone').value; S.intake.email=$('in_email').value;
   S.intake.tobaccoP=$('in_tobacco_p').checked; S.intake.tobaccoS=$('in_tobacco_s').checked;
   var ps=function(k){ var p=$('in_'+k+'_p').checked, s=$('in_'+k+'_s').checked; S.intake[k+'P']=p; S.intake[k+'S']=s; S.intake[k]=p||s; };
-  ps('famcancer'); ps('famheart'); S.intake.famWho=($('in_famwho').value||'').trim(); ps('maternity'); ps('mental'); ps('surg2yr');
+  ps('famcancer'); ps('famheart'); ps('maternity'); ps('mental'); ps('surg2yr');
   S.intake.dv=$('in_dv').checked;
   S.intake.majorcond=$('in_majorcond').checked; S.intake.majorcondNote=$('in_majorcond_note').value;
   S.intake.diabetic=$('in_diabetic').checked; S.intake.diabeticNote=$('in_diabetic_note').value;
@@ -5065,7 +5085,7 @@ function fillIntake(){
   setTimeout(glp1Fill,0); setTimeout(whyFillTags,0);
   $('in_tobacco_p').checked=!!(I.tobaccoP!==undefined?I.tobaccoP:I.tobacco); $('in_tobacco_s').checked=!!I.tobaccoS; $('in_dv').checked=!!I.dv;
   var fillPS=function(k,legacy){ $('in_'+k+'_p').checked=!!(I[k+'P']!==undefined?I[k+'P']:legacy); $('in_'+k+'_s').checked=!!I[k+'S']; };
-  fillPS('famcancer', I.famcancer||S.docs.famcancer); fillPS('famheart', I.famheart); $('in_famwho').value=I.famWho||''; famWhoShow(); fillPS('maternity', I.maternity); fillPS('mental', I.mental); fillPS('surg2yr', I.surg2yr);
+  fillPS('famcancer', I.famcancer||S.docs.famcancer); fillPS('famheart', I.famheart); famRelRender(); fillPS('maternity', I.maternity); fillPS('mental', I.mental); fillPS('surg2yr', I.surg2yr);
   $('in_majorcond').checked=!!I.majorcond; $('in_majorcond_note').value=I.majorcondNote||''; autoGrow($('in_majorcond_note'));
   $('in_diabetic').checked=!!I.diabetic; $('in_diabetic_note').value=I.diabeticNote||''; autoGrow($('in_diabetic_note'));
   $('in_docs1').value=I.docs1||''; $('in_docs2').value=I.docs2||''; $('in_docs3').value=I.docs3||'';
@@ -6242,7 +6262,7 @@ function bindInputs(){
   ['p','s'].forEach(function(w){ $('in_glp1_'+w).addEventListener('change',function(){ if(this.value==='Yes'&&!$('in_glp1_'+w+'_drug').value) $('in_glp1_'+w+'_drug').value=glp1FromMeds(w); glp1Show(); glp1Need(); }); $('in_glp1_'+w+'_for').addEventListener('change',glp1Need); });
   if($('in_who_spouse')) $('in_who_spouse').addEventListener('change',glp1Show);
   ['input','change'].forEach(function(ev){ var si=$('step-intake'); if(si) si.addEventListener(ev,function(e){ if(e.target&&e.target.closest&&!e.target.closest('#whyTagBox')) setTimeout(whySay,0); }); });
-  ['in_famcancer_p','in_famcancer_s','in_famheart_p','in_famheart_s'].forEach(function(id){ $(id).addEventListener('change',famWhoShow); });
+  ['in_famcancer_p','in_famcancer_s','in_famheart_p','in_famheart_s'].forEach(function(id){ $(id).addEventListener('change',function(){ var I=S.intake; I[id.replace('in_','').replace(/_p$/,'P').replace(/_s$/,'S')]=this.checked; famRelRender(); }); });
   $('newsBtn').onclick=openNews; $('newsClose').onclick=closeNews; $('newsScrim').onclick=closeNews;
   document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&$('newsPanel').classList.contains('open')) closeNews(); });
   newsBadge();

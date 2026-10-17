@@ -104,10 +104,18 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  var TT=presentScriptTokens('best'); ok(TT['fam.history']==='heart attack or stroke'&&/number one cause of death/.test(TT['fam.stat'])&&TT['fam.who']==='Dad - stroke','script tokens: history, who, and the sourced figure');
  S.intake.famheartP=S.intake.famheartS=S.intake.famheart=false; S.intake.famcancerP=S.intake.famcancer=true; ok(/4 in 10/.test(histStat())&&!/heart/.test(histStat()),'cancer history: the cancer figure only');
  S.intake.famcancerP=S.intake.famcancer=false; ok(presentScriptTokens('best')['fam.history']===''&&histStrip()===''+(histSelf().length?histStrip():''),'no family history: no script line');
+ /* who in the family as Mom / Dad clicks (Jesse, 17 Oct) */
+ S=blankState(); applySuiteClient({first:'Pat',last:'Rel',state:'TX',age:'52',kids:[],health:{fhCancer:'Yes',fhCancerWho:'Mom, Dad',spFhHeart:'Yes',spFhHeartWho:'Dad',spFhStroke:'Yes',spFhStrokeWho:'Mom'}});
+ ok(JSON.stringify(S.intake.famRel.cancerP)==='["Mom","Dad"]'&&JSON.stringify(S.intake.famRel.heartS)==='["Dad"]','Mom / Dad arrive from the call, per person and condition');
+ ok(famRelPhrase()==='your mom (cancer); your dad (cancer); your spouse\u2019s mom (stroke); your spouse\u2019s dad (heart attack)','one readable phrase: '+famRelPhrase());
+ ok(presentScriptTokens('best')['fam.who']===famRelPhrase(),'the agent cue uses the clicks');
+ goStep('intake'); await w(300); var fb=document.querySelectorAll('#famRelBox .famrel-b'); ok(fb.length===4,'the Intake shows Mom / Dad under each ticked family history ('+fb.length+')');
+ var dadC=document.querySelector('#famRelBox [data-fr="cancerP"][data-m="Dad"]'); dadC.click(); await w(50); ok(JSON.stringify(S.intake.famRel.cancerP)==='["Mom"]','clicking Dad again takes him off');
+ document.getElementById('in_famcancer_p').click(); await w(50); ok(document.querySelectorAll('#famRelBox [data-fr="cancerP"]').length===0,'untick the history and its Mom / Dad go');
  /* an old file keeps its why */
  S=blankState(); applySuiteClient({first:'Old',last:'File',state:'TX',age:'50',kids:[],health:{whyMatters:'keep Dr. Patel',whyShop:'premium jumped'}});
  ok(S.intake.whyMatters==='keep Dr. Patel'&&S.intake.whyShop==='premium jumped'&&whyTagList(S.intake.whyTags).length===0,'an older file without tags still loads its why and story');
- return {n:56, fails:fails, bio:window.__bio}; })()`;
+ return {n:62, fails:fails, bio:window.__bio}; })()`;
 try {
   let l; for (let i = 0; i < 60 && !l; i++) { await sleep(150); l = await fetch(`http://127.0.0.1:${DBG}/json/list`).then(r => r.json()).catch(() => null); }
   ws = new WebSocket(l.find(t => t.type === 'page').webSocketDebuggerUrl);
