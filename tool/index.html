@@ -627,6 +627,7 @@
   .wl-you{margin:18px 20px 0;padding-top:14px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}.wl-you b{font-family:var(--serif);color:var(--navy);font-size:17px;margin-right:6px}.wl-you i{font-style:normal}.wl-you i.needfill-sum{color:#17824a;font-weight:700}
   #agentSetup{padding:8px 20px 4px}
   #setupModal{z-index:2000}
+  .askq.kidsq{flex-wrap:wrap}.askq.kidsq textarea{flex:1 1 100%;width:100%;box-sizing:border-box;font:inherit;font-size:14px;line-height:1.45;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#fff;margin-top:6px;resize:vertical}
   .setlink{font-size:10.5px;font-weight:600;letter-spacing:0;text-transform:none;color:#2c4a7c;margin-left:4px}.goatgrab.flash{box-shadow:0 0 0 3px rgba(198,154,60,.6);transition:box-shadow .3s}
   .wl-flowbox>summary{cursor:pointer;margin:14px 20px 0;font-family:var(--serif);font-weight:700;color:var(--navy);font-size:15px}.wl-flowbox>summary small{font-family:inherit;font-weight:500;font-size:12.5px;color:var(--muted);margin-left:6px}
   .fld.agbio{grid-column:1/-1}.fld.agbio textarea{width:100%;box-sizing:border-box;font:inherit;font-size:14px;line-height:1.5;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:#fbfaf6;resize:vertical}.fld.agbio .picbtn{margin-top:6px}
@@ -1134,7 +1135,7 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
       <div id="kidRows"></div>
       <button type="button" class="addbtn" id="addKid" style="margin-left:0">+ Add another dependant</button>
       <div class="note" style="padding-top:6px">› Name, date of birth and gender for each child — the age works itself out. No height, weight or tobacco; those only rate the adults.</div>
-      <div class="askq"><span class="asktag">ASK</span><span>And how’s their health — everything all good, or is there anything major, or any medications?</span> <input id="in_kidshealth" placeholder="kids health"></div>
+      <div class="askq kidsq"><span class="asktag">ASK</span><span>And your kids’ health — all good there? Any medications?</span><textarea id="in_kidshealth" rows="2" placeholder="Kids’ health — anything major, any medications, a specialist they see"></textarea></div>
       <textarea id="in_kids" style="display:none" aria-hidden="true"></textarea>
     </div>
 
