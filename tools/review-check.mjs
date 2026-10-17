@@ -149,7 +149,7 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  ok(S.step==='enroll'&&S.actual.how==='presented'&&S.elected.products.some(function(p){ return p.k==='acc'; }),'enroll as presented: the plan as presented, edits gone');
   goStep('present'); await w(2500); nav=presentNav(); presentGo(nav[nav.length-1]); await w(300); document.querySelector('#prNav [data-go="edits"]').click(); await w(400);
  var px=document.querySelector('#prEditBody [data-act="rm"][data-k="acc"]'); if(px) px.click(); await w(300); var cb2=document.querySelector('[data-pe="cancel"]');
- ok(/Cancel edits/.test(cb2.textContent),'the cancel button says Cancel edits — enroll what was presented'); cb2.click(); await w(500);
+ ok(/Cancel edits/.test(cb2.textContent)&&document.querySelectorAll('#prEdit [data-pe="go"]').length===2&&document.querySelectorAll('#prEdit [data-pe="cancel"]').length===2,'both buttons sit above and below the edit section'); cb2.click(); await w(500);
  ok(S.step==='enroll'&&S.actual.how==='presented'&&S.elected.products.some(function(p){ return p.k==='acc'; }),'cancel edits enrolls the plan as presented');
  return {n:88, fails:fails}; })()`;
 try {

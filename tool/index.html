@@ -657,7 +657,7 @@
   .rg-btn{font:inherit;font-size:12.5px;font-weight:700;border:1px solid var(--navy);background:#fff;color:var(--navy);border-radius:8px;padding:5px 10px;cursor:pointer;margin-left:6px}
   /* Benefits Review */
   .rv-actmin{font-size:13.5px;padding:8px 2px}.rv-actmin i{color:var(--muted)}.rv-actmin a{margin-left:8px}.rv-actmin small{display:block;color:var(--muted);margin-top:3px}
-  .pr-edit{margin-top:16px;border:2px solid var(--navy);border-radius:12px;padding:12px 14px;background:#fffaf0}.pr-editgo{display:flex;gap:10px;justify-content:flex-end;margin-top:12px}
+  .pr-edit{margin-top:16px;border:2px solid var(--navy);border-radius:12px;padding:12px 14px;background:#fffaf0}.pr-editgo{display:flex;gap:10px;justify-content:flex-end;margin:12px 0}
   .pr-editgo button{font:inherit;font-weight:700;border-radius:9px;padding:10px 16px;cursor:pointer;border:1px solid var(--line);background:#fff}.pr-editgo .go{background:#2f7d4a;border-color:#2f7d4a;color:#fff}
   .rv-confbar{display:none;cursor:pointer;font-size:13px;color:var(--navy)}.rv-confbar small{color:var(--muted);margin-left:6px}.rv-confbar .car{display:inline-block;width:12px}
   .rv-conf.folds .rv-confbar{display:block;margin-bottom:8px}.rv-conf.min .rv-confbar{margin-bottom:0}.rv-conf.min>*:not(.rv-confbar){display:none}
@@ -4771,7 +4771,7 @@ function cmpDir(rv,av,L){ if(rv===av) return ''; var z=function(v){ return v==nu
   if(L==='Plan'&&CMP_LVL[rv]&&CMP_LVL[av]) return CMP_LVL[av]>CMP_LVL[rv]?'up':'dn';
   var n=function(v){ if(z(v)) return 0; var m=String(v).replace(/,/g,'').match(/(\d+(?:\.\d+)?)/); return m?+m[1]:null; }, a=n(av), r=n(rv);
   if(z(av)&&!z(rv)) return 'dn'; if(z(rv)&&!z(av)) return 'up'; if(a==null||r==null||a===r) return ''; return a>r?'up':'dn'; }
-function cmpHTML(){ if(typeof BEN_DATA!=='undefined') ['afc','his'].forEach(function(f){ if(!BEN_DATA[f]) benLoadSafe(f).then(function(d){ if(d&&$('rvActual')) actualRedraw(); }); });
+function cmpHTML(){ if(typeof BEN_DATA!=='undefined') ['afc','his'].forEach(function(f){ if(!BEN_DATA[f]) benLoadSafe(f).then(function(d){ if(d&&($('rvActual')||$('prEditBody'))) actualRedraw(); }); });
   /* no recommendation on record: compare with what they chose, and offer to record the recommendation (Jesse, 17 Oct) */
   var base=null, norec='';
   if(!S.rec&&actualOn()){ var dt=S.recommended||'best', ct=chosenTier(); base=(S.elected&&S.elected.cfg)?S.elected:pkSnap(ct);
@@ -5807,6 +5807,8 @@ var STORY_KYLE='<p class="st-act"><b>1 · Why the big number is never the real n
  +'</ul></div>';
 var PR_STORY_HEAD='<b>Story repository (who to tell)</b>';
 /* "Enrolling with plan edits" (Jesse, 17 Oct): the card + side-by-side open under the script; edits never touch the quote */
+/* the same two buttons above and below the edit section, so nobody has to scroll to find them (Jesse, 17 Oct) */
+var PE_GO='<div class="pr-editgo"><button type="button" data-pe="cancel">Cancel edits — enroll what was presented →</button><button type="button" class="go" data-pe="go">✓ They’re in — enroll with these adjustments →</button></div>';
 function presentEditsOpen(){ var t=presentTier(), box=$('prEdit'); if(!box||!t) return; if(!actualOn()||S.actual.from!==t) actualSeed(t);
   box.style.display=''; renderActual(); box.scrollIntoView({behavior:'smooth',block:'start'}); }
 function renderPresent(){ var host=$('presentHost'); if(!host) return; var t=presentTier(), T=presentTokens(t), pages=presentPages();
@@ -5826,8 +5828,7 @@ function renderPresent(){ var host=$('presentHost'); if(!host) return; var t=pre
     +'<div class="box pr-qa" id="prQA"><b>Quick answers — objections</b></div>'
     +'<div class="box" id="prStories">'+PR_STORY_HEAD+'</div>'
     +'</div></div><div id="prPop" style="display:none"></div>'
-    +'<div id="prEdit" class="pr-edit" style="display:none"><div class="rv-ch">Enrolling with plan edits <small>make the changes with them — the price and the side-by-side follow — then enroll.</small></div><div id="prEditBody"></div>'
-    +'<div class="pr-editgo"><button type="button" data-pe="cancel">Cancel edits — enroll what was presented →</button><button type="button" class="go" data-pe="go">✓ They’re in — enroll with these adjustments →</button></div></div>';
+    +'<div id="prEdit" class="pr-edit" style="display:none"><div class="rv-ch">Enrolling with plan edits <small>make the changes with them — the price and the side-by-side follow — then enroll.</small></div>'+PE_GO+'<div id="prEditBody"></div>'+PE_GO+'</div>';
   host.innerHTML=h; presentWhyBox(t); presentDrxBox();
   host.querySelectorAll('[data-pe]').forEach(function(b){ b.onclick=function(){ if(b.dataset.pe==='cancel'){ var pt=presentTier(); S.chosen={tier:pt}; actualSeed(pt); S.actual.how='presented'; autosave(); celebrate('confetti',enrollCheer()); goStep('enroll'); return; }
     S.chosen={tier:S.actual.from}; S.actual.how='edited'; autosave(); celebrate('confetti',enrollCheer()); goStep('enroll'); }; });
