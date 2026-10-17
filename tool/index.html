@@ -662,7 +662,8 @@
   .rv-actnote{font-size:13px;line-height:1.5}.rv-actnote ul{margin:4px 0 10px;padding-left:18px}.rv-actnote>b{display:block;margin-top:8px}
   .rv-cmp{width:100%;border-collapse:collapse;font-size:12.5px;background:#fff;border:1px solid var(--line);border-radius:10px;margin-bottom:6px}.rv-cmp th,.rv-cmp td{padding:5px 8px;border-bottom:1px solid #eee7d6;text-align:left;vertical-align:top}
   .rv-cmp thead th{font-size:12px;color:var(--navy);background:#f7f3e8}.rv-cmp small{display:block;font-weight:500;color:var(--muted);font-size:11px}.rv-cmp tbody th{font-weight:600;width:30%}
-  .rv-cmp tbody.ev tr:first-child th{background:#f7f3e8;font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}.rv-cmp tr.d td:last-child{color:var(--maroon)}.rv-cmp tr.h{background:#fff6dc}.rv-cmp tr.h th{border-left:3px solid var(--gold)}
+  .rv-cmp tr.gh th{background:#f7f3e8;font-size:12px;color:var(--navy);padding-top:7px}.rv-cmp tr.sub th{font-weight:500;color:#4b5563;padding-left:16px}.rv-cmp tr.pr th,.rv-cmp tr.pr td{font-size:11.5px;color:var(--muted)}.rv-cmp .nip{color:var(--maroon);font-weight:600;font-size:11px;margin-left:6px}.rv-cmp .add{color:#2f7d4a;font-weight:600;font-size:11px;margin-left:6px}.rv-cmp tbody.grp.h tr th:first-child{border-left:3px solid var(--gold)}.rv-cmp tbody.grp.h{background:#fff6dc}
+  .rv-cmp tbody.ev tr:first-child th{background:#f7f3e8;font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}.rv-cmp td.dn{color:#b42318;font-weight:600;background:#fdecea}.rv-cmp td.up{color:#17824a;font-weight:600;background:#e9f7ee}.rv-cmp td.ch{color:#8a6a1f;font-weight:600}.rv-cmp .gap.up{color:#17824a}.rv-cmp .gap.dn{color:#b42318}.rv-cmp tr.h{background:#fff6dc}.rv-cmp tr.h th{border-left:3px solid var(--gold)}
   .rv-cmp .gap{display:block;color:var(--maroon);font-size:11.5px}.rv-cmp .same{color:#2f7d4a}.rv-cmp i{color:var(--maroon)}.rv-cmpnote{font-size:11.5px;color:var(--muted);margin:2px 0}.rv-sw{display:inline-block;width:10px;height:10px;background:#fff6dc;border:2px solid var(--gold);vertical-align:-1px}
   .rv-actwrap{grid-template-columns:minmax(300px,400px) 1fr}.rv-actnote li.rv-hist{background:#fff6dc;border-left:3px solid var(--gold);padding:3px 8px;margin:3px 0;list-style-position:inside}
   .rg-hist{display:block;margin-top:4px;padding:3px 8px;background:#fff6dc;border-left:3px solid var(--gold);color:#7a5a12;font-size:12.5px;font-weight:600}.pbcol.actual{border:2px solid var(--navy)}.pbcol.actual select[data-act=actname]{font:inherit;font-family:var(--serif);font-size:20px;color:var(--navy);border:1px solid #d6cdb4;border-radius:7px;padding:2px 6px;background:#fff}
@@ -4640,12 +4641,16 @@ function electedLock(){ var t=chosenTier(); if(!t) return; S.elected=pkSnap(t); 
 var LB_K={lbp:1,lbs:1};
 /* every way what they bought falls short of what was recommended, each with a stable key for its acknowledgment */
 function recGap(){ return gapOf(S.rec,S.elected); }
+/* Living benefits are per person: say whose (Jesse, 17 Oct - one of the two may be dropped) */
+function prodName(p){ var C=S.client||{}, f=function(n){ n=String(n||'').trim().split(/\s+/)[0]; return n?' ('+n+')':''; };
+  if(p&&p.k==='lbp') return 'Living benefits — primary'+f(C.pname); if(p&&p.k==='lbs') return 'Living benefits — spouse'+f(C.sname);
+  var sl=p&&p.k&&p.k!=='base'&&typeof PB_SLOTS!=='undefined'?PB_SLOTS.filter(function(x){ return x.k===p.k; })[0]:null; return sl?sl.name:((p&&p.name)||''); }   /* the card's own names */
 function gapOf(R,E,miss){ var out=[]; if(!R||!E) return out; miss=miss||'Declined';
   if(TIER_ORDER[E.tier]<TIER_ORDER[R.tier]) out.push({key:'tier',kind:'below',text:'Below our recommendation: '+E.name+' instead of '+R.name+' ('+fmt2(E.monthly)+' vs '+fmt2(R.monthly)+' a month)'});
   var has={}; E.products.forEach(function(p){ has[p.k]=p; });
   R.products.forEach(function(p){ var e=has[p.k];
-    if(!e) out.push({key:'p:'+p.k,kind:'declined',name:p.name,text:miss+': '+p.name+(p.sum?' ('+p.sum+')':'')+' — '+fmt2(p.monthly)+' a month'});
-    else if(e.monthly<p.monthly-0.005&&e.sum!==p.sum) out.push({key:'l:'+p.k,kind:'lowered',name:p.name,text:'Lowered: '+p.name+' — '+(p.sum||fmt2(p.monthly))+' → '+(e.sum||fmt2(e.monthly))}); });
+    if(!e) out.push({key:'p:'+p.k,kind:'declined',name:prodName(p),text:miss+': '+prodName(p)+(p.sum?' ('+p.sum+')':'')+' — '+fmt2(p.monthly)+' a month'});
+    else if(e.monthly<p.monthly-0.005&&e.sum!==p.sum) out.push({key:'l:'+p.k,kind:'lowered',name:prodName(p),text:'Lowered: '+prodName(p)+' — '+(p.sum||fmt2(p.monthly))+' → '+(e.sum||fmt2(e.monthly))}); });
   /* living benefits are priced live at the pivot, so they're "recommended" once that screen was shown */
   if(R.lbOffered&&!E.products.some(function(p){ return LB_K[p.k]; })&&!R.products.some(function(p){ return LB_K[p.k]; }))
     out.push({key:'lb',kind:'declined',name:'living benefits',text:miss+': living benefits (offered at the pivot)'});
@@ -4735,19 +4740,45 @@ function cmpRows(){ var R=S.rec; if(!R||!actualOn()) return null; var key=R.tier
       out.ev.push({id:id,lab:sc.desc,dx:sc.dx,bill:bill,r:pay(r,ro),a:pay(a,ao),rn:r.net,an:a.net}); });
   } finally { if(own){ delete S.cfg.__rec; delete S.packages.__rec; } }
   return out; }
+/* One product's benefits as label/value rows, straight from its settings, so two versions line up row by row. */
+function cmpBen(k,c,live){ var m=function(v){ return '$'+Number(v||0).toLocaleString('en-US'); }, none='none', sum=pbSummary(k,c,live)||'';
+  if(k==='afc'){ var out=[['Plan',LVLNAME[c.afc]||c.afc]], d=BEN_DATA.afc, M=d?benModel(d,(S.client.state||'').toUpperCase(),c.afc,c):null;
+    if(M) evFlatRows(M).forEach(function(r){ var L=String(r.label||'').replace(/\s*\(.*$/,'').replace(/:.*$/,''); if(L&&r.value&&!/^Rollover$|^Lifetime|calendar year limit|Building Benefit/i.test(L)) out.push([L,r.value,!M.key||M.key.indexOf(r)<0]); });
+    return out; }
+  if(k==='his'&&c.his) return [['Per hospital stay',m(c.his.ben)],['Outpatient surgery',+c.his.outp?m(c.his.outp):none],['Ambulance',+c.his.amb?'included':none]];
+  if(k==='acc') return [['Units',String(c.acc||1)],['Accident medical, up to',m(2000*(+c.acc||1))]];
+  if(k==='gap'&&c.gap) return [['Per day in hospital',m(c.gap.daily)],['Admission',m(c.gap.adm)],['Outpatient',+c.gap.outp?m(c.gap.outp):none],['ER',c.gap.ea?'$250':none]];
+  if(k==='chas'&&c.chas) return [['Cancer, lump sum',+c.chas.cancer?m(c.chas.cancer):none],['Heart attack & stroke, lump sum',+c.chas.hs?m(c.chas.hs):none]];
+  if((k==='lbp'||k==='lbs')&&c.lb){ var parts=sum.split(' · '); return [['Term life',parts[0]||''],['Carrier',parts.slice(1).join(' · ')]]; }
+  if(k==='sdr'&&c.sdr) return [['Annual max',m(c.sdr.max)],['Deductible',m(c.sdr.ded)]];
+  if(k==='dvh'){ var dp=sum.split(' · '); return [['Annual max',dp[0]||''],['Deductible',dp[1]||''],['Also',dp.slice(2).join(' · ')||none]]; }
+  return [['Coverage',sum]]; }
+/* more or less than we recommended: 'up' (green) / 'dn' (red) / '' (just different, e.g. another carrier) */
+var CMP_LVL={Classic:1,'Classic Plus':2,Elite:3,'Elite Plus':4};
+function cmpDir(rv,av,L){ if(rv===av) return ''; var z=function(v){ return v==null||v==='—'||v==='none'; };
+  if(L==='Plan'&&CMP_LVL[rv]&&CMP_LVL[av]) return CMP_LVL[av]>CMP_LVL[rv]?'up':'dn';
+  var n=function(v){ if(z(v)) return 0; var m=String(v).replace(/,/g,'').match(/(\d+(?:\.\d+)?)/); return m?+m[1]:null; }, a=n(av), r=n(rv);
+  if(z(av)&&!z(rv)) return 'dn'; if(z(rv)&&!z(av)) return 'up'; if(a==null||r==null||a===r) return ''; return a>r?'up':'dn'; }
 function cmpHTML(){ if(typeof BEN_DATA!=='undefined'&&!BEN_DATA.afc){ benLoadSafe('afc').then(function(d){ if(d&&$('rvActual')) actualRedraw(); }); }
   var X=cmpRows(); if(!X) return ''; var R=X.R, A=X.A, F=histFam(), seen={}, rows=[];
-  var have={}; A.products.forEach(function(p){ have[p.k||p.name]=p; });
+  var rc=(R.cfg&&R.pk)?R.cfg:effCfg(R.tier), ac=effCfg('actual'), have={}; A.products.forEach(function(p){ have[p.k||p.name]=p; });
+  var cell=function(v,cls){ return '<td'+(cls?' class="'+cls+'"':'')+'>'+esc(v)+'</td>'; };
   R.products.concat(A.products).forEach(function(p){ var k=p.k||p.name; if(seen[k]) return; seen[k]=1;
-    var r=R.products.filter(function(x){ return (x.k||x.name)===k; })[0], a=have[k], diff=!r||!a||r.sum!==a.sum;
+    var r=R.products.filter(function(x){ return (x.k||x.name)===k; })[0], a=have[k];
     var hist=F.any&&/^(chas|lbp|lbs)$/.test(k)&&(!a||(r&&a.monthly<r.monthly-0.005));
-    rows.push('<tr class="'+(diff?'d':'')+(hist?' h':'')+'"><th>'+esc((r||a).name)+'</th><td>'+(r?esc(r.sum||fmt2(r.monthly)):'<i>—</i>')+'</td><td>'+(a?esc(a.sum||fmt2(a.monthly)):'<i>not in their plan</i>')+'</td></tr>'); });
+    var rb=r?cmpBen(k,rc,r):[], ab=a?cmpBen(k,ac,a):[], lab=[], byR={}, byA={};
+    rb.concat(ab).forEach(function(x){ if(lab.indexOf(x[0])<0) lab.push(x[0]); }); rb.forEach(function(x){ byR[x[0]]=x; }); ab.forEach(function(x){ byA[x[0]]=x; });
+    var body=lab.map(function(L){ var x=byR[L], y=byA[L], rv=x?x[1]:'—', av=a?(y?y[1]:'—'):'—', diff=rv!==av, dir=r?cmpDir(rv,av,L):'up';
+      if((x&&x[2]||y&&y[2])&&!diff) return '';   /* the fine print shows only where it changed */
+      return '<tr class="sub'+(diff?' d':'')+'"><th>'+esc(L)+'</th>'+cell(rv)+cell(av,dir||(diff?'ch':''))+'</tr>'; }).join('');
+    var price='<tr class="sub pr'+(r&&a&&Math.abs(r.monthly-a.monthly)<0.005?'':' d')+'"><th>Monthly</th>'+cell(r?fmt2(r.monthly):'—')+cell(a?fmt2(a.monthly):'—')+'</tr>';
+    rows.push('<tbody class="grp'+(hist?' h':'')+'"><tr class="gh"><th colspan="3">'+esc(prodName(r||a))+(!a?' <span class="nip">not in their plan</span>':(!r?' <span class="add">added</span>':''))+'</th></tr>'+body+price+'</tbody>'); });
   var evRows=X.ev.map(function(e){ var gap=Math.round((e.r-e.a)*100)/100, hist=(e.dx==='cancer'&&F.cancer)||(e.dx==='heart'&&F.heart);
     var you=function(n){ return '<small>'+(n<=0?'they net '+fmt2(-n):'they pay '+fmt2(n))+'</small>'; };
     return '<tr class="'+(Math.abs(gap)>=1?'d':'')+(hist?' h':'')+'"><th>'+esc(e.lab)+'<small>'+fmt2(e.bill)+' bill</small></th><td>'+fmt2(e.r)+you(e.rn)+'</td><td>'+fmt2(e.a)+you(e.an)
-      +(Math.abs(gap)>=1?'<b class="gap">'+(gap>0?fmt2(gap)+' less':fmt2(-gap)+' more')+'</b>':'<small class="same">same</small>')+'</td></tr>'; }).join('');
-  return '<table class="rv-cmp"><thead><tr><th></th><th>Recommended<small>'+esc(R.name)+' · '+fmt2(R.monthly)+'/mo</small></th><th>What they have<small>'+esc(A.name)+' · '+fmt2(A.monthly)+'/mo</small></th></tr></thead>'
-    +'<tbody>'+rows.join('')+'</tbody><tbody class="ev"><tr><th colspan="3">If this happens — what the plan pays</th></tr>'+evRows+'</tbody></table>'
+      +(Math.abs(gap)>=1?'<b class="gap '+(gap>0?'dn':'up')+'">'+(gap>0?fmt2(gap)+' less':fmt2(-gap)+' more')+'</b>':'<small class="same">same</small>')+'</td></tr>'; }).join('');
+  return '<table class="rv-cmp"><thead><tr><th></th><th>Our recommendation<small>'+esc(R.name)+' · '+fmt2(R.monthly)+'/mo</small></th><th>What they have<small>'+esc(A.name)+' · '+fmt2(A.monthly)+'/mo</small></th></tr></thead>'
+    +rows.join('')+'<tbody class="ev"><tr class="gh"><th colspan="3">If this happens — what the plan pays</th></tr>'+evRows+'</tbody></table>'
     +(X.own?'':'<div class="rv-cmpnote">This recommendation was saved before plan details were kept, so it is priced from today’s '+esc(R.name)+' package on the quote.</div>')
     +(F.any?'<div class="rv-cmpnote"><span class="rv-sw"></span> Gold: speaks to their family history of '+esc(F.label)+(F.who?' ('+esc(F.who)+')':'')+'.</div>':''); }
 function pbActHead(){ var A=S.actual||{};
@@ -4763,13 +4794,12 @@ function reviewPrem(){ var R=reviewState(); return +R.prem>0?+R.prem:reviewPremT
 function actualReprice(){ priceTier('actual'); autosave(); actualRedraw(); }
 function renderActual(){ var host=$('rvActual'), t=chosenTier(); if(!host||!t) return; if(!actualOn()) actualSeed(t); if(!actualOn()) return;
   var r=pbColHTML(['actual'],null), E=S.elected, A=actualSnap(), lines=[];
-  gapOf(E&&E.products?E:null,A,'Not issued').forEach(function(g){ if(g.kind!=='below') lines.push(g.text); });
+  var chg=gapOf(E&&E.products?E:null,A,'Not issued').filter(function(g){ return g.kind!=='below'; }).map(function(g){ return g.name+(g.kind==='lowered'?' (lowered)':' (not issued)'); });
   var below=S.rec?gapOf(S.rec,A,'Not in their plan'):[];
   host.innerHTML='<div class="rv-ch">What they actually have <small>open it, and match it to the approval: ✕ what didn’t come through, change a level, type the carrier’s price over a row.</small></div>'
     +'<div class="rv-actwrap">'+r.html+'<div class="rv-actnote">'+cmpHTML()
-    +(lines.length?'<b>Different from what they chose at Enroll</b><ul>'+lines.map(function(x){ return '<li>'+esc(x)+'</li>'; }).join('')+'</ul>':'<b>Same as what they chose at Enroll.</b>')
-    +(S.rec?(below.length?'<b>Below your recommendation ('+esc(S.rec.name)+')</b><ul>'+below.map(function(g){ return '<li'+(g.hist?' class="rv-hist"':'')+'>'+esc(g.text)+(g.hist?'<br><b>⚑ '+esc(g.hist)+'</b> — the coverage that speaks to it.':'')+'</li>'; }).join('')+'</ul><small>The review’s “below my recommendation” page reads this list.</small>'
-      :'<b>Matches your recommendation.</b> The “below my recommendation” page is skipped.'):'')
+    +'<div class="rv-cmpnote">'+(chg.length?'<b>Changed since Enroll:</b> '+esc(chg.join(', '))+'.':'Same as what they chose at Enroll.')
+    +(S.rec?(below.length?' The “below my recommendation” page is on.':' Matches your recommendation — the “below my recommendation” page is skipped.'):'')+'</div>'
     +'</div></div>';
   host.querySelectorAll('.pbcol').forEach(function(col){ pbColBind(col,actualReprice,actualRedraw); });
   host.querySelectorAll('.pbinfo').forEach(function(b){ b.onclick=function(e){ e.stopPropagation(); benOpen('actual',b.dataset.ben); }; });

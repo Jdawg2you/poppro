@@ -97,7 +97,7 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  var rmAcc=col.querySelector('[data-act="rm"][data-k="acc"]'); ok(!!rmAcc,'the card has the builder controls (✕ on Accident)'); if(rmAcc) rmAcc.click(); await w(300);
  ok(!(S.packages.actual.products||[]).some(function(p){ return p.k==='acc'; }),'✕ removes Accident from what they have');
  ok(JSON.stringify(S.packages.better.products)===betterBefore&&JSON.stringify(S.rec)===recBefore&&JSON.stringify(S.elected)===elBefore,'the quote, the recommendation and the Enroll choice are untouched');
- ok(/Not issued: Accident/.test(host.textContent),'the card lists the difference from what they chose');
+ ok(/Changed since Enroll:.*Accident/.test(host.textContent),'the card lists the difference from what they chose');
  var G=gapOf(S.rec,actualSnap()); ok(G.some(function(g){ return g.key==='p:acc'; }),'the gap against the recommendation names Accident');
  ok(reviewTokens('better')['gap.missing'].indexOf('Accident')>=0,'gap.missing token: '+reviewTokens('better')['gap.missing']);
  S.actual.tier='best'; ok(reviewBelow('best'),'same plan name but a product missing still opens the below-recommendation page');
@@ -111,7 +111,7 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  S.rec=pkSnap('best'); S.rec.by='presented'; S.intake.famcancer=true; var GH=gapOf(S.rec,actualSnap());
  ok(GH.some(function(g){ return g.key==='p:chas'&&/Family history of cancer/.test(g.hist||''); }),'cancer cover left out with a family history of cancer is flagged');
  ok(GH.filter(function(g){ return g.hist; }).every(function(g){ return /^[pl]:(chas|lbp|lbs)$|^lb$/.test(g.key); }),'only cancer/heart cover and living benefits carry the flag');
- renderActual(); ok(!!document.querySelector('#rvActual li.rv-hist'),'the review card shows the flag in gold');
+ renderActual(); ok(!!document.querySelector('#rvActual tbody.grp.h'),'the review card shows the flag in gold');
  S.intake.famcancer=false; ok(!gapOf(S.rec,actualSnap()).some(function(g){ return g.hist; }),'no family history: no flag');
   /* side by side: recommended vs what they have, products then events (Jesse, 17 Oct) */
  S.rec=pkSnap('best'); S.rec.by='presented'; actualSeed('better'); await benLoadSafe('afc'); var CX=cmpRows();
@@ -121,7 +121,13 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  ok(Math.abs(ev('urgent').r-ev('urgent').a)<1,'urgent care is the same on both');
  ok(!S.cfg.__rec&&!S.packages.__rec,'the comparison leaves nothing behind in the client file');
  renderActual(); ok(!!document.querySelector('#rvActual table.rv-cmp'),'the table sits beside the card');
- return {n:68, fails:fails}; })()`;
+  /* whose living benefits, and the benefits row by row */
+ S.client.pname='Pat Review'; ok(prodName({k:'lbp'})==='Living benefits — primary (Pat)'&&/spouse/.test(prodName({k:'lbs'})),'living benefits say whose: '+prodName({k:'lbp'}));
+ var hb=cmpBen('his',{his:{ben:5000,outp:500,amb:1}}); ok(hb[0][0]==='Per hospital stay'&&hb[0][1]==='$5,000'&&hb[1][1]==='$500','hospital indemnity breaks into rows: '+JSON.stringify(hb));
+ var ab=cmpBen('afc',{afc:'Elite'}); ok(ab.length>5&&ab[0][1]==='Elite'&&ab.some(function(x){ return /Doctor/.test(x[0]); }),'Affordable Choice lists its benefits from the brochure ('+ab.length+' rows)');
+ renderActual(); var ghs=Array.prototype.map.call(document.querySelectorAll('#rvActual .rv-cmp tr.gh th'),function(x){ return x.textContent; }); ok(ghs.some(function(t){ return /Hospital Indemnity/.test(t); })&&document.querySelectorAll('#rvActual .rv-cmp tr.sub.d').length>0,'the table is grouped by product with changed rows marked');
+  ok(cmpDir('$10,000','$5,000','Per hospital stay')==='dn'&&cmpDir('$500','$1,500','Outpatient surgery')==='up'&&cmpDir('Elite Plus','Elite','Plan')==='dn'&&cmpDir('$500','none','x')==='dn'&&cmpDir('Americo','Mutual of Omaha','Carrier')==='','less is red, more is green, a different carrier is neither');
+ return {n:73, fails:fails}; })()`;
 try {
   let l; for (let i = 0; i < 60 && !l; i++) { await sleep(150); l = await fetch(`http://127.0.0.1:${DBG}/json/list`).then(r => r.json()).catch(() => null); }
   ws = new WebSocket(l.find(t => t.type === 'page').webSocketDebuggerUrl);
