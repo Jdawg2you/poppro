@@ -129,7 +129,11 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
   ok(cmpDir('$10,000','$5,000','Per hospital stay')==='dn'&&cmpDir('$500','$1,500','Outpatient surgery')==='up'&&cmpDir('Elite Plus','Elite','Plan')==='dn'&&cmpDir('$500','none','x')==='dn'&&cmpDir('Americo','Mutual of Omaha','Carrier')==='','less is red, more is green, a different carrier is neither');
   S.rec=null; renderActual(); ok(!!document.getElementById('rvRecSet')&&/What they chose/.test((document.querySelector('#rvActual table.rv-cmp')||{}).textContent||''),'no recommendation on record: compares with what they chose and offers to record one');
  document.getElementById('rvRecPick').value='best'; document.getElementById('rvRecSet').click(); await w(300); ok(S.rec&&S.rec.tier==='best'&&/Benefits Review/.test(S.rec.by)&&!!document.querySelector('#rvActual table.rv-cmp'),'recording it brings up the side-by-side');
- return {n:75, fails:fails}; })()`;
+  /* setup folds away after page 1 (Jesse, 17 Oct) */
+ reviewGo(0); var cf=document.querySelector('#reviewHost .rv-conf'); ok(cf&&!cf.classList.contains('min'),'page 1: the setup is open');
+ reviewGo(1); ok(cf.classList.contains('min')&&/Setup/.test(document.getElementById('rvConfBar').textContent),'page 2: the setup folds to one line');
+ document.getElementById('rvConfBar').click(); ok(!cf.classList.contains('min'),'the caret opens it again'); reviewGo(2); ok(cf.classList.contains('min'),'moving on folds it again'); reviewGo(0);
+ return {n:79, fails:fails}; })()`;
 try {
   let l; for (let i = 0; i < 60 && !l; i++) { await sleep(150); l = await fetch(`http://127.0.0.1:${DBG}/json/list`).then(r => r.json()).catch(() => null); }
   ws = new WebSocket(l.find(t => t.type === 'page').webSocketDebuggerUrl);

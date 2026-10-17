@@ -656,6 +656,8 @@
   .rg-row.rg-lowered label{color:#8a5a00}.rg-why{flex:1 1 220px;font:inherit;font-size:13px;padding:6px 8px;border:1px solid var(--line);border-radius:7px;background:#fff}
   .rg-btn{font:inherit;font-size:12.5px;font-weight:700;border:1px solid var(--navy);background:#fff;color:var(--navy);border-radius:8px;padding:5px 10px;cursor:pointer;margin-left:6px}
   /* Benefits Review */
+  .rv-confbar{display:none;cursor:pointer;font-size:13px;color:var(--navy)}.rv-confbar small{color:var(--muted);margin-left:6px}.rv-confbar .car{display:inline-block;width:12px}
+  .rv-conf.folds .rv-confbar{display:block;margin-bottom:8px}.rv-conf.min .rv-confbar{margin-bottom:0}.rv-conf.min>*:not(.rv-confbar){display:none}
   .rv-conf{border:1px solid #e6d3a3;background:#fffaf0;border-radius:12px;padding:12px 14px;margin:10px 0 14px}
   .rv-ch{font-family:var(--serif);font-weight:700;color:var(--navy);font-size:16px;margin-bottom:8px}.rv-ch small{font-family:inherit;font-weight:500;font-size:12.5px;color:var(--muted);margin-left:6px}
   .rv-actual{margin-top:12px;border-top:1px dashed #e6d3a3;padding-top:10px}.rv-actwrap{display:grid;grid-template-columns:minmax(300px,420px) 1fr;gap:14px;align-items:start}
@@ -4901,6 +4903,7 @@ function reviewRail(){ var REVIEW_TICKS=reviewTicks(), R=reviewState(), box=$('r
   box.querySelectorAll('input[data-k]').forEach(function(c){ c.onchange=function(){ reviewTick(c.dataset.k,c.checked); }; });
   box.querySelectorAll('[data-copy]').forEach(function(a){ a.onclick=function(e){ e.preventDefault(); var t=a.textContent; try{ navigator.clipboard.writeText(a.dataset.copy); a.textContent='Copied ✓'; setTimeout(function(){ a.textContent=t; },1600); }catch(x){} }; }); }
 function reviewGo(pg,stay){ var t=chosenTier(), pages=reviewPages(t), R=reviewState(); pg=Math.max(0,Math.min(pages.length-1,pg|0)); R.pg=pg; autosave();
+  if(!stay) RV_CONF_OPEN=false; reviewConfFold(pg);
   var fr=$('rvFrame'), doc=fr&&fr.contentDocument; if(!doc||!doc.body) return; var want=REVIEW_PAGES.indexOf(pages[pg]);
   Array.prototype.forEach.call(doc.body.children,function(el){ if(el.dataset.rv==null) return; el.style.display=(+el.dataset.rv===want)?'':'none'; });
   reviewWire(doc,t); reviewRail(); fr.style.height='60px'; fr.style.height=(doc.documentElement.scrollHeight+8)+'px';
@@ -4910,6 +4913,14 @@ function reviewGo(pg,stay){ var t=chosenTier(), pages=reviewPages(t), R=reviewSt
   $('rvNav').innerHTML='<button type="button" data-go="-1"'+(pg?'':' disabled')+'>← Back</button>'+(nx?'<button type="button" class="go" data-go="1">Next: '+esc(nx.t)+' →</button>':'<span></span>');
   $('rvNav').querySelectorAll('[data-go]').forEach(function(b){ b.onclick=function(){ reviewGo(pg+(+b.dataset.go)); }; });
   if(!stay) window.scrollTo(0,0); }
+/* The setup (carrier confirmation + What they have + the side-by-side) is open on page 1 only; from page 2 it folds to
+   one line with a caret, out of the way while the script speaks to it (Jesse, 17 Oct). */
+var RV_CONF_OPEN=false;
+function reviewConfFold(pg){ var cf=document.querySelector('#reviewHost .rv-conf'), bar=$('rvConfBar'); if(!cf||!bar) return;
+  var R=reviewState(), on=pg>0, min=on&&!RV_CONF_OPEN, A=actualOn()?actualSnap():null;
+  cf.classList.toggle('folds',on); cf.classList.toggle('min',min);
+  bar.innerHTML='<span class="car">'+(min?'▸':'▾')+'</span> <b>Setup</b> '+esc([A?A.name+' · '+fmt2(reviewPrem())+'/mo':'',R.eff?'effective '+reviewDate(R.eff):'',R.draft?'drafts '+reviewDate(R.draft):'draft date not entered'].filter(Boolean).join(' · '))+' <small>'+(min?'click to open':'click to fold away')+'</small>';
+  bar.onclick=bar.onkeydown=function(e){ if(e.type==='keydown'&&e.key!=='Enter'&&e.key!==' ') return; RV_CONF_OPEN=!RV_CONF_OPEN; reviewConfFold(+reviewState().pg||0); }; }
 function renderReview(){ var host=$('reviewHost'); if(!host) return; var t=chosenTier(), R=reviewState(), C=S.client||{};
   if(t&&!tierNonMh(t)&&!actualOn()) actualSeed(t);
   var head='<div class="sectitle"><span class="dot">●</span> Benefits Review <small style="font-family:inherit;font-weight:600;color:var(--muted);font-size:13px">— after approval, before the effective date · about fifteen minutes</small></div>';
@@ -4918,7 +4929,7 @@ function renderReview(){ var host=$('reviewHost'); if(!host) return; var t=chose
   var mo=MONTHS.map(function(m){ return '<option'+(R.month===m?' selected':'')+'>'+m+'</option>'; }).join('');
   var ownLink=reviewUrl(S.agentBenefits);
   host.innerHTML=head
-   +'<div class="rv-conf"><div class="rv-ch">From the carrier’s confirmation <small>typed once, off the approval — not the quote. Saved with this client.</small></div>'
+   +'<div class="rv-conf"><div class="rv-confbar" id="rvConfBar" role="button" tabindex="0"></div><div class="rv-ch">From the carrier’s confirmation <small>typed once, off the approval — not the quote. Saved with this client.</small></div>'
    +'<div class="rv-grid">'
    +'<div class="fld"><label>Approved</label><select id="rv_appr"><option value="">—</option><option value="as"'+(R.appr==='as'?' selected':'')+'>As applied for</option><option value="chg"'+(R.appr==='chg'?' selected':'')+'>With a change</option></select></div>'
    +'<div class="fld"><label>Effective date</label><input type="date" id="rv_eff" value="'+esc(R.eff||'')+'"></div>'
