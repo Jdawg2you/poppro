@@ -88,7 +88,26 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  S.intake.glp1={}; reviewWire(d,'better'); ok(db&&db.classList.contains('pp-off'),'no weight-loss GLP-1: the block is gone');
  /* setup asks for the benefits page */
  S.agentBenefits=''; ok(agentSetupMissing().indexOf('benefits page')>=0,'Setup counts the benefits page until it is filled');
- return {n:44, fails:fails}; })()`;
+  /* What they actually have (Jesse, 17 Oct): a copy of their plan, edited off the approval; quote and recommendation untouched */
+ S.chosen={tier:'better'}; S.rec=pkSnap('best'); S.rec.by='presented'; S.elected=pkSnap('better'); delete S.actual; renderReview(); await w(1500);
+ var host=document.getElementById('rvActual'), col=host&&host.querySelector('.pbcol.actual');
+ ok(!!col&&actualOn(),'the What-they-have card is on the review, seeded from their choice');
+ ok(Math.abs(tierTotals('actual').mo-tierTotals('better').mo)<0.01,'seeded at the chosen plan price');
+ var betterBefore=JSON.stringify(S.packages.better.products), recBefore=JSON.stringify(S.rec), elBefore=JSON.stringify(S.elected);
+ var rmAcc=col.querySelector('[data-act="rm"][data-k="acc"]'); ok(!!rmAcc,'the card has the builder controls (✕ on Accident)'); if(rmAcc) rmAcc.click(); await w(300);
+ ok(!(S.packages.actual.products||[]).some(function(p){ return p.k==='acc'; }),'✕ removes Accident from what they have');
+ ok(JSON.stringify(S.packages.better.products)===betterBefore&&JSON.stringify(S.rec)===recBefore&&JSON.stringify(S.elected)===elBefore,'the quote, the recommendation and the Enroll choice are untouched');
+ ok(/Not issued: Accident/.test(host.textContent),'the card lists the difference from what they chose');
+ var G=gapOf(S.rec,actualSnap()); ok(G.some(function(g){ return g.key==='p:acc'; }),'the gap against the recommendation names Accident');
+ ok(reviewTokens('better')['gap.missing'].indexOf('Accident')>=0,'gap.missing token: '+reviewTokens('better')['gap.missing']);
+ S.actual.tier='best'; ok(reviewBelow('best'),'same plan name but a product missing still opens the below-recommendation page');
+ S.rec=actualSnap(); S.rec.by='presented'; ok(!reviewBelow('best'),'matching the recommendation skips it');
+ set('rv_prem','$1.00'); await w(100); ok(/Confirm the premium/.test(document.getElementById('rv_warn').textContent),'a typed premium that does not match the plan asks to confirm it');
+ var saved2=JSON.parse(localStorage.getItem('hf_pop_last')||'{}'); ok(saved2.actual&&saved2.packages&&saved2.packages.actual,'what they have is saved with the client');
+  R=reviewState(); R.prem=0; renderReview(); await w(1200); ok(document.getElementById('rv_prem').value===fmtMoney2(reviewPremTool())&&reviewTokens('best')['policy.premium']===fmt2(reviewPremTool()),'a blank premium fills from the plan: '+document.getElementById('rv_prem').value);
+ window.scrollTo(0,600); var y0=window.scrollY, rb=document.querySelector('#rvActual [data-act="rm"]'); if(rb) rb.click(); await w(300); ok(Math.abs(window.scrollY-y0)<5,'editing the plan keeps the page where it is ('+y0+' -> '+window.scrollY+')');
+ ok(document.getElementById('rv_prem').value===fmtMoney2(reviewPremTool()),'the filled premium follows the plan');
+ return {n:59, fails:fails}; })()`;
 try {
   let l; for (let i = 0; i < 60 && !l; i++) { await sleep(150); l = await fetch(`http://127.0.0.1:${DBG}/json/list`).then(r => r.json()).catch(() => null); }
   ws = new WebSocket(l.find(t => t.type === 'page').webSocketDebuggerUrl);

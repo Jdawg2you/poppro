@@ -658,6 +658,9 @@
   /* Benefits Review */
   .rv-conf{border:1px solid #e6d3a3;background:#fffaf0;border-radius:12px;padding:12px 14px;margin:10px 0 14px}
   .rv-ch{font-family:var(--serif);font-weight:700;color:var(--navy);font-size:16px;margin-bottom:8px}.rv-ch small{font-family:inherit;font-weight:500;font-size:12.5px;color:var(--muted);margin-left:6px}
+  .rv-actual{margin-top:12px;border-top:1px dashed #e6d3a3;padding-top:10px}.rv-actwrap{display:grid;grid-template-columns:minmax(300px,420px) 1fr;gap:14px;align-items:start}
+  .rv-actnote{font-size:13px;line-height:1.5}.rv-actnote ul{margin:4px 0 10px;padding-left:18px}.rv-actnote>b{display:block;margin-top:2px}.pbcol.actual{border:2px solid var(--navy)}.pbcol.actual select[data-act=actname]{font:inherit;font-family:var(--serif);font-size:20px;color:var(--navy);border:1px solid #d6cdb4;border-radius:7px;padding:2px 6px;background:#fff}
+  @media(max-width:820px){.rv-actwrap{grid-template-columns:1fr}}
   .rv-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.rv-grid .rv-wide{grid-column:1/-1}
   .rv-grid select,.rv-grid input[type=date]{width:100%;padding:8px 9px;border:1px solid var(--line);border-radius:8px;background:#fbfaf6;font:inherit}
   @media(max-width:1000px){.rv-grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:620px){.rv-grid{grid-template-columns:1fr}}
@@ -2778,14 +2781,15 @@ function autoPriceTiers(){
   if(PR_STATE==='loading') return;   /* loadPortalRates builds the packages the moment the rates arrive */
   if(!(S.client.state||'').trim()||!ratingAge()) return;
   // SDR escalation is intentionally NOT auto-applied — it is offered as a priced suggestion.
-  ['good','better','best'].forEach(function(t){
+  ['good','better','best'].forEach(priceTier);
+}
+function priceTier(t){
     var pk=S.packages[t]; if(!pk) return;
     var prev=pk.products||[], byKey={}, dropped=pk.dropped||[];
     prev.forEach(function(p){ if(p.k) byKey[p.k]=p; });
     var built=buildTierProducts(effCfg(t),byKey,manualExtras(prev));
     // Respect the agent's deletions: a slot the user removed stays removed until they add it back.
     pk.products=built.filter(function(p){ return !p.k || dropped.indexOf(p.k)<0; });
-  });
 }
 function pkgCost(prods,lb){ return prods.reduce(function(s,p){return s+(+p.monthly||0);},0)+(+lb||0); }
 function scorePkg(prods,lb,c,tier){ return popExact(popStrengthsFrom(popInputsFor(c,prods)),popWeights(tier)); }   // exact - even a small real gain is offered
@@ -4628,15 +4632,16 @@ function recLock(t){ var cur=S.rec, snap=pkSnap(t); if(!snap) return;
 function electedLock(){ var t=chosenTier(); if(!t) return; S.elected=pkSnap(t); autosave(); }
 var LB_K={lbp:1,lbs:1};
 /* every way what they bought falls short of what was recommended, each with a stable key for its acknowledgment */
-function recGap(){ var R=S.rec, E=S.elected, out=[]; if(!R||!E) return out;
+function recGap(){ return gapOf(S.rec,S.elected); }
+function gapOf(R,E,miss){ var out=[]; if(!R||!E) return out; miss=miss||'Declined';
   if(TIER_ORDER[E.tier]<TIER_ORDER[R.tier]) out.push({key:'tier',kind:'below',text:'Below our recommendation: '+E.name+' instead of '+R.name+' ('+fmt2(E.monthly)+' vs '+fmt2(R.monthly)+' a month)'});
   var has={}; E.products.forEach(function(p){ has[p.k]=p; });
   R.products.forEach(function(p){ var e=has[p.k];
-    if(!e) out.push({key:'p:'+p.k,kind:'declined',text:'Declined: '+p.name+(p.sum?' ('+p.sum+')':'')+' — '+fmt2(p.monthly)+' a month'});
-    else if(e.monthly<p.monthly-0.005&&e.sum!==p.sum) out.push({key:'l:'+p.k,kind:'lowered',text:'Lowered: '+p.name+' — '+(p.sum||fmt2(p.monthly))+' → '+(e.sum||fmt2(e.monthly))}); });
+    if(!e) out.push({key:'p:'+p.k,kind:'declined',name:p.name,text:miss+': '+p.name+(p.sum?' ('+p.sum+')':'')+' — '+fmt2(p.monthly)+' a month'});
+    else if(e.monthly<p.monthly-0.005&&e.sum!==p.sum) out.push({key:'l:'+p.k,kind:'lowered',name:p.name,text:'Lowered: '+p.name+' — '+(p.sum||fmt2(p.monthly))+' → '+(e.sum||fmt2(e.monthly))}); });
   /* living benefits are priced live at the pivot, so they're "recommended" once that screen was shown */
   if(R.lbOffered&&!E.products.some(function(p){ return LB_K[p.k]; })&&!R.products.some(function(p){ return LB_K[p.k]; }))
-    out.push({key:'lb',kind:'declined',text:'Declined: living benefits (offered at the pivot)'});
+    out.push({key:'lb',kind:'declined',name:'living benefits',text:miss+': living benefits (offered at the pivot)'});
   return out; }
 function renderRecGap(){ var host=$('enDiff'); if(!host) return; var R=S.rec, E=S.elected, A=(S.decl=S.decl||{});
   if(!E){ host.innerHTML=''; return; }
@@ -4696,24 +4701,60 @@ function reviewUrl(u){ u=String(u||'').trim(); if(!u) return ''; return /^https?
 function reviewLink(){ var R=reviewState(); return reviewUrl(R.link||S.agentBenefits); }
 function reviewDate(v){ var m=String(v||'').match(/^(\d{4})-(\d{2})-(\d{2})$/); if(!m) return ''; return new Date(+m[1],+m[2]-1,+m[3]).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}); }
 var TIER_ORDER={good:0,better:1,best:2};
-function reviewDental(t){ return ((S.packages[t]||{}).products||[]).some(function(p){ return p.k==='dvh'&&(+p.monthly||0)>0; }); }
-function reviewBelow(t){ var r=(S.rec&&S.rec.tier)||S.recommended; return !!(t&&r&&TIER_ORDER[t]!=null&&TIER_ORDER[r]!=null&&TIER_ORDER[t]<TIER_ORDER[r]); }
+/* ===== What they actually have (Benefits Review) =====
+   Jesse, 2026-10-17: a lower premium can't tell you WHICH product went, so the agent confirms it. A copy of the plan they
+   chose, edited off the carrier's approval - the recommendation (S.rec) and what they chose at Enroll (S.elected) never
+   change. S.actual = {tier, from, at}; its settings live in S.cfg.actual and S.packages.actual. The review speaks to it. */
+function actualOn(){ return !!(S.actual&&S.packages&&S.packages.actual&&S.cfg&&S.cfg.actual); }
+function reviewT(){ return actualOn()?'actual':chosenTier(); }
+function actualSeed(t){ if(!t||!S.packages[t]) return; S.cfg=S.cfg||{}; S.cfg.actual=cfgClone(effCfg(t));
+  S.packages.actual=JSON.parse(JSON.stringify(S.packages[t])); S.actual={tier:t,from:t,at:new Date().toISOString().slice(0,10)};
+  Object.keys(PB_OPEN).forEach(function(k){ if(k.indexOf('actual|')===0) delete PB_OPEN[k]; }); priceTier('actual'); }
+function actualSnap(){ var s=pkSnap('actual')||{products:[]}, b=effCfg('actual').base; s.tier=S.actual.tier;
+  s.name=b==='lifex'?'LifeX':b==='triad'?'Cigna':(TIER_NAME[s.tier]||''); return s; }
+function pbActHead(){ var A=S.actual||{};
+  return '<div class="pbcol actual" data-t="actual"><div class="pbhd"><div class="r1"><span class="tt">What they actually have</span>'
+    +'<button type="button" class="pbreset" data-act="actreset" title="Start again from the plan they chose at Enroll">↺ From their choice</button></div>'
+    +'<div class="nm"><select data-act="actname" aria-label="Plan name">'+pbOpts([['good','Essential'],['better','Complete'],['best','Comprehensive']],A.tier)+'</select></div>'
+    +'<div class="r3"><small>From the carrier’s approval. Changes here never touch the quote or your recommendation.</small></div></div>'; }
+function actualRedraw(){ var y=window.scrollY; renderActual(); var R=reviewState(), pe=$('rv_prem'); if(pe&&!(+R.prem>0)&&document.activeElement!==pe) pe.value=reviewPrem()>0?fmtMoney2(reviewPrem()):'';
+  reviewCheck(); var fr=$('rvFrame'); if(fr&&fr.contentDocument&&fr.contentDocument.body&&fr.contentDocument.body.dataset.rvp) reviewGo(+R.pg||0,true); window.scrollTo(0,y); }
+/* the premium is the plan's own total unless the agent types the carrier's figure (R.prem); a different figure is confirmed, not assumed */
+function reviewPremTool(){ return actualOn()?Math.round(tierTotals('actual').mo*100)/100:0; }
+function reviewPrem(){ var R=reviewState(); return +R.prem>0?+R.prem:reviewPremTool(); }
+function actualReprice(){ priceTier('actual'); autosave(); actualRedraw(); }
+function renderActual(){ var host=$('rvActual'), t=chosenTier(); if(!host||!t) return; if(!actualOn()) actualSeed(t); if(!actualOn()) return;
+  var r=pbColHTML(['actual'],null), E=S.elected, A=actualSnap(), lines=[];
+  gapOf(E&&E.products?E:null,A,'Not issued').forEach(function(g){ if(g.kind!=='below') lines.push(g.text); });
+  var below=S.rec?gapOf(S.rec,A,'Not in their plan'):[];
+  host.innerHTML='<div class="rv-ch">What they actually have <small>open it, and match it to the approval: ✕ what didn’t come through, change a level, type the carrier’s price over a row.</small></div>'
+    +'<div class="rv-actwrap">'+r.html+'<div class="rv-actnote">'
+    +(lines.length?'<b>Different from what they chose at Enroll</b><ul>'+lines.map(function(x){ return '<li>'+esc(x)+'</li>'; }).join('')+'</ul>':'<b>Same as what they chose at Enroll.</b>')
+    +(S.rec?(below.length?'<b>Below your recommendation ('+esc(S.rec.name)+')</b><ul>'+below.map(function(g){ return '<li>'+esc(g.text)+'</li>'; }).join('')+'</ul><small>The review’s “below my recommendation” page reads this list.</small>'
+      :'<b>Matches your recommendation.</b> The “below my recommendation” page is skipped.'):'')
+    +'</div></div>';
+  host.querySelectorAll('.pbcol').forEach(function(col){ pbColBind(col,actualReprice,actualRedraw); });
+  host.querySelectorAll('.pbinfo').forEach(function(b){ b.onclick=function(e){ e.stopPropagation(); benOpen('actual',b.dataset.ben); }; });
+  var nm=host.querySelector('[data-act="actname"]'); if(nm) nm.onchange=function(){ S.actual.tier=nm.value; autosave(); actualRedraw(); };
+  var rs=host.querySelector('[data-act="actreset"]'); if(rs) rs.onclick=function(){ actualSeed(chosenTier()); autosave(); actualRedraw(); }; }
+function reviewDental(t){ t=reviewT()||t; return ((S.packages[t]||{}).products||[]).some(function(p){ return p.k==='dvh'&&(+p.monthly||0)>0; }); }
+function reviewBelow(t){ if(actualOn()&&S.rec) return gapOf(S.rec,actualSnap()).length>0; var r=(S.rec&&S.rec.tier)||S.recommended; return !!(t&&r&&TIER_ORDER[t]!=null&&TIER_ORDER[r]!=null&&TIER_ORDER[t]<TIER_ORDER[r]); }
 function reviewPages(t){ return REVIEW_PAGES.filter(function(p){ return !p.when||(p.when==='dental'?reviewDental(t):reviewBelow(t)); }); }
 /* Prescriptions: the day's fills against the per-day benefit. "You made $X" only when the fills really come to less
    (Health ZONE's gate); a med with no price means no priced list, and then neither sentence is served. */
-function reviewRx(t){ var I=S.intake||{}, meds=(I.medList||[]).filter(function(m){ return m&&String(m.name||'').trim(); });
-  var X=presentAfc(t), per=parseFloat(String(X.rx_day||'').replace(/[^\d.]/g,''))||0;
+function reviewRx(t){ t=reviewT()||t; var I=S.intake||{}, meds=(I.medList||[]).filter(function(m){ return m&&String(m.name||'').trim(); });
+  var X=evHas(t,'afc')?presentAfc(t):{}, per=parseFloat(String(X.rx_day||'').replace(/[^\d.]/g,''))||0;
   var priced=meds.map(function(m){ var d=medDisc(m), c=+m.cur||0; return d>0?d:c; });
   var all=meds.length&&priced.every(function(x){ return x>0; }), tot=priced.reduce(function(a,b){ return a+b; },0);
   return {meds:meds, priced:priced, all:!!all, total:tot, per:per, cap:X.rx_cap||'', day:X.rx_day||'',
     /* exactly the daily benefit is a wash - the script's own third sentence (Health ZONE, 16 Oct) */
     math:!all||!per?'':(Math.abs(tot-per)<0.005?'wash':(tot<per?'gain':'partial'))}; }
-function reviewTokens(t){ var C=S.client||{}, R=reviewState(), T={}, m2=function(n){ return fmt2(+n||0); };
+function reviewTokens(t){ t=reviewT()||t; var C=S.client||{}, R=reviewState(), T={}, m2=function(n){ return fmt2(+n||0); };
   var join=function(a){ return a.length<2?(a[0]||''):a.slice(0,-1).join(', ')+' and '+a[a.length-1]; };
   T['client.first']=((C.pname||'').trim().split(/\s+/)[0])||'';
   T['agent.first']=((C.agent||'').trim().split(/\s+/)[0])||''; T['agent.agency']=(S.agency&&S.agency!=='HealthFirst')?S.agency:'';
   T['policy.carrier']='ManhattanLife';
-  T['policy.effective_date']=reviewDate(R.eff); T['policy.draft_date']=reviewDate(R.draft); if(+R.prem>0) T['policy.premium']=m2(R.prem);
+  T['policy.effective_date']=reviewDate(R.eff); T['policy.draft_date']=reviewDate(R.draft); if(reviewPrem()>0) T['policy.premium']=m2(reviewPrem());
   T['client.pharmacy']=R.pharmacy||'';
   var A=(evTierPack(t)||{}).afc||{}; if(A.visitN) T['plan.visits']=String(A.visitN);
   var X=reviewRx(t); if(X.day) T['plan.rx_per_day']=X.day; if(X.cap) T['plan.rx_annual_max']=X.cap;
@@ -4723,7 +4764,8 @@ function reviewTokens(t){ var C=S.client||{}, R=reviewState(), T={}, m2=function
     if(X.math==='gain') T['client.rx_gain']=m2(X.per-X.total);
     if(X.math==='partial'){ T['client.rx_covered']=m2(X.per)+' of it'; T['client.rx_short']=m2(X.total-X.per); } }
   T['careguide.threshold']='$2,500';
-  T['tier.elected']=TIER_NAME[t]||''; T['tier.recommended']=TIER_NAME[(S.rec&&S.rec.tier)||S.recommended]||'';
+  T['tier.elected']=actualOn()?actualSnap().name:(TIER_NAME[t]||'');
+  if(actualOn()&&S.rec){ var G=gapOf(S.rec,actualSnap()); T['gap.missing']=join(G.filter(function(g){ return g.kind==='declined'; }).map(function(g){ return g.name; })); T['gap.lowered']=join(G.filter(function(g){ return g.kind==='lowered'; }).map(function(g){ return g.name; })); } T['tier.recommended']=TIER_NAME[(S.rec&&S.rec.tier)||S.recommended]||'';
   var DQ=drxParts(); T['drx.drug']=drxWho().length?DQ.drug||drxWho()[0].drug:''; T['drx.pct']=DRX_PCT; T['drx.link']=drxLink(); T['drx.code']=String(S.agentDrxCode||'').trim(); T['drx.howto']=drxWho().length?'1':'';   /* the block's switch; its words are Health ZONE's */
   T['review.month']=R.month||(R.eff?MONTHS[+String(R.eff).slice(5,7)-1]:'');
   return T; }
@@ -4777,7 +4819,7 @@ function reviewRail(){ var REVIEW_TICKS=reviewTicks(), R=reviewState(), box=$('r
     return '<div class="rv-row'+(on?' on':'')+(x.k===reviewCurTick()?' cur':'')+'" data-row="'+x.k+'"><input type="checkbox" data-k="'+x.k+'"'+(on?' checked':'')+' aria-label="'+esc(x.t)+'"><span>'+esc(x.t)+(x.note?' <em>'+esc(x.note)+'</em>':'')+'<small class="rv-acts">'+open+text+copy+'</small></span></div>'; }).join('');
   box.querySelectorAll('input[data-k]').forEach(function(c){ c.onchange=function(){ reviewTick(c.dataset.k,c.checked); }; });
   box.querySelectorAll('[data-copy]').forEach(function(a){ a.onclick=function(e){ e.preventDefault(); var t=a.textContent; try{ navigator.clipboard.writeText(a.dataset.copy); a.textContent='Copied ✓'; setTimeout(function(){ a.textContent=t; },1600); }catch(x){} }; }); }
-function reviewGo(pg){ var t=chosenTier(), pages=reviewPages(t), R=reviewState(); pg=Math.max(0,Math.min(pages.length-1,pg|0)); R.pg=pg; autosave();
+function reviewGo(pg,stay){ var t=chosenTier(), pages=reviewPages(t), R=reviewState(); pg=Math.max(0,Math.min(pages.length-1,pg|0)); R.pg=pg; autosave();
   var fr=$('rvFrame'), doc=fr&&fr.contentDocument; if(!doc||!doc.body) return; var want=REVIEW_PAGES.indexOf(pages[pg]);
   Array.prototype.forEach.call(doc.body.children,function(el){ if(el.dataset.rv==null) return; el.style.display=(+el.dataset.rv===want)?'':'none'; });
   reviewWire(doc,t); reviewRail(); fr.style.height='60px'; fr.style.height=(doc.documentElement.scrollHeight+8)+'px';
@@ -4786,8 +4828,9 @@ function reviewGo(pg){ var t=chosenTier(), pages=reviewPages(t), R=reviewState()
   var nx=pages[pg+1];
   $('rvNav').innerHTML='<button type="button" data-go="-1"'+(pg?'':' disabled')+'>← Back</button>'+(nx?'<button type="button" class="go" data-go="1">Next: '+esc(nx.t)+' →</button>':'<span></span>');
   $('rvNav').querySelectorAll('[data-go]').forEach(function(b){ b.onclick=function(){ reviewGo(pg+(+b.dataset.go)); }; });
-  window.scrollTo(0,0); }
+  if(!stay) window.scrollTo(0,0); }
 function renderReview(){ var host=$('reviewHost'); if(!host) return; var t=chosenTier(), R=reviewState(), C=S.client||{};
+  if(t&&!tierNonMh(t)&&!actualOn()) actualSeed(t);
   var head='<div class="sectitle"><span class="dot">●</span> Benefits Review <small style="font-family:inherit;font-weight:600;color:var(--muted);font-size:13px">— after approval, before the effective date · about fifteen minutes</small></div>';
   if(!t){ host.innerHTML=head+'<p class="note">Mark the plan they bought first: <b>Choose this plan</b> on the Quote page. This call is built from it.</p><button type="button" class="btn-gold" onclick="goStep(\'quote\')">← Quote</button>'; return; }
   if(tierNonMh(t)){ host.innerHTML=head+'<p class="note">This Benefits Review is the ManhattanLife call — portal, EasyCare2go, Easy Upload and CareGuide. '+esc(tierNonMh(t).name)+' clients get their onboarding from the carrier.</p>'; return; }
@@ -4798,12 +4841,12 @@ function renderReview(){ var host=$('reviewHost'); if(!host) return; var t=chose
    +'<div class="rv-grid">'
    +'<div class="fld"><label>Approved</label><select id="rv_appr"><option value="">—</option><option value="as"'+(R.appr==='as'?' selected':'')+'>As applied for</option><option value="chg"'+(R.appr==='chg'?' selected':'')+'>With a change</option></select></div>'
    +'<div class="fld"><label>Effective date</label><input type="date" id="rv_eff" value="'+esc(R.eff||'')+'"></div>'
-   +'<div class="fld"><label>Monthly premium <small>every rider included</small></label><input id="rv_prem" class="money2" inputmode="decimal" placeholder="from the confirmation" value="'+(+R.prem>0?fmtMoney2(R.prem):'')+'"></div>'
+   +'<div class="fld"><label>Monthly premium <small>'+(+R.prem>0?'typed in — the plan below adds up to '+fmt2(reviewPremTool()):'from the plan below — type over it if the carrier’s differs')+'</small></label><input id="rv_prem" class="money2" inputmode="decimal" placeholder="from the confirmation" value="'+(reviewPrem()>0?fmtMoney2(reviewPrem()):'')+'"></div>'
    +'<div class="fld"><label>Draft date <small>from the carrier — never assumed</small></label><input type="date" id="rv_draft" value="'+esc(R.draft||'')+'"></div>'
    +'<div class="fld"><label>Pharmacy they use</label><input id="rv_pharm" placeholder="e.g. Walgreens" value="'+esc(R.pharmacy||'')+'"></div>'
    +'<div class="fld"><label>Annual review month</label><select id="rv_month"><option value="">'+(R.eff?'— '+MONTHS[+String(R.eff).slice(5,7)-1]+' (effective month)':'—')+'</option>'+mo+'</select></div>'
    +'<div class="fld rv-wide"><label>Their resource page <small>'+(ownLink?'your Setup link, unless this client has their own':'add yours in ⚙ Setup')+'</small></label><input id="rv_link" placeholder="'+esc(ownLink||'yoursite.com/manhattanlife')+'" value="'+esc(R.link||'')+'"></div>'
-   +'</div><div id="rv_warn" class="rv-warn"></div></div>'
+   +'</div><div id="rv_warn" class="rv-warn"></div><div id="rvActual" class="rv-actual"></div></div>'
    +'<div class="pr-prog" id="rvChips"></div><div class="pr-grid"><div>'
    +'<iframe id="rvFrame" src="benefits-review.html" title="Benefits Review script" style="width:100%;border:1px solid var(--line);border-radius:12px;background:#fff;min-height:200px"></iframe>'
    +'<div class="pr-nav" id="rvNav"></div></div>'
@@ -4812,17 +4855,18 @@ function renderReview(){ var host=$('reviewHost'); if(!host) return; var t=chose
    +(reviewLink()?'<a class="rv-a" href="'+esc(reviewLink())+'" target="_blank" rel="noopener">Their resource page ↗</a>':'<span class="rv-miss">No resource page yet — add yours in ⚙ Setup</span>')
    +'<a class="rv-a" href="https://clients.manhattanlife.com" target="_blank" rel="noopener">ManhattanLife portal ↗</a><a class="rv-a" href="https://providerlocator.firsthealth.com/home/index" target="_blank" rel="noopener">First Health locator ↗</a><a class="rv-a" href="https://www.singlecare.com" target="_blank" rel="noopener">SingleCare — Rx pricing ↗</a></div>'
    +'</div></div>';
-  var save=function(){ R.appr=$('rv_appr').value; R.eff=$('rv_eff').value; R.prem=moneyNum($('rv_prem').value)||0; R.draft=$('rv_draft').value;
+  var save=function(){ R.appr=$('rv_appr').value; R.eff=$('rv_eff').value; var pv=moneyNum($('rv_prem').value)||0; R.prem=(Math.abs(pv-reviewPremTool())<0.005)?0:pv; R.draft=$('rv_draft').value;
     R.pharmacy=$('rv_pharm').value.trim(); R.month=$('rv_month').value; R.link=$('rv_link').value.trim(); autosave(); reviewCheck();
     var fr=$('rvFrame'); if(fr&&fr.contentDocument&&fr.contentDocument.body&&fr.contentDocument.body.dataset.rvp) reviewWire(fr.contentDocument,t); };
   ['rv_appr','rv_eff','rv_prem','rv_draft','rv_pharm','rv_month','rv_link'].forEach(function(id){ $(id).addEventListener('change',save); $(id).addEventListener('input',function(){ if(id!=='rv_prem') save(); }); });
-  reviewRail(); reviewCheck();
+  renderActual(); reviewRail(); reviewCheck();
   var fr=$('rvFrame'); fr.onload=function(){ try{ reviewPaginate(fr.contentDocument,t); reviewGo(+R.pg||0); }catch(e){} }; }
 function reviewCheck(){ var R=reviewState(), w=[], el=$('rv_warn'); if(!el) return;
   if(R.appr==='chg') w.push('<b>Approved with a change:</b> open with it — say what moved, what it costs and what it means — before “approved as applied for”.');
   if(R.eff&&!R.draft) w.push('<b>Draft date is empty.</b> Read it off the carrier’s confirmation. A custom date (a benefit week, a payday) is not done until the carrier confirms it back.');
   if(R.eff&&R.draft&&R.draft!==R.eff) w.push('<b>Custom draft date</b> ('+esc(reviewDate(R.draft))+'): don’t say “usually that same day” — say the date.');
-  if(!(+R.prem>0)) w.push('Premium: the exact figure off the confirmation, every rider included — not the quote.');
+  if(+R.prem>0&&actualOn()){ var am=reviewPremTool(); if(Math.abs(am-R.prem)>=0.01) w.push('<b>Confirm the premium: '+fmt2(R.prem)+' a month.</b> The plan below adds up to '+fmt2(am)+'. Check with the carrier that '+fmt2(R.prem)+' is what actually drafts — a policy fee or a rider the tool doesn’t count can explain it. If a product or level is different, fix it in the plan below.'); }
+  if(!(reviewPrem()>0)) w.push('Premium: the exact figure off the confirmation, every rider included — not the quote.');
   el.innerHTML=w.map(function(x){ return '<div>'+x+'</div>'; }).join(''); }
 /* ---- GLP-1 on the Intake: S.intake.glp1 = {p:{on,drug,for,since,cost,source}, s:{...}} ---- */
 var GLP1_RX=/semaglutide|tirzepatide|liraglutide|dulaglutide|exenatide|ozempic|wegovy|rybelsus|mounjaro|zepbound|saxenda|victoza|trulicity|byetta|bydureon/i;
@@ -6477,7 +6521,7 @@ function benView(d,f,t,k){ var c=effCfg(t), st=(S.client.state||'').toUpperCase(
   if(miss) m=null;
   var sum=pbSummary(k,c,null)||col;
   if(k==='lbp'||k==='lbs'){ var lc=c.lb[k.slice(2)]||{}; sum=lc.carrier==='other'?lbFaceLabel(lc.face)+' · '+(String(lc.otherName||'').trim()||'Other carrier'):'$'+Number(lc.face||0).toLocaleString('en-US')+' term life · 20-year · '+(lc.carrier==='americo'?'Americo':'Mutual of Omaha'); }
-  return {f:f,t:t,k:k,col:col,no:no,nob:nob,miss:miss,title:d.name,sub:({good:'Essential',better:'Complete',best:'Comprehensive'}[t]||t)+' · '+sum,st:st,m:m,cfg:JSON.stringify(c)}; }
+  return {f:f,t:t,k:k,col:col,no:no,nob:nob,miss:miss,title:d.name,sub:({good:'Essential',better:'Complete',best:'Comprehensive',actual:'What they have'}[t]||t)+' · '+sum,st:st,m:m,cfg:JSON.stringify(c)}; }
 function benOpen(t,k){ var c=effCfg(t), f=benFileFor(k,c); if(!f) return;
   var st=(S.client.state||'').toUpperCase();
   benLoad(f).then(function(d){
@@ -6679,37 +6723,15 @@ function dentalPrice(t){ try{ var r=pDVH(HF_RATES,ratingAge(),householdKey(),eff
 /* Dental stays a yes/no after the choice: the three packages are compared without it, then the
    chosen one is 'base plan' or 'base plan + dental'. */
 function setDental(t,on){ var pk=S.packages[t]; if(!pk) return; pk.dropped=(pk.dropped||[]).filter(function(k){ return k!=='dvh'; }); if(!on) pk.dropped.push('dvh'); autoPriceTiers(); compute(); autosave(); }
-function renderBuilder(){
-  var host=$('sec_builder'); if(!host) return;
-  var st=(S.client.state||'').toUpperCase(), age=ratingAge();
-  if(!st||!age){ host.innerHTML='<div class="bh"><h3>Package builder</h3><small>Enter the client’s state and age on the Intake to build packages.</small></div>'; return; }
-  if(PR_STATE==='loading'){ host.innerHTML='<div class="bh"><h3>Package builder</h3><small>Loading the ManhattanLife rates… the packages appear in a moment.</small></div>'; return; }
-  // Version B structure (2026-09-29): saved quotes from before it carry old per-package settings (SDR in
-  // every tier, a flat $45 life line). Reset those once so every package starts from the core four.
-  if(S.cfgVersion!=='B-core4-v2'){ S.cfgVersion='B-core4-v2'; S.cfg={}; ['good','better','best'].forEach(function(t){ var pk=S.packages[t]; if(!pk) return; pk.lb=0; pk.lbCarrier=''; pk.lbCov=''; pk.dropped=(pk.dropped||[]).filter(function(k){ return k==='dvh'; }); }); setTimeout(pbReprice,0); }
-  // Jesse's standard: dental is an add-on, outside the package price. Applied once per quote.
-  if(!S.dvhChoice){ S.dvhChoice='addon'; ['good','better','best'].forEach(function(t){ var pk=S.packages[t]; pk.dropped=pk.dropped||[]; if(pk.dropped.indexOf('dvh')<0) pk.dropped.push('dvh'); }); setTimeout(pbReprice,0); }
-  var tiers=[['good','Good','Essential'],['better','Better','Complete'],['best','Best','Comprehensive']], totals={};
-  var anc=anchorBase(), ak=(S.intake&&S.intake.anchor)||'aca';
-  var anchorStrip='<div class="pbanchor">'+(anc?'Anchored against <b>'+anc.lab+'</b>: '+pbMoney(anc.prem)+'/mo premium'+(anc.copayMo>0?' + doctor copays':'')+' · '+pbMoney(anc.mo)+'/mo true cost'
-      :(ak==='cur'?'Anchor is the current plan, but there is no current premium — add it under Current Insurance.':(ak==='aca'?'Anchor is the ACA bronze, but it has no premium yet — add the state and ages on the Intake.':'No anchor — the packages are only compared with each other.')))
-    +' <a href="#" class="jump" data-jumpto="in_anchor">change</a></div>';
-  var LINEUPS=[['mh','Manhattan only'],['lx-mh-cg','LifeX · Manhattan · Cigna'],['custom','Custom — you choose each']];
-  var presentBtn='<button type="button" data-act="present" class="presentbtn" style="margin-left:auto">'+presentBtnLabel()+'</button>';
-  var pb2=$('presentBtn2'); if(pb2) pb2.innerHTML=presentBtnLabel();
-  var lineupBar='<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 12px"><span style="font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--muted);text-transform:uppercase">Lineup</span>'
-    +'<button type="button" data-act="reload" title="Put all three packages back to MyPopPro’s recommendation" style="font:inherit;font-size:13px;font-weight:700;border-radius:999px;padding:7px 14px;cursor:pointer;border:1.5px solid var(--gold);background:#fffdf7;color:#8a6a1f;margin-right:6px">↺ Reload our recommendation</button>'
-    +LINEUPS.map(function(L){ var on=(S.lineup||'mh')===L[0]; return '<button type="button" data-lineup="'+L[0]+'" style="font:inherit;font-size:13px;font-weight:600;border-radius:999px;padding:7px 14px;cursor:pointer;border:1px solid '+(on?'var(--navy)':'#d6cdb4')+';background:'+(on?'var(--navy)':'#fff')+';color:'+(on?'#fff':'var(--ink)')+'">'+L[1]+'</button>'; }).join('')+'</div>';
-  lineupBar=lineupBar.replace(/<\/div>$/,presentBtn+'</div>');
-  var html=(PR_STATE==='failed'?'<div class="hidein-client noprint" style="margin:0 0 10px;padding:10px 14px;border:1px solid #f1b4ad;background:#fdecea;color:#b42318;border-radius:10px;font-weight:700">The full ManhattanLife rate file didn’t load, so some products (Out-of-Pocket, dental, Cancer/Heart/Stroke) can’t be priced in many states. <a href="#" onclick="location.reload();return false" style="color:#b42318">Refresh the page</a> before you quote.</div>':'')
-    +lineupBar+anchorStrip+'<div class="bh" style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap"><h3>Package builder</h3><small>'+st+' · age '+age+' · '+({i:'Individual',s:'Individual + Spouse',c:'Individual + Children',f:'Family'}[householdKey()])+' · prices from the ManhattanLife rate tables</small><button type="button" class="picbtn hidein-client noprint" data-copypic="plans" style="margin-left:auto">📋 Copy plans</button></div><div class="pb3">';
-  tiers.forEach(function(T){
-    var t=T[0], c=effCfg(t), pk=S.packages[t]||{products:[]}, dropped=pk.dropped||[];
+/* One package column. 'actual' is the Benefits Review copy (what the carrier issued): same rows and controls,
+   its own settings (S.cfg.actual / S.packages.actual), no Show-on-quote, savings or Choose. */
+function pbColHTML(T,anc){ var t=T[0], act=(t==='actual'), st=(S.client.state||'').toUpperCase(), age=ratingAge(), html='';
+    var c=effCfg(t), pk=S.packages[t]||{products:[]}, dropped=pk.dropped||[];
     var built=buildTierProducts(c,null,[]), byK={}; built.forEach(function(p){ byK[p.k]=p; });
     var byKpk={}; (pk.products||[]).forEach(function(p){ if(p.k) byKpk[p.k]=p; });
     var hdr=(S.lineup==='lx-mh-cg'||S.lineup==='custom')&&c.base&&c.base!=='afc'?[c.base==='lifex'?'Pivot down':'Pivot up',c.base==='lifex'?'LifeX':'Cigna']:(S.lineup==='lx-mh-cg'?['Lead','Manhattan']:[T[1],T[2]]);
     var incT=(S.include||{})[t]!==false;
-    html+='<div class="pbcol'+(S.recommended===t?' rec':'')+(incT?'':' excl')+(chosenTier()===t?' chosen':'')+'" data-t="'+t+'"><div class="pbhd"><div class="r1"><span class="tt">'+hdr[0]+'</span><button type="button" class="pbreset" data-act="reset1" title="Put this package back to the recommendation">↺ Reset</button></div><div class="nm">'+hdr[1]+'</div><div class="r3"><label class="pbshow"><input type="checkbox" data-act="inc"'+(incT?' checked':'')+'> Show on quote</label></div></div>'
+    if(act) html+=pbActHead(); else html+='<div class="pbcol'+(S.recommended===t?' rec':'')+(incT?'':' excl')+(chosenTier()===t?' chosen':'')+'" data-t="'+t+'"><div class="pbhd"><div class="r1"><span class="tt">'+hdr[0]+'</span><button type="button" class="pbreset" data-act="reset1" title="Put this package back to the recommendation">↺ Reset</button></div><div class="nm">'+hdr[1]+'</div><div class="r3"><label class="pbshow"><input type="checkbox" data-act="inc"'+(incT?' checked':'')+'> Show on quote</label></div></div>'
       +((S.lineup==='custom')?'':'<!--')+'<div style="padding:0 12px 4px"><select data-act="base" aria-label="Base plan" style="width:100%;font:inherit;font-size:13px;padding:6px 8px;border:1px solid #d6cdb4;border-radius:7px">'+pbOpts([['afc','Base: Manhattan Affordable Choice'],['lifex','Base: LifeX'],['triad','Base: Cigna (Triad) PPO']],c.base||'afc')+'</select></div>'+((S.lineup==='custom')?'':'-->');
     var sum=0, addable=[], unavail=[];
     PB_SLOTS.forEach(function(sl){
@@ -6719,7 +6741,7 @@ function renderBuilder(){
       var isMH=!c.base||c.base==='afc';
       if(k==='base'&&isMH) return; if((k==='afc'||k==='sdr')&&!isMH) return;
       if(k==='base') sl={k:'base',name:c.base==='lifex'?'LifeX health plan':'Cigna (Triad) PPO'};
-      if(k==='dvh'){ if(dropped.indexOf('dvh')<0&&byK.dvh) sum+=+byK.dvh.monthly||0; return; }   // Dental: add-on bar below
+      if(k==='dvh'&&!act){ if(dropped.indexOf('dvh')<0&&byK.dvh) sum+=+byK.dvh.monthly||0; return; }   // Dental: add-on bar below
       var why=pbWhyNot(k,c,st,age); if(/not sold in|not available in [A-Z]{2}$/.test(why)){ if(k!=='base'&&k!=='lbs'&&k!=='lbp') unavail.push(sl.name); return; }   // never offer what the state doesn't sell - but say so
       if(!inCfg||dropped.indexOf(k)>=0){ addable.push(sl); return; }
       var live=byKpk[k]||byK[k], price=live?live.monthly:null;
@@ -6763,15 +6785,72 @@ function renderBuilder(){
       +'<option value="other">Other — type in a product that isn’t listed…</option>'
       +unavail.map(function(n){ return '<option disabled>'+n+' — not sold in '+st+'</option>'; }).join('')+'</select>'
       +(unavail.length?'<div class="pbna">Not sold in '+st+': '+unavail.join(', ')+'</div>':'')+'</div>';
-    totals[t]=sum;
     html+='<div class="pbtot"><b>Monthly</b><span>'+pbMoney(sum)+'</span></div>';
-    var tt=tierTrue(t), sv=anchorSavings(anc,pkgPremMo(t),sum+tt.extra), cpn=copayNote(anc,t);
+    if(!act) var tt=tierTrue(t), sv=anchorSavings(anc,pkgPremMo(t),sum+tt.extra), cpn=copayNote(anc,t);
     if(sv){ var line=function(lab,v){ return '<div class="sv"><span>'+lab+'</span><b class="'+(v>=0?'up':'dn')+'">'+(v>=0?'saves ':'costs ')+pbMoney(Math.abs(v))+(v>=0?'':' more')+'</b></div>'; };
       html+='<div class="pbsave">'+line('Premium vs premium',sv.actual)+(cpn?'<div class="sv" style="font-size:10.5px;color:var(--muted)">'+cpn+'</div>':'')+line('True cost',sv.tru)
         +'<div class="sv tf"><span>Room for a TFRA <i style="font-style:normal;color:var(--muted);font-size:10.5px">(premium saving)</i></span><b>'+(sv.tfra>0?pbMoney(sv.tfra)+'/mo':'—')+'</b></div>'+(tt.note?'<div class="sv" style="color:#8a6a1f;font-size:11px">'+tt.note+'</div>':'')+'</div>'; }
-    html+='<button type="button" class="pbchoose'+(chosenTier()===t?' on':'')+'" data-act="choose" title="The package the client is going with — it carries to Client View and Enroll">'+(chosenTier()===t?'✓ Client’s choice — this is their plan':'Choose this plan')+'</button>';
+    if(!act) html+='<button type="button" class="pbchoose'+(chosenTier()===t?' on':'')+'" data-act="choose" title="The package the client is going with — it carries to Client View and Enroll">'+(chosenTier()===t?'✓ Client’s choice — this is their plan':'Choose this plan')+'</button>';
     html+='</div>';
-  });
+  return {html:html,sum:sum}; }
+/* A column's controls; rr reprices + redraws, rd only redraws (the builder, or the Benefits Review copy). */
+function pbColBind(col,rr,rd){
+    var t=col.dataset.t;
+    col.querySelectorAll('[data-act="choose"]').forEach(function(b){ b.onclick=function(){ chooseTier(t); }; });
+    col.querySelectorAll('[data-act="inc"]').forEach(function(x){ x.onchange=function(){ S.include=S.include||{}; S.include[t]=x.checked; var cl=$('inc_'+t); if(cl) cl.checked=x.checked; compute(); autosave(); }; });
+    col.querySelectorAll('[data-act="tog"]').forEach(function(b){ b.onclick=function(){ var key=t+'|'+b.dataset.k; PB_OPEN[key]=!PB_OPEN[key]; rd(); }; });
+    col.querySelectorAll('[data-act="rm"]').forEach(function(b){ b.onclick=function(){ var pk=S.packages[t]; pk.dropped=pk.dropped||[]; if(pk.dropped.indexOf(b.dataset.k)<0) pk.dropped.push(b.dataset.k); rr(); }; });
+    col.querySelectorAll('[data-act="rmx"]').forEach(function(b){ b.onclick=function(){ S.packages[t].products.splice(+b.dataset.i,1); rr(); }; });
+    col.querySelectorAll('[data-act="oname"]').forEach(function(inp){ inp.onchange=function(){ var p=S.packages[t].products[+inp.dataset.i]; if(p){ p.name=inp.value.trim(); compute(); autosave(); } }; });
+    col.querySelectorAll('[data-act="oprice"]').forEach(function(inp){ inp.onchange=function(){ var p=S.packages[t].products[+inp.dataset.i]; if(p){ p.monthly=Math.round((parseFloat(String(inp.value).replace(/[^0-9.]/g,''))||0)*100)/100; rr(); } }; });
+    col.querySelectorAll('[data-act="add"]').forEach(function(sel){ sel.onchange=function(){ var k=sel.value; if(!k) return; var c=effCfg(t), pk=S.packages[t];
+      if(k==='other'){ pk.products=pk.products||[]; pk.products.push({name:'',monthly:0,other:true}); rr(); setTimeout(function(){ var el=document.querySelectorAll('[data-act="oname"]'); for(var q=el.length-1;q>=0;q--){ if(!el[q].value){ el[q].focus(); break; } } },60); return; }
+      pk.dropped=(pk.dropped||[]).filter(function(x){ return x!==k; });
+      if(k==='sdr'&&!c.sdr) c.sdr=cfgClone(PB_DEFAULT.sdr);
+      if(k==='lb*'||k==='lbp'||k==='lbs'){ c.lb=c.lb||{}; (k==='lb*'?lbPersons().map(function(pp){ return pp.k; }):[k.slice(2)]).forEach(function(w){ if(!(c.lb[w]&&c.lb[w].face)) c.lb[w]=cfgClone(PB_DEFAULT.lb); pk.dropped=pk.dropped.filter(function(x){ return x!=='lb'+w; }); PB_OPEN[t+'|lb'+w]=true; }); rr(); return; }
+      if(k==='hhc'&&!c.hhc) c.hhc=PB_DEFAULT.hhc; if(k==='chas'&&!(c.chas&&(c.chas.cancer||c.chas.hs))) c.chas=cfgClone(PB_DEFAULT.chas);
+      PB_OPEN[t+'|'+k]=true; rr(); }; });
+    col.querySelectorAll('input.pbprice').forEach(function(inp){ inp.onchange=function(){ var v=parseFloat(inp.value); var pk=S.packages[t]; var pr=(pk.products||[]).filter(function(x){ return x.k===inp.dataset.k; })[0]; if(!pr) return;
+      if(isNaN(v)||v<0){ delete pr.manual; } else { pr.monthly=Math.round(v*100)/100; pr.manual=true; } rr(); }; inp.onkeydown=function(e){ if(e.key==='Enter') inp.blur(); }; });
+    col.querySelectorAll('[data-act="unedit"]').forEach(function(a){ a.onclick=function(e){ e.preventDefault(); var pr=(S.packages[t].products||[]).filter(function(x){ return x.k===a.dataset.k; })[0]; if(pr) delete pr.manual; rr(); }; });
+    col.querySelectorAll('.pbbody select, .pbbody input[type="checkbox"], .pbbody input[data-f^="lb."]').forEach(function(el){ el.onchange=function(){ var c=effCfg(t);
+      var val=el.type==='checkbox'?(el.checked?1:0):el.value; if(/^lb\.[ps]\.(face|otherMonthly)$/.test(el.dataset.f)) val=String(val).replace(/[^\d.]/g,'');
+      if(/^lb\.[ps]\.carrier$/.test(el.dataset.f)&&val!=='other'){ var lc0=c.lb&&c.lb[el.dataset.f.split('.')[1]]; if(lc0&&['25000','50000','75000','100000','250000'].indexOf(String(lc0.face))<0) lc0.face='50000'; }   // back to a rate-table face
+      pbSet(c,el.dataset.f,val);
+      var kk=el.closest('.pbbody').dataset.k, pr=(S.packages[t].products||[]).filter(function(x){ return x.k===kk; })[0]; if(pr) delete pr.manual;   // new options → rate-table price again
+      if(el.dataset.f==='triadPlan'&&c.his){ c.his.ben=cignaHIS(c.triadPlan); }   // HI Select follows the Cigna deductible
+      if(el.dataset.f==='chas.cancer'||el.dataset.f==='chas.hs'){ if(!c.chas.cancer&&!c.chas.hs){ var pk=S.packages[t]; pk.dropped=pk.dropped||[]; pk.dropped.push('chas'); } }
+      /* redraw after the click lands, then put the cursor back where the agent went - otherwise finishing one box and
+         clicking the next loses the next one (Jesse, 2026-10-09: "Other" carrier boxes) */
+      setTimeout(function(){ var ae=document.activeElement, af=ae&&ae.dataset&&ae.dataset.f, ac=ae&&ae.closest&&ae.closest('.pbcol'), at=ac&&ac.dataset.t;
+        rr();
+        if(af&&at){ var nx=document.querySelector('.pbcol[data-t="'+at+'"] [data-f="'+af+'"]'); if(nx){ nx.focus(); if(nx.select&&nx.tagName==='INPUT') try{ nx.setSelectionRange(nx.value.length,nx.value.length); }catch(x){} } } },0); }; });
+}
+function renderBuilder(){
+  var host=$('sec_builder'); if(!host) return;
+  var st=(S.client.state||'').toUpperCase(), age=ratingAge();
+  if(!st||!age){ host.innerHTML='<div class="bh"><h3>Package builder</h3><small>Enter the client’s state and age on the Intake to build packages.</small></div>'; return; }
+  if(PR_STATE==='loading'){ host.innerHTML='<div class="bh"><h3>Package builder</h3><small>Loading the ManhattanLife rates… the packages appear in a moment.</small></div>'; return; }
+  // Version B structure (2026-09-29): saved quotes from before it carry old per-package settings (SDR in
+  // every tier, a flat $45 life line). Reset those once so every package starts from the core four.
+  if(S.cfgVersion!=='B-core4-v2'){ S.cfgVersion='B-core4-v2'; S.cfg={}; ['good','better','best'].forEach(function(t){ var pk=S.packages[t]; if(!pk) return; pk.lb=0; pk.lbCarrier=''; pk.lbCov=''; pk.dropped=(pk.dropped||[]).filter(function(k){ return k==='dvh'; }); }); setTimeout(pbReprice,0); }
+  // Jesse's standard: dental is an add-on, outside the package price. Applied once per quote.
+  if(!S.dvhChoice){ S.dvhChoice='addon'; ['good','better','best'].forEach(function(t){ var pk=S.packages[t]; pk.dropped=pk.dropped||[]; if(pk.dropped.indexOf('dvh')<0) pk.dropped.push('dvh'); }); setTimeout(pbReprice,0); }
+  var tiers=[['good','Good','Essential'],['better','Better','Complete'],['best','Best','Comprehensive']], totals={};
+  var anc=anchorBase(), ak=(S.intake&&S.intake.anchor)||'aca';
+  var anchorStrip='<div class="pbanchor">'+(anc?'Anchored against <b>'+anc.lab+'</b>: '+pbMoney(anc.prem)+'/mo premium'+(anc.copayMo>0?' + doctor copays':'')+' · '+pbMoney(anc.mo)+'/mo true cost'
+      :(ak==='cur'?'Anchor is the current plan, but there is no current premium — add it under Current Insurance.':(ak==='aca'?'Anchor is the ACA bronze, but it has no premium yet — add the state and ages on the Intake.':'No anchor — the packages are only compared with each other.')))
+    +' <a href="#" class="jump" data-jumpto="in_anchor">change</a></div>';
+  var LINEUPS=[['mh','Manhattan only'],['lx-mh-cg','LifeX · Manhattan · Cigna'],['custom','Custom — you choose each']];
+  var presentBtn='<button type="button" data-act="present" class="presentbtn" style="margin-left:auto">'+presentBtnLabel()+'</button>';
+  var pb2=$('presentBtn2'); if(pb2) pb2.innerHTML=presentBtnLabel();
+  var lineupBar='<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 12px"><span style="font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--muted);text-transform:uppercase">Lineup</span>'
+    +'<button type="button" data-act="reload" title="Put all three packages back to MyPopPro’s recommendation" style="font:inherit;font-size:13px;font-weight:700;border-radius:999px;padding:7px 14px;cursor:pointer;border:1.5px solid var(--gold);background:#fffdf7;color:#8a6a1f;margin-right:6px">↺ Reload our recommendation</button>'
+    +LINEUPS.map(function(L){ var on=(S.lineup||'mh')===L[0]; return '<button type="button" data-lineup="'+L[0]+'" style="font:inherit;font-size:13px;font-weight:600;border-radius:999px;padding:7px 14px;cursor:pointer;border:1px solid '+(on?'var(--navy)':'#d6cdb4')+';background:'+(on?'var(--navy)':'#fff')+';color:'+(on?'#fff':'var(--ink)')+'">'+L[1]+'</button>'; }).join('')+'</div>';
+  lineupBar=lineupBar.replace(/<\/div>$/,presentBtn+'</div>');
+  var html=(PR_STATE==='failed'?'<div class="hidein-client noprint" style="margin:0 0 10px;padding:10px 14px;border:1px solid #f1b4ad;background:#fdecea;color:#b42318;border-radius:10px;font-weight:700">The full ManhattanLife rate file didn’t load, so some products (Out-of-Pocket, dental, Cancer/Heart/Stroke) can’t be priced in many states. <a href="#" onclick="location.reload();return false" style="color:#b42318">Refresh the page</a> before you quote.</div>':'')
+    +lineupBar+anchorStrip+'<div class="bh" style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap"><h3>Package builder</h3><small>'+st+' · age '+age+' · '+({i:'Individual',s:'Individual + Spouse',c:'Individual + Children',f:'Family'}[householdKey()])+' · prices from the ManhattanLife rate tables</small><button type="button" class="picbtn hidein-client noprint" data-copypic="plans" style="margin-left:auto">📋 Copy plans</button></div><div class="pb3">';
+  tiers.forEach(function(T){ var r=pbColHTML(T,anc); html+=r.html; totals[T[0]]=r.sum; });
   html+='</div>';
   var ladder=!S.lineup||S.lineup==='mh';   // the step-up check only means something on a Good/Better/Best ladder
   var ok=!ladder||(totals.good<=totals.better&&totals.better<=totals.best);
@@ -6796,38 +6875,7 @@ function renderBuilder(){
   host.querySelectorAll('[data-jumpto]').forEach(function(a){ a.onclick=function(e){ e.preventDefault(); goStep('intake'); setTimeout(function(){ intakeJump(a.dataset.jumpto); },80); }; });
   host.querySelectorAll('.pbinfo').forEach(function(b){ b.onclick=function(e){ e.stopPropagation(); var col=b.closest('.pbcol'); benOpen(col?col.dataset.t:(b.dataset.bt||'best'),b.dataset.ben); }; });
   benRefresh();
-  host.querySelectorAll('.pbcol').forEach(function(col){
-    var t=col.dataset.t;
-    col.querySelectorAll('[data-act="choose"]').forEach(function(b){ b.onclick=function(){ chooseTier(t); }; });
-    col.querySelectorAll('[data-act="inc"]').forEach(function(x){ x.onchange=function(){ S.include=S.include||{}; S.include[t]=x.checked; var cl=$('inc_'+t); if(cl) cl.checked=x.checked; compute(); autosave(); }; });
-    col.querySelectorAll('[data-act="tog"]').forEach(function(b){ b.onclick=function(){ var key=t+'|'+b.dataset.k; PB_OPEN[key]=!PB_OPEN[key]; renderBuilder(); }; });
-    col.querySelectorAll('[data-act="rm"]').forEach(function(b){ b.onclick=function(){ var pk=S.packages[t]; pk.dropped=pk.dropped||[]; if(pk.dropped.indexOf(b.dataset.k)<0) pk.dropped.push(b.dataset.k); pbReprice(); }; });
-    col.querySelectorAll('[data-act="rmx"]').forEach(function(b){ b.onclick=function(){ S.packages[t].products.splice(+b.dataset.i,1); pbReprice(); }; });
-    col.querySelectorAll('[data-act="oname"]').forEach(function(inp){ inp.onchange=function(){ var p=S.packages[t].products[+inp.dataset.i]; if(p){ p.name=inp.value.trim(); compute(); autosave(); } }; });
-    col.querySelectorAll('[data-act="oprice"]').forEach(function(inp){ inp.onchange=function(){ var p=S.packages[t].products[+inp.dataset.i]; if(p){ p.monthly=Math.round((parseFloat(String(inp.value).replace(/[^0-9.]/g,''))||0)*100)/100; pbReprice(); } }; });
-    col.querySelectorAll('[data-act="add"]').forEach(function(sel){ sel.onchange=function(){ var k=sel.value; if(!k) return; var c=effCfg(t), pk=S.packages[t];
-      if(k==='other'){ pk.products=pk.products||[]; pk.products.push({name:'',monthly:0,other:true}); pbReprice(); setTimeout(function(){ var el=document.querySelectorAll('[data-act="oname"]'); for(var q=el.length-1;q>=0;q--){ if(!el[q].value){ el[q].focus(); break; } } },60); return; }
-      pk.dropped=(pk.dropped||[]).filter(function(x){ return x!==k; });
-      if(k==='sdr'&&!c.sdr) c.sdr=cfgClone(PB_DEFAULT.sdr);
-      if(k==='lb*'||k==='lbp'||k==='lbs'){ c.lb=c.lb||{}; (k==='lb*'?lbPersons().map(function(pp){ return pp.k; }):[k.slice(2)]).forEach(function(w){ if(!(c.lb[w]&&c.lb[w].face)) c.lb[w]=cfgClone(PB_DEFAULT.lb); pk.dropped=pk.dropped.filter(function(x){ return x!=='lb'+w; }); PB_OPEN[t+'|lb'+w]=true; }); pbReprice(); return; }
-      if(k==='hhc'&&!c.hhc) c.hhc=PB_DEFAULT.hhc; if(k==='chas'&&!(c.chas&&(c.chas.cancer||c.chas.hs))) c.chas=cfgClone(PB_DEFAULT.chas);
-      PB_OPEN[t+'|'+k]=true; pbReprice(); }; });
-    col.querySelectorAll('input.pbprice').forEach(function(inp){ inp.onchange=function(){ var v=parseFloat(inp.value); var pk=S.packages[t]; var pr=(pk.products||[]).filter(function(x){ return x.k===inp.dataset.k; })[0]; if(!pr) return;
-      if(isNaN(v)||v<0){ delete pr.manual; } else { pr.monthly=Math.round(v*100)/100; pr.manual=true; } pbReprice(); }; inp.onkeydown=function(e){ if(e.key==='Enter') inp.blur(); }; });
-    col.querySelectorAll('[data-act="unedit"]').forEach(function(a){ a.onclick=function(e){ e.preventDefault(); var pr=(S.packages[t].products||[]).filter(function(x){ return x.k===a.dataset.k; })[0]; if(pr) delete pr.manual; pbReprice(); }; });
-    col.querySelectorAll('.pbbody select, .pbbody input[type="checkbox"], .pbbody input[data-f^="lb."]').forEach(function(el){ el.onchange=function(){ var c=effCfg(t);
-      var val=el.type==='checkbox'?(el.checked?1:0):el.value; if(/^lb\.[ps]\.(face|otherMonthly)$/.test(el.dataset.f)) val=String(val).replace(/[^\d.]/g,'');
-      if(/^lb\.[ps]\.carrier$/.test(el.dataset.f)&&val!=='other'){ var lc0=c.lb&&c.lb[el.dataset.f.split('.')[1]]; if(lc0&&['25000','50000','75000','100000','250000'].indexOf(String(lc0.face))<0) lc0.face='50000'; }   // back to a rate-table face
-      pbSet(c,el.dataset.f,val);
-      var kk=el.closest('.pbbody').dataset.k, pr=(S.packages[t].products||[]).filter(function(x){ return x.k===kk; })[0]; if(pr) delete pr.manual;   // new options → rate-table price again
-      if(el.dataset.f==='triadPlan'&&c.his){ c.his.ben=cignaHIS(c.triadPlan); }   // HI Select follows the Cigna deductible
-      if(el.dataset.f==='chas.cancer'||el.dataset.f==='chas.hs'){ if(!c.chas.cancer&&!c.chas.hs){ var pk=S.packages[t]; pk.dropped=pk.dropped||[]; pk.dropped.push('chas'); } }
-      /* redraw after the click lands, then put the cursor back where the agent went - otherwise finishing one box and
-         clicking the next loses the next one (Jesse, 2026-10-09: "Other" carrier boxes) */
-      setTimeout(function(){ var ae=document.activeElement, af=ae&&ae.dataset&&ae.dataset.f, ac=ae&&ae.closest&&ae.closest('.pbcol'), at=ac&&ac.dataset.t;
-        pbReprice();
-        if(af&&at){ var nx=document.querySelector('.pbcol[data-t="'+at+'"] [data-f="'+af+'"]'); if(nx){ nx.focus(); if(nx.select&&nx.tagName==='INPUT') try{ nx.setSelectionRange(nx.value.length,nx.value.length); }catch(x){} } } },0); }; });
-  });
+  host.querySelectorAll('.pbcol').forEach(function(col){ pbColBind(col,pbReprice,renderBuilder); });
   host.querySelectorAll('[data-act="base"]').forEach(function(sel){ sel.onchange=function(){ var t=sel.closest('.pbcol').dataset.t; var c=effCfg(t); c.base=sel.value;
       if(sel.value==='lifex') c.lifexPlan='$500 PPO'; if(sel.value==='triad'){ c.triadPlan=c.triadPlan||'3500'; c.his=c.his||{amb:1,outp:0}; c.his.ben=cignaHIS(c.triadPlan); }
       PB_OPEN[t+'|base']=sel.value!=='afc'; pbReprice(); }; });
