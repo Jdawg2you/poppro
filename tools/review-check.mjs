@@ -167,7 +167,11 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  var sel=document.querySelector('#prEditBody [data-act="actname"]'); sel.value='good'; sel.dispatchEvent(new Event('change')); await w(300);
  ok(S.actual.from==='good'&&Math.abs(tierTotals('actual').mo-tierTotals('good').mo)<0.01&&/Essential/.test(document.querySelector('#prEditBody .pbcol.actual').textContent),'picking Essential loads the Essential package from the Quote');
  document.querySelector('[data-pe="go"]').click(); await w(500); ok(S.step==='enroll'&&chosenTier()==='good'&&enrolledTier()==='actual','enrolling from it makes Essential their plan');
- return {n:98, fails:fails}; })()`;
+  /* Close: re-send the digital business card (Jesse, 17 Oct) */
+ var rvd=document.getElementById('rvFrame').contentDocument; S.agentCard='mycard.example/jesse'; reviewWire(rvd,'better');
+ var cbx=rvd.querySelector('.pp-cardbox'); ok(!!rvd.querySelector('.pp-cardsay')&&cbx&&cbx.textContent.indexOf('https:'+'//mycard.example/jesse')>=0&&!!cbx.querySelector('.pp-copy')&&!!cbx.querySelector('.pp-sms'),'the Close re-sends the business card: line, link, Copy and Text them');
+ S.agentCard=''; reviewWire(rvd,'better'); ok(!!rvd.querySelector('.pp-cardbox .pp-setup')&&rvd.querySelectorAll('.pp-cardbox').length===1,'no card in Setup: a (set up) link instead, and the box is not duplicated');
+ return {n:100, fails:fails}; })()`;
 try {
   let l; for (let i = 0; i < 60 && !l; i++) { await sleep(150); l = await fetch(`http://127.0.0.1:${DBG}/json/list`).then(r => r.json()).catch(() => null); }
   ws = new WebSocket(l.find(t => t.type === 'page').webSocketDebuggerUrl);

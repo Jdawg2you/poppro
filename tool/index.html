@@ -4864,6 +4864,19 @@ function reviewPendingEdits(doc){ var h=doc.querySelector('[data-screen="tierdow
   if(say.dataset.rv!=null){ [a,b,c].forEach(function(x){ x.dataset.rv=say.dataset.rv; x.style.display=say.style.display; }); }   /* keep them on the page they replace */
   say.parentNode.insertBefore(a,say); say.parentNode.insertBefore(b,say); say.parentNode.insertBefore(c,say); say.remove();
   var as=c.nextElementSibling; if(as&&as.classList.contains('aside')) as.textContent='No pressure, and it is on the record. Say what they did, acknowledge it, be honest that less coverage means smaller benefits, and leave the door open. It is also where next year’s policy review starts.'; }
+/* Close (Jesse, 17 Oct): re-send the digital business card on the call - a spoken line, then the text to paste with a
+   Copy button (and Text them); no card in Setup yet -> a (set up) link instead. Inserted after "Save my number under". */
+function reviewCardText(){ var u=reviewUrl(S.agentCard); return u?'Here’s my digital business card — tap the link to save my contact info: '+u:''; }
+function reviewCardBox(doc){ var say=Array.prototype.filter.call(doc.querySelectorAll('.say'),function(x){ return /Save my number under/.test(x.textContent); })[0]; if(!say) return;
+  var sp=doc.querySelector('.pp-cardsay'), box=doc.querySelector('.pp-cardbox');
+  if(!sp){ sp=doc.createElement('div'); sp.className='say pp-cardsay'; sp.innerHTML='I sent you my digital business card earlier &mdash; I&rsquo;m going to send it again right now so you&rsquo;ve definitely got it. When it comes through, just tap the link and save my contact information.';
+    box=doc.createElement('div'); box.className='pp-cardbox'; say.parentNode.insertBefore(sp,say.nextSibling); sp.parentNode.insertBefore(box,sp.nextSibling);
+    if(say.dataset.rv!=null){ sp.dataset.rv=box.dataset.rv=say.dataset.rv; sp.style.display=box.style.display=say.style.display; } }
+  var txt=reviewCardText(), ph=String((S.intake||{}).phone||'').replace(/[^\d+]/g,''); if(/^\d{10}$/.test(ph)) ph='+1'+ph; else if(/^1\d{10}$/.test(ph)) ph='+'+ph;
+  box.innerHTML=txt?'<b>Send your card</b><div class="pp-cardtxt">'+esc(txt)+'</div><button type="button" class="pp-copy">Copy</button> <a class="pp-sms" href="sms:'+esc(ph)+'?&body='+encodeURIComponent(txt)+'">Text them</a>'
+    :'<b>Send your card</b> No digital business card in Setup yet. <a href="#" class="pp-setup">(set up)</a>';
+  var cb=box.querySelector('.pp-copy'); if(cb) cb.onclick=function(){ try{ navigator.clipboard.writeText(txt); cb.textContent='Copied ✓'; setTimeout(function(){ cb.textContent='Copy'; },1600); }catch(e){} };
+  var su=box.querySelector('.pp-setup'); if(su) su.onclick=function(e){ e.preventDefault(); openSetup(); }; }
 function reviewDental(t){ t=reviewT()||t; return ((S.packages[t]||{}).products||[]).some(function(p){ return p.k==='dvh'&&(+p.monthly||0)>0; }); }
 function reviewBelow(t){ if(actualOn()&&S.rec) return gapOf(S.rec,actualSnap()).length>0; var r=(S.rec&&S.rec.tier)||S.recommended; return !!(t&&r&&TIER_ORDER[t]!=null&&TIER_ORDER[r]!=null&&TIER_ORDER[t]<TIER_ORDER[r]); }
 function reviewPages(t){ return REVIEW_PAGES.filter(function(p){ return !p.when||(p.when==='dental'?reviewDental(t):reviewBelow(t)); }); }
@@ -4896,7 +4909,9 @@ function reviewTokens(t){ t=reviewT()||t; var C=S.client||{}, R=reviewState(), T
   var DQ=drxParts(); T['drx.drug']=drxWho().length?DQ.drug||drxWho()[0].drug:''; T['drx.pct']=DRX_PCT; T['drx.link']=drxLink(); T['drx.code']=String(S.agentDrxCode||'').trim(); T['drx.howto']=drxWho().length?'1':'';   /* the block's switch; its words are Health ZONE's */
   T['review.month']=R.month||(R.eff?MONTHS[+String(R.eff).slice(5,7)-1]:'');
   return T; }
-var REVIEW_CSS='.rv-tick{margin:10px 0 4px;padding:10px 14px;border:2px dashed #2f7d4a;border-radius:10px;background:#f2fbf5;font:inherit;font-size:14px;display:flex;align-items:center;gap:10px;cursor:pointer}'
+var REVIEW_CSS='.pp-cardbox{margin:8px 0 14px;padding:10px 14px;border:2px dashed #2f7d4a;border-radius:10px;background:#f2fbf5;font-size:14px}.pp-cardbox b{display:block;color:#17824a;margin-bottom:4px}'
+ +'.pp-cardtxt{background:#fff;border:1px solid #cfe7d8;border-radius:8px;padding:7px 10px;margin:0 0 8px;font-size:13.5px}.pp-copy,.pp-sms{font:inherit;font-size:13px;font-weight:700;border:1px solid #2f7d4a;color:#17824a;background:#fff;border-radius:7px;padding:5px 12px;cursor:pointer;text-decoration:none}'
+ +'.rv-tick{margin:10px 0 4px;padding:10px 14px;border:2px dashed #2f7d4a;border-radius:10px;background:#f2fbf5;font:inherit;font-size:14px;display:flex;align-items:center;gap:10px;cursor:pointer}'
  +'.rv-tick input{width:20px;height:20px}.rv-tick.on{border-style:solid;background:#e3f4e8}.rv-tick b{color:#17824a}'
  +'.btnrow a[data-rv-off]{opacity:.45;pointer-events:none}';
 function reviewPaginate(doc,t){ if(!doc||!doc.body) return; var pages=REVIEW_PAGES, cur=0;
@@ -4910,7 +4925,7 @@ function reviewPaginate(doc,t){ if(!doc||!doc.body) return; var pages=REVIEW_PAG
     if(before) doc.body.insertBefore(d,before); else doc.body.appendChild(d);
     d.querySelector('input').onchange=function(){ reviewTick(p.tick,this.checked); }; });
   doc.body.dataset.rvp='1'; }
-function reviewWire(doc,t){ if(!doc||!doc.body) return; reviewPendingEdits(doc); var T=reviewTokens(t), X=reviewRx(t), I=S.intake||{};
+function reviewWire(doc,t){ if(!doc||!doc.body) return; reviewPendingEdits(doc); reviewCardBox(doc); var T=reviewTokens(t), X=reviewRx(t), I=S.intake||{};
   if(!doc.getElementById('ppcss')){ var st=doc.createElement('style'); st.id='ppcss'; st.textContent=PRESENT_CSS+REVIEW_CSS; doc.head.appendChild(st); }
   Array.prototype.forEach.call(doc.querySelectorAll('var[data-k]'),function(v){ var k=v.getAttribute('data-k');
     if(v.dataset.ex==null) v.dataset.ex=v.textContent; var val=T[k]; v.classList.remove('pp-ok','pp-miss');
