@@ -153,7 +153,7 @@
   .libhead{display:flex;gap:8px;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:0 4px 4px}
   .libhead .a{flex:1}.libhead .b{width:118px;text-align:right}.libhead .c{width:22px}
   body.client .hidein-client{display:none!important}
-  .introbar{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0 4px}
+  .backcall{font-size:12.5px;font-weight:700;color:#2c4a7c;margin-left:8px;white-space:nowrap}
   .topbtn{display:inline-flex;flex-direction:column;align-items:flex-start;gap:1px;padding:8px 14px;border-radius:10px;font:700 13px -apple-system,sans-serif;cursor:pointer;text-decoration:none;border:1px solid}
   .topbtn small{font-weight:400;font-size:11px;opacity:.85}
   .topbtn.nav{background:var(--navy);color:#fff;border-color:var(--navy)}
@@ -1073,12 +1073,8 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
   <div id="step-intake" class="step">
    <div class="card pad">
     <div class="sectitle"><span class="dot">●</span> Client Intake</div>
-    <div class="note" style="padding-top:2px">Fill what the client gives you, then hit Build Quote. It pre-fills the comparison and recommends Good / Better / Best from your answers.</div>
-    <div class="note" style="padding-top:4px">💾 Your browser keeps everything as you work — unless you’re in a private / incognito window or clear your browsing data. To keep a permanent copy on your computer, click <b>Save</b> (top of the page, or the 💾 tab on the right).</div>
-    <div class="introbar">
-      <button type="button" class="topbtn how" id="howBtn">How to use this tool<small>the flow, start to finish</small></button>
-      <a class="topbtn nav" href="https://script.ffloptimum.com/" target="_blank" rel="noopener">Open the Script Navigator ↗<small>choose Health Discovery, then push the client here</small></a>
-    </div>
+    <!-- the call fills this (step 1); the walk-through in ⚙ Setup explains the flow - no How-to or outside-navigator buttons (Jesse, 17 Oct) -->
+    <div class="note intro1" style="padding-top:2px">Check what the call filled in, add anything missing, then hit <b>Build Quote</b> — it recommends Good / Better / Best from these answers. <a href="#" class="backcall" onclick="goStep('call');return false;">← Back to the call</a></div>
 
     <div class="intake-sec" id="sec_who">Who needs coverage</div>
     <div class="chips">
@@ -1603,61 +1599,7 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
   </div>
   <div class="wl-foot"><button type="button" class="btn-ghost wl-back" id="wlBack">← Back</button><button type="button" class="btn-gold" id="wlGo">Save →</button><button type="button" class="wl-skip" id="wlSkip">Skip the walk-through</button><span class="wl-hint" id="wlHint">Come back any time with <b>⚙ Setup</b> at the top.</span></div>
 </div></div>
-<div class="modal-backdrop" id="howModal">
-  <div class="modal">
-    <div class="modal-head"><b>How to use MyPopPro</b><span>Intake → Quote → Present → Enroll</span><button class="btn-ghost" id="closeHow">Done</button></div>
-    <div class="modal-body howbody">
-      <h4>Once · Your agent information</h4>
-      <ul>
-        <li>Click <b>⚙ Setup</b> at the top and fill in your <b>agency, name, phone, email, NPN and links</b>. Set it once; the button glows green and counts anything still missing.</li>
-        <li><b>Website</b> and <b>booking link</b> are optional but worth it: they go into the client emails and the text. Your <b>NPN</b> is kept for you only and never goes into notes.</li>
-      </ul>
-      <h4>1 · Intake: two ways to fill it in</h4>
-      <ul>
-        <li><b>Run the call in the Script Navigator.</b> Click <b>Open the Script Navigator</b>, choose <b>Health Discovery</b>, follow it card by card, then <b>Push client to MyPopPro</b>. Who's covered, medications, conditions, doctors, current plan, income, budget and call notes all land here. A saved Navigator profile file loads the same way.</li>
-        <li><b>Or use this tool on its own</b>: work down the sections from top to bottom.</li>
-        <li><b>Shortcuts as you type:</b> date of birth <i>63078</i> becomes 06/30/1978 and works out the age, height <i>52</i> becomes 5′2″, and money tidies to $1,234.00.</li>
-        <li><b>Medications:</b> type any name, brand or generic. Both names show, and each one suggests a condition for you to confirm.</li>
-        <li><b>Current insurance:</b> tick <b>They're paying for this plan right now</b> when it's real. That decides whether the presentation compares against <i>what they pay today</i> or against <i>the marketplace</i>. The ACA section estimates the marketplace plan; type the real HealthSherpa numbers over the estimates.</li>
-      </ul>
-      <h4>2 · Quote</h4>
-      <ul>
-        <li>Click <b>Build Quote</b>. MyPopPro builds three packages. You see them as <b>Good / Better / Best</b>; the client sees <b>Essential / Complete / Comprehensive</b>.</li>
-        <li><b>Package builder:</b> open a row to change its options, add or remove products, or type over a price. <b>ⓘ</b> slides out that product's benefits for their state, with a link to the full brochure. ↺ <b>Reload our recommendation</b> starts over. If a row can't be priced, it tells you which option to change.</li>
-        <li><b>Living benefits:</b> Mutual of Omaha (ages 18–60) or Americo (20–65), from $25K to $250K over 20 years. Above 60 it switches to Americo for you. For any other carrier, choose <b>Other</b> and type the carrier, amount and monthly price.</li>
-        <li><b>Mark their plan:</b> click <b>Choose this plan</b> on the package they're leaning toward. It carries into Present, Enroll, the brochures and the emails.</li>
-        <li><b>Examples:</b> pick a real event (appendicitis, a hospital stay, a broken arm and more) to show what each plan pays and what they <b>NET</b>. Medical Bill Saver is on by default.</li>
-        <li><b>Copy as a picture</b> to paste straight into a text: <b>📋 Copy plans</b> (the three packages), <b>📋 Copy example</b> (on each example) and <b>📋 Copy partner benefits</b>.</li>
-        <li><b>Brochures for this plan</b> at the bottom lists each product's brochure for their state. Open one, copy one link, or copy them all.</li>
-        <li><b>Client View</b> hides everything meant only for you. None of the copy buttons show there, on the printout or in an email.</li>
-      </ul>
-      <h4>3 · Present</h4>
-      <ul>
-        <li>Click <b>▶ Present <i>Comprehensive</i> Plan</b> (it names whichever plan you marked), at the top of the builder or under Send the quote.</li>
-        <li>The script plays <b>screen by screen</b> with their name, numbers, doctors and medications filled in. <b>Back / Next</b> move through it; objections and stories sit at the side.</li>
-        <li><b>LifeX or Cigna plan?</b> Present is the ManhattanLife script, so choosing one of those shows a note instead: send the quote, use Enroll to collect their details, and enroll them through the carrier's link.</li>
-        <li>It ends at <b>Pick your close</b>: Assumptive or Bold Step. Then either <b>they're enrolling → Enroll</b>, or <b>not today → Send the quote</b>, with the "talk it over with your spouse" line ready.</li>
-      </ul>
-      <h4>Not today · Send the quote</h4>
-      <ul>
-        <li>At the bottom of Quote, three steps. <b>1</b> Pick the follow-up date and time in <b>your own</b> time zone; it converts to the client's from their state and ZIP (you can set their zone by hand), and the email gives them their own time ("tomorrow, Thursday, at 5:00 pm your time"), and if it's blank the email says you'll follow up in the next day or two. <b>2</b> <b>Print / Save PDF Quote</b>, save it, and tick <b>PDF saved</b> so the email says "attached". <b>3</b> <b>Gmail</b>, <b>Outlook</b> or <b>Email to client</b> writes the email: the plan you landed on, what it saves on premiums plus the deductible they'd avoid, their brochure links, your booking link and your signature with your National Producer Number.</li>
-      </ul>
-      <h4>4 · Enroll, in call order</h4>
-      <ul>
-        <li><b>1–2 Life application first:</b> the carrier links, then one box per person (first/last name, beneficiaries with name, %, phone and date of birth, and their own notes) to copy into the application.</li>
-        <li><b>3 Wrapping things up:</b> the security code word for the health application (their mother’s maiden name or any word they’ll remember). It saves with the quote.</li>
-        <li><b>4 Health carriers:</b> ManhattanLife, Cigna and LifeX links.</li>
-        <li><b>5 Follow-ups:</b> what to do next (TFRA, their employer, referrals, living benefits if they skipped it), the <b>enrollment email</b> with their brochures (copy it, or open it in Gmail or Outlook), and <b>Copy all links</b>. The <b>text to send</b> is in the wrap-up: copy it the moment you hang up.</li>
-        <li><b>Notes:</b> there is one Notes box, the same one as on the Intake. Per-person notes add to it.</li>
-      </ul>
-      <h4>Never in the tool</h4>
-      <ul>
-        <li>No <b>Social Security number</b>, <b>bank routing or account number</b>, or draft date. Those go straight into the carrier's application. A driver's licence number is fine.</li>
-      </ul>
-      <p style="color:var(--muted);font-size:12px;margin-top:10px">Your browser keeps everything as you work, unless you're in a private / incognito window or clear your browsing data. <b>Save Quote</b> (or the 💾 tab on the right) downloads a permanent copy — each save is a new file named with the date and time, so load the newest one. <b>Load Quote</b> opens it again later. The printable client profile lives in the Script Navigator: print it from there.</p>
-    </div>
-  </div>
-</div>
+
 
 <script>
 "use strict";
@@ -6346,11 +6288,8 @@ function bindInputs(){
   $('newBtn').onclick=function(){ if(confirm('Start a new blank quote? Unsaved changes will be lost.')){ var ag=agentOf(S); S=blankState(); keepAgent(ag); var cf=$('callFrame'); if(cf) cf.removeAttribute('src'); fill(); compute(); goStep('call'); } };
   $('reloadBase').onclick=function(){ read(); reloadBaseTier(S.activeTab); renderProducts(); compute(); };
   $('resetTab').onclick=function(){ read(); pbResetTier(S.activeTab); autoPriceTiers(); renderProducts(); compute(); if(typeof renderBuilder==='function') renderBuilder(); autosave(); };   // same as the builder's ↺ Reset
-  $('howBtn').onclick=function(){ $('howModal').classList.add('open'); };
-  $('closeHow').onclick=function(){ $('howModal').classList.remove('open'); };
   $('nmhClose').onclick=function(){ $('nmhModal').classList.remove('open'); };
   $('nmhModal').onclick=function(e){ if(e.target===$('nmhModal')) $('nmhModal').classList.remove('open'); };
-  $('howModal').addEventListener('click',function(e){ if(e.target===$('howModal')) $('howModal').classList.remove('open'); });
 }
 
 /* ===== PACKAGE BUILDER — one row per product, options inline, ✕ to remove, ＋ to add =====

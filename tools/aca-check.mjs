@@ -126,9 +126,9 @@ if (mode === 'engine') {
   ok(/id="medTotalCur"/.test(html), 'current copay total shown');
   for (const gone of ['sayico', 'openScript', 'SCRIPT_BEATS', 'managePlansBtn', 'planModal', 'MASTER_SHEET_CSV_URL', 'defLibrary', 'S.defaults'])
     ok(!html.includes(gone), 'removed: ' + gone);
-  const intro = html.slice(html.indexOf('class="introbar"'), html.indexOf('id="sec_who"'));
-  ok(intro.includes('href="https://script.ffloptimum.com/"') && intro.includes('Health Discovery'), 'intake top: Script Navigator button naming Health Discovery');
-  ok(intro.includes('id="howBtn"') && html.includes('id="howModal"'), 'intake top: How to use this tool');
+  const intro = html.slice(html.indexOf('id="step-intake"'), html.indexOf('id="sec_who"'));
+  ok(!intro.includes('script.ffloptimum.com') && !html.includes('id="howBtn"') && !html.includes('id="howModal"'), 'intake top: no outside-navigator button and no old How-to (the call is step 1; the walk-through is in Setup)');
+  ok(intro.includes('Build Quote') && intro.includes("goStep('call')"), 'intake top: one line on what this step is for, and a way back to the call');
   const bud2 = html.slice(html.indexOf('id="sec_budget"'), html.indexOf('id="sec_budget"') + 2500);
   const an = bud2.slice(bud2.indexOf('id="in_anchor"'), bud2.indexOf('</select>', bud2.indexOf('id="in_anchor"')));
   const ov = [...an.matchAll(/<option value="([a-z]+)"( selected)?>([^<]+)</g)].map(m => m[1] + ':' + m[3]);
