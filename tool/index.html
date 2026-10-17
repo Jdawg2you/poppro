@@ -790,7 +790,7 @@
   @keyframes celebanner{0%{opacity:0;transform:translate(-50%,-50%) scale(.6)}8%{opacity:1;transform:translate(-50%,-50%) scale(1.06)}14%{transform:translate(-50%,-50%) scale(1)}85%{opacity:1}100%{opacity:0;transform:translate(-50%,-60%) scale(.98)}}
   @media print{.cele-canvas,.cele-float,.cele-banner,.cele-shield,.cele-go{display:none!important}}
   .sml{display:none}@media (max-width:560px){.stepper .lgl{display:none}.stepper .sml{display:inline}}
-  .callwrap{padding:14px}.callhead{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:0 0 10px}
+  .callwrap{padding:10px}.callhead{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:0 0 10px}
   .picbar{display:flex;justify-content:flex-end;margin:10px 0 -4px}.picbtn{font:inherit;font-size:12.5px;font-weight:700;border:1px solid #c69a3c;background:#12213b;color:#fff;border-radius:999px;padding:6px 13px;cursor:pointer;box-shadow:0 1px 3px rgba(18,33,59,.25);white-space:nowrap;transition:background .15s}.picbtn:hover{background:#1c3a63}
   .en-hint{font-family:-apple-system,sans-serif;font-weight:400;font-size:12.5px;color:var(--muted)}
   .en-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px}
@@ -1066,10 +1066,8 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
 
   <div id="step-call" class="step">
     <div class="card pad callwrap">
-      <div class="callhead"><div><div class="sectitle" style="margin:0"><span class="dot">●</span> Discovery call</div>
-        <div class="note" style="padding:2px 0 0">The Script Navigator’s Health Discovery, right here. Every answer fills the Intake as you go and saves with this client.</div></div>
-        <button type="button" class="btn-gold" id="callDone">Review the Intake →</button></div>
-      <iframe id="callFrame" title="Health Discovery call" style="width:100%;height:calc(100vh - 200px);min-height:620px;border:1px solid var(--line);border-radius:12px;background:#fff;display:block"></iframe>
+      <!-- no header here: the call card says what it is, and "Review the Intake" sits beside its timer (Jesse, 17 Oct) -->
+      <iframe id="callFrame" title="Health Discovery call" style="width:100%;height:calc(100vh - 150px);min-height:620px;border:1px solid var(--line);border-radius:12px;background:#fff;display:block"></iframe>
     </div>
   </div>
   <div id="step-intake" class="step">
@@ -6102,6 +6100,7 @@ function callInit(){ var f=$('callFrame'); if(!f||!f.contentWindow) return; try{
 function callOpen(){ var f=$('callFrame'); if(!f) return; if(!f.getAttribute('src')) f.src=NAV_BASE+'?embed=1&script=health&host=poppro'+(location.port==='8767'?'&v='+Date.now():''); else callInit(); }   /* the sandbox's navigator server caches; always fetch the newest there */
 window.addEventListener('message',function(e){ var f=$('callFrame'); if(!f||e.source!==f.contentWindow) return; var d=e.data||{};
   if(d.source==='insurance-script-navigator'&&d.type==='call-ready') callInit();
+  if(d.source==='insurance-script-navigator'&&d.type==='go-intake') goStep('intake');
 });
 function goStep(s){
   S.step=s;
@@ -6338,7 +6337,7 @@ function bindInputs(){
   };
   $('loadBtn').onclick=function(){ $('fileInput').click(); };
   $('fileInput').onchange=function(e){ if(e.target.files[0]) loadFile(e.target.files[0]); e.target.value=''; };
-  $('callDone').onclick=function(){ goStep('intake'); };
+  if($('callDone')) $('callDone').onclick=function(){ goStep('intake'); };
   $('newBtn').onclick=function(){ if(confirm('Start a new blank quote? Unsaved changes will be lost.')){ var ag=agentOf(S); S=blankState(); keepAgent(ag); var cf=$('callFrame'); if(cf) cf.removeAttribute('src'); fill(); compute(); goStep('call'); } };
   $('reloadBase').onclick=function(){ read(); reloadBaseTier(S.activeTab); renderProducts(); compute(); };
   $('resetTab').onclick=function(){ read(); pbResetTier(S.activeTab); autoPriceTiers(); renderProducts(); compute(); if(typeof renderBuilder==='function') renderBuilder(); autosave(); };   // same as the builder's ↺ Reset

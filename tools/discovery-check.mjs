@@ -86,6 +86,13 @@ try {
       ok(await pop.run(`S.sendq.time`) === '19:30', 'an edit on the Quote page stands while the booking is unchanged');
       await inFrame(`(function(){ P.appt_time='17:00'; pStore(); return 1; })()`); await sleep(800);
       ok(await pop.run(`S.sendq.time`) === '17:00', 'a new booking in the call moves it again');
+      /* "Review the Intake" lives beside the call's timer now (Jesse, 17 Oct): MyPopPro has no header of its own */
+      ok(await pop.run(`!document.querySelector('#step-call .callhead')&&!document.getElementById('callDone')`), 'MyPopPro\u2019s own call header is gone');
+      const hv = await inFrame(`(function(){ var b=document.getElementById('hostIntake'); return b?getComputedStyle(b).display:'none'; })()`);
+      ok(hv !== 'none', 'Review the Intake shows in the call header (' + hv + ')');
+      await inFrame(`document.getElementById('hostIntake').click()`); await sleep(600);
+      ok(await pop.run(`S.step`) === 'intake', 'clicking it opens the Intake');
+      await pop.run(`goStep('call')`); await sleep(400);
       if (MODE === 'save') {
         const file = await pop.run(`(function(){ var d=currentQuote(); d.format='optimum-client'; d.formatV=1; return d; })()`);
         ok(file.format === 'optimum-client' && file.nav && file.nav.keep_docs === 'Yes', 'POP Pro’s save carries the call');
