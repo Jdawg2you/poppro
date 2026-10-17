@@ -627,6 +627,7 @@
   .wl-you{margin:18px 20px 0;padding-top:14px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}.wl-you b{font-family:var(--serif);color:var(--navy);font-size:17px;margin-right:6px}.wl-you i{font-style:normal}.wl-you i.needfill-sum{color:#17824a;font-weight:700}
   #agentSetup{padding:8px 20px 4px}
   #setupModal{z-index:2000}
+  .wl-flowbox>summary{cursor:pointer;margin:14px 20px 0;font-family:var(--serif);font-weight:700;color:var(--navy);font-size:15px}.wl-flowbox>summary small{font-family:inherit;font-weight:500;font-size:12.5px;color:var(--muted);margin-left:6px}
   .fld.agbio{grid-column:1/-1}.fld.agbio textarea{width:100%;box-sizing:border-box;font:inherit;font-size:14px;line-height:1.5;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:#fbfaf6;resize:vertical}.fld.agbio .picbtn{margin-top:6px}
   /* The Why */
   .whyblock{border:1.5px solid #e6d3a3;background:#fffaf0;border-radius:12px;padding:10px 12px;margin-bottom:10px}
@@ -1550,6 +1551,7 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
   <div class="wl-head"><button class="btn-ghost" id="closeSetup" style="float:right">Close</button><h2 id="wlTitle">Welcome to MyPopPro</h2>
     <p>Everything for a health client in one place: the call, the quote, the presentation and the application. Work left to right.</p></div>
   <div class="wl-body">
+  <details class="wl-flowbox" id="wlFlowBox" open><summary>How MyPopPro works <small>the six steps, start to finish</small></summary>
   <div class="wl-flow">
     <div class="wl-step once" data-tour="0"><span class="wl-n">⚙</span><b>Setup</b><span>Once, right below. Your name, phone, email, NPN and links go on every page, email and text.</span><em id="wlSetupState"></em></div>
     <div class="wl-arrow">→</div>
@@ -1565,6 +1567,7 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
     <div class="wl-arrow">→</div>
     <div class="wl-step" data-tour="6"><span class="wl-n">6</span><b>Benefits Review</b><span>After approval: the premium and draft date, then their registrations, on the call.</span></div>
   </div>
+  </details>
   <div class="wl-tip" id="wlTip"></div>
   <div id="wlDetails">
   <div class="wl-you"><b>Your details</b> <span>set once &middot; on every page, email and text</span> <i id="agentSetupState"></i></div>
@@ -4936,7 +4939,7 @@ var TOUR=[null,
    'Walk the script: the money line, their resource page, then portal, telehealth, the Easy Upload app and CareGuide, each registered <b>while you&rsquo;re on the phone</b>. Tick each one as it&rsquo;s done.',
    'Their prescriptions are priced against the daily benefit for you, and the call ends with the referral ask and their annual review month. Your benefits page link lives in <b>⚙ Setup</b>.']}];
 var tourAt=0;
-function showTour(i){ tourAt=i; var card=document.querySelector('#setupModal .wl-card'); card.classList.toggle('touring',i>0);
+function showTour(i){ tourAt=i; var fb=$('wlFlowBox'); if(fb&&i>0) fb.open=true; var card=document.querySelector('#setupModal .wl-card'); card.classList.toggle('touring',i>0);
   document.querySelectorAll('#setupModal .wl-step').forEach(function(el){ el.classList.toggle('cur',+el.dataset.tour===i); });
   if(i>0){ var T=TOUR[i]; $('wlTip').innerHTML='<h3>'+i+' · '+T.t+'<small>STEP '+i+' OF 6</small></h3><ol>'+T.d.map(function(x){return '<li>'+x+'</li>';}).join('')+'</ol>';
     $('wlGo').textContent=i<6?'Next: '+TOUR[i+1].t+' →':'Let’s go! →'; }
@@ -4952,7 +4955,7 @@ function letsGo(){
   document.body.appendChild(w); document.body.appendChild(m);
   setTimeout(function(){ w.remove(); m.remove(); },4200); }
 function finishSetup(){ var keep=inProgress(); closeSetup(); if(!keep) goStep('call'); }
-function openSetup(){ fillAgent(); $('setupModal').classList.add('open'); showTour(0); var b=document.querySelector('#setupModal .wl-body'); if(b) b.scrollTop=0; }
+function openSetup(){ fillAgent(); var fb=$('wlFlowBox'); if(fb) fb.open=!welcomeSeen(); $('setupModal').classList.add('open'); showTour(0); var b=document.querySelector('#setupModal .wl-body'); if(b) b.scrollTop=0; }
 function closeSetup(){ readAgent(); try{ localStorage.setItem('pp_welcome_v',WELCOME_V); }catch(e){} $('setupModal').classList.remove('open'); if(typeof goStep==='function') goStep(S.step||'call'); }
 document.addEventListener('input',function(e){ if(e.target&&e.target.closest&&e.target.closest('#agentSetup')) readAgent(); });
 function keepAgent(ag){
