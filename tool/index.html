@@ -662,7 +662,7 @@
   .rv-actnote{font-size:13px;line-height:1.5}.rv-actnote ul{margin:4px 0 10px;padding-left:18px}.rv-actnote>b{display:block;margin-top:8px}
   .rv-cmp{width:100%;border-collapse:collapse;font-size:12.5px;background:#fff;border:1px solid var(--line);border-radius:10px;margin-bottom:6px}.rv-cmp th,.rv-cmp td{padding:5px 8px;border-bottom:1px solid #eee7d6;text-align:left;vertical-align:top}
   .rv-cmp thead th{font-size:12px;color:var(--navy);background:#f7f3e8}.rv-cmp small{display:block;font-weight:500;color:var(--muted);font-size:11px}.rv-cmp tbody th{font-weight:600;width:30%}
-  .rv-cmp tr.gh th{background:#f7f3e8;font-size:12px;color:var(--navy);padding-top:7px}.rv-cmp tr.sub th{font-weight:500;color:#4b5563;padding-left:16px}.rv-cmp tr.pr th,.rv-cmp tr.pr td{font-size:11.5px;color:var(--muted)}.rv-cmp .nip{color:var(--maroon);font-weight:600;font-size:11px;margin-left:6px}.rv-cmp .add{color:#2f7d4a;font-weight:600;font-size:11px;margin-left:6px}.rv-cmp tbody.grp.h tr th:first-child{border-left:3px solid var(--gold)}.rv-cmp tbody.grp.h{background:#fff6dc}
+  .rv-cmp tr.gh td{background:#f7f3e8;font-weight:700}.rv-cmp tr.gh th{background:#f7f3e8;font-size:12px;color:var(--navy);padding-top:7px}.rv-cmp tr.sub th{font-weight:500;color:#4b5563;padding-left:16px}.rv-cmp tr.pr th,.rv-cmp tr.pr td{font-size:11.5px;color:var(--muted)}.rv-cmp .nip{color:var(--maroon);font-weight:600;font-size:11px;margin-left:6px}.rv-cmp .add{color:#2f7d4a;font-weight:600;font-size:11px;margin-left:6px}.rv-cmp tbody.grp.h tr th:first-child{border-left:3px solid var(--gold)}.rv-cmp tbody.grp.h{background:#fff6dc}
   .rv-cmp tbody.ev tr:first-child th{background:#f7f3e8;font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}.rv-cmp td.dn{color:#b42318;font-weight:600;background:#fdecea}.rv-cmp td.up{color:#17824a;font-weight:600;background:#e9f7ee}.rv-cmp td.ch{color:#8a6a1f;font-weight:600}.rv-cmp .gap.up{color:#17824a}.rv-cmp .gap.dn{color:#b42318}.rv-cmp tr.h{background:#fff6dc}.rv-cmp tr.h th{border-left:3px solid var(--gold)}
   .rv-cmp .gap{display:block;color:var(--maroon);font-size:11.5px}.rv-cmp .same{color:#2f7d4a}.rv-cmp i{color:var(--maroon)}.rv-cmpnote{font-size:11.5px;color:var(--muted);margin:2px 0}.rv-sw{display:inline-block;width:10px;height:10px;background:#fff6dc;border:2px solid var(--gold);vertical-align:-1px}
   .rv-actwrap{grid-template-columns:minmax(300px,400px) 1fr}.rv-actnote li.rv-hist{background:#fff6dc;border-left:3px solid var(--gold);padding:3px 8px;margin:3px 0;list-style-position:inside}
@@ -4742,10 +4742,15 @@ function cmpRows(){ var R=S.rec; if(!R||!actualOn()) return null; var key=R.tier
   return out; }
 /* One product's benefits as label/value rows, straight from its settings, so two versions line up row by row. */
 function cmpBen(k,c,live){ var m=function(v){ return '$'+Number(v||0).toLocaleString('en-US'); }, none='none', sum=pbSummary(k,c,live)||'';
-  if(k==='afc'){ var out=[['Plan',LVLNAME[c.afc]||c.afc]], d=BEN_DATA.afc, M=d?benModel(d,(S.client.state||'').toUpperCase(),c.afc,c):null;
-    if(M) evFlatRows(M).forEach(function(r){ var L=String(r.label||'').replace(/\s*\(.*$/,'').replace(/:.*$/,''); if(L&&r.value&&!/^Rollover$|^Lifetime|calendar year limit|Building Benefit/i.test(L)) out.push([L,r.value,!M.key||M.key.indexOf(r)<0]); });
+  /* Jesse's layout, 17 Oct: the plan level, then five benefits; Hospital Indemnity as day 1 / outpatient / ER / ambulance */
+  if(k==='afc'){ var out=[['Plan',LVLNAME[c.afc]||c.afc]], d=BEN_DATA.afc, M=d?benModel(d,(S.client.state||'').toUpperCase(),c.afc,c):null, R=M?evFlatRows(M):[];
+    var g=function(re){ var r=R.filter(function(x){ return re.test(x.label||''); })[0]; return r?String(r.value).replace(/\s*days?$/,''):''; };
+    [['Doctor visit',/^Doctor's Office Visit/i],['Inpatient, per day',/^Inpatient Hospital Confinement \(/i],['Hospital admission',/^Hospital Admission/i],['Urgent care',/^Urgent Care/i],['Cancer treatment, per day',/^Cancer Benefit/i]]
+      .forEach(function(x){ var v=g(x[1]); if(v) out.push([x[0],v]); });
     return out; }
-  if(k==='his'&&c.his) return [['Per hospital stay',m(c.his.ben)],['Outpatient surgery',+c.his.outp?m(c.his.outp):none],['Ambulance',+c.his.amb?'included':none]];
+  if(k==='his'&&c.his){ var hd=BEN_DATA.his, hm=hd?benModel(hd,(S.client.state||'').toUpperCase(),benCol('his',c),c):null, hr=hm?evFlatRows(hm):[];
+    var amt=function(re){ var r=hr.filter(function(x){ return re.test(x.label||''); })[0], mm=r&&String(r.value).match(/\$[\d,]+/); return mm?mm[0]:'included'; };
+    return [['Day 1, per stay',m(c.his.ben)],['Outpatient surgery',+c.his.outp?m(c.his.outp):none],['ER or urgent care (injury)',amt(/^Emergency room/i)],['Ambulance',+c.his.amb?amt(/^Ambulance/i):none]]; }
   if(k==='acc') return [['Units',String(c.acc||1)],['Accident medical, up to',m(2000*(+c.acc||1))]];
   if(k==='gap'&&c.gap) return [['Per day in hospital',m(c.gap.daily)],['Admission',m(c.gap.adm)],['Outpatient',+c.gap.outp?m(c.gap.outp):none],['ER',c.gap.ea?'$250':none]];
   if(k==='chas'&&c.chas) return [['Cancer, lump sum',+c.chas.cancer?m(c.chas.cancer):none],['Heart attack & stroke, lump sum',+c.chas.hs?m(c.chas.hs):none]];
@@ -4759,7 +4764,7 @@ function cmpDir(rv,av,L){ if(rv===av) return ''; var z=function(v){ return v==nu
   if(L==='Plan'&&CMP_LVL[rv]&&CMP_LVL[av]) return CMP_LVL[av]>CMP_LVL[rv]?'up':'dn';
   var n=function(v){ if(z(v)) return 0; var m=String(v).replace(/,/g,'').match(/(\d+(?:\.\d+)?)/); return m?+m[1]:null; }, a=n(av), r=n(rv);
   if(z(av)&&!z(rv)) return 'dn'; if(z(rv)&&!z(av)) return 'up'; if(a==null||r==null||a===r) return ''; return a>r?'up':'dn'; }
-function cmpHTML(){ if(typeof BEN_DATA!=='undefined'&&!BEN_DATA.afc){ benLoadSafe('afc').then(function(d){ if(d&&$('rvActual')) actualRedraw(); }); }
+function cmpHTML(){ if(typeof BEN_DATA!=='undefined') ['afc','his'].forEach(function(f){ if(!BEN_DATA[f]) benLoadSafe(f).then(function(d){ if(d&&$('rvActual')) actualRedraw(); }); });
   var X=cmpRows(); if(!X) return ''; var R=X.R, A=X.A, F=histFam(), seen={}, rows=[];
   var rc=(R.cfg&&R.pk)?R.cfg:effCfg(R.tier), ac=effCfg('actual'), have={}; A.products.forEach(function(p){ have[p.k||p.name]=p; });
   var cell=function(v,cls){ return '<td'+(cls?' class="'+cls+'"':'')+'>'+esc(v)+'</td>'; };
@@ -4768,16 +4773,16 @@ function cmpHTML(){ if(typeof BEN_DATA!=='undefined'&&!BEN_DATA.afc){ benLoadSaf
     var hist=F.any&&/^(chas|lbp|lbs)$/.test(k)&&(!a||(r&&a.monthly<r.monthly-0.005));
     var rb=r?cmpBen(k,rc,r):[], ab=a?cmpBen(k,ac,a):[], lab=[], byR={}, byA={};
     rb.concat(ab).forEach(function(x){ if(lab.indexOf(x[0])<0) lab.push(x[0]); }); rb.forEach(function(x){ byR[x[0]]=x; }); ab.forEach(function(x){ byA[x[0]]=x; });
-    var body=lab.map(function(L){ var x=byR[L], y=byA[L], rv=x?x[1]:'—', av=a?(y?y[1]:'—'):'—', diff=rv!==av, dir=r?cmpDir(rv,av,L):'up';
-      if((x&&x[2]||y&&y[2])&&!diff) return '';   /* the fine print shows only where it changed */
+    var body=lab.filter(function(L){ return L!=='Plan'; }).map(function(L){ var x=byR[L], y=byA[L], rv=x?x[1]:'—', av=a?(y?y[1]:'—'):'—', diff=rv!==av, dir=r?cmpDir(rv,av,L):'up';
       return '<tr class="sub'+(diff?' d':'')+'"><th>'+esc(L)+'</th>'+cell(rv)+cell(av,dir||(diff?'ch':''))+'</tr>'; }).join('');
     var price='<tr class="sub pr'+(r&&a&&Math.abs(r.monthly-a.monthly)<0.005?'':' d')+'"><th>Monthly</th>'+cell(r?fmt2(r.monthly):'—')+cell(a?fmt2(a.monthly):'—')+'</tr>';
-    rows.push('<tbody class="grp'+(hist?' h':'')+'"><tr class="gh"><th colspan="3">'+esc(prodName(r||a))+(!a?' <span class="nip">not in their plan</span>':(!r?' <span class="add">added</span>':''))+'</th></tr>'+body+price+'</tbody>'); });
+    var pl=(byR.Plan||byA.Plan)?(function(){ var rv=byR.Plan?byR.Plan[1]:'—', av=a&&byA.Plan?byA.Plan[1]:'—'; return '<td>'+esc(rv)+'</td>'+cell(av,r?cmpDir(rv,av,'Plan'):'up'); })():'';
+    rows.push('<tbody class="grp'+(hist?' h':'')+'"><tr class="gh"><th'+(pl?'':' colspan="3"')+'>'+esc(prodName(r||a))+(!a?' <span class="nip">not in their plan</span>':(!r?' <span class="add">added</span>':''))+'</th>'+pl+'</tr>'+body+price+'</tbody>'); });
   var evRows=X.ev.map(function(e){ var gap=Math.round((e.r-e.a)*100)/100, hist=(e.dx==='cancer'&&F.cancer)||(e.dx==='heart'&&F.heart);
     var you=function(n){ return '<small>'+(n<=0?'they net '+fmt2(-n):'they pay '+fmt2(n))+'</small>'; };
     return '<tr class="'+(Math.abs(gap)>=1?'d':'')+(hist?' h':'')+'"><th>'+esc(e.lab)+'<small>'+fmt2(e.bill)+' bill</small></th><td>'+fmt2(e.r)+you(e.rn)+'</td><td>'+fmt2(e.a)+you(e.an)
       +(Math.abs(gap)>=1?'<b class="gap '+(gap>0?'dn':'up')+'">'+(gap>0?fmt2(gap)+' less':fmt2(-gap)+' more')+'</b>':'<small class="same">same</small>')+'</td></tr>'; }).join('');
-  return '<table class="rv-cmp"><thead><tr><th></th><th>Our recommendation<small>'+esc(R.name)+' · '+fmt2(R.monthly)+'/mo</small></th><th>What they have<small>'+esc(A.name)+' · '+fmt2(A.monthly)+'/mo</small></th></tr></thead>'
+  return '<table class="rv-cmp"><thead><tr><th></th><th>Our recommendation<small>'+esc(R.name)+' · '+fmt2(R.monthly)+'/mo</small></th><th>Plan elected<small>'+esc(A.name)+' · '+fmt2(A.monthly)+'/mo</small></th></tr></thead>'
     +rows.join('')+'<tbody class="ev"><tr class="gh"><th colspan="3">If this happens — what the plan pays</th></tr>'+evRows+'</tbody></table>'
     +(X.own?'':'<div class="rv-cmpnote">This recommendation was saved before plan details were kept, so it is priced from today’s '+esc(R.name)+' package on the quote.</div>')
     +(F.any?'<div class="rv-cmpnote"><span class="rv-sw"></span> Gold: speaks to their family history of '+esc(F.label)+(F.who?' ('+esc(F.who)+')':'')+'.</div>':''); }

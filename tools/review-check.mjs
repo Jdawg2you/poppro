@@ -123,8 +123,8 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  renderActual(); ok(!!document.querySelector('#rvActual table.rv-cmp'),'the table sits beside the card');
   /* whose living benefits, and the benefits row by row */
  S.client.pname='Pat Review'; ok(prodName({k:'lbp'})==='Living benefits — primary (Pat)'&&/spouse/.test(prodName({k:'lbs'})),'living benefits say whose: '+prodName({k:'lbp'}));
- var hb=cmpBen('his',{his:{ben:5000,outp:500,amb:1}}); ok(hb[0][0]==='Per hospital stay'&&hb[0][1]==='$5,000'&&hb[1][1]==='$500','hospital indemnity breaks into rows: '+JSON.stringify(hb));
- var ab=cmpBen('afc',{afc:'Elite'}); ok(ab.length>5&&ab[0][1]==='Elite'&&ab.some(function(x){ return /Doctor/.test(x[0]); }),'Affordable Choice lists its benefits from the brochure ('+ab.length+' rows)');
+ var hb=cmpBen('his',{his:{ben:5000,outp:500,amb:1}}); ok(hb[0][0]==='Day 1, per stay'&&hb[2][1]==='$150'&&hb[3][1]==='$200'&&hb[0][1]==='$5,000'&&hb[1][1]==='$500','hospital indemnity breaks into rows: '+JSON.stringify(hb));
+ var ab=cmpBen('afc',{afc:'Elite'}); ok(ab.length===6&&ab[0][1]==='Elite'&&ab.some(function(x){ return /Doctor/.test(x[0]); }),'Affordable Choice lists its benefits from the brochure ('+ab.length+' rows)');
  renderActual(); var ghs=Array.prototype.map.call(document.querySelectorAll('#rvActual .rv-cmp tr.gh th'),function(x){ return x.textContent; }); ok(ghs.some(function(t){ return /Hospital Indemnity/.test(t); })&&document.querySelectorAll('#rvActual .rv-cmp tr.sub.d').length>0,'the table is grouped by product with changed rows marked');
   ok(cmpDir('$10,000','$5,000','Per hospital stay')==='dn'&&cmpDir('$500','$1,500','Outpatient surgery')==='up'&&cmpDir('Elite Plus','Elite','Plan')==='dn'&&cmpDir('$500','none','x')==='dn'&&cmpDir('Americo','Mutual of Omaha','Carrier')==='','less is red, more is green, a different carrier is neither');
  return {n:73, fails:fails}; })()`;
