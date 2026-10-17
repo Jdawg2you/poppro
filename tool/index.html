@@ -4467,7 +4467,9 @@ function famRelRender(){ var box=$('famRelBox'); if(!box) return; var R=(S.intak
    conditions (fam.history already says them): "your dad", "your mom and dad", "your dad and your spouse’s mom". */
 function famRelSpoken(){ var R=(S.intake&&S.intake.famRel)||{}, side=function(x){ var got={}; ['cancer','heart','stroke'].forEach(function(c){ (R[c+x]||[]).forEach(function(m){ got[m]=1; }); });
     var L=['Mom','Dad'].filter(function(m){ return got[m]; }).map(function(m){ return m.toLowerCase(); }); return L.length===2?'mom and dad':(L[0]||''); };
-  var a=side('P'), b=side('S'), out=[]; if(a) out.push('your '+a); if(b) out.push('your spouse’s '+b); return out.join(' and '); }
+  var a=side('P'), b=side('S'), n=(a?a.split(' and ').length:0)+(b?b.split(' and ').length:0);
+  if(n>=3) return 'on both sides of the family';   /* three or more is always both sides - no roll-call (Health ZONE) */
+  var out=[]; if(a) out.push('your '+a); if(b) out.push('your spouse’s '+b); return out.join(' and '); }
 function famRelPhrase(){ var R=(S.intake&&S.intake.famRel)||{}, out=[];
   [['P','your'],['S','your spouse’s']].forEach(function(w){ var by={}; [['cancer','cancer'],['heart','heart attack'],['stroke','stroke']].forEach(function(c){ (R[c[0]+w[0]]||[]).forEach(function(m){ (by[m]=by[m]||[]).indexOf(c[1])<0&&by[m].push(c[1]); }); });
     ['Mom','Dad'].forEach(function(m){ if(by[m]) out.push(w[1]+' '+m.toLowerCase()+' ('+by[m].join(', ')+')'); }); });

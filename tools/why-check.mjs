@@ -109,7 +109,8 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  ok(JSON.stringify(S.intake.famRel.cancerP)==='["Mom","Dad"]'&&JSON.stringify(S.intake.famRel.heartS)==='["Dad"]','Mom / Dad arrive from the call, per person and condition');
  ok(famRelPhrase()==='your mom (cancer); your dad (cancer); your spouse\u2019s mom (stroke); your spouse\u2019s dad (heart attack)','one readable phrase: '+famRelPhrase());
  ok(presentScriptTokens('best')['fam.who']===famRelPhrase(),'the agent cue uses the clicks');
- ok(famRelSpoken()==='your mom and dad and your spouse\u2019s mom and dad','spoken relatives, each once, no conditions: '+famRelSpoken());
+ ok(famRelSpoken()==='on both sides of the family','three or more relatives: on both sides of the family: '+famRelSpoken());
+ S.intake.famRel={cancerP:['Mom','Dad'],heartS:['Dad']}; ok(famRelSpoken()==='on both sides of the family','three across both sides: the same');
  S.intake.famRel={cancerP:['Dad']}; ok(famRelSpoken()==='your dad','dad had cancer: your dad');
  S.intake.famRel={cancerP:['Dad'],heartP:['Mom']}; ok(famRelSpoken()==='your mom and dad','dad cancer + mom heart: your mom and dad');
  S.intake.famRel={cancerP:['Dad'],heartS:['Mom']}; ok(famRelSpoken()==='your dad and your spouse\u2019s mom','client dad + spouse mom');
@@ -121,7 +122,7 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  /* an old file keeps its why */
  S=blankState(); applySuiteClient({first:'Old',last:'File',state:'TX',age:'50',kids:[],health:{whyMatters:'keep Dr. Patel',whyShop:'premium jumped'}});
  ok(S.intake.whyMatters==='keep Dr. Patel'&&S.intake.whyShop==='premium jumped'&&whyTagList(S.intake.whyTags).length===0,'an older file without tags still loads its why and story');
- return {n:67, fails:fails, bio:window.__bio}; })()`;
+ return {n:68, fails:fails, bio:window.__bio}; })()`;
 try {
   let l; for (let i = 0; i < 60 && !l; i++) { await sleep(150); l = await fetch(`http://127.0.0.1:${DBG}/json/list`).then(r => r.json()).catch(() => null); }
   ws = new WebSocket(l.find(t => t.type === 'page').webSocketDebuggerUrl);
