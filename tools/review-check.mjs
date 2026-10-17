@@ -113,7 +113,15 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  ok(GH.filter(function(g){ return g.hist; }).every(function(g){ return /^[pl]:(chas|lbp|lbs)$|^lb$/.test(g.key); }),'only cancer/heart cover and living benefits carry the flag');
  renderActual(); ok(!!document.querySelector('#rvActual li.rv-hist'),'the review card shows the flag in gold');
  S.intake.famcancer=false; ok(!gapOf(S.rec,actualSnap()).some(function(g){ return g.hist; }),'no family history: no flag');
- return {n:63, fails:fails}; })()`;
+  /* side by side: recommended vs what they have, products then events (Jesse, 17 Oct) */
+ S.rec=pkSnap('best'); S.rec.by='presented'; actualSeed('better'); await benLoadSafe('afc'); var CX=cmpRows();
+ ok(CX&&CX.own&&CX.ev.length===6,'the comparison prices the recommendation from its own saved settings, six events');
+ var ev=function(id){ return CX.ev.filter(function(e){ return e.id===id; })[0]||{}; };
+ ok(ev('hosp').r-ev('hosp').a>=1,'a hospital stay shows the difference: '+ev('hosp').r+' vs '+ev('hosp').a);
+ ok(Math.abs(ev('urgent').r-ev('urgent').a)<1,'urgent care is the same on both');
+ ok(!S.cfg.__rec&&!S.packages.__rec,'the comparison leaves nothing behind in the client file');
+ renderActual(); ok(!!document.querySelector('#rvActual table.rv-cmp'),'the table sits beside the card');
+ return {n:68, fails:fails}; })()`;
 try {
   let l; for (let i = 0; i < 60 && !l; i++) { await sleep(150); l = await fetch(`http://127.0.0.1:${DBG}/json/list`).then(r => r.json()).catch(() => null); }
   ws = new WebSocket(l.find(t => t.type === 'page').webSocketDebuggerUrl);

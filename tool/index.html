@@ -659,7 +659,12 @@
   .rv-conf{border:1px solid #e6d3a3;background:#fffaf0;border-radius:12px;padding:12px 14px;margin:10px 0 14px}
   .rv-ch{font-family:var(--serif);font-weight:700;color:var(--navy);font-size:16px;margin-bottom:8px}.rv-ch small{font-family:inherit;font-weight:500;font-size:12.5px;color:var(--muted);margin-left:6px}
   .rv-actual{margin-top:12px;border-top:1px dashed #e6d3a3;padding-top:10px}.rv-actwrap{display:grid;grid-template-columns:minmax(300px,420px) 1fr;gap:14px;align-items:start}
-  .rv-actnote{font-size:13px;line-height:1.5}.rv-actnote ul{margin:4px 0 10px;padding-left:18px}.rv-actnote>b{display:block;margin-top:2px}.rv-actnote li.rv-hist{background:#fff6dc;border-left:3px solid var(--gold);padding:3px 8px;margin:3px 0;list-style-position:inside}
+  .rv-actnote{font-size:13px;line-height:1.5}.rv-actnote ul{margin:4px 0 10px;padding-left:18px}.rv-actnote>b{display:block;margin-top:8px}
+  .rv-cmp{width:100%;border-collapse:collapse;font-size:12.5px;background:#fff;border:1px solid var(--line);border-radius:10px;margin-bottom:6px}.rv-cmp th,.rv-cmp td{padding:5px 8px;border-bottom:1px solid #eee7d6;text-align:left;vertical-align:top}
+  .rv-cmp thead th{font-size:12px;color:var(--navy);background:#f7f3e8}.rv-cmp small{display:block;font-weight:500;color:var(--muted);font-size:11px}.rv-cmp tbody th{font-weight:600;width:30%}
+  .rv-cmp tbody.ev tr:first-child th{background:#f7f3e8;font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}.rv-cmp tr.d td:last-child{color:var(--maroon)}.rv-cmp tr.h{background:#fff6dc}.rv-cmp tr.h th{border-left:3px solid var(--gold)}
+  .rv-cmp .gap{display:block;color:var(--maroon);font-size:11.5px}.rv-cmp .same{color:#2f7d4a}.rv-cmp i{color:var(--maroon)}.rv-cmpnote{font-size:11.5px;color:var(--muted);margin:2px 0}.rv-sw{display:inline-block;width:10px;height:10px;background:#fff6dc;border:2px solid var(--gold);vertical-align:-1px}
+  .rv-actwrap{grid-template-columns:minmax(300px,400px) 1fr}.rv-actnote li.rv-hist{background:#fff6dc;border-left:3px solid var(--gold);padding:3px 8px;margin:3px 0;list-style-position:inside}
   .rg-hist{display:block;margin-top:4px;padding:3px 8px;background:#fff6dc;border-left:3px solid var(--gold);color:#7a5a12;font-size:12.5px;font-weight:600}.pbcol.actual{border:2px solid var(--navy)}.pbcol.actual select[data-act=actname]{font:inherit;font-family:var(--serif);font-size:20px;color:var(--navy);border:1px solid #d6cdb4;border-radius:7px;padding:2px 6px;background:#fff}
   @media(max-width:820px){.rv-actwrap{grid-template-columns:1fr}}
   .rv-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.rv-grid .rv-wide{grid-column:1/-1}
@@ -4627,7 +4632,8 @@ function whySay(){ var el=$('whySay'); if(!el) return; var I=Object.assign({},S.
 function pkSnap(t){ if(!t||!S.packages[t]) return null; var c=effCfg(t), pk=S.packages[t];
   return {tier:t, name:TIER_NAME[t]||t, monthly:Math.round((tierTotals(t).mo||0)*100)/100, at:new Date().toISOString().slice(0,10),
     products:(pk.products||[]).filter(function(p){ return (+p.monthly||0)>0; }).map(function(p){
-      return {k:p.k, name:String(p.name||'').split(' — ')[0], monthly:+p.monthly||0, sum:pbSummary(p.k,c,p)||''}; })}; }
+      return {k:p.k, name:String(p.name||'').split(' — ')[0], monthly:+p.monthly||0, sum:pbSummary(p.k,c,p)||''}; }),
+    cfg:cfgClone(c), pk:JSON.parse(JSON.stringify({products:pk.products||[],dropped:pk.dropped||[],lb:pk.lb||0,med:pk.med||0}))}; }
 function recLock(t){ var cur=S.rec, snap=pkSnap(t); if(!snap) return;
   if(!cur||(TIER_ORDER[t]!=null&&TIER_ORDER[cur.tier]!=null&&TIER_ORDER[t]>TIER_ORDER[cur.tier])){ snap.by='presented'; S.rec=snap; autosave(); } }
 function electedLock(){ var t=chosenTier(); if(!t) return; S.elected=pkSnap(t); autosave(); }
@@ -4716,6 +4722,34 @@ function actualSeed(t){ if(!t||!S.packages[t]) return; S.cfg=S.cfg||{}; S.cfg.ac
   Object.keys(PB_OPEN).forEach(function(k){ if(k.indexOf('actual|')===0) delete PB_OPEN[k]; }); priceTier('actual'); }
 function actualSnap(){ var s=pkSnap('actual')||{products:[]}, b=effCfg('actual').base; s.tier=S.actual.tier;
   s.name=b==='lifex'?'LifeX':b==='triad'?'Cigna':(TIER_NAME[s.tier]||''); return s; }
+/* Recommended vs what they have, side by side (Jesse, 17 Oct): every product's level, then what the plan pays on a few
+   real events - small ones usually match, the big ones show the difference. Built for the clarity / declination page too.
+   The recommendation is priced from its own saved settings (S.rec.cfg/pk); one saved before those existed uses the
+   current quote's package of the same name, and says so. */
+var CMP_EVENTS=['visit','urgent','arm','hosp','heart','cancer'];
+function cmpRows(){ var R=S.rec; if(!R||!actualOn()) return null; var key=R.tier, own=!!(R.cfg&&R.pk), out={R:R,A:actualSnap(),own:own,ev:[]};
+  if(own){ S.cfg.__rec=cfgClone(R.cfg); S.packages.__rec=JSON.parse(JSON.stringify(R.pk)); key='__rec'; }
+  try{ var ro=evTierPack(key), ao=evTierPack('actual');
+    CMP_EVENTS.forEach(function(id){ var sc=evScn(id), bill=evScnBill(sc).total, r=evEvent(sc,ro), a=evEvent(sc,ao);
+      var pay=function(x,o){ return x.pays+(o.major?Math.max(0,bill-x.owe0):0); };
+      out.ev.push({id:id,lab:sc.desc,dx:sc.dx,bill:bill,r:pay(r,ro),a:pay(a,ao),rn:r.net,an:a.net}); });
+  } finally { if(own){ delete S.cfg.__rec; delete S.packages.__rec; } }
+  return out; }
+function cmpHTML(){ if(typeof BEN_DATA!=='undefined'&&!BEN_DATA.afc){ benLoadSafe('afc').then(function(d){ if(d&&$('rvActual')) actualRedraw(); }); }
+  var X=cmpRows(); if(!X) return ''; var R=X.R, A=X.A, F=histFam(), seen={}, rows=[];
+  var have={}; A.products.forEach(function(p){ have[p.k||p.name]=p; });
+  R.products.concat(A.products).forEach(function(p){ var k=p.k||p.name; if(seen[k]) return; seen[k]=1;
+    var r=R.products.filter(function(x){ return (x.k||x.name)===k; })[0], a=have[k], diff=!r||!a||r.sum!==a.sum;
+    var hist=F.any&&/^(chas|lbp|lbs)$/.test(k)&&(!a||(r&&a.monthly<r.monthly-0.005));
+    rows.push('<tr class="'+(diff?'d':'')+(hist?' h':'')+'"><th>'+esc((r||a).name)+'</th><td>'+(r?esc(r.sum||fmt2(r.monthly)):'<i>—</i>')+'</td><td>'+(a?esc(a.sum||fmt2(a.monthly)):'<i>not in their plan</i>')+'</td></tr>'); });
+  var evRows=X.ev.map(function(e){ var gap=Math.round((e.r-e.a)*100)/100, hist=(e.dx==='cancer'&&F.cancer)||(e.dx==='heart'&&F.heart);
+    var you=function(n){ return '<small>'+(n<=0?'they net '+fmt2(-n):'they pay '+fmt2(n))+'</small>'; };
+    return '<tr class="'+(Math.abs(gap)>=1?'d':'')+(hist?' h':'')+'"><th>'+esc(e.lab)+'<small>'+fmt2(e.bill)+' bill</small></th><td>'+fmt2(e.r)+you(e.rn)+'</td><td>'+fmt2(e.a)+you(e.an)
+      +(Math.abs(gap)>=1?'<b class="gap">'+(gap>0?fmt2(gap)+' less':fmt2(-gap)+' more')+'</b>':'<small class="same">same</small>')+'</td></tr>'; }).join('');
+  return '<table class="rv-cmp"><thead><tr><th></th><th>Recommended<small>'+esc(R.name)+' · '+fmt2(R.monthly)+'/mo</small></th><th>What they have<small>'+esc(A.name)+' · '+fmt2(A.monthly)+'/mo</small></th></tr></thead>'
+    +'<tbody>'+rows.join('')+'</tbody><tbody class="ev"><tr><th colspan="3">If this happens — what the plan pays</th></tr>'+evRows+'</tbody></table>'
+    +(X.own?'':'<div class="rv-cmpnote">This recommendation was saved before plan details were kept, so it is priced from today’s '+esc(R.name)+' package on the quote.</div>')
+    +(F.any?'<div class="rv-cmpnote"><span class="rv-sw"></span> Gold: speaks to their family history of '+esc(F.label)+(F.who?' ('+esc(F.who)+')':'')+'.</div>':''); }
 function pbActHead(){ var A=S.actual||{};
   return '<div class="pbcol actual" data-t="actual"><div class="pbhd"><div class="r1"><span class="tt">What they actually have</span>'
     +'<button type="button" class="pbreset" data-act="actreset" title="Start again from the plan they chose at Enroll">↺ From their choice</button></div>'
@@ -4732,7 +4766,7 @@ function renderActual(){ var host=$('rvActual'), t=chosenTier(); if(!host||!t) r
   gapOf(E&&E.products?E:null,A,'Not issued').forEach(function(g){ if(g.kind!=='below') lines.push(g.text); });
   var below=S.rec?gapOf(S.rec,A,'Not in their plan'):[];
   host.innerHTML='<div class="rv-ch">What they actually have <small>open it, and match it to the approval: ✕ what didn’t come through, change a level, type the carrier’s price over a row.</small></div>'
-    +'<div class="rv-actwrap">'+r.html+'<div class="rv-actnote">'
+    +'<div class="rv-actwrap">'+r.html+'<div class="rv-actnote">'+cmpHTML()
     +(lines.length?'<b>Different from what they chose at Enroll</b><ul>'+lines.map(function(x){ return '<li>'+esc(x)+'</li>'; }).join('')+'</ul>':'<b>Same as what they chose at Enroll.</b>')
     +(S.rec?(below.length?'<b>Below your recommendation ('+esc(S.rec.name)+')</b><ul>'+below.map(function(g){ return '<li'+(g.hist?' class="rv-hist"':'')+'>'+esc(g.text)+(g.hist?'<br><b>⚑ '+esc(g.hist)+'</b> — the coverage that speaks to it.':'')+'</li>'; }).join('')+'</ul><small>The review’s “below my recommendation” page reads this list.</small>'
       :'<b>Matches your recommendation.</b> The “below my recommendation” page is skipped.'):'')
