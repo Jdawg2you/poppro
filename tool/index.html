@@ -3782,6 +3782,7 @@ function applySuiteClient(c, live){ var sm=$('setupModal'); if(sm&&!live&&sm.cla
   if(h.empOffer==="Yes")   extra.push("Health coverage offered through work — check affordability; it can remove the marketplace subsidy");
   if(h.spEmpOffer==="Yes") extra.push("Health coverage offered through the spouse's work — check affordability; it can remove the marketplace subsidy");
   if(String(h.whyOther||"").trim()) extra.push("Why — other: "+String(h.whyOther).trim());
+  if(h.assetRisk) extra.push("Retirement money: "+(h.assetRisk==="Market risk"?"still at market risk":h.assetRisk==="Protected"?"in a protected position":"not sure if protected")+" — a later conversation, not this sale");
   if(h.pregnant==="Yes")   extra.push("PREGNANT NOW (applicant)");
   if(h.spPregnant==="Yes") extra.push("PREGNANT NOW (spouse)");
   if(h.planned)     extra.push("Planned in the next 12 months: "+h.planned);
@@ -4443,7 +4444,7 @@ function suiteFromNavProfile(P){
       losing:P.losing||"", nextSame:P.next_same||"",
       curOop:P.cur_oop||"", curIsAca:P.cur_is_aca||"", curPaying:P.cur_paying||"", curSubsidy:P.cur_subsidy||"", hasHsa:P.has_hsa||"",
       pregnant:P.pregnant||"", spPregnant:P.sp_pregnant||"", planned:P.planned||"",
-      empOffer:P.emp_offer||"", spEmpOffer:P.sp_emp_offer||"", whyOther:P.why_other||"", lifeNow:P.life_now||"", billTomorrow:P.bill_tomorrow||"", bankKind:P.bank_kind||"",
+      empOffer:P.emp_offer||"", spEmpOffer:P.sp_emp_offer||"", assetRisk:P.asset_risk||"", whyOther:P.why_other||"", lifeNow:P.life_now||"", billTomorrow:P.bill_tomorrow||"", bankKind:P.bank_kind||"",
       apptDate:P.appt_date||"", apptTime:P.appt_time||"", notes:P.notes||"",
       doctors:docs.map(function(d){ return {name:d.n||"", practice:d.prac||"", keep:d.keep||"", aca:d.aca||""}; })
     }
