@@ -284,7 +284,7 @@ const TEST = `(async function(){
   /* Present ends at the close: Enroll or send the quote */
   var nav=presentNav(); presentGo(nav[nav.length-1]); await wait(30);
   ok(pages[nav[nav.length-1]].t==='Pick your close','Present ends on Pick your close');
-  ok(/Enroll them/.test(document.getElementById('prNav').innerText)&&/send the quote/.test(document.getElementById('prNav').innerText),'last screen offers Enroll or Send the quote');
+  ok(/Enrolling as presented/.test(document.getElementById('prNav').innerText)&&/plan edits/.test(document.getElementById('prNav').innerText)&&/send the quote/.test(document.getElementById('prNav').innerText),'last screen offers Enrolling as presented, with plan edits, or Send the quote');
   ok(!nav.some(function(i){ return pages[i].en; }),'application screens are not in Present');
   /* Show them / Back */
   presentShow('ev'); await wait(120);

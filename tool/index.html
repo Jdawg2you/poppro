@@ -656,6 +656,9 @@
   .rg-row.rg-lowered label{color:#8a5a00}.rg-why{flex:1 1 220px;font:inherit;font-size:13px;padding:6px 8px;border:1px solid var(--line);border-radius:7px;background:#fff}
   .rg-btn{font:inherit;font-size:12.5px;font-weight:700;border:1px solid var(--navy);background:#fff;color:var(--navy);border-radius:8px;padding:5px 10px;cursor:pointer;margin-left:6px}
   /* Benefits Review */
+  .rv-actmin{font-size:13.5px;padding:8px 2px}.rv-actmin i{color:var(--muted)}.rv-actmin a{margin-left:8px}.rv-actmin small{display:block;color:var(--muted);margin-top:3px}
+  .pr-edit{margin-top:16px;border:2px solid var(--navy);border-radius:12px;padding:12px 14px;background:#fffaf0}.pr-editgo{display:flex;gap:10px;justify-content:flex-end;margin-top:12px}
+  .pr-editgo button{font:inherit;font-weight:700;border-radius:9px;padding:10px 16px;cursor:pointer;border:1px solid var(--line);background:#fff}.pr-editgo .go{background:#2f7d4a;border-color:#2f7d4a;color:#fff}
   .rv-confbar{display:none;cursor:pointer;font-size:13px;color:var(--navy)}.rv-confbar small{color:var(--muted);margin-left:6px}.rv-confbar .car{display:inline-block;width:12px}
   .rv-conf.folds .rv-confbar{display:block;margin-bottom:8px}.rv-conf.min .rv-confbar{margin-bottom:0}.rv-conf.min>*:not(.rv-confbar){display:none}
   .rv-conf{border:1px solid #e6d3a3;background:#fffaf0;border-radius:12px;padding:12px 14px;margin:10px 0 14px}
@@ -4640,7 +4643,8 @@ function pkSnap(t){ if(!t||!S.packages[t]) return null; var c=effCfg(t), pk=S.pa
     cfg:cfgClone(c), pk:JSON.parse(JSON.stringify({products:pk.products||[],dropped:pk.dropped||[],lb:pk.lb||0,med:pk.med||0}))}; }
 function recLock(t){ var cur=S.rec, snap=pkSnap(t); if(!snap) return;
   if(!cur||(TIER_ORDER[t]!=null&&TIER_ORDER[cur.tier]!=null&&TIER_ORDER[t]>TIER_ORDER[cur.tier])){ snap.by='presented'; S.rec=snap; autosave(); } }
-function electedLock(){ var t=chosenTier(); if(!t) return; S.elected=pkSnap(t); autosave(); }
+function electedLock(){ var t=chosenTier(); if(!t) return; if(actualOn()&&S.actual.from!==t) actualSeed(t);   /* they changed the package: start the card again from it */
+  S.elected=actualOn()?actualSnap():pkSnap(t); autosave(); }
 var LB_K={lbp:1,lbs:1};
 /* every way what they bought falls short of what was recommended, each with a stable key for its acknowledgment */
 function recGap(){ return gapOf(S.rec,S.elected); }
@@ -4795,31 +4799,37 @@ function cmpHTML(){ if(typeof BEN_DATA!=='undefined') ['afc','his'].forEach(func
     +rows.join('')+'<tbody class="ev"><tr class="gh"><th colspan="3">If this happens — what the plan pays</th></tr>'+evRows+'</tbody></table>'
     +(X.own||base?'':'<div class="rv-cmpnote">This recommendation was saved before plan details were kept, so it is priced from today’s '+esc(R.name)+' package on the quote.</div>')
     +(F.any?'<div class="rv-cmpnote"><span class="rv-sw"></span> Gold: speaks to their family history of '+esc(F.label)+(F.who?' ('+esc(F.who)+')':'')+'.</div>':''); }
-function pbActHead(){ var A=S.actual||{};
-  return '<div class="pbcol actual" data-t="actual"><div class="pbhd"><div class="r1"><span class="tt">What they actually have</span>'
-    +'<button type="button" class="pbreset" data-act="actreset" title="Start again from the plan they chose at Enroll">↺ From their choice</button></div>'
+function pbActHead(){ var A=S.actual||{}, pr=S.step==='present';
+  return '<div class="pbcol actual" data-t="actual"><div class="pbhd"><div class="r1"><span class="tt">'+(pr?'What they’re enrolling in':'What they actually have')+'</span>'
+    +'<button type="button" class="pbreset" data-act="actreset" title="Start again from the plan as presented">↺ As presented</button></div>'
     +'<div class="nm"><select data-act="actname" aria-label="Plan name">'+pbOpts([['good','Essential'],['better','Complete'],['best','Comprehensive']],A.tier)+'</select></div>'
-    +'<div class="r3"><small>From the carrier’s approval. Changes here never touch the quote or your recommendation.</small></div></div>'; }
-function actualRedraw(){ var y=window.scrollY; renderActual(); var R=reviewState(), pe=$('rv_prem'); if(pe&&!(+R.prem>0)&&document.activeElement!==pe) pe.value=reviewPrem()>0?fmtMoney2(reviewPrem()):'';
+    +'<div class="r3"><small>'+(pr?'Edit it with them: ✕ what they’re not taking, change a level.':'From the carrier’s approval.')+' Changes here never touch the quote or your recommendation.</small></div></div>'; }
+var RV_ACT_OPEN=false;
+function actualRedraw(){ var y=window.scrollY; renderActual(); if(S.step==='present'){ window.scrollTo(0,y); return; } var R=reviewState(), pe=$('rv_prem'); if(pe&&!(+R.prem>0)&&document.activeElement!==pe) pe.value=reviewPrem()>0?fmtMoney2(reviewPrem()):'';
   reviewCheck(); var fr=$('rvFrame'); if(fr&&fr.contentDocument&&fr.contentDocument.body&&fr.contentDocument.body.dataset.rvp) reviewGo(+R.pg||0,true); window.scrollTo(0,y); }
 /* the premium is the plan's own total unless the agent types the carrier's figure (R.prem); a different figure is confirmed, not assumed */
 function reviewPremTool(){ return actualOn()?Math.round(tierTotals('actual').mo*100)/100:0; }
 function reviewPrem(){ var R=reviewState(); return +R.prem>0?+R.prem:reviewPremTool(); }
 function actualReprice(){ priceTier('actual'); autosave(); actualRedraw(); }
-function renderActual(){ var host=$('rvActual'), t=chosenTier(); if(!host||!t) return; if(!actualOn()) actualSeed(t); if(!actualOn()) return;
-  var r=pbColHTML(['actual'],null), E=S.elected, A=actualSnap(), lines=[];
+function renderActual(){ var pr=S.step==='present', host=pr?$('prEditBody'):$('rvActual'), t=pr?presentTier():chosenTier(); if(!host||!t) return; if(!actualOn()) actualSeed(t); if(!actualOn()) return;
+  var r=pbColHTML(['actual'],null), E=S.elected, A=actualSnap(), lines=[], RV=reviewState();
+  /* Benefits Review: the plan they enrolled in is settled; it opens only when the carrier approved it with a change */
+  if(!pr&&RV.appr!=='chg'&&!RV_ACT_OPEN){ host.innerHTML='<div class="rv-actmin"><b>Enrolled in:</b> '+esc(A.name)+' · '+fmt2(A.monthly)+'/mo'+(S.actual.how==='edited'?' <i>with plan edits</i>':(S.actual.how==='presented'?' <i>as presented</i>':''))
+      +' <a href="#" id="rvActOpen">▸ show the plan and the side-by-side</a><small>Approved <b>with a change</b>? Pick it above and the plan opens so you can match it to the approval.</small></div>';
+    $('rvActOpen').onclick=function(e){ e.preventDefault(); RV_ACT_OPEN=true; actualRedraw(); }; return; }
   var chg=gapOf(E&&E.products?E:null,A,'Not issued').filter(function(g){ return g.kind!=='below'; }).map(function(g){ return g.name+(g.kind==='lowered'?' (lowered)':' (not issued)'); });
   var below=S.rec?gapOf(S.rec,A,'Not in their plan'):[];
-  host.innerHTML='<div class="rv-ch">What they actually have <small>open it, and match it to the approval: ✕ what didn’t come through, change a level, type the carrier’s price over a row.</small></div>'
+  host.innerHTML=(pr?'':'<div class="rv-ch">What they actually have <small>match it to the approval: ✕ what didn’t come through, change a level, type the carrier’s price over a row.'+(RV.appr!=='chg'?' <a href="#" id="rvActClose">▴ fold</a>':'')+'</small></div>')
     +'<div class="rv-actwrap">'+r.html+'<div class="rv-actnote">'+cmpHTML()
-    +'<div class="rv-cmpnote">'+(chg.length?'<b>Changed since Enroll:</b> '+esc(chg.join(', '))+'.':'Same as what they chose at Enroll.')
-    +(S.rec?(below.length?' The “below my recommendation” page is on.':' Matches your recommendation — the “below my recommendation” page is skipped.'):'')+'</div>'
+    +(pr?'':'<div class="rv-cmpnote">'+(chg.length?'<b>Changed since Enroll:</b> '+esc(chg.join(', '))+'.':'Same as what they enrolled in.'))
+    +(pr?'':(S.rec?(below.length?' The “below my recommendation” page is on.':' Matches your recommendation — the “below my recommendation” page is skipped.'):'')+'</div>')
     +'</div></div>';
+  var cl=$('rvActClose'); if(cl) cl.onclick=function(e){ e.preventDefault(); RV_ACT_OPEN=false; actualRedraw(); };
   host.querySelectorAll('.pbcol').forEach(function(col){ pbColBind(col,actualReprice,actualRedraw); });
   host.querySelectorAll('.pbinfo').forEach(function(b){ b.onclick=function(e){ e.stopPropagation(); benOpen('actual',b.dataset.ben); }; });
   var nm=host.querySelector('[data-act="actname"]'); if(nm) nm.onchange=function(){ S.actual.tier=nm.value; autosave(); actualRedraw(); };
   var rp=$('rvRecSet'); if(rp) rp.onclick=function(){ var sn=pkSnap($('rvRecPick').value); if(sn){ sn.by='marked on the Benefits Review'; S.rec=sn; autosave(); actualRedraw(); } };
-  var rs=host.querySelector('[data-act="actreset"]'); if(rs) rs.onclick=function(){ actualSeed(chosenTier()); autosave(); actualRedraw(); }; }
+  var rs=host.querySelector('[data-act="actreset"]'); if(rs) rs.onclick=function(){ var how=S.actual.how; actualSeed(pr?presentTier():chosenTier()); if(how) S.actual.how=how; autosave(); actualRedraw(); }; }
 function reviewDental(t){ t=reviewT()||t; return ((S.packages[t]||{}).products||[]).some(function(p){ return p.k==='dvh'&&(+p.monthly||0)>0; }); }
 function reviewBelow(t){ if(actualOn()&&S.rec) return gapOf(S.rec,actualSnap()).length>0; var r=(S.rec&&S.rec.tier)||S.recommended; return !!(t&&r&&TIER_ORDER[t]!=null&&TIER_ORDER[r]!=null&&TIER_ORDER[t]<TIER_ORDER[r]); }
 function reviewPages(t){ return REVIEW_PAGES.filter(function(p){ return !p.when||(p.when==='dental'?reviewDental(t):reviewBelow(t)); }); }
@@ -4948,7 +4958,7 @@ function renderReview(){ var host=$('reviewHost'); if(!host) return; var t=chose
    +'<a class="rv-a" href="https://clients.manhattanlife.com" target="_blank" rel="noopener">ManhattanLife portal ↗</a><a class="rv-a" href="https://providerlocator.firsthealth.com/home/index" target="_blank" rel="noopener">First Health locator ↗</a><a class="rv-a" href="https://www.singlecare.com" target="_blank" rel="noopener">SingleCare — Rx pricing ↗</a></div>'
    +'</div></div>';
   var save=function(){ R.appr=$('rv_appr').value; R.eff=$('rv_eff').value; var pv=moneyNum($('rv_prem').value)||0; R.prem=(Math.abs(pv-reviewPremTool())<0.005)?0:pv; R.draft=$('rv_draft').value;
-    R.pharmacy=$('rv_pharm').value.trim(); R.month=$('rv_month').value; R.link=$('rv_link').value.trim(); autosave(); reviewCheck();
+    R.pharmacy=$('rv_pharm').value.trim(); R.month=$('rv_month').value; R.link=$('rv_link').value.trim(); autosave(); reviewCheck(); renderActual();
     var fr=$('rvFrame'); if(fr&&fr.contentDocument&&fr.contentDocument.body&&fr.contentDocument.body.dataset.rvp) reviewWire(fr.contentDocument,t); };
   ['rv_appr','rv_eff','rv_prem','rv_draft','rv_pharm','rv_month','rv_link'].forEach(function(id){ $(id).addEventListener('change',save); $(id).addEventListener('input',function(){ if(id!=='rv_prem') save(); }); });
   renderActual(); reviewRail(); reviewCheck();
@@ -5796,6 +5806,9 @@ var STORY_KYLE='<p class="st-act"><b>1 · Why the big number is never the real n
  +'<li><b>CareGuide</b> is &ldquo;a medical bill advocacy service, not insurance. It does not pay medical bills. Results vary by case.&rdquo; Promise that somebody will look &mdash; never an outcome. Best results when they call <b>before</b> paying anything: 469-902-2267 &middot; cgasaves.com/manhattanlifemembers</li>'
  +'</ul></div>';
 var PR_STORY_HEAD='<b>Story repository (who to tell)</b>';
+/* "Enrolling with plan edits" (Jesse, 17 Oct): the card + side-by-side open under the script; edits never touch the quote */
+function presentEditsOpen(){ var t=presentTier(), box=$('prEdit'); if(!box||!t) return; if(!actualOn()||S.actual.from!==t) actualSeed(t);
+  box.style.display=''; renderActual(); box.scrollIntoView({behavior:'smooth',block:'start'}); }
 function renderPresent(){ var host=$('presentHost'); if(!host) return; var t=presentTier(), T=presentTokens(t), pages=presentPages();
   S.present=S.present||{}; var pg=Math.max(0,Math.min(pages.length-1,+S.present.pg||0));
   var who=(T['client.first']||'the client')+(S.client&&S.client.sname?' & '+enSplit(S.client.sname)[0]:'');
@@ -5812,8 +5825,12 @@ function renderPresent(){ var host=$('presentHost'); if(!host) return; var t=pre
     +'<div class="box pw-box" id="prDrx" style="display:none"></div>'
     +'<div class="box pr-qa" id="prQA"><b>Quick answers — objections</b></div>'
     +'<div class="box" id="prStories">'+PR_STORY_HEAD+'</div>'
-    +'</div></div><div id="prPop" style="display:none"></div>';
+    +'</div></div><div id="prPop" style="display:none"></div>'
+    +'<div id="prEdit" class="pr-edit" style="display:none"><div class="rv-ch">Enrolling with plan edits <small>make the changes with them — the price and the side-by-side follow — then enroll.</small></div><div id="prEditBody"></div>'
+    +'<div class="pr-editgo"><button type="button" data-pe="cancel">Cancel — back to as presented</button><button type="button" class="go" data-pe="go">✓ They’re in — enroll with these adjustments →</button></div></div>';
   host.innerHTML=h; presentWhyBox(t); presentDrxBox();
+  host.querySelectorAll('[data-pe]').forEach(function(b){ b.onclick=function(){ if(b.dataset.pe==='cancel'){ $('prEdit').style.display='none'; return; }
+    S.chosen={tier:S.actual.from}; S.actual.how='edited'; autosave(); celebrate('confetti',enrollCheer()); goStep('enroll'); }; });
   var fr=$('prFrame');
   fr.onload=function(){ try{ var doc=fr.contentDocument; presentPaginate(doc);
       benLoadSafe('afc').then(function(){ presentWire(doc,t); presentGo(+S.present.pg||0); });
@@ -5839,9 +5856,10 @@ function presentGo(pg){ var pages=presentPages(), nav=presentNav(), t=presentTie
   var nx=nav[pos+1]!=null?pages[nav[pos+1]]:null;
   $('prNav').innerHTML='<button type="button" data-go="-1"'+(pos?'':' disabled')+'>← Back</button>'
     +(nx?'<button type="button" class="go" data-go="1">Next: '+esc(nx.next||nx.t)+' →</button>'
-        :'<span style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" data-go="quote">Not today — send the quote ↩</button><button type="button" class="go" data-go="enroll">They’re in — Enroll them →</button></span>');
+        :'<span style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" data-go="quote">Not today — send the quote ↩</button><button type="button" data-go="edits">Enrolling with plan edits ▾</button><button type="button" class="go" data-go="enroll">✓ Enrolling as presented →</button></span>');
   $('prNav').querySelectorAll('[data-go]').forEach(function(b){ b.onclick=function(){ var g=b.dataset.go;
-    if(g==='enroll'){ celebrate('confetti',enrollCheer()); goStep('enroll'); }
+    if(g==='enroll'){ S.chosen={tier:presentTier()}; actualSeed(presentTier()); S.actual.how='presented'; autosave(); celebrate('confetti',enrollCheer()); goStep('enroll'); }
+    else if(g==='edits'){ presentEditsOpen(); }
     else if(g==='quote'){ goStep('quote'); setTimeout(function(){ var q=$('sendQuote'); if(q) q.scrollIntoView({behavior:'smooth',block:'start'}); },60); }
     else presentGo(nav[pos+(+g)]); }; });
   window.scrollTo(0,0); }

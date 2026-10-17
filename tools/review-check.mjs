@@ -89,7 +89,7 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  /* setup asks for the benefits page */
  S.agentBenefits=''; ok(agentSetupMissing().indexOf('benefits page')>=0,'Setup counts the benefits page until it is filled');
   /* What they actually have (Jesse, 17 Oct): a copy of their plan, edited off the approval; quote and recommendation untouched */
- S.chosen={tier:'better'}; S.rec=pkSnap('best'); S.rec.by='presented'; S.elected=pkSnap('better'); delete S.actual; renderReview(); await w(1500);
+ S.chosen={tier:'better'}; S.rec=pkSnap('best'); S.rec.by='presented'; S.elected=pkSnap('better'); delete S.actual; reviewState().appr='chg'; renderReview(); await w(1500);
  var host=document.getElementById('rvActual'), col=host&&host.querySelector('.pbcol.actual');
  ok(!!col&&actualOn(),'the What-they-have card is on the review, seeded from their choice');
  ok(Math.abs(tierTotals('actual').mo-tierTotals('better').mo)<0.01,'seeded at the chosen plan price');
@@ -106,7 +106,7 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  var saved2=JSON.parse(localStorage.getItem('hf_pop_last')||'{}'); ok(saved2.actual&&saved2.packages&&saved2.packages.actual,'what they have is saved with the client');
   R=reviewState(); R.prem=0; renderReview(); await w(1200); ok(document.getElementById('rv_prem').value===fmtMoney2(reviewPremTool())&&reviewTokens('best')['policy.premium']===fmt2(reviewPremTool()),'a blank premium fills from the plan: '+document.getElementById('rv_prem').value);
  window.scrollTo(0,600); var y0=window.scrollY, rb=document.querySelector('#rvActual [data-act="rm"]'); if(rb) rb.click(); await w(300); ok(Math.abs(window.scrollY-y0)<5,'editing the plan keeps the page where it is ('+y0+' -> '+window.scrollY+')');
- ok(document.getElementById('rv_prem').value===fmtMoney2(reviewPremTool()),'the filled premium follows the plan');
+ ok(document.getElementById('rv_prem').value===fmtMoney2(reviewPremTool()),'the filled premium follows the plan: '+document.getElementById('rv_prem').value+' vs '+fmtMoney2(reviewPremTool())+' appr='+reviewState().appr+' prem='+reviewState().prem);
   /* family history: cancer / heart cover or living benefits left out is flagged (Jesse, 17 Oct) */
  S.rec=pkSnap('best'); S.rec.by='presented'; S.intake.famcancer=true; var GH=gapOf(S.rec,actualSnap());
  ok(GH.some(function(g){ return g.key==='p:chas'&&/Family history of cancer/.test(g.hist||''); }),'cancer cover left out with a family history of cancer is flagged');
@@ -133,7 +133,21 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  reviewGo(0); var cf=document.querySelector('#reviewHost .rv-conf'); ok(cf&&!cf.classList.contains('min'),'page 1: the setup is open');
  reviewGo(1); ok(cf.classList.contains('min')&&/Setup/.test(document.getElementById('rvConfBar').textContent),'page 2: the setup folds to one line');
  document.getElementById('rvConfBar').click(); ok(!cf.classList.contains('min'),'the caret opens it again'); reviewGo(2); ok(cf.classList.contains('min'),'moving on folds it again'); reviewGo(0);
- return {n:79, fails:fails}; })()`;
+  /* the review: the plan opens only when approved with a change */
+ reviewState().appr='as'; RV_ACT_OPEN=false; renderActual(); ok(!!document.querySelector('#rvActual .rv-actmin')&&!document.querySelector('#rvActual .pbcol.actual'),'approved as applied: the plan is one line, not the card');
+ reviewState().appr='chg'; renderActual(); ok(!!document.querySelector('#rvActual .pbcol.actual'),'approved with a change: the card opens');
+ /* the end of Present: as presented, or with plan edits (Jesse, 17 Oct) */
+ S.chosen={tier:'better'}; S.rec=pkSnap('best'); S.rec.by='presented'; delete S.actual; goStep('present'); await w(2500);
+ var nav=presentNav(); presentGo(nav[nav.length-1]); await w(300);
+ var eb=document.querySelector('#prNav [data-go="edits"]'), ab=document.querySelector('#prNav [data-go="enroll"]'); ok(!!eb&&!!ab&&/as presented/.test(ab.textContent),'the last screen offers as presented and with plan edits');
+ eb.click(); await w(400); var pc=document.querySelector('#prEditBody .pbcol.actual'); ok(!!pc&&/enrolling in/i.test(pc.textContent)&&!!document.querySelector('#prEditBody table.rv-cmp'),'with plan edits: the card and the side-by-side open under the script');
+ var betterQ=JSON.stringify(S.packages.better.products); var rx=pc.querySelector('[data-act="rm"][data-k="acc"]'); if(rx) rx.click(); await w(300);
+ ok(JSON.stringify(S.packages.better.products)===betterQ,'editing never touches the quote');
+ document.querySelector('[data-pe="go"]').click(); await w(500);
+ ok(S.step==='enroll'&&S.actual.how==='edited'&&!S.elected.products.some(function(p){ return p.k==='acc'; }),'enroll with adjustments: Enroll records the edited plan');
+ goStep('present'); await w(2500); nav=presentNav(); presentGo(nav[nav.length-1]); await w(300); document.querySelector('#prNav [data-go="enroll"]').click(); await w(500);
+ ok(S.step==='enroll'&&S.actual.how==='presented'&&S.elected.products.some(function(p){ return p.k==='acc'; }),'enroll as presented: the plan as presented, edits gone');
+ return {n:86, fails:fails}; })()`;
 try {
   let l; for (let i = 0; i < 60 && !l; i++) { await sleep(150); l = await fetch(`http://127.0.0.1:${DBG}/json/list`).then(r => r.json()).catch(() => null); }
   ws = new WebSocket(l.find(t => t.type === 'page').webSocketDebuggerUrl);
