@@ -5685,6 +5685,8 @@ function presentScriptTokens(t){ var T=presentTokens(t), C=S.client||{}, I=S.int
   var docs=[]; [I.docs1,I.docs2,I.docs3].forEach(function(x){ String(x||'').split(/[;,]|\s+and\s+/i).forEach(function(d){
       d=d.replace(/\s*\(.*?\)\s*/g,' ').replace(/\s+[-–—]\s+.*$/,'').replace(/^\s*(dr\.?|doctor)\s+/i,'').trim(); if(d&&docs.indexOf(d)<0) docs.push(d); }); });
   if(docs.length){ var dn=docs.map(function(d){ return 'Dr '+d; }); T['doctor.name']=dn.length===1?dn[0]:dn.slice(0,-1).join(', ')+' and '+dn[dn.length-1]; T['_docCount']=docs.length; }
+  /* Health ZONE's in / out network lines (17 Oct): one doctor or several */
+  var many=docs.length>1; T['doctor.in_network']=many?'they’re all in the network':'they’re in the network'; T['doctor.out_who']=many?'they’re all':'they’re';
   /* every medication, in intake order; the first fills the sentence, the rest are listed after it (presentMeds) */
   T['_meds']=(I.medList||[]).filter(function(m){ return m&&String(m.name||'').trim(); }).map(function(m){ return {name:medBase(m.name), cash:+m.cur>0?fmt2(+m.cur):'', coupon:+medDisc(m)>0?fmt2(medDisc(m)):''}; });
   var med=T['_meds'][0]; if(med){ T['drug.name']=med.name; if(med.coupon) T['drug.coupon']=med.coupon; if(med.cash) T['drug.now']=med.cash; }

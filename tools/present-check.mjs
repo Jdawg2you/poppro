@@ -108,6 +108,13 @@ const TEST = `(async function(){
   ok(document.querySelectorAll('#prQA details').length>=10,'objections in the rail ('+document.querySelectorAll('#prQA details').length+')');
   ok(document.querySelectorAll('#prStories [data-story]').length>=1,'stories in the rail');
   document.querySelector('#prStories [data-story]').click(); ok(/Never a client/.test(document.getElementById('prPop').innerText),'a story pops with the naming rule');
+  /* the doctor's network status picks the line (Health ZONE 6ddbb26, 17 Oct) */
+  S.docs=S.docs||{}; S.docs.net=true; S.intake.keepafc='no'; presentWire(d,'best');
+  var dIn=d.querySelector('[data-docnet="in"]'), dOut=Array.prototype.slice.call(d.querySelectorAll('[data-docnet="out"]'));
+  ok(dIn&&dIn.classList.contains('pp-off')&&dOut.length===2&&dOut.every(function(x){ return !x.classList.contains('pp-off'); })&&/not in the First Health network/.test(dOut[0].textContent),'doctor verified out of network: the out line and its prep show, the in line hides');
+  ok(!/\$\d/.test(dOut[0].textContent),'the out-of-network line quotes no price');
+  S.intake.keepafc='yes'; presentWire(d,'best'); ok(!dIn.classList.contains('pp-off')&&dOut.every(function(x){ return x.classList.contains('pp-off'); })&&/they\u2019re in the network/.test(dIn.textContent),'verified in network: the in line, nothing about out of network');
+  S.docs.net=false; presentWire(d,'best'); ok(!dIn.classList.contains('pp-off'),'not checked yet: the in line with its question mark');
   /* blanks */
   presentWire(d,'best'); var miss={}; d.querySelectorAll('var.pp-miss:not(.pp-off)').forEach(function(v){ if(v.closest('.pp-off')) return; miss[v.title.replace(/^.*: /,'')]=1; });   /* a blank inside a dropped-out sentence isn't a gap */
   var allowed=['drug.now','client.ht','client.wt','client.email','client.phone','agent.email','agent.website','agent.booking'];
