@@ -80,10 +80,16 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  ok(reviewTicks().length===4,'no Direction Rx step in the Benefits Review without it');
  S.intake.glp1={p:{on:'Yes',for:'Weight loss',drug:'Zepbound'},s:{}}; ok(reviewTicks().length===5&&reviewTicks()[4].k==='drx','with it, a fifth Benefits Review step');
  S.present={drx:false}; ok(drxParts().drug===''&&presentScriptTokens('better')['drx.drug']==='','switched off on Present: drx.drug empty, the block drops out'); S.present={};
+ /* the agent's bio (Jesse, 17 Oct): Setup box, default button, handed to the call */
+ openSetup(); document.getElementById('in_abio').value='I help people in Dallas sort out health cover.'; document.getElementById('in_abio').dispatchEvent(new Event('input',{bubbles:true}));
+ ok(S.agentBio==='I help people in Dallas sort out health cover.'&&callAgent().a_bio===S.agentBio,'a custom bio saves and rides to the call');
+ document.getElementById('bioDefault').click(); ok(S.agentBio===DEFAULT_BIO,'Use the default puts the default back');
+ document.getElementById('in_abio').value=''; document.getElementById('in_abio').dispatchEvent(new Event('input',{bubbles:true})); ok(callAgent().a_bio==='','empty means the call reads its own default'); closeSetup();
+ window.__bio=DEFAULT_BIO;
  /* an old file keeps its why */
  S=blankState(); applySuiteClient({first:'Old',last:'File',state:'TX',age:'50',kids:[],health:{whyMatters:'keep Dr. Patel',whyShop:'premium jumped'}});
  ok(S.intake.whyMatters==='keep Dr. Patel'&&S.intake.whyShop==='premium jumped'&&whyTagList(S.intake.whyTags).length===0,'an older file without tags still loads its why and story');
- return {n:39, fails:fails}; })()`;
+ return {n:42, fails:fails, bio:window.__bio}; })()`;
 try {
   let l; for (let i = 0; i < 60 && !l; i++) { await sleep(150); l = await fetch(`http://127.0.0.1:${DBG}/json/list`).then(r => r.json()).catch(() => null); }
   ws = new WebSocket(l.find(t => t.type === 'page').webSocketDebuggerUrl);
@@ -94,6 +100,10 @@ try {
   await send('Runtime.enable'); await send('Page.enable');
   await send('Page.navigate', { url: `http://127.0.0.1:${PORT}/tool/` }); await sleep(4000);
   const r = await ev(TEST);
+  /* one default bio in two tools - they must say the same thing */
+  const navSrc = fs.readFileSync(path.join(os.homedir(), 'script-navigator-portable/index.html'), 'utf8');
+  const nb = (navSrc.match(/var DEFAULT_BIO="([^"]*)";/) || [])[1];
+  if (!nb || nb !== r.bio) r.fails.push('DEFAULT_BIO differs between MyPopPro and the Script Navigator');
   const bad = r.fails.concat(errs.map(e => 'page error: ' + String(e).slice(0, 160)));
   console.log(bad.length ? `WHY FAILED ${bad.length}:\n  ` + bad.join('\n  ') : `WHY ok - ${r.n} checks`);
   process.exitCode = bad.length ? 1 : 0;

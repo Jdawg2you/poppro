@@ -627,6 +627,7 @@
   .wl-you{margin:18px 20px 0;padding-top:14px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}.wl-you b{font-family:var(--serif);color:var(--navy);font-size:17px;margin-right:6px}.wl-you i{font-style:normal}.wl-you i.needfill-sum{color:#17824a;font-weight:700}
   #agentSetup{padding:8px 20px 4px}
   #setupModal{z-index:2000}
+  .fld.agbio{grid-column:1/-1}.fld.agbio textarea{width:100%;box-sizing:border-box;font:inherit;font-size:14px;line-height:1.5;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:#fbfaf6;resize:vertical}.fld.agbio .picbtn{margin-top:6px}
   /* The Why */
   .whyblock{border:1.5px solid #e6d3a3;background:#fffaf0;border-radius:12px;padding:10px 12px;margin-bottom:10px}
   .whylab{font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:6px 0 4px}.whylab small{text-transform:none;letter-spacing:0;font-weight:500;margin-left:4px}
@@ -1578,6 +1579,7 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
       <div class="fld"><label>Digital business card <small>in emails + text</small></label><input id="in_acard" placeholder="yourcard.com/you"></div>
       <div class="fld"><label>Booking link <small>in emails + text</small></label><input id="in_abook" placeholder="calendly.com/you"></div>
       <div class="fld"><label>Your benefits page <small>for the Benefits Review</small></label><input id="in_abenefits" placeholder="yoursite.com/manhattanlife"></div>
+      <div class="fld agbio"><label>Your bio <small>who you are · read at the start of every discovery call (2.3) · empty = the default</small></label><textarea id="in_abio" rows="4" placeholder="Leave empty to use the default"></textarea><button type="button" class="picbtn" id="bioDefault">Use the default</button></div>
       <div class="fld"><label>Direction Rx link <small>GLP-1 discount, weight loss</small></label><input id="in_adrxlink" placeholder="your Direction Rx link"></div>
       <div class="fld"><label>Direction Rx code <small>the client uses it for 35% off</small></label><input id="in_adrxcode" placeholder="your code"></div>
     </div>
@@ -4449,7 +4451,7 @@ function suiteFromNavProfile(P){
 }
 /* The agent's own details (agency, name, phone, email) belong to whoever is running the tool, not to a
    file. A loaded file keeps them unless it carries its own - loading a client never wipes the agent. */
-function agentOf(st){ return {agency:st.agency, agent:(st.client||{}).agent, phone:st.agentPhone, email:st.agentEmail, npn:st.agentNPN, web:st.agentWebsite, card:st.agentCard, book:st.agentBooking, ben:st.agentBenefits, drxl:st.agentDrxLink, drxc:st.agentDrxCode}; }
+function agentOf(st){ return {agency:st.agency, agent:(st.client||{}).agent, phone:st.agentPhone, email:st.agentEmail, npn:st.agentNPN, web:st.agentWebsite, card:st.agentCard, book:st.agentBooking, ben:st.agentBenefits, drxl:st.agentDrxLink, drxc:st.agentDrxCode, bio:st.agentBio}; }
 /* Agent setup folds closed once agency, name, phone and email are all in; it opens again if any of those four is
    missing. NPN, website and booking are optional and never hold it open. (Jesse, 2026-10-08) */
 /* Jesse, 2026-10-09: the fold now waits for ALL of them, not the four the tool cannot run without.
@@ -4476,9 +4478,9 @@ function agentGlow(){ var empty=[]; AGENT_BOXES.forEach(function(b){ var el=$(b[
 function agentSetupFold(){ var miss=agentSetupMissing(), b=$('setupBtn'), n=$('setupNeed'); if(b){ b.classList.toggle('need',!!miss.length); b.title=miss.length?'Still to fill in: '+miss.join(', '):'Your agency, name, phone, email, NPN and links'; } if(n) n.textContent=miss.length?String(miss.length):'';
   var ws=$('wlSetupState'); if(ws){ ws.textContent=miss.length?miss.length+' to fill in ↓':'✓ Done'; ws.className=miss.length?'todo':''; }
   var d=$('agentSetup'); if(d) d.classList.toggle('goat-skipped',goatSkipped()); agentGlow(); }
-function fillAgent(){ $('in_agency').value=(S.agency&&S.agency!=='HealthFirst')?S.agency:(S.agency||''); $('in_agent').value=(S.client||{}).agent||''; $('in_aphone').value=S.agentPhone||''; $('in_aemail').value=S.agentEmail||''; $('in_anpn').value=S.agentNPN||''; $('in_aweb').value=S.agentWebsite||''; $('in_acard').value=S.agentCard||''; $('in_abook').value=S.agentBooking||''; $('in_abenefits').value=S.agentBenefits||''; $('in_adrxlink').value=S.agentDrxLink||''; $('in_adrxcode').value=S.agentDrxCode||''; agentSetupFold(); }
+function fillAgent(){ $('in_agency').value=(S.agency&&S.agency!=='HealthFirst')?S.agency:(S.agency||''); $('in_agent').value=(S.client||{}).agent||''; $('in_aphone').value=S.agentPhone||''; $('in_aemail').value=S.agentEmail||''; $('in_anpn').value=S.agentNPN||''; $('in_aweb').value=S.agentWebsite||''; $('in_acard').value=S.agentCard||''; $('in_abook').value=S.agentBooking||''; $('in_abenefits').value=S.agentBenefits||''; $('in_adrxlink').value=S.agentDrxLink||''; $('in_adrxcode').value=S.agentDrxCode||''; $('in_abio').value=S.agentBio||''; agentSetupFold(); }
 /* Only the agent fields - captureIntake() would also read the client boxes, which are stale off the Intake step. */
-function readAgent(){ S.agency=($('in_agency').value||'').trim()||'HealthFirst'; S.client=S.client||{}; S.client.agent=$('in_agent').value; S.agentPhone=$('in_aphone').value; S.agentEmail=$('in_aemail').value; S.agentNPN=($('in_anpn').value||'').trim(); S.agentWebsite=($('in_aweb').value||'').trim(); S.agentCard=($('in_acard').value||'').trim(); S.agentBooking=($('in_abook').value||'').trim(); S.agentBenefits=($('in_abenefits').value||'').trim(); S.agentDrxLink=($('in_adrxlink').value||'').trim(); S.agentDrxCode=($('in_adrxcode').value||'').trim(); agentSetupFold(); autosave(); }
+function readAgent(){ S.agency=($('in_agency').value||'').trim()||'HealthFirst'; S.client=S.client||{}; S.client.agent=$('in_agent').value; S.agentPhone=$('in_aphone').value; S.agentEmail=$('in_aemail').value; S.agentNPN=($('in_anpn').value||'').trim(); S.agentWebsite=($('in_aweb').value||'').trim(); S.agentCard=($('in_acard').value||'').trim(); S.agentBooking=($('in_abook').value||'').trim(); S.agentBenefits=($('in_abenefits').value||'').trim(); S.agentDrxLink=($('in_adrxlink').value||'').trim(); S.agentDrxCode=($('in_adrxcode').value||'').trim(); S.agentBio=($('in_abio').value||'').trim(); agentSetupFold(); autosave(); }
 /* ===== Direction Rx for GLP-1s used for weight loss (Jesse, 2026-10-16) =====
    The client PAYS for the medication; what they get through us is the discount - 35% off as a client with an active
    ManhattanLife product, using the agent's code on Direction Rx's site. So it is a discount they have access to, never
@@ -4486,6 +4488,8 @@ function readAgent(){ S.agency=($('in_agency').value||'').trim()||'HealthFirst';
    Setup. No dollar saving is worked out - prices depend on the drug and dose - their current cost is said as theirs. */
 /* ONE place for the figure: 30%, confirmed by Jesse 2026-10-16, matching his DirectionRx pricing chart (member code
    4-MEM-26-6: "30% Off = 30% discount applied to Patient Price" on every row). */
+/* The agent's bio, read at 2.3 of the discovery call. Must match DEFAULT_BIO in the Script Navigator (why-check compares). */
+var DEFAULT_BIO="I'm a licensed health insurance agent, and I also help families with life insurance, retirement planning and a number of other financial services. What I do is find out what's important to you, so we can tailor a plan that actually accomplishes your goals. There are a lot of companies and a lot of products out there, and they don't all do the same thing, so it matters who you work with. I'm not beholden to any one company. If one company is the best fit for you, I want to have compared it against all the A-rated ones first.";
 var DRX_PCT='30%';
 function drxWho(){ var G=(S.intake&&S.intake.glp1)||{}, C=S.client||{}, out=[];
   /* the discount needs an active ManhattanLife product: a LifeX or Cigna plan gets nothing (Health ZONE, 16 Oct) */
@@ -4831,6 +4835,7 @@ var NEWS=[
   ['Booking fills the follow-up','The date and time you book at the end of the call land in Send the quote on the Quote page.'],
   ['GLP-1 questions','The call asks about Ozempic, Wegovy, Mounjaro, Zepbound and Saxenda. The Intake has a GLP-1 row for each person that opens only if they’re on one: which drug, diabetes or weight, how long, what they pay and where they get it. A GLP-1 on the medication list fills it in for you.'],
   ['Benefits Review','A sixth step for the call after approval: type the effective date, premium and draft date off the carrier’s confirmation, then walk the script while the client registers the portal, telehealth, the Easy Upload app and CareGuide. The one you’re on is boxed in green, with Open, Text them (Messages opens with a note and the link) and Copy link. CareGuide’s text includes a tap-to-save contact card. Their prescriptions are priced against the daily benefit, and only the true sentence is shown.'],
+  ['Your bio on the call','Set the tone (2.3) now opens with who you are: your bio from ⚙ Setup, read in your words. Leave it empty and a default is read; “Use the default” puts it back any time. Then the Package of Protection, and why the call asks about money.'],
   ['Direction Rx for GLP-1 weight loss','When someone is on a GLP-1 for weight loss, Present offers a Bonus benefits line about Direction Rx — they pay for the medication, and as our client they get a discount off Direction Rx’s own price. The Benefits Review gets a step to text them the link and your code, and the enrollment email explains how to use it. Add your Direction Rx link and code in ⚙ Setup.'],
   ['Their why, in their words','One Why on the call and the Intake: type exactly what they said, click what’s behind it, and see what you’ll say back. On Present it’s quoted back — “you said, …” — with their own numbers, and the close offers only the answers the quote actually supports, each one yours to switch on or off.'],
   ['Recommended vs what they bought','Presenting a plan records it as your recommendation, product by product. Enroll records what they actually bought and lists every gap — a lower package, products declined, levels lowered — with a box to tick each one they knowingly declined.'],
@@ -4954,7 +4959,7 @@ function keepAgent(ag){
   S.client=S.client||{}; if(ag.agent && !S.client.agent) S.client.agent=ag.agent;
   if(ag.phone && !S.agentPhone) S.agentPhone=ag.phone;
   if(ag.email && !S.agentEmail) S.agentEmail=ag.email;
-  if(ag.npn && !S.agentNPN) S.agentNPN=ag.npn; if(ag.web && !S.agentWebsite) S.agentWebsite=ag.web; if(ag.card && !S.agentCard) S.agentCard=ag.card; if(ag.book && !S.agentBooking) S.agentBooking=ag.book; if(ag.ben && !S.agentBenefits) S.agentBenefits=ag.ben; if(ag.drxl && !S.agentDrxLink) S.agentDrxLink=ag.drxl; if(ag.drxc && !S.agentDrxCode) S.agentDrxCode=ag.drxc; }
+  if(ag.npn && !S.agentNPN) S.agentNPN=ag.npn; if(ag.web && !S.agentWebsite) S.agentWebsite=ag.web; if(ag.card && !S.agentCard) S.agentCard=ag.card; if(ag.book && !S.agentBooking) S.agentBooking=ag.book; if(ag.ben && !S.agentBenefits) S.agentBenefits=ag.ben; if(ag.drxl && !S.agentDrxLink) S.agentDrxLink=ag.drxl; if(ag.drxc && !S.agentDrxCode) S.agentDrxCode=ag.drxc; if(ag.bio && !S.agentBio) S.agentBio=ag.bio; }
 /* Portable client file (Jesse, 14 Oct): one file per client opens in POP Pro or the Script Navigator. A POP Pro save
    carries the whole navigator call (S.nav); a navigator save carries the POP Pro quote it came with (_pop). Opening a
    navigator file: its POP Pro quote is the base and the navigator's answers - the newer save - go on top. */
@@ -5012,7 +5017,7 @@ function restore(){ try{ var s=localStorage.getItem('hf_pop_last'); if(s){ var r
 /* ========== INTAKE + RECOMMENDATION ENGINE ========== */
 function readIntake(){
   S.intake=S.intake||{};
-  S.agency=($('in_agency').value||'').trim()||'HealthFirst'; S.agentPhone=$('in_aphone').value; S.agentEmail=$('in_aemail').value; S.agentNPN=($('in_anpn').value||'').trim(); S.agentWebsite=($('in_aweb').value||'').trim(); S.agentCard=($('in_acard').value||'').trim(); S.agentBooking=($('in_abook').value||'').trim(); S.agentBenefits=($('in_abenefits').value||'').trim(); S.agentDrxLink=($('in_adrxlink').value||'').trim(); S.agentDrxCode=($('in_adrxcode').value||'').trim(); agentSetupFold();
+  S.agency=($('in_agency').value||'').trim()||'HealthFirst'; S.agentPhone=$('in_aphone').value; S.agentEmail=$('in_aemail').value; S.agentNPN=($('in_anpn').value||'').trim(); S.agentWebsite=($('in_aweb').value||'').trim(); S.agentCard=($('in_acard').value||'').trim(); S.agentBooking=($('in_abook').value||'').trim(); S.agentBenefits=($('in_abenefits').value||'').trim(); S.agentDrxLink=($('in_adrxlink').value||'').trim(); S.agentDrxCode=($('in_adrxcode').value||'').trim(); S.agentBio=($('in_abio').value||'').trim(); agentSetupFold();
   S.intake.who={app:$('in_who_app').checked,spouse:$('in_who_spouse').checked,kids:$('in_who_kids').checked};
   S.intake.phone=$('in_phone').value; S.intake.email=$('in_email').value;
   S.intake.tobaccoP=$('in_tobacco_p').checked; S.intake.tobaccoS=$('in_tobacco_s').checked;
@@ -5053,7 +5058,7 @@ function fillIntake(){
   if(typeof renderKids==='function') setTimeout(renderKids,0);
   var I=S.intake||{}; var w=I.who||{app:true};
   $('in_who_app').checked=w.app!==false; $('in_who_spouse').checked=!!w.spouse; $('in_who_kids').checked=!!w.kids;
-  $('in_agency').value=(S.agency&&S.agency!=='HealthFirst')?S.agency:(S.agency||''); $('in_aphone').value=S.agentPhone||''; $('in_aemail').value=S.agentEmail||''; $('in_anpn').value=S.agentNPN||''; $('in_aweb').value=S.agentWebsite||''; $('in_acard').value=S.agentCard||''; $('in_abook').value=S.agentBooking||''; $('in_abenefits').value=S.agentBenefits||''; $('in_adrxlink').value=S.agentDrxLink||''; $('in_adrxcode').value=S.agentDrxCode||''; agentSetupFold();
+  $('in_agency').value=(S.agency&&S.agency!=='HealthFirst')?S.agency:(S.agency||''); $('in_aphone').value=S.agentPhone||''; $('in_aemail').value=S.agentEmail||''; $('in_anpn').value=S.agentNPN||''; $('in_aweb').value=S.agentWebsite||''; $('in_acard').value=S.agentCard||''; $('in_abook').value=S.agentBooking||''; $('in_abenefits').value=S.agentBenefits||''; $('in_adrxlink').value=S.agentDrxLink||''; $('in_adrxcode').value=S.agentDrxCode||''; $('in_abio').value=S.agentBio||''; agentSetupFold();
   $('in_pname').value=S.client.pname||''; $('in_sname').value=S.client.sname||''; $('in_agent').value=S.client.agent||'';
   $('in_state').value=S.client.state||''; $('in_zip').value=S.client.zip||''; $('in_page').value=S.client.page||''; $('in_sage').value=S.client.sage||''; $('in_date').value=S.client.date||''; $('in_sdob').value=S.client.sdob||''; $('in_address').value=S.client.address||'';
   $('in_phone').value=I.phone||''; $('in_email').value=I.email||'';
@@ -6086,7 +6091,7 @@ function clientStripSum(){ var el=$('csSum'), cs=$('clientStrip'); if(!el||!cs) 
    the client's saved call (S.nav, via the portable file loader) and the agent's details, because a framed site cannot
    read its stand-alone storage; every answer comes straight back and fills the Intake live. */
 var NAV_BASE=location.port==='8767'?'http://127.0.0.1:8777/':'https://script.ffloptimum.com/';
-function callAgent(){ var C=S.client||{}; return {a_name:C.agent||'',a_agency:(S.agency&&S.agency!=='HealthFirst')?S.agency:'',a_npn:S.agentNPN||'',a_phone:S.agentPhone||'',a_email:S.agentEmail||'',a_web:S.agentWebsite||'',a_book:S.agentBooking||''}; }
+function callAgent(){ var C=S.client||{}; return {a_name:C.agent||'',a_agency:(S.agency&&S.agency!=='HealthFirst')?S.agency:'',a_npn:S.agentNPN||'',a_phone:S.agentPhone||'',a_email:S.agentEmail||'',a_web:S.agentWebsite||'',a_book:S.agentBooking||'',a_bio:S.agentBio||''}; }
 function callInit(){ var f=$('callFrame'); if(!f||!f.contentWindow) return; try{ f.contentWindow.postMessage({source:'optimum-poppro',type:'call-init',v:1,pop:currentQuote(),agent:callAgent()},NAV_BASE.replace(/\/$/,'')); }catch(e){} }
 function callOpen(){ var f=$('callFrame'); if(!f) return; if(!f.getAttribute('src')) f.src=NAV_BASE+'?embed=1&script=health&host=poppro'+(location.port==='8767'?'&v='+Date.now():''); else callInit(); }   /* the sandbox's navigator server caches; always fetch the newest there */
 window.addEventListener('message',function(e){ var f=$('callFrame'); if(!f||e.source!==f.contentWindow) return; var d=e.data||{};
@@ -6224,6 +6229,7 @@ function bindInputs(){
   $('in_aemail').addEventListener('input',function(){ markValid(this,emailOK(this.value)); captureIntake(); });
   ['in_anpn','in_aweb','in_acard','in_abook'].forEach(function(id){ $(id).addEventListener('input',function(){ captureIntake(); }); });
   if($('goatSkip')) $('goatSkip').onclick=function(){ try{ localStorage.setItem('pp_goat_skip','1'); }catch(e){} agentSetupFold(); };
+  $('bioDefault').onclick=function(){ $('in_abio').value=DEFAULT_BIO; readAgent(); };
   $('setupBtn').onclick=openSetup; $('closeSetup').onclick=closeSetup;
   ['p','s'].forEach(function(w){ $('in_glp1_'+w).addEventListener('change',function(){ if(this.value==='Yes'&&!$('in_glp1_'+w+'_drug').value) $('in_glp1_'+w+'_drug').value=glp1FromMeds(w); glp1Show(); glp1Need(); }); $('in_glp1_'+w+'_for').addEventListener('change',glp1Need); });
   if($('in_who_spouse')) $('in_who_spouse').addEventListener('change',glp1Show);
