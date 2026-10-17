@@ -127,7 +127,7 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  var ab=cmpBen('afc',{afc:'Elite'}); ok(ab.length===6&&ab[0][1]==='Elite'&&ab.some(function(x){ return /Doctor/.test(x[0]); }),'Affordable Choice lists its benefits from the brochure ('+ab.length+' rows)');
  renderActual(); var ghs=Array.prototype.map.call(document.querySelectorAll('#rvActual .rv-cmp tr.gh th'),function(x){ return x.textContent; }); ok(ghs.some(function(t){ return /Hospital Indemnity/.test(t); })&&document.querySelectorAll('#rvActual .rv-cmp tr.sub.d').length>0,'the table is grouped by product with changed rows marked');
   ok(cmpDir('$10,000','$5,000','Per hospital stay')==='dn'&&cmpDir('$500','$1,500','Outpatient surgery')==='up'&&cmpDir('Elite Plus','Elite','Plan')==='dn'&&cmpDir('$500','none','x')==='dn'&&cmpDir('Americo','Mutual of Omaha','Carrier')==='','less is red, more is green, a different carrier is neither');
-  S.rec=null; renderActual(); ok(!!document.getElementById('rvRecSet')&&!document.querySelector('#rvActual table.rv-cmp'),'no recommendation on record: it says so and offers to record one');
+  S.rec=null; renderActual(); ok(!!document.getElementById('rvRecSet')&&/What they chose/.test((document.querySelector('#rvActual table.rv-cmp')||{}).textContent||''),'no recommendation on record: compares with what they chose and offers to record one');
  document.getElementById('rvRecPick').value='best'; document.getElementById('rvRecSet').click(); await w(300); ok(S.rec&&S.rec.tier==='best'&&/Benefits Review/.test(S.rec.by)&&!!document.querySelector('#rvActual table.rv-cmp'),'recording it brings up the side-by-side');
  return {n:75, fails:fails}; })()`;
 try {

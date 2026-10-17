@@ -4733,7 +4733,7 @@ function actualSnap(){ var s=pkSnap('actual')||{products:[]}, b=effCfg('actual')
    The recommendation is priced from its own saved settings (S.rec.cfg/pk); one saved before those existed uses the
    current quote's package of the same name, and says so. */
 var CMP_EVENTS=['visit','urgent','arm','hosp','heart','cancer'];
-function cmpRows(){ var R=S.rec; if(!R||!actualOn()) return null; var key=R.tier, own=!!(R.cfg&&R.pk), out={R:R,A:actualSnap(),own:own,ev:[]};
+function cmpRows(B){ var R=B||S.rec; if(!R||!actualOn()) return null; var key=R.tier, own=!!(R.cfg&&R.pk), out={R:R,A:actualSnap(),own:own,ev:[]};
   if(own){ S.cfg.__rec=cfgClone(R.cfg); S.packages.__rec=JSON.parse(JSON.stringify(R.pk)); key='__rec'; }
   try{ var ro=evTierPack(key), ao=evTierPack('actual');
     CMP_EVENTS.forEach(function(id){ var sc=evScn(id), bill=evScnBill(sc).total, r=evEvent(sc,ro), a=evEvent(sc,ao);
@@ -4766,11 +4766,13 @@ function cmpDir(rv,av,L){ if(rv===av) return ''; var z=function(v){ return v==nu
   var n=function(v){ if(z(v)) return 0; var m=String(v).replace(/,/g,'').match(/(\d+(?:\.\d+)?)/); return m?+m[1]:null; }, a=n(av), r=n(rv);
   if(z(av)&&!z(rv)) return 'dn'; if(z(rv)&&!z(av)) return 'up'; if(a==null||r==null||a===r) return ''; return a>r?'up':'dn'; }
 function cmpHTML(){ if(typeof BEN_DATA!=='undefined') ['afc','his'].forEach(function(f){ if(!BEN_DATA[f]) benLoadSafe(f).then(function(d){ if(d&&$('rvActual')) actualRedraw(); }); });
-  if(!S.rec&&actualOn()){ var dt=S.recommended||'best';
-    return '<div class="rv-norec"><b>No recommendation on record for this client.</b> It is saved when you click ▶ Present, and this client was never presented that way. Mark which package you recommended and the side-by-side appears:'
+  /* no recommendation on record: compare with what they chose, and offer to record the recommendation (Jesse, 17 Oct) */
+  var base=null, norec='';
+  if(!S.rec&&actualOn()){ var dt=S.recommended||'best', ct=chosenTier(); base=(S.elected&&S.elected.cfg)?S.elected:pkSnap(ct);
+    norec='<div class="rv-norec"><b>No recommendation on record</b> — it is saved when you click ▶ Present. Below compares with <b>what they chose</b>. If you recommended something else, record it:'
       +'<div style="display:flex;gap:8px;align-items:center;margin-top:8px"><select id="rvRecPick">'+pbOpts([['good','Essential'],['better','Complete'],['best','Comprehensive']],dt)+'</select><button type="button" class="rg-btn" id="rvRecSet">Record as our recommendation</button></div>'
       +'<small>It uses that package as it stands on the quote today.</small></div>'; }
-  var X=cmpRows(); if(!X) return ''; var R=X.R, A=X.A, F=histFam(), seen={}, rows=[];
+  var X=cmpRows(base); if(!X) return norec; var R=X.R, A=X.A, F=histFam(), seen={}, rows=[];
   var rc=(R.cfg&&R.pk)?R.cfg:effCfg(R.tier), ac=effCfg('actual'), have={}; A.products.forEach(function(p){ have[p.k||p.name]=p; });
   var cell=function(v,cls){ return '<td'+(cls?' class="'+cls+'"':'')+'>'+esc(v)+'</td>'; };
   R.products.concat(A.products).forEach(function(p){ var k=p.k||p.name; if(seen[k]) return; seen[k]=1;
@@ -4787,9 +4789,9 @@ function cmpHTML(){ if(typeof BEN_DATA!=='undefined') ['afc','his'].forEach(func
     var you=function(n){ return '<small>'+(n<=0?'they net '+fmt2(-n):'they pay '+fmt2(n))+'</small>'; };
     return '<tr class="'+(Math.abs(gap)>=1?'d':'')+(hist?' h':'')+'"><th>'+esc(e.lab)+'<small>'+fmt2(e.bill)+' bill</small></th><td>'+fmt2(e.r)+you(e.rn)+'</td><td>'+fmt2(e.a)+you(e.an)
       +(Math.abs(gap)>=1?'<b class="gap '+(gap>0?'dn':'up')+'">'+(gap>0?fmt2(gap)+' less':fmt2(-gap)+' more')+'</b>':'<small class="same">same</small>')+'</td></tr>'; }).join('');
-  return '<table class="rv-cmp"><thead><tr><th></th><th>Our recommendation<small>'+esc(R.name)+' · '+fmt2(R.monthly)+'/mo</small></th><th>Plan elected<small>'+esc(A.name)+' · '+fmt2(A.monthly)+'/mo</small></th></tr></thead>'
+  return norec+'<table class="rv-cmp"><thead><tr><th></th><th>'+(base?'What they chose':'Our recommendation')+'<small>'+esc(R.name)+' · '+fmt2(R.monthly)+'/mo</small></th><th>'+(base?'What they have':'Plan elected')+'<small>'+esc(A.name)+' · '+fmt2(A.monthly)+'/mo</small></th></tr></thead>'
     +rows.join('')+'<tbody class="ev"><tr class="gh"><th colspan="3">If this happens — what the plan pays</th></tr>'+evRows+'</tbody></table>'
-    +(X.own?'':'<div class="rv-cmpnote">This recommendation was saved before plan details were kept, so it is priced from today’s '+esc(R.name)+' package on the quote.</div>')
+    +(X.own||base?'':'<div class="rv-cmpnote">This recommendation was saved before plan details were kept, so it is priced from today’s '+esc(R.name)+' package on the quote.</div>')
     +(F.any?'<div class="rv-cmpnote"><span class="rv-sw"></span> Gold: speaks to their family history of '+esc(F.label)+(F.who?' ('+esc(F.who)+')':'')+'.</div>':''); }
 function pbActHead(){ var A=S.actual||{};
   return '<div class="pbcol actual" data-t="actual"><div class="pbhd"><div class="r1"><span class="tt">What they actually have</span>'
