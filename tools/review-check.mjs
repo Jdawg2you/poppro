@@ -145,13 +145,15 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  ok(JSON.stringify(S.packages.better.products)===betterQ,'editing never touches the quote');
  document.querySelector('[data-pe="go"]').click(); await w(500);
  ok(S.step==='enroll'&&S.actual.how==='edited'&&!S.elected.products.some(function(p){ return p.k==='acc'; }),'enroll with adjustments: Enroll records the edited plan');
+ var es=document.getElementById('enrollSummary').textContent; ok(!/24-Hour Accident/.test(es)&&/with plan edits/.test(es)&&es.indexOf(fmt2(reviewPremTool()))>=0,'the Enroll summary is the plan they are actually enrolling in (premium '+fmt2(reviewPremTool())+')');
+ ok(enrolledTier()==='actual'&&TIER_NAME.actual==='Complete'&&!lbSummary().some(function(x){ return false; }),'the email, follow-ups and wrap-up read the enrolled plan');
  goStep('present'); await w(2500); nav=presentNav(); presentGo(nav[nav.length-1]); await w(300); document.querySelector('#prNav [data-go="enroll"]').click(); await w(500);
  ok(S.step==='enroll'&&S.actual.how==='presented'&&S.elected.products.some(function(p){ return p.k==='acc'; }),'enroll as presented: the plan as presented, edits gone');
   goStep('present'); await w(2500); nav=presentNav(); presentGo(nav[nav.length-1]); await w(300); document.querySelector('#prNav [data-go="edits"]').click(); await w(400);
  var px=document.querySelector('#prEditBody [data-act="rm"][data-k="acc"]'); if(px) px.click(); await w(300); var cb2=document.querySelector('[data-pe="cancel"]');
  ok(/Cancel edits/.test(cb2.textContent)&&document.querySelectorAll('#prEdit [data-pe="go"]').length===2&&document.querySelectorAll('#prEdit [data-pe="cancel"]').length===2,'both buttons sit above and below the edit section'); cb2.click(); await w(500);
  ok(S.step==='enroll'&&S.actual.how==='presented'&&S.elected.products.some(function(p){ return p.k==='acc'; }),'cancel edits enrolls the plan as presented');
- return {n:88, fails:fails}; })()`;
+ return {n:90, fails:fails}; })()`;
 try {
   let l; for (let i = 0; i < 60 && !l; i++) { await sleep(150); l = await fetch(`http://127.0.0.1:${DBG}/json/list`).then(r => r.json()).catch(() => null); }
   ws = new WebSocket(l.find(t => t.type === 'page').webSocketDebuggerUrl);
