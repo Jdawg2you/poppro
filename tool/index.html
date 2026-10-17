@@ -4463,6 +4463,11 @@ function famRelRender(){ var box=$('famRelBox'); if(!box) return; var R=(S.intak
       if(on){ R[k]=L.filter(function(x){ return x!==m; }); if(R[st]) R[st]=R[st].filter(function(x){ return x!==m; }); } else L.push(m);
       autosave(); famRelRender(); }; }); }
 /* "your dad (cancer); your spouse's mom (heart attack or stroke)" - for the agent cue and the reminders */
+/* The spoken relative (Health ZONE's spec, 17 Oct): everyone clicked across every history, each named once, no
+   conditions (fam.history already says them): "your dad", "your mom and dad", "your dad and your spouse’s mom". */
+function famRelSpoken(){ var R=(S.intake&&S.intake.famRel)||{}, side=function(x){ var got={}; ['cancer','heart','stroke'].forEach(function(c){ (R[c+x]||[]).forEach(function(m){ got[m]=1; }); });
+    var L=['Mom','Dad'].filter(function(m){ return got[m]; }).map(function(m){ return m.toLowerCase(); }); return L.length===2?'mom and dad':(L[0]||''); };
+  var a=side('P'), b=side('S'), out=[]; if(a) out.push('your '+a); if(b) out.push('your spouse’s '+b); return out.join(' and '); }
 function famRelPhrase(){ var R=(S.intake&&S.intake.famRel)||{}, out=[];
   [['P','your'],['S','your spouse’s']].forEach(function(w){ var by={}; [['cancer','cancer'],['heart','heart attack'],['stroke','stroke']].forEach(function(c){ (R[c[0]+w[0]]||[]).forEach(function(m){ (by[m]=by[m]||[]).indexOf(c[1])<0&&by[m].push(c[1]); }); });
     ['Mom','Dad'].forEach(function(m){ if(by[m]) out.push(w[1]+' '+m.toLowerCase()+' ('+by[m].join(', ')+')'); }); });
@@ -5731,7 +5736,7 @@ function presentWhy(I){ var m=String((I&&I.whyMatters)||'').trim(); if(m) return
 function presentScriptTokens(t){ var T=presentTokens(t), C=S.client||{}, I=S.intake||{}, Cu=curIn(), pk=S.packages[t]||{products:[]}, c=effCfg(t), o=evTierPack(t), A=o.afc||{};
   var m0=function(n){ return '$'+Math.round(+n||0).toLocaleString('en-US'); };
   var who=I.who||{}, hh=who.kids?'you and your family':who.spouse?'you and your spouse':'you'; T['client.household_to']='to '+hh; T['client.household_for']='for '+hh;
-  T['client.why_quote']=whyQuote(I); T['client.why_facts_bare']=whyFactsBare(I); T['why.answer']=whyAnswerText(t); var DP=drxParts(); T['drx.drug']=DP.drug; var HFx=histFam(); T['fam.history']=HFx.any?HFx.label:''; T['fam.who']=HFx.who; T['fam.stat']=HFx.any?histStat(HFx):''; T['drx.pct']=DP.pct; T['drx.cost']=DP.cost;
+  T['client.why_quote']=whyQuote(I); T['client.why_facts_bare']=whyFactsBare(I); T['why.answer']=whyAnswerText(t); var DP=drxParts(); T['drx.drug']=DP.drug; var HFx=histFam(); T['fam.history']=HFx.any?HFx.label:''; T['fam.who']=HFx.who; T['fam.rel']=HFx.any?famRelSpoken():''; T['fam.stat']=HFx.any?histStat(HFx):''; T['drx.pct']=DP.pct; T['drx.cost']=DP.cost;
   T['agent.first']=((C.agent||'').trim().split(/\s+/)[0])||''; T['agent.phone']=S.agentPhone||''; T['agent.email']=S.agentEmail||'';
   T['agent.website']=S.agentWebsite||''; T['agent.card']=S.agentCard||''; T['agent.booking']=S.agentBooking||'';
   T['client.legal_name']=(C.pname||'').trim(); T['client.dob']=C.dob||C.date||''; T['client.phone']=I.phone||''; T['client.email']=I.email||'';
