@@ -107,7 +107,13 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
   R=reviewState(); R.prem=0; renderReview(); await w(1200); ok(document.getElementById('rv_prem').value===fmtMoney2(reviewPremTool())&&reviewTokens('best')['policy.premium']===fmt2(reviewPremTool()),'a blank premium fills from the plan: '+document.getElementById('rv_prem').value);
  window.scrollTo(0,600); var y0=window.scrollY, rb=document.querySelector('#rvActual [data-act="rm"]'); if(rb) rb.click(); await w(300); ok(Math.abs(window.scrollY-y0)<5,'editing the plan keeps the page where it is ('+y0+' -> '+window.scrollY+')');
  ok(document.getElementById('rv_prem').value===fmtMoney2(reviewPremTool()),'the filled premium follows the plan');
- return {n:59, fails:fails}; })()`;
+  /* family history: cancer / heart cover or living benefits left out is flagged (Jesse, 17 Oct) */
+ S.rec=pkSnap('best'); S.rec.by='presented'; S.intake.famcancer=true; var GH=gapOf(S.rec,actualSnap());
+ ok(GH.some(function(g){ return g.key==='p:chas'&&/Family history of cancer/.test(g.hist||''); }),'cancer cover left out with a family history of cancer is flagged');
+ ok(GH.filter(function(g){ return g.hist; }).every(function(g){ return /^[pl]:(chas|lbp|lbs)$|^lb$/.test(g.key); }),'only cancer/heart cover and living benefits carry the flag');
+ renderActual(); ok(!!document.querySelector('#rvActual li.rv-hist'),'the review card shows the flag in gold');
+ S.intake.famcancer=false; ok(!gapOf(S.rec,actualSnap()).some(function(g){ return g.hist; }),'no family history: no flag');
+ return {n:63, fails:fails}; })()`;
 try {
   let l; for (let i = 0; i < 60 && !l; i++) { await sleep(150); l = await fetch(`http://127.0.0.1:${DBG}/json/list`).then(r => r.json()).catch(() => null); }
   ws = new WebSocket(l.find(t => t.type === 'page').webSocketDebuggerUrl);
