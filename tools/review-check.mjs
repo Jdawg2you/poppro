@@ -162,7 +162,12 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  S.chosen={tier:'better'}; actualSeed('better'); goStep('review'); await w(1800); var rv=document.getElementById('rvFrame').contentDocument; reviewWire(rv,'better');
  var s11=Array.prototype.filter.call(rv.querySelectorAll('[data-tier="below"]'),function(x){ return x.dataset.ppEd; }); ok(s11.length===2&&!/own family/.test(rv.body.textContent)&&/When we first spoke/.test(s11[0].textContent),'section 11 is the softer version on screen');
  ok(s11.every(function(x){ return x.dataset.rv!=null; }),'the new lines stay on their own page');
- return {n:96, fails:fails}; })()`;
+  /* Present: switching the plan loads that package as built on the Quote (Jesse, 17 Oct) */
+ S.chosen={tier:'better'}; delete S.actual; goStep('present'); await w(2500); var nv=presentNav(); presentGo(nv[nv.length-1]); await w(300); document.querySelector('#prNav [data-go="edits"]').click(); await w(400);
+ var sel=document.querySelector('#prEditBody [data-act="actname"]'); sel.value='good'; sel.dispatchEvent(new Event('change')); await w(300);
+ ok(S.actual.from==='good'&&Math.abs(tierTotals('actual').mo-tierTotals('good').mo)<0.01&&/Essential/.test(document.querySelector('#prEditBody .pbcol.actual').textContent),'picking Essential loads the Essential package from the Quote');
+ document.querySelector('[data-pe="go"]').click(); await w(500); ok(S.step==='enroll'&&chosenTier()==='good'&&enrolledTier()==='actual','enrolling from it makes Essential their plan');
+ return {n:98, fails:fails}; })()`;
 try {
   let l; for (let i = 0; i < 60 && !l; i++) { await sleep(150); l = await fetch(`http://127.0.0.1:${DBG}/json/list`).then(r => r.json()).catch(() => null); }
   ws = new WebSocket(l.find(t => t.type === 'page').webSocketDebuggerUrl);

@@ -4802,7 +4802,7 @@ function cmpHTML(){ if(typeof BEN_DATA!=='undefined') ['afc','his'].forEach(func
     +(F.any?'<div class="rv-cmpnote"><span class="rv-sw"></span> Gold: speaks to their family history of '+esc(F.label)+(F.who?' ('+esc(F.who)+')':'')+'.</div>':''); }
 function pbActHead(){ var A=S.actual||{}, pr=S.step==='present';
   return '<div class="pbcol actual" data-t="actual"><div class="pbhd"><div class="r1"><span class="tt">'+(pr?'What they’re enrolling in':'What they actually have')+'</span>'
-    +'<button type="button" class="pbreset" data-act="actreset" title="Start again from the plan as presented">↺ As presented</button></div>'
+    +'<button type="button" class="pbreset" data-act="actreset" title="Start this plan again as it was built on the Quote">↺ As quoted</button></div>'
     +'<div class="nm"><select data-act="actname" aria-label="Plan name">'+pbOpts([['good','Essential'],['better','Complete'],['best','Comprehensive']],A.tier)+'</select></div>'
     +'<div class="r3"><small>'+(pr?'Edit it with them: ✕ what they’re not taking, change a level.':'From the carrier’s approval.')+' Changes here never touch the quote or your recommendation.</small></div></div>'; }
 var RV_ACT_OPEN=false;
@@ -4828,9 +4828,11 @@ function renderActual(){ var pr=S.step==='present', host=pr?$('prEditBody'):$('r
   var cl=$('rvActClose'); if(cl) cl.onclick=function(e){ e.preventDefault(); RV_ACT_OPEN=false; actualRedraw(); };
   host.querySelectorAll('.pbcol').forEach(function(col){ pbColBind(col,actualReprice,actualRedraw); });
   host.querySelectorAll('.pbinfo').forEach(function(b){ b.onclick=function(e){ e.stopPropagation(); benOpen('actual',b.dataset.ben); }; });
-  var nm=host.querySelector('[data-act="actname"]'); if(nm) nm.onchange=function(){ S.actual.tier=nm.value; autosave(); actualRedraw(); };
+  /* On Present, picking another plan loads that package exactly as built on the Quote (Jesse, 17 Oct: pivot up or down
+     right here). On the Benefits Review it only renames - the carrier's version is already in the card. */
+  var nm=host.querySelector('[data-act="actname"]'); if(nm) nm.onchange=function(){ if(pr){ var how=S.actual.how; actualSeed(nm.value); if(how) S.actual.how=how; } else S.actual.tier=nm.value; autosave(); actualRedraw(); };
   var rp=$('rvRecSet'); if(rp) rp.onclick=function(){ var sn=pkSnap($('rvRecPick').value); if(sn){ sn.by='marked on the Benefits Review'; S.rec=sn; autosave(); actualRedraw(); } };
-  var rs=host.querySelector('[data-act="actreset"]'); if(rs) rs.onclick=function(){ var how=S.actual.how; actualSeed(pr?presentTier():chosenTier()); if(how) S.actual.how=how; autosave(); actualRedraw(); }; }
+  var rs=host.querySelector('[data-act="actreset"]'); if(rs) rs.onclick=function(){ var how=S.actual.how; actualSeed(pr?(S.actual.from||presentTier()):chosenTier()); if(how) S.actual.how=how; autosave(); actualRedraw(); }; }
 /* Section 11 in the client's language (Jesse, 17 Oct): what they did - stayed on the plan and lowered levels, went to a
    lower plan, or went lower and added coverage on top - with the products named the way you'd say them. */
 function gapSpokenName(k,list){ var sp=enSplit((S.client||{}).sname)[0]||'your spouse';
