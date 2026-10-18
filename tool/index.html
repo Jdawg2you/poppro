@@ -656,6 +656,7 @@
   .rg-row.rg-lowered label{color:#8a5a00}.rg-why{flex:1 1 220px;font:inherit;font-size:13px;padding:6px 8px;border:1px solid var(--line);border-radius:7px;background:#fff}
   .rg-btn{font:inherit;font-size:12.5px;font-weight:700;border:1px solid var(--navy);background:#fff;color:var(--navy);border-radius:8px;padding:5px 10px;cursor:pointer;margin-left:6px}
   /* Benefits Review */
+  .docmeta{display:flex;gap:8px;align-items:center;margin-top:5px;font-size:12.5px}.docmeta select{font:inherit;font-size:12.5px;padding:3px 6px;border:1px solid var(--line);border-radius:6px;background:#fff}.docmeta label{display:flex;gap:4px;align-items:center;font-weight:600;color:#17824a}
   .rv-actmin{font-size:13.5px;padding:8px 2px}.rv-actmin i{color:var(--muted)}.rv-actmin a{margin-left:8px}.rv-actmin small{display:block;color:var(--muted);margin-top:3px}
   .pr-edit{margin-top:16px;border:2px solid var(--navy);border-radius:12px;padding:12px 14px;background:#fffaf0}.pr-editgo{display:flex;gap:10px;justify-content:flex-end;margin:12px 0}
   .pr-editgo button{font:inherit;font-weight:700;border-radius:9px;padding:10px 16px;cursor:pointer;border:1px solid var(--line);background:#fff}.pr-editgo .go{background:#2f7d4a;border-color:#2f7d4a;color:#fff}
@@ -1217,9 +1218,9 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
 
     <div class="intake-sec" id="sec_docs">Preferred Doctors <a href="https://providerlocator.firsthealth.com/LocateProvider/LocateProviderSearch/" target="_blank" rel="noopener" class="seclink">↗ Look up First Health network</a></div>
     <div class="intakegrid">
-      <div class="fld"><label>Doctor / facility 1</label><input id="in_docs1" placeholder="Dr. Ramirez (cardiology)"></div>
-      <div class="fld"><label>Doctor / facility 2</label><input id="in_docs2" placeholder="(optional)"></div>
-      <div class="fld"><label>Doctor / facility 3</label><input id="in_docs3" placeholder="(optional)"></div>
+      <div class="fld"><label>Doctor / facility 1</label><input id="in_docs1" placeholder="Dr. Ramirez (cardiology)"><div class="docmeta"><select id="in_docs1_who" aria-label="Whose doctor"><option value="">Whose?</option><option value="me">Primary</option><option value="sp">Spouse</option><option value="kid">Kids</option></select><label><input type="checkbox" id="in_docs1_net"> ✓ In network</label></div></div>
+      <div class="fld"><label>Doctor / facility 2</label><input id="in_docs2" placeholder="(optional)"><div class="docmeta"><select id="in_docs2_who" aria-label="Whose doctor"><option value="">Whose?</option><option value="me">Primary</option><option value="sp">Spouse</option><option value="kid">Kids</option></select><label><input type="checkbox" id="in_docs2_net"> ✓ In network</label></div></div>
+      <div class="fld"><label>Doctor / facility 3</label><input id="in_docs3" placeholder="(optional)"><div class="docmeta"><select id="in_docs3_who" aria-label="Whose doctor"><option value="">Whose?</option><option value="me">Primary</option><option value="sp">Spouse</option><option value="kid">Kids</option></select><label><input type="checkbox" id="in_docs3_net"> ✓ In network</label></div></div>
     </div>
     <div class="intakegrid" style="margin-top:10px">
       <div class="fld"><label>Keep current doctor on ACA?</label><select id="in_keepaca" class="selfld"><option value="">—</option><option value="yes">Yes</option><option value="no">No</option></select></div>
@@ -4951,8 +4952,23 @@ function reviewWire(doc,t){ if(!doc||!doc.body) return; reviewPendingEdits(doc);
   var R=reviewState(); Array.prototype.forEach.call(doc.querySelectorAll('.rv-tick'),function(l){ var on=!!R.ticks[l.dataset.tick]; l.querySelector('input').checked=on; l.classList.toggle('on',on); }); }
 function reviewTick(k,on){ var R=reviewState(); if(on) R.ticks[k]=new Date().toISOString(); else delete R.ticks[k]; autosave(); reviewRail(); var fr=$('rvFrame'); if(fr&&fr.contentDocument) reviewWire(fr.contentDocument,chosenTier()); }
 /* the registration the script is on right now - its row is boxed in green, so the agent sends one thing at a time */
-function reviewCurTick(){ var t=chosenTier(), R=reviewState(), p=reviewPages(t)[+R.pg||0]; if(p&&p.sc==='rx'&&drxWho().length) return 'drx'; return (p&&p.tick)||''; }
-function reviewTicks(){ var L=REVIEW_TICKS.slice(); if(drxWho().length) L.push({k:'drx',t:'Direction Rx code sent (GLP-1)',open:'Open Direction Rx',url:drxLink()||'#',copy:String(S.agentDrxCode||'').trim()||drxLink(),copyLabel:String(S.agentDrxCode||'').trim()?'Copy code':'Copy link',sms:function(f){ return 'Hi '+f+'! '+drxHowTo(); }}); return L; }
+function reviewCurTick(){ var t=chosenTier(), R=reviewState(), p=reviewPages(t)[+R.pg||0]; if(p&&p.sc==='rx'&&drxWho().length) return 'drx'; if(p&&p.sc==='doctor') return 'card'; return (p&&p.tick)||''; }
+/* The client's care card (optimumprotects.com/card): MyPopPro sends a personal link that fills the agent's name and
+   phone (from Setup), the people on the plan, dental, and ONLY the doctors ticked "✓ In network" on the Intake, each in
+   its slot. Everything rides after the # so it never reaches the server. (Jesse, 18 Oct) */
+var CARE_CARD_URL='https://optimumprotects.com/card/';
+function careCardData(){ var I=S.intake||{}, C=S.client||{}, R=reviewState(), slot={me:'md',sp:'sd',kid:'kd'};
+  if(!R.cardId){ R.cardId=Math.random().toString(36).slice(2,10); autosave(); }   /* this client's card: its own saved copy on any device */
+  var o={i:R.cardId};
+  if(String(C.agent||'').trim()) o.a=String(C.agent).trim(); var ph=String(S.agentPhone||'').replace(/\D/g,''); if(ph) o.p=ph;
+  var n=acaPeople().length; if(n>0) o.n=n; var et=enrolledTier(); if(et&&tierHasDental(et)) o.d=1;
+  [1,2,3].forEach(function(k){ var nm=String(I['docs'+k]||'').trim(), w=I['docs'+k+'who']; if(nm&&I['docs'+k+'net']&&slot[w]) o[slot[w]]=o[slot[w]]?o[slot[w]]+'; '+nm:nm; });
+  return o; }
+function careCardLink(){ var j=JSON.stringify(careCardData()), b=btoa(unescape(encodeURIComponent(j))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''); return CARE_CARD_URL+'#c='+b; }
+function reviewTicks(){ var L=REVIEW_TICKS.slice(); if(drxWho().length) L.push({k:'drx',t:'Direction Rx code sent (GLP-1)',open:'Open Direction Rx',url:drxLink()||'#',copy:String(S.agentDrxCode||'').trim()||drxLink(),copyLabel:String(S.agentDrxCode||'').trim()?'Copy code':'Copy link',sms:function(f){ return 'Hi '+f+'! '+drxHowTo(); }});
+  L.push({k:'card',t:'Care card sent',open:'Open their care card',url:careCardLink(),copy:careCardLink(),copyLabel:'Copy link',
+    sms:function(f){ return 'Hi '+f+'! Here’s your care card — your doctors and the numbers you need, ready to print a card for everyone on the plan or save to your phone: '+careCardLink(); }});
+  return L; }
 function reviewRail(){ var REVIEW_TICKS=reviewTicks(), R=reviewState(), box=$('rvTicks'); if(!box) return; var ph=String((S.intake||{}).phone||'').replace(/[^\d+]/g,''); if(/^\d{10}$/.test(ph)) ph='+1'+ph; else if(/^1\d{10}$/.test(ph)) ph='+'+ph;
   var first=((S.client||{}).pname||'').trim().split(/\s+/)[0]||'there', n=REVIEW_TICKS.filter(function(x){ return R.ticks[x.k]; }).length;
   box.innerHTML='<b>Done on the call · '+n+' of '+REVIEW_TICKS.length+'</b>'+(ph?'':'<span class="rv-miss">No phone on the Intake — Text opens a blank message.</span>')+REVIEW_TICKS.map(function(x){ var on=!!R.ticks[x.k];
@@ -5261,6 +5277,7 @@ function readIntake(){
   S.intake.income=moneyVal($('in_income').value); S.intake.retage=$('in_retage').value;
   S.intake.savings=moneyVal($('in_savings').value); S.intake.invest=moneyVal($('in_invest').value); S.intake.invprot=$('in_invprot').checked; S.intake.invsra=$('in_invsra').checked; S.intake.invnote=$('in_invnote').value;
   S.intake.docs1=$('in_docs1').value; S.intake.docs2=$('in_docs2').value; S.intake.docs3=$('in_docs3').value;
+  [1,2,3].forEach(function(n){ S.intake['docs'+n+'who']=$('in_docs'+n+'_who').value; S.intake['docs'+n+'net']=$('in_docs'+n+'_net').checked; });   /* whose + verified in network: feeds the care card */
   glp1Read(); S.intake.whyTags=whyReadTags();
   S.intake.keepaca=$('in_keepaca').value; S.intake.keepafc=$('in_keepafc').value; S.intake.docnote=$('in_docnote').value;
   S.intake.pheight=$('in_pheight').value; S.intake.pweight=$('in_pweight').value; S.intake.sheight=$('in_sheight').value; S.intake.sweight=$('in_sweight').value; S.intake.psex=$('in_psex').value; S.intake.ssex=$('in_ssex').value; S.intake.kidsNote=$('in_kids').value; S.intake.routeNote=$('in_routenote').value; S.intake.docsNote=$('in_docsnote').value; S.intake.whyShop=$('in_whyshop').value; S.intake.whyMatters=$('in_whymatters').value; S.intake.foundPlan=$('in_foundplan').value; S.intake.effDate=$('in_effdate').value;
@@ -5292,6 +5309,7 @@ function fillIntake(){
   $('in_majorcond').checked=!!I.majorcond; $('in_majorcond_note').value=I.majorcondNote||''; autoGrow($('in_majorcond_note'));
   $('in_diabetic').checked=!!I.diabetic; $('in_diabetic_note').value=I.diabeticNote||''; autoGrow($('in_diabetic_note'));
   $('in_docs1').value=I.docs1||''; $('in_docs2').value=I.docs2||''; $('in_docs3').value=I.docs3||'';
+  [1,2,3].forEach(function(n){ $('in_docs'+n+'_who').value=I['docs'+n+'who']||''; $('in_docs'+n+'_net').checked=!!I['docs'+n+'net']; });
   $('in_keepaca').value=I.keepaca||''; $('in_keepafc').value=I.keepafc||''; $('in_docnote').value=I.docnote||''; if(window.netSync) setTimeout(window.netSync,0);
   $('in_pheight').value=I.pheight||''; $('in_pweight').value=I.pweight||''; $('in_sheight').value=I.sheight||''; $('in_sweight').value=I.sweight||''; $('in_psex').value=I.psex||''; $('in_ssex').value=I.ssex||''; $('in_kids').value=I.kidsNote||''; $('in_routenote').value=I.routeNote||''; $('in_docsnote').value=I.docsNote||''; $('in_whyshop').value=I.whyShop||''; $('in_whymatters').value=I.whyMatters||''; $('in_foundplan').value=I.foundPlan||''; $('in_effdate').value=I.effDate||''; updateBMI('p'); updateBMI('s'); buildFlag('p'); buildFlag('s');
   $('in_net').checked=!!S.docs.net; $('in_rx').checked=!!S.docs.rx;

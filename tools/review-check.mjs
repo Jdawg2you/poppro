@@ -62,11 +62,11 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  /* the four ticks */
  var pg=pages.indexOf('Portal — do it live'); reviewGo(pg); await w(100); var tk=d.querySelector('.rv-tick[data-tick="portal"]'); ok(tk&&tk.style.display!=='none','the portal tick sits on the portal screen');
  tk.querySelector('input').click(); await w(50); ok(!!(JSON.parse(localStorage.getItem('hf_pop_last')).review.ticks||{}).portal,'a tick is saved with the client');
- ok(/1 of 4/.test(document.getElementById('rvTicks').textContent),'the rail counts it');
+ ok(/1 of 5/.test(document.getElementById('rvTicks').textContent),'the rail counts it');
  ok(['ecg','upload','cg'].every(function(k){ return !!d.querySelector('.rv-tick[data-tick="'+k+'"]'); }),'all four registration screens carry a tick');
  /* each registration: open / text / copy, and the one the script is on is boxed (Jesse, 16 Oct) */
  S.intake.phone='(555) 010-2030'; reviewRail(); var rows=document.querySelectorAll('#rvTicks .rv-row');
- ok(rows.length===4&&Array.prototype.every.call(rows,function(r){ return r.querySelectorAll('.rv-acts a').length===3&&r.querySelector('a[href^="sms:+15550102030?&body="]')&&r.querySelector('[data-copy]'); }),'every registration has open, text (to +1 number) and copy');
+ ok(rows.length===5&&Array.prototype.every.call(rows,function(r){ return r.querySelectorAll('.rv-acts a').length===3&&r.querySelector('a[href^="sms:+15550102030?&body="]')&&r.querySelector('[data-copy]'); }),'every registration has open, text (to +1 number) and copy');
  ok(decodeURIComponent(document.querySelector('#rvTicks [data-row="cg"] a[href^="sms:"]').getAttribute('href')).indexOf('mypoppro.com/tool/careguide.vcf')>0,'CareGuide text carries the contact-card link');
  var cur=function(t){ reviewGo(pages.indexOf(t)); var c=document.querySelector('#rvTicks .rv-row.cur'); return c?c.dataset.row:''; };
  ok(cur('Telehealth — do it live')==='ecg'&&cur('CareGuide')==='cg'&&cur('The money line')==='','the row being talked about is boxed, and only then');
@@ -171,7 +171,13 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  var rvd=document.getElementById('rvFrame').contentDocument; S.agentCard='mycard.example/jesse'; reviewWire(rvd,'better');
  var cbx=rvd.querySelector('.pp-cardbox'); ok(!!rvd.querySelector('.pp-cardsay')&&cbx&&cbx.textContent.indexOf('https:'+'//mycard.example/jesse')>=0&&!!cbx.querySelector('.pp-copy')&&!!cbx.querySelector('.pp-sms'),'the Close re-sends the business card: line, link, Copy and Text them');
  S.agentCard=''; reviewWire(rvd,'better'); ok(!!rvd.querySelector('.pp-cardbox .pp-setup')&&rvd.querySelectorAll('.pp-cardbox').length===1,'no card in Setup: a (set up) link instead, and the box is not duplicated');
- return {n:100, fails:fails}; })()`;
+  /* care card link (Jesse, 18 Oct): agent from Setup, people, dental, and only doctors ticked in network, in their slots */
+ S.client.agent='Jesse Stamm'; S.agentPhone='(443) 895-1832'; S.intake.docs1='Dr. Lopez'; S.intake.docs1who='me'; S.intake.docs1net=true;
+ S.intake.docs2='Dr. Kim'; S.intake.docs2who='sp'; S.intake.docs2net=false; S.intake.docs3='Lake Nona Pediatrics'; S.intake.docs3who='kid'; S.intake.docs3net=true;
+ var cd=careCardData(); ok(/^[a-z0-9]{6,}$/.test(cd.i)&&careCardData().i===cd.i&&cd.a==='Jesse Stamm'&&cd.p==='4438951832'&&cd.md==='Dr. Lopez'&&cd.kd==='Lake Nona Pediatrics'&&!cd.sd&&cd.n>=1,'the care card carries the agent, people and only in-network doctors: '+JSON.stringify(cd));
+ var lk=careCardLink(); ok(lk.indexOf('https://optimumprotects.com/card/#c=')===0&&lk.indexOf('Lopez')<0,'the details ride after the # (encoded), not in the address the server sees');
+ renderReview(); await w(800); ok(/Care card sent/.test(document.getElementById('rvTicks').textContent),'the rail offers the care card (open, text, copy)');
+ return {n:103, fails:fails}; })()`;
 try {
   let l; for (let i = 0; i < 60 && !l; i++) { await sleep(150); l = await fetch(`http://127.0.0.1:${DBG}/json/list`).then(r => r.json()).catch(() => null); }
   ws = new WebSocket(l.find(t => t.type === 'page').webSocketDebuggerUrl);

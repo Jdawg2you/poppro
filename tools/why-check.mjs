@@ -83,8 +83,8 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  S.intake.glp1.s.for='Both'; ok(drxWho().length===2,'"Both" counts as weight loss');
  var nm=tierNonMh; tierNonMh=function(){ return {name:'LifeX'}; }; S.chosen={tier:'good'}; ok(drxWho().length===0&&!/Direction Rx/.test(enrollEmail().body),'a LifeX / Cigna plan gets no Direction Rx'); tierNonMh=nm; S.chosen={tier:'better'};
  S.intake.glp1={p:{on:'Yes',for:'Diabetes'},s:{}}; ok(!drxWho().length&&!/Direction Rx/.test(enrollEmail().body)&&drxParts().drug==='','no weight-loss GLP-1: no block, no email paragraph');
- ok(reviewTicks().length===4,'no Direction Rx step in the Benefits Review without it');
- S.intake.glp1={p:{on:'Yes',for:'Weight loss',drug:'Zepbound'},s:{}}; ok(reviewTicks().length===5&&reviewTicks()[4].k==='drx','with it, a fifth Benefits Review step');
+ ok(reviewTicks().length===5,'no Direction Rx step in the Benefits Review without it');
+ S.intake.glp1={p:{on:'Yes',for:'Weight loss',drug:'Zepbound'},s:{}}; ok(reviewTicks().length===6&&reviewTicks()[4].k==='drx','with it, a fifth Benefits Review step');
  S.present={drx:false}; ok(drxParts().drug===''&&presentScriptTokens('better')['drx.drug']==='','switched off on Present: drx.drug empty, the block drops out'); S.present={};
  /* the agent's bio (Jesse, 17 Oct): Setup box, default button, handed to the call */
  openSetup(); document.getElementById('in_abio').value='I help people in Dallas sort out health cover.'; document.getElementById('in_abio').dispatchEvent(new Event('input',{bubbles:true}));
