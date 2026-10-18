@@ -177,7 +177,11 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  var cd=careCardData(); ok(/^[a-z0-9]{6,}$/.test(cd.i)&&careCardData().i===cd.i&&cd.a==='Jesse Stamm'&&cd.p==='4438951832'&&cd.md==='Dr. Lopez'&&cd.kd==='Lake Nona Pediatrics'&&!cd.sd&&cd.n>=1,'the care card carries the agent, people and only in-network doctors: '+JSON.stringify(cd));
  var lk=careCardLink(); ok(lk.indexOf('https://optimumprotects.com/card/#c=')===0&&lk.indexOf('Lopez')<0,'the details ride after the # (encoded), not in the address the server sees');
  renderReview(); await w(800); ok(/Care card sent/.test(document.getElementById('rvTicks').textContent),'the rail offers the care card (open, text, copy)');
- return {n:103, fails:fails}; })()`;
+  /* screen 9 talks about the care card (Jesse, 18 Oct) */
+ var rv9=document.getElementById('rvFrame').contentDocument; reviewWire(rv9,'better'); var cc=rv9.querySelectorAll('.pp-carecard');
+ ok(cc.length===2&&/care card/.test(cc[0].textContent)&&/Care card sent/.test(cc[1].textContent)&&cc[0].dataset.rv!=null,'screen 9 has the care card line and the agent cue, on its own page');
+ ok(reviewTokens('better')['card.doctor']==='Dr. Lopez and Lake Nona Pediatrics','the line names only the in-network doctors: '+reviewTokens('better')['card.doctor']);
+ return {n:105, fails:fails}; })()`;
 try {
   let l; for (let i = 0; i < 60 && !l; i++) { await sleep(150); l = await fetch(`http://127.0.0.1:${DBG}/json/list`).then(r => r.json()).catch(() => null); }
   ws = new WebSocket(l.find(t => t.type === 'page').webSocketDebuggerUrl);

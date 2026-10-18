@@ -4850,7 +4850,14 @@ function gapSpoken(R,A){ var join=function(a){ a=a.filter(Boolean); return a.len
     out.added=join(add.map(function(k){ return gapSpokenName(k,add).replace(/ level$/,''); })); out.kind=add.length?'lowerplus':'lower'; }
   return out; }
 /* Until Health ZONE's source carries it, section 11 is rewritten on screen (pending item in benefits-review/PENDING_FROM_MYPOPPRO.txt) */
-function reviewPendingEdits(doc){ var h=doc.querySelector('[data-screen="tierdown"]'); if(!h) return; var say=h.nextElementSibling; while(say&&!say.classList.contains('say')) say=say.nextElementSibling;
+/* Screen 9 (Jesse, 18 Oct): write the doctor, urgent care and hospital down on the care card while on the phone */
+function reviewCardScreen(doc){ var d=Array.prototype.filter.call(doc.querySelectorAll('.do'),function(x){ return /Four things before they need them/.test(x.textContent); })[0];
+  if(!d||doc.querySelector('.pp-carecard')) return; var v=function(k,ex){ return '<var data-k="'+k+'">&lt;'+ex+'&gt;</var>'; };
+  var a=doc.createElement('div'); a.className='say pp-carecard'; a.innerHTML='Let&rsquo;s write those down while we&rsquo;re on the phone. I&rsquo;m texting you a link to your care card right now &mdash; it already has <span data-needs="card.doctor">'+v('card.doctor','your doctor')+' and </span>my number on it. As we find your urgent care and hospital, add them in. Then you can print a card for everyone on the plan, or save it to your phone. That way, at two in the morning, nobody&rsquo;s hunting for where to go.';
+  var b=doc.createElement('div'); b.className='do pp-carecard'; b.innerHTML='<span class="lab">NOT SPOKEN</span>Send it from the checklist: <b>Care card sent &rarr; Text them</b>. Fill it in together on the locator. If they&rsquo;d rather you do it, fill it in yourself and use <b>Text it</b> on the card &mdash; the link carries everything.';
+  if(d.dataset.rv!=null){ a.dataset.rv=b.dataset.rv=d.dataset.rv; a.style.display=b.style.display=d.style.display; }
+  d.parentNode.insertBefore(a,d.nextSibling); a.parentNode.insertBefore(b,a.nextSibling); }
+function reviewPendingEdits(doc){ reviewCardScreen(doc); var h=doc.querySelector('[data-screen="tierdown"]'); if(!h) return; var say=h.nextElementSibling; while(say&&!say.classList.contains('say')) say=say.nextElementSibling;
   if(!say||say.dataset.ppEd||!/own family/.test(say.textContent)) return;
   var v=function(k,ex){ return '<var data-k="'+k+'">&lt;'+ex+'&gt;</var>'; };
   var a=doc.createElement('div'); a.className='say'; a.dataset.tier='below'; a.dataset.ppEd='1';
@@ -4905,6 +4912,7 @@ function reviewTokens(t){ t=reviewT()||t; var C=S.client||{}, R=reviewState(), T
     if(X.math==='gain') T['client.rx_gain']=m2(X.per-X.total);
     if(X.math==='partial'){ T['client.rx_covered']=m2(X.per)+' of it'; T['client.rx_short']=m2(X.total-X.per); } }
   T['careguide.threshold']='$2,500';
+  (function(){ var cd=careCardData(); T['card.doctor']=join([cd.md,cd.sd,cd.kd].filter(Boolean)); })();
   T['tier.elected']=actualOn()?actualSnap().name:(TIER_NAME[t]||'');
   if(actualOn()&&S.rec){ var GS=gapSpoken(S.rec,actualSnap()); T['gap.missing']=GS.missing; T['gap.lowered']=GS.lowered; T['gap.added']=GS.added; T['gap.kind']=GS.kind; } T['tier.recommended']=TIER_NAME[(S.rec&&S.rec.tier)||S.recommended]||'';
   var DQ=drxParts(); T['drx.drug']=drxWho().length?DQ.drug||drxWho()[0].drug:''; T['drx.pct']=DRX_PCT; T['drx.link']=drxLink(); T['drx.code']=String(S.agentDrxCode||'').trim(); T['drx.howto']=drxWho().length?'1':'';   /* the block's switch; its words are Health ZONE's */
