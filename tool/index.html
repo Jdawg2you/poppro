@@ -4873,8 +4873,8 @@ function reviewCardBox(doc){ var say=Array.prototype.filter.call(doc.querySelect
     box=doc.createElement('div'); box.className='pp-cardbox'; say.parentNode.insertBefore(sp,say.nextSibling); sp.parentNode.insertBefore(box,sp.nextSibling);
     if(say.dataset.rv!=null){ sp.dataset.rv=box.dataset.rv=say.dataset.rv; sp.style.display=box.style.display=say.style.display; } }
   var txt=reviewCardText(), ph=String((S.intake||{}).phone||'').replace(/[^\d+]/g,''); if(/^\d{10}$/.test(ph)) ph='+1'+ph; else if(/^1\d{10}$/.test(ph)) ph='+'+ph;
-  box.innerHTML=txt?'<b>Send your card</b><div class="pp-cardtxt">'+esc(txt)+'</div><button type="button" class="pp-copy">Copy</button> <a class="pp-sms" href="sms:'+esc(ph)+'?&body='+encodeURIComponent(txt)+'">Text them</a>'
-    :'<b>Send your card</b> No digital business card in Setup yet. <a href="#" class="pp-setup">(set up)</a>';
+  box.innerHTML=txt?'<b>Send your digital business card <small style="font-weight:500;color:#4b5563">— your contact card, from Setup</small></b><div class="pp-cardtxt">'+esc(txt)+'</div><button type="button" class="pp-copy">Copy</button> <a class="pp-sms" href="sms:'+esc(ph)+'?&body='+encodeURIComponent(txt)+'">Text them</a>'
+    :'<b>Send your digital business card</b> No digital business card in Setup yet. <a href="#" class="pp-setup">(set up)</a>';
   var cb=box.querySelector('.pp-copy'); if(cb) cb.onclick=function(){ try{ navigator.clipboard.writeText(txt); cb.textContent='Copied ✓'; setTimeout(function(){ cb.textContent='Copy'; },1600); }catch(e){} };
   var su=box.querySelector('.pp-setup'); if(su) su.onclick=function(e){ e.preventDefault(); openSetup(); }; }
 function reviewDental(t){ t=reviewT()||t; return ((S.packages[t]||{}).products||[]).some(function(p){ return p.k==='dvh'&&(+p.monthly||0)>0; }); }
