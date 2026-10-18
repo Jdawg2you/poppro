@@ -181,7 +181,8 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  var rv9=document.getElementById('rvFrame').contentDocument; reviewWire(rv9,'better'); var cc=rv9.querySelectorAll('.pp-carecard');
  ok(cc.length===2&&/care card/.test(cc[0].textContent)&&/Care card sent/.test(cc[1].textContent)&&cc[0].dataset.rv!=null,'screen 9 has the care card line and the agent cue, on its own page');
  ok(reviewTokens('better')['card.doctor']==='Dr. Lopez and Lake Nona Pediatrics','the line names only the in-network doctors: '+reviewTokens('better')['card.doctor']);
- return {n:105, fails:fails}; })()`;
+  S.intake.who={app:true,spouse:true,kids:true}; S.client.sage='45'; S.intake.kids=[{n:'A',age:'19'},{n:'B',age:'12'}]; ok(careCardData().n===3,'cards count adults: primary + spouse + the 19-year-old, not the 12-year-old ('+careCardData().n+')');
+ return {n:106, fails:fails}; })()`;
 try {
   let l; for (let i = 0; i < 60 && !l; i++) { await sleep(150); l = await fetch(`http://127.0.0.1:${DBG}/json/list`).then(r => r.json()).catch(() => null); }
   ws = new WebSocket(l.find(t => t.type === 'page').webSocketDebuggerUrl);
