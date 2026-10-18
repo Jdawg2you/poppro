@@ -175,7 +175,7 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  S.client.agent='Jesse Stamm'; S.agentPhone='(443) 895-1832'; S.intake.docs1='Dr. Lopez'; S.intake.docs1who='me'; S.intake.docs1net=true;
  S.intake.docs2='Dr. Kim'; S.intake.docs2who='sp'; S.intake.docs2net=false; S.intake.docs3='Lake Nona Pediatrics'; S.intake.docs3who='kid'; S.intake.docs3net=true;
  var cd=careCardData(); ok(/^[a-z0-9]{6,}$/.test(cd.i)&&careCardData().i===cd.i&&cd.a==='Jesse Stamm'&&cd.p==='4438951832'&&cd.md==='Dr. Lopez'&&cd.kd==='Lake Nona Pediatrics'&&!cd.sd&&cd.n>=1,'the care card carries the agent, people and only in-network doctors: '+JSON.stringify(cd));
- var lk=careCardLink(); ok(lk.indexOf('https://optimumprotects.com/card/#c=')===0&&lk.indexOf('Lopez')<0,'the details ride after the # (encoded), not in the address the server sees');
+ var lk=careCardLink(); ok((lk.indexOf('https:'+'//optimumprotects.com/card/#c=')===0||lk.indexOf('http:'+'//localhost:8790/card/#c=')===0)&&lk.indexOf('Lopez')<0,'the details ride after the # (encoded), not in the address the server sees');
  renderReview(); await w(800); ok(/Care card sent/.test(document.getElementById('rvTicks').textContent),'the rail offers the care card (open, text, copy)');
   /* screen 9 talks about the care card (Jesse, 18 Oct) */
  var rv9=document.getElementById('rvFrame').contentDocument; reviewWire(rv9,'better'); var cc=rv9.querySelectorAll('.pp-carecard');

@@ -4964,7 +4964,8 @@ function reviewCurTick(){ var t=chosenTier(), R=reviewState(), p=reviewPages(t)[
 /* The client's care card (optimumprotects.com/card): MyPopPro sends a personal link that fills the agent's name and
    phone (from Setup), the people on the plan, dental, and ONLY the doctors ticked "✓ In network" on the Intake, each in
    its slot. Everything rides after the # so it never reaches the server. (Jesse, 18 Oct) */
-var CARE_CARD_URL='https://optimumprotects.com/card/';
+/* the sandbox (localhost) opens the local copy of the card page (optimumprotects-site preview, port 8790) until /card is live */
+var CARE_CARD_URL=/^(localhost|127\.0\.0\.1)$/.test(location.hostname)?'http://localhost:8790/card/':'https://optimumprotects.com/card/';
 function careCardData(){ var I=S.intake||{}, C=S.client||{}, R=reviewState(), slot={me:'md',sp:'sd',kid:'kd'};
   if(!R.cardId){ R.cardId=Math.random().toString(36).slice(2,10); autosave(); }   /* this client's card: its own saved copy on any device */
   var o={i:R.cardId};
