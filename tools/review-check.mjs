@@ -182,7 +182,20 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  ok(cc.length===2&&/care card/.test(cc[0].textContent)&&/Care card sent/.test(cc[1].textContent)&&cc[0].dataset.rv!=null,'screen 9 has the care card line and the agent cue, on its own page');
  ok(reviewTokens('better')['card.doctor']==='Dr. Lopez and Lake Nona Pediatrics','the line names only the in-network doctors: '+reviewTokens('better')['card.doctor']);
   S.intake.who={app:true,spouse:true,kids:true}; S.client.sage='45'; S.intake.kids=[{n:'A',age:'19'},{n:'B',age:'12'}]; ok(careCardData().n===3,'cards count adults: primary + spouse + the 19-year-old, not the 12-year-old ('+careCardData().n+')');
- return {n:106, fails:fails}; })()`;
+  /* "lowered" is only said when a level was lowered (gut check, 18 Oct) */
+ S.rec=pkSnap('best'); S.rec.by='presented'; actualSeed('best'); (S.packages.actual.dropped=S.packages.actual.dropped||[]).push('chas'); priceTier('actual'); S.chosen={tier:'best'};
+ var rvx=document.getElementById('rvFrame').contentDocument; reviewWire(rvx,'best'); var sm11=rvx.querySelector('[data-gap="same"]'), c11=sm11.cloneNode(true); c11.querySelectorAll('.pp-off').forEach(function(e){ e.remove(); });
+ ok(/left out/.test(c11.textContent)&&!/lowered/.test(c11.textContent),'only a product left out: section 11 does not say levels were lowered ('+c11.textContent.replace(/\s+/g,' ').trim()+')');
+  /* gut-check fixes (18 Oct) */
+ S.chosen={tier:'better'}; delete S.elected; actualSeed('better'); S.actual.how='presented'; electedLock(); var el0=JSON.stringify(S.elected.products);
+ (S.packages.actual.dropped=S.packages.actual.dropped||[]).push('acc'); priceTier('actual'); goStep('enroll'); await w(300);
+ ok(JSON.stringify(S.elected.products)===el0,'carrier edits on the review never rewrite what they chose at Enroll');
+ S.chosen={tier:'good'}; renderReview(); await w(600); ok(S.actual.from==='good'&&reviewT()==='actual','a card from a package they are no longer on starts again from the chosen plan');
+ S.intake.famcancerP=false; S.intake.famheartP=true; S.intake.famRel={cancerP:['Dad'],heartP:['Mom']}; ok(!/dad/i.test(famRelPhrase())&&/mom/.test(famRelPhrase()),'unticked condition: its Mom/Dad picks drop out ('+famRelPhrase()+')');
+ S.chosen={tier:'better'}; renderReview(); await w(1500); var pg9=reviewPages('better').map(function(p){ return p.sc; }), ci=pg9.indexOf('close'); reviewGo(ci); S.rec=pkSnap('better'); reviewGo(ci,true);
+ ok((reviewPages('better')[reviewState().pg]||{}).sc==='close','the review stays on the same screen when an optional page disappears');
+ var R0=S.rec; S.rec=null; S.recommended='best'; actualSeed('good'); ok(!!reviewTokens('good')['gap.kind'],'older files without a saved recommendation still get the section 11 wording'); S.rec=R0;
+ return {n:112, fails:fails}; })()`;
 try {
   let l; for (let i = 0; i < 60 && !l; i++) { await sleep(150); l = await fetch(`http://127.0.0.1:${DBG}/json/list`).then(r => r.json()).catch(() => null); }
   ws = new WebSocket(l.find(t => t.type === 'page').webSocketDebuggerUrl);

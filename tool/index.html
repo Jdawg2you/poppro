@@ -3993,7 +3993,7 @@ function compute(){
   $('o_a_trueyr').textContent=fmt2(trueYr);
 
   var discTotal=medDiscTotal();
-  ['good','better','best'].forEach(function(t){ var p=S.packages[t]; if(p){ p.rxBenefit=+p.rxBenefit||0; p.med=Math.max(0,discTotal-p.rxBenefit*30); } });
+  ['good','better','best','actual'].forEach(function(t){ var p=S.packages[t]; if(p){ p.rxBenefit=+p.rxBenefit||0; p.med=Math.max(0,discTotal-p.rxBenefit*30); } });
   var pk=S.packages[S.activeTab];
   if($('o_p_mednet')) $('o_p_mednet').textContent=fmt2(pk.med);
   var prod=pk.products.reduce(function(s,p){return s+(+p.monthly||0);},0)+(+pk.lb||0);
@@ -4483,12 +4483,14 @@ function famRelRender(){ var box=$('famRelBox'); if(!box) return; var R=(S.intak
 /* "your dad (cancer); your spouse's mom (heart attack or stroke)" - for the agent cue and the reminders */
 /* The spoken relative (Health ZONE's spec, 17 Oct): everyone clicked across every history, each named once, no
    conditions (fam.history already says them): "your dad", "your mom and dad", "your dad and your spouse’s mom". */
-function famRelSpoken(){ var R=(S.intake&&S.intake.famRel)||{}, side=function(x){ var got={}; ['cancer','heart','stroke'].forEach(function(c){ (R[c+x]||[]).forEach(function(m){ got[m]=1; }); });
+function famRelLive(){ var I=S.intake||{}, R=I.famRel||{}, on={cancerP:I.famcancerP,heartP:I.famheartP,strokeP:I.famheartP,cancerS:I.famcancerS,heartS:I.famheartS,strokeS:I.famheartS}, o={};
+  Object.keys(R).forEach(function(k){ if(on[k]) o[k]=R[k]; }); return o; }   /* unticking a condition drops its Mom/Dad picks (gut check) */
+function famRelSpoken(){ var R=famRelLive(), side=function(x){ var got={}; ['cancer','heart','stroke'].forEach(function(c){ (R[c+x]||[]).forEach(function(m){ got[m]=1; }); });
     var L=['Mom','Dad'].filter(function(m){ return got[m]; }).map(function(m){ return m.toLowerCase(); }); return L.length===2?'mom and dad':(L[0]||''); };
   var a=side('P'), b=side('S'), n=(a?a.split(' and ').length:0)+(b?b.split(' and ').length:0);
   if(n>=3) return 'on both sides of the family';   /* three or more is always both sides - no roll-call (Health ZONE) */
   var out=[]; if(a) out.push('your '+a); if(b) out.push('your spouse’s '+b); return out.join(' and '); }
-function famRelPhrase(){ var R=(S.intake&&S.intake.famRel)||{}, out=[];
+function famRelPhrase(){ var R=famRelLive(), out=[];
   [['P','your'],['S','your spouse’s']].forEach(function(w){ var by={}; [['cancer','cancer'],['heart','heart attack'],['stroke','stroke']].forEach(function(c){ (R[c[0]+w[0]]||[]).forEach(function(m){ (by[m]=by[m]||[]).indexOf(c[1])<0&&by[m].push(c[1]); }); });
     ['Mom','Dad'].forEach(function(m){ if(by[m]) out.push(w[1]+' '+m.toLowerCase()+' ('+by[m].join(', ')+')'); }); });
   return out.join('; '); }
@@ -4644,8 +4646,11 @@ function pkSnap(t){ if(!t||!S.packages[t]) return null; var c=effCfg(t), pk=S.pa
     cfg:cfgClone(c), pk:JSON.parse(JSON.stringify({products:pk.products||[],dropped:pk.dropped||[],lb:pk.lb||0,med:pk.med||0}))}; }
 function recLock(t){ var cur=S.rec, snap=pkSnap(t); if(!snap) return;
   if(!cur||(TIER_ORDER[t]!=null&&TIER_ORDER[cur.tier]!=null&&TIER_ORDER[t]>TIER_ORDER[cur.tier])){ snap.by='presented'; S.rec=snap; autosave(); } }
+/* What they chose is locked when it's decided: by the end-of-Present buttons, or here the first time (and again only
+   if the package changes on Enroll). The Benefits Review's carrier edits to the card never rewrite it (gut check, 18 Oct). */
 function electedLock(){ var t=chosenTier(); if(!t) return; if(actualOn()&&S.actual.from!==t) actualSeed(t);   /* they changed the package: start the card again from it */
-  S.elected=actualOn()?actualSnap():pkSnap(t); autosave(); }
+  if(S.elected&&S.elected.tier===t){ if(!S.elected.locked){ S.elected.locked=1; autosave(); } return; }   /* older files: lock what's there, never rewrite it */
+  S.elected=actualOn()?actualSnap():pkSnap(t); S.elected.locked=1; autosave(); }
 var LB_K={lbp:1,lbs:1};
 /* every way what they bought falls short of what was recommended, each with a stable key for its acknowledgment */
 function recGap(){ return gapOf(S.rec,S.elected); }
@@ -4730,7 +4735,7 @@ Object.defineProperty(TIER_ORDER,'actual',{enumerable:false,get:function(){ retu
    chose, edited off the carrier's approval - the recommendation (S.rec) and what they chose at Enroll (S.elected) never
    change. S.actual = {tier, from, at}; its settings live in S.cfg.actual and S.packages.actual. The review speaks to it. */
 function actualOn(){ return !!(S.actual&&S.packages&&S.packages.actual&&S.cfg&&S.cfg.actual); }
-function reviewT(){ return actualOn()?'actual':chosenTier(); }
+function reviewT(){ return enrolledTier(); }
 function actualSeed(t){ if(!t||!S.packages[t]) return; S.cfg=S.cfg||{}; S.cfg.actual=cfgClone(effCfg(t));
   S.packages.actual=JSON.parse(JSON.stringify(S.packages[t])); S.actual={tier:t,from:t,at:new Date().toISOString().slice(0,10)};
   Object.keys(PB_OPEN).forEach(function(k){ if(k.indexOf('actual|')===0) delete PB_OPEN[k]; }); priceTier('actual'); }
@@ -4831,7 +4836,7 @@ function renderActual(){ var pr=S.step==='present', host=pr?$('prEditBody'):$('r
   host.querySelectorAll('.pbinfo').forEach(function(b){ b.onclick=function(e){ e.stopPropagation(); benOpen('actual',b.dataset.ben); }; });
   /* On Present, picking another plan loads that package exactly as built on the Quote (Jesse, 17 Oct: pivot up or down
      right here). On the Benefits Review it only renames - the carrier's version is already in the card. */
-  var nm=host.querySelector('[data-act="actname"]'); if(nm) nm.onchange=function(){ if(pr){ var how=S.actual.how; actualSeed(nm.value); if(how) S.actual.how=how; } else S.actual.tier=nm.value; autosave(); actualRedraw(); };
+  var nm=host.querySelector('[data-act="actname"]'); if(nm) nm.onchange=function(){ if(pr){ var how=S.actual.how, base=S.actual.base; actualSeed(nm.value); if(how) S.actual.how=how; if(base) S.actual.base=base; } else S.actual.tier=nm.value; autosave(); actualRedraw(); };
   var rp=$('rvRecSet'); if(rp) rp.onclick=function(){ var sn=pkSnap($('rvRecPick').value); if(sn){ sn.by='marked on the Benefits Review'; S.rec=sn; autosave(); actualRedraw(); } };
   var rs=host.querySelector('[data-act="actreset"]'); if(rs) rs.onclick=function(){ var how=S.actual.how; actualSeed(pr?(S.actual.from||presentTier()):chosenTier()); if(how) S.actual.how=how; autosave(); actualRedraw(); }; }
 /* Section 11 in the client's language (Jesse, 17 Oct): what they did - stayed on the plan and lowered levels, went to a
@@ -4862,7 +4867,7 @@ function reviewPendingEdits(doc){ reviewCardScreen(doc); var h=doc.querySelector
   var v=function(k,ex){ return '<var data-k="'+k+'">&lt;'+ex+'&gt;</var>'; };
   var a=doc.createElement('div'); a.className='say'; a.dataset.tier='below'; a.dataset.ppEd='1';
   a.innerHTML='When we first spoke, I recommended the '+v('tier.recommended','tier recommended')+' plan, with a package of protection built around what you told me mattered most. '
-    +'<span data-gap="same">You stayed with '+v('tier.elected','tier elected')+', and lowered some of the levels of coverage<span data-needs="gap.lowered"> &mdash; your '+v('gap.lowered','what was lowered')+'</span><span data-needs="gap.missing">, and left out '+v('gap.missing','what was left out')+'</span>.</span>'
+    +'<span data-gap="same">You stayed with '+v('tier.elected','tier elected')+'<span data-needs="gap.lowered">, and lowered some of the levels of coverage &mdash; your '+v('gap.lowered','what was lowered')+'</span><span data-needs="gap.missing">, and left out '+v('gap.missing','what was left out')+'</span>.</span>'
     +'<span data-gap="lower">You went with the '+v('tier.elected','tier elected')+' plan<span data-needs="gap.missing">, without '+v('gap.missing','what was left out')+'</span>.</span>'
     +'<span data-gap="lowerplus">You went with the '+v('tier.elected','tier elected')+' plan, and added some coverage on top of it<span data-needs="gap.added"> &mdash; '+v('gap.added','what was added')+'</span> &mdash; so you beefed that plan up.</span>';
   var b=doc.createElement('div'); b.className='say'; b.dataset.tier='below'; b.dataset.ppEd='1';
@@ -4914,7 +4919,8 @@ function reviewTokens(t){ t=reviewT()||t; var C=S.client||{}, R=reviewState(), T
   T['careguide.threshold']='$2,500';
   (function(){ var cd=careCardData(); T['card.doctor']=join([cd.md,cd.sd,cd.kd].filter(Boolean)); })();
   T['tier.elected']=actualOn()?actualSnap().name:(TIER_NAME[t]||'');
-  if(actualOn()&&S.rec){ var GS=gapSpoken(S.rec,actualSnap()); T['gap.missing']=GS.missing; T['gap.lowered']=GS.lowered; T['gap.added']=GS.added; T['gap.kind']=GS.kind; } T['tier.recommended']=TIER_NAME[(S.rec&&S.rec.tier)||S.recommended]||'';
+  var RB=S.rec||(S.recommended&&pkSnap(S.recommended));   /* older files: the tool's recommendation stands in */
+  if(actualOn()&&RB){ var GS=gapSpoken(RB,actualSnap()); T['gap.missing']=GS.missing; T['gap.lowered']=GS.lowered; T['gap.added']=GS.added; T['gap.kind']=GS.kind; } T['tier.recommended']=TIER_NAME[(S.rec&&S.rec.tier)||S.recommended]||'';
   var DQ=drxParts(); T['drx.drug']=drxWho().length?DQ.drug||drxWho()[0].drug:''; T['drx.pct']=DRX_PCT; T['drx.link']=drxLink(); T['drx.code']=String(S.agentDrxCode||'').trim(); T['drx.howto']=drxWho().length?'1':'';   /* the block's switch; its words are Health ZONE's */
   T['review.month']=R.month||(R.eff?MONTHS[+String(R.eff).slice(5,7)-1]:'');
   return T; }
@@ -4987,7 +4993,9 @@ function reviewRail(){ var REVIEW_TICKS=reviewTicks(), R=reviewState(), box=$('r
     return '<div class="rv-row'+(on?' on':'')+(x.k===reviewCurTick()?' cur':'')+'" data-row="'+x.k+'"><input type="checkbox" data-k="'+x.k+'"'+(on?' checked':'')+' aria-label="'+esc(x.t)+'"><span>'+esc(x.t)+(x.note?' <em>'+esc(x.note)+'</em>':'')+'<small class="rv-acts">'+open+text+copy+'</small></span></div>'; }).join('');
   box.querySelectorAll('input[data-k]').forEach(function(c){ c.onchange=function(){ reviewTick(c.dataset.k,c.checked); }; });
   box.querySelectorAll('[data-copy]').forEach(function(a){ a.onclick=function(e){ e.preventDefault(); var t=a.textContent; try{ navigator.clipboard.writeText(a.dataset.copy); a.textContent='Copied ✓'; setTimeout(function(){ a.textContent=t; },1600); }catch(x){} }; }); }
-function reviewGo(pg,stay){ var t=chosenTier(), pages=reviewPages(t), R=reviewState(); pg=Math.max(0,Math.min(pages.length-1,pg|0)); R.pg=pg; autosave();
+function reviewGo(pg,stay){ var t=chosenTier(), pages=reviewPages(t), R=reviewState();
+  if(stay&&R.pgSc!=null){ var keep=pages.map(function(p){ return p.sc||''; }).indexOf(R.pgSc); if(keep>=0) pg=keep; }   /* same screen even if dental/below came or went */
+  pg=Math.max(0,Math.min(pages.length-1,pg|0)); R.pg=pg; R.pgSc=(pages[pg]&&pages[pg].sc)||''; autosave();
   if(!stay) RV_CONF_OPEN=false; reviewConfFold(pg);
   var fr=$('rvFrame'), doc=fr&&fr.contentDocument; if(!doc||!doc.body) return; var want=REVIEW_PAGES.indexOf(pages[pg]);
   Array.prototype.forEach.call(doc.body.children,function(el){ if(el.dataset.rv==null) return; el.style.display=(+el.dataset.rv===want)?'':'none'; });
@@ -5007,7 +5015,7 @@ function reviewConfFold(pg){ var cf=document.querySelector('#reviewHost .rv-conf
   bar.innerHTML='<span class="car">'+(min?'▸':'▾')+'</span> <b>Setup</b> '+esc([A?A.name+' · '+fmt2(reviewPrem())+'/mo':'',R.eff?'effective '+reviewDate(R.eff):'',R.draft?'drafts '+reviewDate(R.draft):'draft date not entered'].filter(Boolean).join(' · '))+' <small>'+(min?'click to open':'click to fold away')+'</small>';
   bar.onclick=bar.onkeydown=function(e){ if(e.type==='keydown'&&e.key!=='Enter'&&e.key!==' ') return; RV_CONF_OPEN=!RV_CONF_OPEN; reviewConfFold(+reviewState().pg||0); }; }
 function renderReview(){ var host=$('reviewHost'); if(!host) return; var t=chosenTier(), R=reviewState(), C=S.client||{};
-  if(t&&!tierNonMh(t)&&!actualOn()) actualSeed(t);
+  if(t&&!tierNonMh(t)&&(!actualOn()||S.actual.from!==t)) actualSeed(t);
   var head='<div class="sectitle"><span class="dot">●</span> Benefits Review <small style="font-family:inherit;font-weight:600;color:var(--muted);font-size:13px">— after approval, before the effective date · about fifteen minutes</small></div>';
   if(!t){ host.innerHTML=head+'<p class="note">Mark the plan they bought first: <b>Choose this plan</b> on the Quote page. This call is built from it.</p><button type="button" class="btn-gold" onclick="goStep(\'quote\')">← Quote</button>'; return; }
   if(tierNonMh(t)){ host.innerHTML=head+'<p class="note">This Benefits Review is the ManhattanLife call — portal, EasyCare2go, Easy Upload and CareGuide. '+esc(tierNonMh(t).name)+' clients get their onboarding from the carrier.</p>'; return; }
@@ -5888,7 +5896,7 @@ var PR_STORY_HEAD='<b>Story repository (who to tell)</b>';
 /* "Enrolling with plan edits" (Jesse, 17 Oct): the card + side-by-side open under the script; edits never touch the quote */
 /* the same two buttons above and below the edit section, so nobody has to scroll to find them (Jesse, 17 Oct) */
 var PE_GO='<div class="pr-editgo"><button type="button" data-pe="cancel">Cancel edits — enroll what was presented →</button><button type="button" class="go" data-pe="go">✓ They’re in — enroll with these adjustments →</button></div>';
-function presentEditsOpen(){ var t=presentTier(), box=$('prEdit'); if(!box||!t) return; if(!actualOn()||S.actual.from!==t) actualSeed(t);
+function presentEditsOpen(){ var t=presentTier(), box=$('prEdit'); if(!box||!t) return; if(!actualOn()||(S.actual.base||S.actual.from)!==t){ actualSeed(t); S.actual.base=t; }
   box.style.display=''; renderActual(); box.scrollIntoView({behavior:'smooth',block:'start'}); }
 function renderPresent(){ var host=$('presentHost'); if(!host) return; var t=presentTier(), T=presentTokens(t), pages=presentPages();
   S.present=S.present||{}; var pg=Math.max(0,Math.min(pages.length-1,+S.present.pg||0));
@@ -5909,8 +5917,8 @@ function renderPresent(){ var host=$('presentHost'); if(!host) return; var t=pre
     +'</div></div><div id="prPop" style="display:none"></div>'
     +'<div id="prEdit" class="pr-edit" style="display:none"><div class="rv-ch">Enrolling with plan edits <small>make the changes with them — the price and the side-by-side follow — then enroll.</small></div>'+PE_GO+'<div id="prEditBody"></div>'+PE_GO+'</div>';
   host.innerHTML=h; presentWhyBox(t); presentDrxBox();
-  host.querySelectorAll('[data-pe]').forEach(function(b){ b.onclick=function(){ if(b.dataset.pe==='cancel'){ var pt=presentTier(); S.chosen={tier:pt}; actualSeed(pt); S.actual.how='presented'; autosave(); celebrate('confetti',enrollCheer()); goStep('enroll'); return; }
-    S.chosen={tier:S.actual.from}; S.actual.how='edited'; autosave(); celebrate('confetti',enrollCheer()); goStep('enroll'); }; });
+  host.querySelectorAll('[data-pe]').forEach(function(b){ b.onclick=function(){ if(b.dataset.pe==='cancel'){ var pt=presentTier(); S.chosen={tier:pt}; actualSeed(pt); S.actual.how='presented'; S.elected=actualSnap(); S.elected.locked=1; autosave(); celebrate('confetti',enrollCheer()); goStep('enroll'); return; }
+    S.chosen={tier:S.actual.from}; S.actual.how='edited'; S.elected=actualSnap(); S.elected.locked=1; autosave(); celebrate('confetti',enrollCheer()); goStep('enroll'); }; });
   var fr=$('prFrame');
   fr.onload=function(){ try{ var doc=fr.contentDocument; presentPaginate(doc);
       benLoadSafe('afc').then(function(){ presentWire(doc,t); presentGo(+S.present.pg||0); });
@@ -5938,7 +5946,7 @@ function presentGo(pg){ var pages=presentPages(), nav=presentNav(), t=presentTie
     +(nx?'<button type="button" class="go" data-go="1">Next: '+esc(nx.next||nx.t)+' →</button>'
         :'<span style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" data-go="quote">Not today — send the quote ↩</button><button type="button" data-go="edits">Enrolling with plan edits ▾</button><button type="button" class="go" data-go="enroll">✓ Enrolling as presented →</button></span>');
   $('prNav').querySelectorAll('[data-go]').forEach(function(b){ b.onclick=function(){ var g=b.dataset.go;
-    if(g==='enroll'){ S.chosen={tier:presentTier()}; actualSeed(presentTier()); S.actual.how='presented'; autosave(); celebrate('confetti',enrollCheer()); goStep('enroll'); }
+    if(g==='enroll'){ S.chosen={tier:presentTier()}; actualSeed(presentTier()); S.actual.how='presented'; S.elected=actualSnap(); S.elected.locked=1; autosave(); celebrate('confetti',enrollCheer()); goStep('enroll'); }
     else if(g==='edits'){ presentEditsOpen(); }
     else if(g==='quote'){ goStep('quote'); setTimeout(function(){ var q=$('sendQuote'); if(q) q.scrollIntoView({behavior:'smooth',block:'start'}); },60); }
     else presentGo(nav[pos+(+g)]); }; });
@@ -6481,6 +6489,7 @@ function bindInputs(){
   document.querySelectorAll('#step-intake .chip input').forEach(function(cb){ cb.addEventListener('change',function(){ syncChips(); readIntake(); autosave(); }); });
   ['in_pname','in_sname','in_agent','in_address','in_state','in_zip','in_page','in_sage','in_majorcond_note','in_diabetic_note','in_docs1','in_docs2','in_docs3','in_carrier','in_plan','in_visits','in_budget_comfort','in_income','in_retage','in_savings','in_invest','in_invnote','in_docnote','in_budget','in_notes','in_kids','in_routenote','in_docsnote','in_whyshop','in_whymatters','in_foundplan','in_effdate']
     .forEach(function(id){ var el=$(id); if(el) el.addEventListener('input',function(){ captureIntake(); }); });
+  ['in_docs1_who','in_docs2_who','in_docs3_who','in_docs1_net','in_docs2_net','in_docs3_net'].forEach(function(id){ var el=$(id); if(el) el.addEventListener('change',function(){ captureIntake(); autosave(); }); });
   $('in_zip').addEventListener('input',zipFillsState);
   if($('in_kidcount')) $('in_kidcount').addEventListener('change',function(){ S.intake.kidsManual=0; kidsSetCount(this.value); });
   if($('addKid')) $('addKid').addEventListener('click',function(){ kidsList().push({n:'',dob:'',age:'',sex:''}); S.intake.kidsManual=1; renderKids(); autosave(); });

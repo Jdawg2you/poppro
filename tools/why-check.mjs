@@ -112,7 +112,7 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  ok(famRelSpoken()==='on both sides of the family','three or more relatives: on both sides of the family: '+famRelSpoken());
  S.intake.famRel={cancerP:['Mom','Dad'],heartS:['Dad']}; ok(famRelSpoken()==='on both sides of the family','three across both sides: the same');
  S.intake.famRel={cancerP:['Dad']}; ok(famRelSpoken()==='your dad','dad had cancer: your dad');
- S.intake.famRel={cancerP:['Dad'],heartP:['Mom']}; ok(famRelSpoken()==='your mom and dad','dad cancer + mom heart: your mom and dad');
+ S.intake.famheartP=true; S.intake.famRel={cancerP:['Dad'],heartP:['Mom']}; ok(famRelSpoken()==='your mom and dad','dad cancer + mom heart: your mom and dad'); S.intake.famheartP=false;
  S.intake.famRel={cancerP:['Dad'],heartS:['Mom']}; ok(famRelSpoken()==='your dad and your spouse\u2019s mom','client dad + spouse mom');
  S.intake.famRel={}; ok(famRelSpoken()==='','nothing clicked: empty');
  S.intake.famRel={cancerP:['Mom','Dad'],heartS:['Dad'],strokeS:['Mom']};
