@@ -4970,8 +4970,7 @@ function reviewCurTick(){ var t=chosenTier(), R=reviewState(), p=reviewPages(t)[
 /* The client's care card (optimumprotects.com/card): MyPopPro sends a personal link that fills the agent's name and
    phone (from Setup), the people on the plan, dental, and ONLY the doctors ticked "✓ In network" on the Intake, each in
    its slot. Everything rides after the # so it never reaches the server. (Jesse, 18 Oct) */
-/* the sandbox (localhost) opens the local copy of the card page (optimumprotects-site preview, port 8790) until /card is live */
-var CARE_CARD_URL=/^(localhost|127\.0\.0\.1)$/.test(location.hostname)?'http://localhost:8790/card/':'https://optimumprotects.com/card/';
+var CARE_CARD_URL='https://optimumprotects.com/card/';   /* live since 18 Oct 2026 */
 function careCardData(){ var I=S.intake||{}, C=S.client||{}, R=reviewState(), slot={me:'md',sp:'sd',kid:'kd'};
   if(!R.cardId){ R.cardId=Math.random().toString(36).slice(2,10); autosave(); }   /* this client's card: its own saved copy on any device */
   var o={i:R.cardId};
@@ -5095,7 +5094,7 @@ function glp1FromSuite(h){ var one=function(pre){ var k=function(f){ return h[pr
    items the agent hasn't opened yet (localStorage pp_news_seen = newest date they've seen). */
 var NEWS_DAYS=30;
 var NEWS=[
- {d:'2026-10-14',t:'The all-in-one launch',i:[
+ {d:'2026-10-18',t:'The all-in-one launch',i:[
   ['Discovery call, built in','The Script Navigator’s Health Discovery is now step 1. Type answers into the blanks as the client talks, and the Intake fills itself.'],
   ['One client file for both tools','Save here and open it in the Script Navigator, or the other way round. The call and the quote travel together in one file.'],
   ['Booking fills the follow-up','The date and time you book at the end of the call land in Send the quote on the Quote page.'],
@@ -5104,7 +5103,13 @@ var NEWS=[
   ['Your bio on the call','Set the tone (2.3) now opens with who you are: your bio from ⚙ Setup, read in your words. Leave it empty and a default is read; “Use the default” puts it back any time. Then the Package of Protection, and why the call asks about money.'],
   ['Direction Rx for GLP-1 weight loss','When someone is on a GLP-1 for weight loss, Present offers a Bonus benefits line about Direction Rx — they pay for the medication, and as our client they get a discount off Direction Rx’s own price. The Benefits Review gets a step to text them the link and your code, and the enrollment email explains how to use it. Add your Direction Rx link and code in ⚙ Setup.'],
   ['Their why, in their words','One Why on the call and the Intake: type exactly what they said, click what’s behind it, and see what you’ll say back. On Present it’s quoted back — “you said, …” — with their own numbers, and the close offers only the answers the quote actually supports, each one yours to switch on or off.'],
-  ['Recommended vs what they bought','Presenting a plan records it as your recommendation, product by product. Enroll records what they actually bought and lists every gap — a lower package, products declined, levels lowered — with a box to tick each one they knowingly declined.'],
+  ['Enrolling as presented, or with plan edits','The last screen of Present asks how they’re enrolling. With plan edits, their plan opens right there: ✕ what they’re not taking, change a level, or switch to another package exactly as you built it on the Quote. The price updates as you go, and Enroll, the emails and the Benefits Review all follow the plan they actually chose.'],
+  ['Recommended vs what they chose, side by side','Your recommendation on the left, their plan on the right, benefit by benefit: green where it’s more, red where it’s less, gold where it touches their family history. Below it, what each plan pays on a doctor visit, urgent care, a broken arm, a hospital stay, a heart attack and a year of cancer treatment, and what they still net.'],
+  ['Every gap on the record','Enroll lists every way their plan falls short of your recommendation, with a box to tick that the client chose it. Cancer cover or living benefits left out with a family history of it are flagged in gold.'],
+  ['The care card','A wallet card for the client: their doctors, urgent care, hospital, pharmacy and dentist, plus the numbers they need (First Health, CareGuide, telehealth, Rx discounts). Send it from the Benefits Review. It arrives already filled with your name and number and the doctors you confirmed in network, and prints one card per adult plus a spare. You can fill it in for them and text it, or they can finish it themselves.'],
+  ['Whose doctor, and in network?','Each doctor on the Intake has Primary / Spouse / Kids and ✓ In network. Only the ones you tick go onto their care card.'],
+  ['Family history, named','Click Mom or Dad under each family history on the Intake, and the presentation says “your dad” or “on both sides of the family”. Their own history is flagged separately.'],
+  ['Benefits Review, tidied','The carrier’s confirmation and their plan sit on page 1 and fold away once the call starts. The premium fills itself from their plan. The close re-sends your digital business card, and “If they elected below your recommendation” now says what they actually did, softly, with the door left open.'],
   ['Your benefits page in Setup','Add the link to your own client resource page (your ManhattanLife benefits page, flipbook or similar) in ⚙ Setup. The Benefits Review opens it for every client.'],
   ['A real story for big bills','In Present, “What if I have a major health issue?” now opens Kyle’s daughter’s story: a $211,000 ICU bill, eleven months of negotiation, and a $33,000 cheque, with what to say and what never to promise.'],
   ['⚙ Setup and a walk-through','Your agent details moved to ⚙ Setup at the top, with a six-step walk-through of the tool. The button glows until everything is filled in.'],
