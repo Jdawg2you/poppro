@@ -204,9 +204,10 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  ok(/30% off/.test(document.getElementById('setupModal').textContent)&&!/35% off/.test(document.getElementById('setupModal').textContent),'Setup says 30%, not 35%');
   /* RxEDO is gone from everything the agent says and the client sees (Jesse, 18 Oct) */
  var rvR=document.getElementById('rvFrame').contentDocument; reviewWire(rvR,'better'); var spoken=Array.prototype.map.call(rvR.querySelectorAll('.say'),function(x){ return x.textContent; }).join(' ');
- ok(!/RxEDO/i.test(spoken)&&/EasyCare2go pharmacy savings/.test(spoken),'no RxEDO in anything spoken on the Benefits Review; the prescriptions line names EasyCare2go');
+ ok(!/RxEDO/i.test(spoken)&&/EasyCare2go/.test(spoken),'no RxEDO in anything spoken on the Benefits Review; the prescriptions screen names EasyCare2go');
+ ok(reviewTokens('better')['plan.has_afc']==='1','plan.has_afc is set when the plan includes Affordable Choice');
  ok(!AFC_PARTNERS.some(function(p){ return /rxedo/i.test(p.name+p.desc); })&&/prescription/i.test(afcPartnerLines()),'partner benefits: no RxEDO, EasyCare2go carries the prescription discounts');
- return {n:118, fails:fails}; })()`;
+ return {n:119, fails:fails}; })()`;
 try {
   let l; for (let i = 0; i < 60 && !l; i++) { await sleep(150); l = await fetch(`http://127.0.0.1:${DBG}/json/list`).then(r => r.json()).catch(() => null); }
   ws = new WebSocket(l.find(t => t.type === 'page').webSocketDebuggerUrl);

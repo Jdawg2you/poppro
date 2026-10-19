@@ -4866,11 +4866,7 @@ function reviewCardScreen(doc){ var d=Array.prototype.filter.call(doc.querySelec
   var b=doc.createElement('div'); b.className='do pp-carecard'; b.innerHTML='<span class="lab">NOT SPOKEN</span>Send it from the checklist: <b>Care card sent &rarr; Text them</b>. Fill it in together on the locator. If they&rsquo;d rather you do it, fill it in yourself and use <b>Text it</b> on the card &mdash; the link carries everything.';
   if(d.dataset.rv!=null){ a.dataset.rv=b.dataset.rv=d.dataset.rv; a.style.display=b.style.display=d.style.display; }
   d.parentNode.insertBefore(a,d.nextSibling); a.parentNode.insertBefore(b,a.nextSibling); }
-/* RxEDO ended (Jesse, 18 Oct): Rx discounts are through EasyCare2go. Until Health ZONE's source carries it, the spoken
-   prescriptions line is corrected on screen; agent-only notes naming it are hidden already. */
-function reviewRxEdit(doc){ Array.prototype.forEach.call(doc.querySelectorAll('.say'),function(x){ if(x.dataset.ppRx) return;
-    var w=document.createTreeWalker(x,NodeFilter.SHOW_TEXT), n; while((n=w.nextNode())){ if(/RxEDO/.test(n.nodeValue)){ n.nodeValue=n.nodeValue.replace(/SingleCare, GoodRx, and RxEDO on it/,'SingleCare, GoodRx and your EasyCare2go pharmacy savings on it').replace(/RxEDO/g,'EasyCare2go'); x.dataset.ppRx='1'; } } }); }
-function reviewPendingEdits(doc){ reviewCardScreen(doc); reviewRxEdit(doc); var h=doc.querySelector('[data-screen="tierdown"]'); if(!h) return; var say=h.nextElementSibling; while(say&&!say.classList.contains('say')) say=say.nextElementSibling;
+function reviewPendingEdits(doc){ reviewCardScreen(doc); var h=doc.querySelector('[data-screen="tierdown"]'); if(!h) return; var say=h.nextElementSibling; while(say&&!say.classList.contains('say')) say=say.nextElementSibling;
   if(!say||say.dataset.ppEd||!/own family/.test(say.textContent)) return;
   var v=function(k,ex){ return '<var data-k="'+k+'">&lt;'+ex+'&gt;</var>'; };
   var a=doc.createElement('div'); a.className='say'; a.dataset.tier='below'; a.dataset.ppEd='1';
@@ -4925,6 +4921,9 @@ function reviewTokens(t){ t=reviewT()||t; var C=S.client||{}, R=reviewState(), T
     if(X.math==='gain') T['client.rx_gain']=m2(X.per-X.total);
     if(X.math==='partial'){ T['client.rx_covered']=m2(X.per)+' of it'; T['client.rx_short']=m2(X.total-X.per); } }
   T['careguide.threshold']='$2,500';
+  /* EasyCare2go (telehealth + pharmacy savings) comes with Affordable Choice only; Health ZONE gates the pharmacy-savings
+     sentence on this, so a client with only the other products is never told about it (18 Oct) */
+  T['plan.has_afc']=evHas(t,'afc')?'1':'';
   (function(){ var cd=careCardData(); T['card.doctor']=join([cd.md,cd.sd,cd.kd].filter(Boolean)); })();
   T['tier.elected']=actualOn()?actualSnap().name:(TIER_NAME[t]||'');
   var RB=S.rec||(S.recommended&&pkSnap(S.recommended));   /* older files: the tool's recommendation stands in */
