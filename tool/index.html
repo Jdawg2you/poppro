@@ -2920,17 +2920,17 @@ function popStrengths(tier){ return popStrengthsFrom(popInputsFor(effCfg(tier),(
    A Cigna package has a deductible and copays like the ACA does, counted the same way (same
    "meets the deductible" switch, capped at its out-of-pocket max). LifeX's deductible isn't on file. */
 /* Prescriptions are never part of the premium (Jesse, 19 Oct). They sit under the total: what the meds cost a year, what
-   Affordable Choice's Rx benefit pays back - a set amount per day they fill, up to the annual maximum - and what's left.
-   Assumes the month's prescriptions are filled together, once a month. */
+   Affordable Choice's Rx benefit pays back, and what's left. Jesse, 19 Oct: compare the year's prescriptions with the
+   annual maximum - under it they're covered (green), over it they pay the difference (red). The per-day amount is a note. */
 function rxPlan(t){ var mo=Math.round(medDiscTotal()*100)/100, r={mo:mo,yr:Math.round(mo*1200)/100,day:0,cap:0,covered:0,pay:0,payMo:0,afc:false};
   if(!(mo>0)) return r;
   if(t&&evHas(t,'afc')){ if(typeof BEN_DATA!=='undefined'&&!BEN_DATA.afc){ benLoadSafe('afc').then(function(d){ if(d) compute(); }); }
     var X=presentAfc(t), num=function(v){ return parseFloat(String(v||'').replace(/[^\d.]/g,''))||0; }; r.day=num(X.rx_day); r.cap=num(X.rx_cap); r.afc=r.day>0; }
-  if(r.afc){ var c=12*Math.min(mo,r.day); r.covered=Math.round(Math.min(r.cap>0?r.cap:c,c)*100)/100; }
+  if(r.afc){ r.covered=Math.round(Math.min(r.yr, r.cap>0?r.cap:r.yr)*100)/100; }
   r.pay=Math.max(0,Math.round((r.yr-r.covered)*100)/100); r.payMo=Math.round(r.pay/12*100)/100; return r; }
 function rxLineHTML(t){ var R=rxPlan(t); if(!(R.mo>0)) return '';
   return '<div class="pbrx"><b>Prescriptions</b> '+fmt2(R.mo)+'/mo · '+fmt2(R.yr)+'/yr'
-    +(R.afc?'<span>Rx benefit pays '+fmt2(R.day)+' each day they fill'+(R.cap?', up to '+fmt2(R.cap)+' a year':'')+' → covers '+fmt2(R.covered)+'</span>'
+    +(R.afc?'<span>Rx benefit: up to '+fmt2(R.cap||R.covered)+' a year'+(R.day?' <small>('+fmt2(R.day)+' per day they fill)</small>':'')+'</span>'
       +(R.pay>0?'<span class="dn">They pay about '+fmt2(R.pay)+' a year ('+fmt2(R.payMo)+'/mo)</span>':'<span class="up">Covered by the plan’s Rx benefit</span>')
      :'<span>No Affordable Choice Rx benefit on this package — they pay the pharmacy price</span>')+'</div>'; }
 function tierTrue(t){ var pm=tierTotals(t).mo, med=+((S.packages[t]||{}).med)||0, r={mo:pm+med,note:'',extra:med};   /* true cost counts what prescriptions still cost them */
