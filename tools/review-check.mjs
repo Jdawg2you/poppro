@@ -212,7 +212,15 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  var rvA=document.getElementById('rvFrame').contentDocument; reviewWire(rvA,'better'); var gA=rvA.querySelector('[data-needs="plan.has_afc"]');
  ok(reviewTokens('better')['plan.has_afc']===''&&gA&&gA.classList.contains('pp-off'),'no Affordable Choice: the EasyCare2go pharmacy-savings sentence is hidden');
  actualSeed('better'); reviewWire(rvA,'better'); ok(!gA.classList.contains('pp-off'),'with Affordable Choice it shows');
- return {n:121, fails:fails}; })()`;
+  /* prescriptions are never in the premium; they sit under the total with the Rx benefit taken off (Jesse, 19 Oct) */
+ await benLoadSafe('afc'); var keepM=S.intake.medList; var m0=tierTotals('better').mo;
+ S.intake.medList=[{name:'Eliquis',disc:300,forP:true}]; compute(); await w(200);
+ var R1=rxPlan('better'); ok(Math.abs(tierTotals('better').mo-m0)<0.01,'adding a $300/mo prescription leaves the Monthly premium unchanged');
+ ok(R1.afc&&R1.yr===3600&&R1.covered===Math.min(R1.cap||1e9,12*R1.day)&&R1.pay===Math.round((3600-R1.covered)*100)/100,'Rx benefit: per fill day, up to the annual max ('+JSON.stringify(R1)+')');
+ ok(tierTrue('better').extra>=R1.payMo-0.01,'true cost still counts what prescriptions cost them after the benefit');
+ S.intake.medList=[{name:'Metformin',disc:9,forP:true}]; compute(); await w(200); ok(rxPlan('better').pay===0&&/Covered by the plan/.test(rxLineHTML('better')),'cheap prescriptions: covered by the Rx benefit');
+ S.intake.medList=keepM; compute();
+ return {n:125, fails:fails}; })()`;
 try {
   let l; for (let i = 0; i < 60 && !l; i++) { await sleep(150); l = await fetch(`http://127.0.0.1:${DBG}/json/list`).then(r => r.json()).catch(() => null); }
   ws = new WebSocket(l.find(t => t.type === 'page').webSocketDebuggerUrl);

@@ -658,6 +658,7 @@
   /* Benefits Review */
   .fhint{display:block;font-size:11.5px;color:var(--muted);margin-top:3px}
   .docmeta{display:flex;gap:8px;align-items:center;margin-top:5px;font-size:12.5px}.docmeta select{font:inherit;font-size:12.5px;padding:3px 6px;border:1px solid var(--line);border-radius:6px;background:#fff}.docmeta label{display:flex;gap:4px;align-items:center;font-weight:600;color:#17824a}
+  .pbrx{margin:6px 12px 2px;padding:7px 9px;border:1px dashed #d6cdb4;border-radius:8px;font-size:12px;line-height:1.45;color:#4b5563}.pbrx b{color:var(--navy);margin-right:4px}.pbrx span{display:block}.pbrx .up{color:#17824a;font-weight:700}.pbrx .dn{color:#b42318;font-weight:700}
   .rv-actmin{font-size:13.5px;padding:8px 2px}.rv-actmin i{color:var(--muted)}.rv-actmin a{margin-left:8px}.rv-actmin small{display:block;color:var(--muted);margin-top:3px}
   .pr-edit{margin-top:16px;border:2px solid var(--navy);border-radius:12px;padding:12px 14px;background:#fffaf0}.pr-editgo{display:flex;gap:10px;justify-content:flex-end;margin:12px 0}
   .pr-editgo button{font:inherit;font-weight:700;border-radius:9px;padding:10px 16px;cursor:pointer;border:1px solid var(--line);background:#fff}.pr-editgo .go{background:#2f7d4a;border-color:#2f7d4a;color:#fff}
@@ -2422,10 +2423,10 @@ function anchorBase(){ var k=(S.intake&&S.intake.anchor)||'aca';
   return null; }
 /* The package's side of 'premium vs premium': its premiums plus any doctor copays it charges (a
    Cigna copay x visits / 12). Medications are left out on both sides - a separate bucket. */
-function pkgPremMo(t){ var pk=S.packages[t]||{}, m=tierTotals(t).mo-(+pk.med||0), x=null;
+function pkgPremMo(t){ var pk=S.packages[t]||{}, m=tierTotals(t).mo, x=null;
   if(popIsMajor(t)){ x=popInputsFor(effCfg(t),pk.products); m+=(+((S.intake||{}).visits)||0)*((x.major&&x.major.visit)||0)/12; }
   return m; }
-function pkgCopayMo(t){ return pkgPremMo(t)-(tierTotals(t).mo-(+(S.packages[t]||{}).med||0)); }
+function pkgCopayMo(t){ return pkgPremMo(t)-tierTotals(t).mo; }
 /* The small line under 'Premium vs premium' that shows the copays folded in. */
 function copayNote(B,t){ var bits=[];
   if(B&&B.copayMo>0) bits.push(B.short+' side incl. '+fmt2(B.copayMo)+'/mo doctor copays ('+B.visits+' visits × '+fmt2(B.copay)+' ÷ 12)');
@@ -2628,7 +2629,7 @@ function followTasks(){
   var hasLB=(pk.products||[]).some(function(p){ return (p.k==='lbp'||p.k==='lbs')&&(+p.monthly||0)>0; })||(+pk.lb>0);
   if(!hasLB) t.push({id:'lb',text:'Schedule a follow-up to discuss <b>Living Benefits</b> — not on the plan they chose.'});
   // Always (Jesse, 2026-10-08): the TFRA conversation, with the numbers one click away
-  var pMo=(pk.products||[]).reduce(function(s2,p){return s2+(+p.monthly||0);},0)+(+pk.lb||0)+(+pk.med||0);
+  var pMo=(pk.products||[]).reduce(function(s2,p){return s2+(+p.monthly||0);},0)+(+pk.lb||0);
   var vsAca=Math.max(0,(acaNetPrem()+(+S.aca.med||0))-pMo), bTop=(+I.budget)||(+I.budgetComfort)||0, left=Math.max(vsAca,bTop>0?Math.max(0,bTop-pMo):0);
   t.push({id:'tfra',text:'Have you discussed a <b>Tax-Free Retirement Account</b>?'+(left>0?' About '+fmt(left)+'/mo of room between this package and what they were already spending.':'')+' <a href="#" data-goto="tfraCard">See the TFRA numbers →</a>'});
   // Always (Jesse, 9 Oct): book the benefits review once it's approved - the ID card, benefit book and how to use it all
@@ -2918,19 +2919,33 @@ function popStrengths(tier){ return popStrengthsFrom(popInputsFor(effCfg(tier),(
 /* A package's own true cost. Manhattan pays fixed benefits (no deductible), so it is the premium.
    A Cigna package has a deductible and copays like the ACA does, counted the same way (same
    "meets the deductible" switch, capped at its out-of-pocket max). LifeX's deductible isn't on file. */
-function tierTrue(t){ var pm=tierTotals(t).mo, r={mo:pm,note:'',extra:0};
+/* Prescriptions are never part of the premium (Jesse, 19 Oct). They sit under the total: what the meds cost a year, what
+   Affordable Choice's Rx benefit pays back - a set amount per day they fill, up to the annual maximum - and what's left.
+   Assumes the month's prescriptions are filled together, once a month. */
+function rxPlan(t){ var mo=Math.round(medDiscTotal()*100)/100, r={mo:mo,yr:Math.round(mo*1200)/100,day:0,cap:0,covered:0,pay:0,payMo:0,afc:false};
+  if(!(mo>0)) return r;
+  if(t&&evHas(t,'afc')){ if(typeof BEN_DATA!=='undefined'&&!BEN_DATA.afc){ benLoadSafe('afc').then(function(d){ if(d) compute(); }); }
+    var X=presentAfc(t), num=function(v){ return parseFloat(String(v||'').replace(/[^\d.]/g,''))||0; }; r.day=num(X.rx_day); r.cap=num(X.rx_cap); r.afc=r.day>0; }
+  if(r.afc){ var c=12*Math.min(mo,r.day); r.covered=Math.round(Math.min(r.cap>0?r.cap:c,c)*100)/100; }
+  r.pay=Math.max(0,Math.round((r.yr-r.covered)*100)/100); r.payMo=Math.round(r.pay/12*100)/100; return r; }
+function rxLineHTML(t){ var R=rxPlan(t); if(!(R.mo>0)) return '';
+  return '<div class="pbrx"><b>Prescriptions</b> '+fmt2(R.mo)+'/mo · '+fmt2(R.yr)+'/yr'
+    +(R.afc?'<span>Rx benefit pays '+fmt2(R.day)+' each day they fill'+(R.cap?', up to '+fmt2(R.cap)+' a year':'')+' → covers '+fmt2(R.covered)+'</span>'
+      +(R.pay>0?'<span class="dn">They pay about '+fmt2(R.pay)+' a year ('+fmt2(R.payMo)+'/mo)</span>':'<span class="up">Covered by the plan’s Rx benefit</span>')
+     :'<span>No Affordable Choice Rx benefit on this package — they pay the pharmacy price</span>')+'</div>'; }
+function tierTrue(t){ var pm=tierTotals(t).mo, med=+((S.packages[t]||{}).med)||0, r={mo:pm+med,note:'',extra:med};   /* true cost counts what prescriptions still cost them */
   if(!popIsMajor(t)) return r; var c=effCfg(t), fam=acaPeople().length>1;
   if(c.base==='lifex'){ var ld=(LIFEX_PPO.ded[c.lifexPlan||'$500 PPO']||500)*(fam?2:1),
       lx=popInputsFor(c,(S.packages[t]||{}).products), lv=(+((S.intake||{}).visits)||0)*LIFEX_PPO.visit,
       ly=(acaIn().fullded!==false?ld:0)+lv;
     if(lx.major&&lx.major.oop) ly=Math.min(ly,lx.major.oop);
-    r.extra=ly/12; r.mo=pm+r.extra;
+    r.extra=med+ly/12; r.mo=pm+r.extra;
     r.note='True cost includes its $'+ld.toLocaleString('en-US')+' deductible'+(lv?' and $50 visit copays':'')+'. Preventive care and generic drugs are $0.';
     return r; }
   var plan=(TRI&&TRI.plans&&TRI.plans['Triad Cigna '+(c.triadPlan||'3500')])||{}, ded=(+plan.deductible||0)*(fam?2:1);
   var x=popInputsFor(c,(S.packages[t]||{}).products), cop=(x.major&&x.major.visit)||0, vis=(+((S.intake||{}).visits)||0)*cop;
   var yr=(acaIn().fullded!==false?ded:0)+vis; if(x.major&&x.major.oop) yr=Math.min(yr,x.major.oop);
-  r.extra=yr/12; r.mo=pm+r.extra; r.note='True cost includes its $'+ded.toLocaleString('en-US')+' deductible'+(vis?' and visit copays':'')+'.'; return r; }
+  r.extra=med+yr/12; r.mo=pm+r.extra; r.note='True cost includes its $'+ded.toLocaleString('en-US')+' deductible'+(vis?' and visit copays':'')+'.'; return r; }
 function popIsMajor(tier){ var c=effCfg(tier); return (c.base==='triad'||c.base==='lifex')&&((S.packages[tier]||{}).products||[]).some(function(p){ return p.k==='base'; }); }
 function overBuild(){
   var I=S.intake||{}, sx=I.psex, h=+I.pheight||0, wt=+I.pweight||0;
@@ -3992,11 +4007,11 @@ function compute(){
   $('o_a_trueyr').textContent=fmt2(trueYr);
 
   var discTotal=medDiscTotal();
-  ['good','better','best','actual'].forEach(function(t){ var p=S.packages[t]; if(p){ p.rxBenefit=+p.rxBenefit||0; p.med=Math.max(0,discTotal-p.rxBenefit*30); } });
+  ['good','better','best','actual'].forEach(function(t){ var p=S.packages[t]; if(p){ p.rxBenefit=+p.rxBenefit||0; var R=rxPlan(t); p.med=R.afc?R.payMo:Math.max(0,discTotal-p.rxBenefit*30); } });
   var pk=S.packages[S.activeTab];
   if($('o_p_mednet')) $('o_p_mednet').textContent=fmt2(pk.med);
   var prod=pk.products.reduce(function(s,p){return s+(+p.monthly||0);},0)+(+pk.lb||0);
-  var pMo=prod+(+pk.med||0);
+  var pMo=prod;
   var pYr=pMo*12;
   $('o_p_mo').textContent=fmt2(pMo);
   $('o_p_yr').textContent=fmt2(pYr);
@@ -4131,7 +4146,7 @@ function updateTfraVisibility(){
 function tierTotals(t){
   var pk=S.packages[t]||{products:[],lb:0,med:0};
   var prod=(pk.products||[]).reduce(function(s,p){return s+(+p.monthly||0);},0)+(+pk.lb||0);
-  var mo=prod+(+pk.med||0);
+  var mo=prod;   /* premium only - prescriptions are shown under the total, never in it (Jesse, 19 Oct) */
   return {mo:mo,yr:mo*12,pk:pk};
 }
 function acaNetPrem(){ var a=S.aca; return Math.max(0,(+a.prem||0)-(+a.subsidy||0)); }
@@ -4258,8 +4273,7 @@ function buildPrintout(){
       (x.pk.products||[]).forEach(function(p){ if(!(+p.monthly)) return; var hi=HF.any&&HIST_KEYS.indexOf(p.k)>=0;
         html+='<div class="po-li'+(hi?' po-hist':'')+'"><span>'+esc(p.name)+(hi?htag:'')+'</span><span>'+fmt2(+p.monthly||0)+'</span></div>'; });
       if(+x.pk.lb>0) html+='<div class="po-li'+(HF.any?' po-hist':'')+'"><span>Living Benefits'+(x.pk.lbCarrier?' — '+esc(x.pk.lbCarrier):'')+(HF.any?htag:'')+'</span><span>'+fmt2(+x.pk.lb)+'</span></div>';
-      if(+x.pk.med>0) html+='<div class="po-li"><span>Medications (net)</span><span>'+fmt2(+x.pk.med)+'</span></div>';
-      html+='</div><div class="po-tot"><div class="m"><span>Monthly</span><b>'+fmt2(x.mo)+'</b></div><div class="a"><span>Annual</span><span>'+fmt2(x.yr)+'</span></div></div>';
+      html+='</div><div class="po-tot"><div class="m"><span>Monthly</span><b>'+fmt2(x.mo)+'</b></div><div class="a"><span>Annual</span><span>'+fmt2(x.yr)+'</span></div></div>'+rxLineHTML(x.t).replace('class="pbrx"','class="pbrx po-rx"');
       if(base){ var ttx=tierTrue(x.t), sv=anchorSavings(base,pkgPremMo(x.t),x.mo+ttx.extra), cpn=copayNote(B,x.t), vs=base.k==='aca'?'your marketplace plan':'your current plan';
         var ln=function(lab,v){ return '<div class="ln"><span>'+lab+'</span><b class="'+(v>=0?'up':'dn')+'">'+(v>=0?'saves ':'costs ')+fmt2(Math.abs(v))+'/mo'+(v>=0?'':' more')+'</b></div>'; };
         html+='<div class="po-save"><div class="vs">Compared with '+vs+'</div>'+ln('Premium',sv.actual)+(cpn?'<div class="tn">'+cpn+'</div>':'')+ln('True cost',sv.tru)+(ttx.note?'<div class="tn">'+ttx.note+'</div>':'')
@@ -4819,7 +4833,7 @@ var RV_ACT_OPEN=false;
 function actualRedraw(){ var y=window.scrollY; renderActual(); if(S.step==='present'){ window.scrollTo(0,y); return; } var R=reviewState(), pe=$('rv_prem'); if(pe&&!(+R.prem>0)&&document.activeElement!==pe) pe.value=reviewPrem()>0?fmtMoney2(reviewPrem()):'';
   reviewCheck(); var fr=$('rvFrame'); if(fr&&fr.contentDocument&&fr.contentDocument.body&&fr.contentDocument.body.dataset.rvp) reviewGo(+R.pg||0,true); window.scrollTo(0,y); }
 /* the premium is the plan's own total unless the agent types the carrier's figure (R.prem); a different figure is confirmed, not assumed */
-function reviewPremTool(){ return actualOn()?Math.round((tierTotals('actual').mo-(+(S.packages.actual||{}).med||0))*100)/100:0; }   /* premium only - their prescription cost is not a premium */
+function reviewPremTool(){ return actualOn()?Math.round(tierTotals('actual').mo*100)/100:0; }   /* premium only - their prescription cost is not a premium */
 function reviewPrem(){ var R=reviewState(); return +R.prem>0?+R.prem:reviewPremTool(); }
 function actualReprice(){ priceTier('actual'); autosave(); actualRedraw(); }
 function renderActual(){ var pr=S.step==='present', host=pr?$('prEditBody'):$('rvActual'), t=pr?presentTier():chosenTier(); if(!host||!t) return; if(!actualOn()) actualSeed(t); if(!actualOn()) return;
@@ -5449,7 +5463,7 @@ function syncSpouse(){ var on=$('in_who_spouse')&&$('in_who_spouse').checked, g=
   var kon=$('in_who_kids')&&$('in_who_kids').checked, kg=$('kidsGrid'), kh=$('kidsHint'); if(kg) kg.style.display=kon?'':'none'; if(kh) kh.innerHTML=kon?'— any number of children is the same price':'(to expand, select <b>Children</b> under “Who needs coverage” above)';   if(typeof kidsShowCount==='function') kidsShowCount();
 }
 
-function pkMonthly(pk){ return (pk.products||[]).reduce(function(s,p){return s+(+p.monthly||0);},0)+(+pk.lb||0)+(+pk.med||0); }
+function pkMonthly(pk){ return (pk.products||[]).reduce(function(s,p){return s+(+p.monthly||0);},0)+(+pk.lb||0); }
 
 function recommendBundles(){
   var I=S.intake||{};
@@ -5681,7 +5695,7 @@ function enPrintProfile(){ var C=S.client||{}, I=S.intake||{}, w=I.who||{}, sec=
   wdw.document.close(); }
 function estTierMonthly(tier,bandIdx,state){
   var pk=S.packages[tier]; if(!pk) return null;
-  var total=(+pk.lb||0)+(+pk.med||0); var afcApplied=false, grounded=false;
+  var total=(+pk.lb||0); var afcApplied=false, grounded=false;
   (pk.products||[]).forEach(function(p){
     var lvl=afcLevelIdx(p.name);
     if(lvl>=0 && !afcApplied){ var r=afcRate(state,bandIdx,lvl); if(r!=null){ total+=r; grounded=true; } else { total+=(+p.monthly||0); } afcApplied=true; }
@@ -6074,7 +6088,7 @@ function presentScriptTokens(t){ var T=presentTokens(t), C=S.client||{}, I=S.int
   var EA=evAnchor(), exDed=EA&&EA.ded?EA.ded:(EA&&EA.lab==='Your current plan'&&+curIn().ded>0?+curIn().ded:0);
   if(exDed){ T['anchor.deductible']=m0(exDed); T['_exDedWords']=m0(exDed); }
   T['anchor.aside_obj']=(presentHasCur()&&!(+curIn().emp>0))?'those':'that one';
-  var planMo=tierTotals(t).mo-lbMo-(+(pk.med)||0),   /* premium only: the anchor side has no drug costs either */ ak=presentAnchor(), anc=ak==='aca'?(+S.aca.prem>0?acaNetPrem():null):ak==='cur'||ak==='employer'?(+Cu.prem>0?+Cu.prem:null):null;
+  var planMo=tierTotals(t).mo-lbMo,   /* premium only: the anchor side has no drug costs either */ ak=presentAnchor(), anc=ak==='aca'?(+S.aca.prem>0?acaNetPrem():null):ak==='cur'||ak==='employer'?(+Cu.prem>0?+Cu.prem:null):null;
   T['plan.monthly']=fmt2(planMo); T['lb.addback']=lbMo>0?fmt2(lbMo):''; T['new.total']=fmt2(planMo+lbMo);
   T['anchor.deductible']=ak==='aca'?T['aca.deductible']:(ak==='cur'||ak==='employer')?T['cur.deductible']:'';
   if(anc!=null){ T['anchor.today']=fmt2(anc); var sv=anc-planMo; T['savings.monthly']=fmt2(sv); T['saving']=fmt2(anc-planMo-lbMo);
@@ -6449,7 +6463,7 @@ function buildEmail(){
   var opts=n>=3?'the three options':n===2?'the two options':'the plan';
   var ch=chosenTier(), save='';
   if(ch){ save='The '+TIER_NAME[ch]+' plan is the one we landed on';
-    var tt=tierTotals(ch), lbm=((tt.pk.products||[]).filter(function(p){ return p.k==='lbp'||p.k==='lbs'; }).reduce(function(a,p){ return a+(+p.monthly||0); },0))+(+tt.pk.lb||0), prem=tt.mo-(+tt.pk.med||0)-lbm,   /* same figure the script speaks */ mo=B?(+B.premOnly||0)-prem:0;
+    var tt=tierTotals(ch), lbm=((tt.pk.products||[]).filter(function(p){ return p.k==='lbp'||p.k==='lbs'; }).reduce(function(a,p){ return a+(+p.monthly||0); },0))+(+tt.pk.lb||0), prem=tt.mo-lbm,   /* same figure the script speaks */ mo=B?(+B.premOnly||0)-prem:0;
     /* premiums alone, then the deductible they would not carry: one person's, as the examples count it (Jesse, 9 Oct) */
     var EA=B?evAnchor():null, ded=EA&&EA.ded?+EA.ded:(B&&B.k==='cur'?+curIn().ded||0:0);
     if(mo>=1){ save+=', and its premiums alone will save you about '+m0(mo)+' a month — '+m0(mo*12)+' over a year.';
@@ -7019,7 +7033,6 @@ function pbColHTML(T,anc){ var t=T[0], act=(t==='actual'), st=(S.client.state||'
       html+='<div class="pbrow"><div class="pbhead"><span class="nm">'+p.name.replace(/</g,'&lt;')+'<br><span style="font-size:11px;font-weight:500;color:var(--maroon)">typed in — not from the rate tables</span></span><span class="pr">'+pbMoney(p.monthly)+'</span>'
         +'<button class="pbib" data-act="rmx" data-i="'+i+'" title="Remove" aria-label="Remove '+p.name.replace(/"/g,'')+'">✕</button></div></div>'; });
 
-    if(+pk.med){ sum+=+pk.med; html+='<div class="pbrow"><div class="pbhead"><span class="nm">Medications</span><span class="pr">'+pbMoney(pk.med)+'</span></div></div>'; }
     var lbMissing=addable.filter(function(sl){ return sl.k==='lbp'||sl.k==='lbs'; });
     var lbAll=lbMissing.length===(pbHasSpouse()?2:1);
     if(lbAll&&lbMissing.length>1){ addable=addable.filter(function(sl){ return sl.k!=='lbp'&&sl.k!=='lbs'; }); addable.push({k:'lb*',name:'Living benefits (each covered adult)'}); }
@@ -7027,7 +7040,7 @@ function pbColHTML(T,anc){ var t=T[0], act=(t==='actual'), st=(S.client.state||'
       +'<option value="other">Other — type in a product that isn’t listed…</option>'
       +unavail.map(function(n){ return '<option disabled>'+n+' — not sold in '+st+'</option>'; }).join('')+'</select>'
       +(unavail.length?'<div class="pbna">Not sold in '+st+': '+unavail.join(', ')+'</div>':'')+'</div>';
-    html+='<div class="pbtot"><b>Monthly</b><span>'+pbMoney(sum)+'</span></div>';
+    html+='<div class="pbtot"><b>Monthly</b><span>'+pbMoney(sum)+'</span></div>'+(act?'':rxLineHTML(t));
     if(!act) var tt=tierTrue(t), sv=anchorSavings(anc,pkgPremMo(t),sum+tt.extra), cpn=copayNote(anc,t);
     if(sv){ var line=function(lab,v){ return '<div class="sv"><span>'+lab+'</span><b class="'+(v>=0?'up':'dn')+'">'+(v>=0?'saves ':'costs ')+pbMoney(Math.abs(v))+(v>=0?'':' more')+'</b></div>'; };
       html+='<div class="pbsave">'+line('Premium vs premium',sv.actual)+(cpn?'<div class="sv" style="font-size:10.5px;color:var(--muted)">'+cpn+'</div>':'')+line('True cost',sv.tru)
