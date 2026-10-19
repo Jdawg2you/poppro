@@ -207,7 +207,12 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  ok(!/RxEDO/i.test(spoken)&&/EasyCare2go/.test(spoken),'no RxEDO in anything spoken on the Benefits Review; the prescriptions screen names EasyCare2go');
  ok(reviewTokens('better')['plan.has_afc']==='1','plan.has_afc is set when the plan includes Affordable Choice');
  ok(!AFC_PARTNERS.some(function(p){ return /rxedo/i.test(p.name+p.desc); })&&/prescription/i.test(afcPartnerLines()),'partner benefits: no RxEDO, EasyCare2go carries the prescription discounts');
- return {n:119, fails:fails}; })()`;
+  /* a client without Affordable Choice is never told about EasyCare2go pharmacy savings (Health ZONE gates on plan.has_afc) */
+ S.chosen={tier:'better'}; actualSeed('better'); (S.packages.actual.dropped=S.packages.actual.dropped||[]).push('afc'); priceTier('actual');
+ var rvA=document.getElementById('rvFrame').contentDocument; reviewWire(rvA,'better'); var gA=rvA.querySelector('[data-needs="plan.has_afc"]');
+ ok(reviewTokens('better')['plan.has_afc']===''&&gA&&gA.classList.contains('pp-off'),'no Affordable Choice: the EasyCare2go pharmacy-savings sentence is hidden');
+ actualSeed('better'); reviewWire(rvA,'better'); ok(!gA.classList.contains('pp-off'),'with Affordable Choice it shows');
+ return {n:121, fails:fails}; })()`;
 try {
   let l; for (let i = 0; i < 60 && !l; i++) { await sleep(150); l = await fetch(`http://127.0.0.1:${DBG}/json/list`).then(r => r.json()).catch(() => null); }
   ws = new WebSocket(l.find(t => t.type === 'page').webSocketDebuggerUrl);
