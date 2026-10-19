@@ -198,7 +198,11 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
   /* pocket reminder on the care card (Jesse, 18 Oct) */
  S.chosen={tier:'better'}; S.rec=pkSnap('best'); S.rec.by='presented'; actualSeed('better'); (S.packages.actual.dropped=S.packages.actual.dropped||[]).push('lbp','lbs'); priceTier('actual'); reviewState().month='November';
  var ccd=careCardData(); ok(ccd.g&&ccd.g.indexOf('lb')>=0&&ccd.rm==='November','the care card carries what is not on the plan yet and the review month: '+JSON.stringify({g:ccd.g,lw:ccd.lw,rm:ccd.rm}));
- return {n:113, fails:fails}; })()`;
+  /* Direction Rx defaults: ManhattanLife's tracking link and the shared member code (Kyle, 5 Aug; via Health ZONE 18 Oct) */
+ var kL=S.agentDrxLink, kC=S.agentDrxCode; S.agentDrxLink=''; S.agentDrxCode=''; ok(drxLink()==='https:'+'//bit.ly/4wf5B7V'&&drxCode()==='4-MEM-26-6','blank Setup: the tracking link and the member code are used');
+ S.agentDrxCode='OPT35'; ok(drxCode()==='OPT35','an agent’s own code still wins'); S.agentDrxLink=kL; S.agentDrxCode=kC;
+ ok(/30% off/.test(document.getElementById('setupModal').textContent)&&!/35% off/.test(document.getElementById('setupModal').textContent),'Setup says 30%, not 35%');
+ return {n:116, fails:fails}; })()`;
 try {
   let l; for (let i = 0; i < 60 && !l; i++) { await sleep(150); l = await fetch(`http://127.0.0.1:${DBG}/json/list`).then(r => r.json()).catch(() => null); }
   ws = new WebSocket(l.find(t => t.type === 'page').webSocketDebuggerUrl);

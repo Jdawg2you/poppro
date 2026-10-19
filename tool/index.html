@@ -656,6 +656,7 @@
   .rg-row.rg-lowered label{color:#8a5a00}.rg-why{flex:1 1 220px;font:inherit;font-size:13px;padding:6px 8px;border:1px solid var(--line);border-radius:7px;background:#fff}
   .rg-btn{font:inherit;font-size:12.5px;font-weight:700;border:1px solid var(--navy);background:#fff;color:var(--navy);border-radius:8px;padding:5px 10px;cursor:pointer;margin-left:6px}
   /* Benefits Review */
+  .fhint{display:block;font-size:11.5px;color:var(--muted);margin-top:3px}
   .docmeta{display:flex;gap:8px;align-items:center;margin-top:5px;font-size:12.5px}.docmeta select{font:inherit;font-size:12.5px;padding:3px 6px;border:1px solid var(--line);border-radius:6px;background:#fff}.docmeta label{display:flex;gap:4px;align-items:center;font-weight:600;color:#17824a}
   .rv-actmin{font-size:13.5px;padding:8px 2px}.rv-actmin i{color:var(--muted)}.rv-actmin a{margin-left:8px}.rv-actmin small{display:block;color:var(--muted);margin-top:3px}
   .pr-edit{margin-top:16px;border:2px solid var(--navy);border-radius:12px;padding:12px 14px;background:#fffaf0}.pr-editgo{display:flex;gap:10px;justify-content:flex-end;margin:12px 0}
@@ -1606,8 +1607,8 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
       <div class="fld"><label>Your booking link <a href="#goatGrab" class="setlink" data-goat="1">(set up)</a></label><input id="in_abook" placeholder="calendly.com/you"></div>
       <div class="fld"><label>Your benefits page <small>for the Benefits Review</small></label><input id="in_abenefits" placeholder="yoursite.com/manhattanlife"></div>
       <div class="fld agbio"><label>Your bio <small>who you are · read at the start of every discovery call (2.3) · empty = the default</small></label><textarea id="in_abio" rows="4" placeholder="Leave empty to use the default"></textarea><button type="button" class="picbtn" id="bioDefault">Use the default</button></div>
-      <div class="fld"><label>Direction Rx link <small>GLP-1 discount, weight loss</small></label><input id="in_adrxlink" placeholder="your Direction Rx link"></div>
-      <div class="fld"><label>Direction Rx code <small>the client uses it for 35% off</small></label><input id="in_adrxcode" placeholder="your code"></div>
+      <div class="fld"><label>Direction Rx link <small>GLP-1 discount, weight loss</small></label><input id="in_adrxlink" placeholder="https://bit.ly/4wf5B7V (used if blank)"><small class="fhint">Keep ManhattanLife’s tracking link — it’s how they count the engagement. A typed-in address isn’t counted.</small></div>
+      <div class="fld"><label>Direction Rx code <small>the client enters it for 30% off</small></label><input id="in_adrxcode" placeholder="4-MEM-26-6 (used if blank)"></div>
     </div>
     <div class="goatgrab" id="goatGrab">
       <b>Don&rsquo;t have the last three yet? All three are free.</b> <span class="freetag">NO COST</span>
@@ -4517,7 +4518,7 @@ function histStrip(where){ var F=histFam(), me=histSelf(), bits=[];
   if(me.length) bits.push('<b class="hs-red">They’ve had '+esc(me.join(' and '))+'</b> — term living benefits are likely off the table; look at whole life (add it as Other).');
   return bits.length?'<div class="histstrip noprint hidein-client">'+bits.map(function(b){ return '<div>'+b+'</div>'; }).join('')+'</div>':''; }
 /* ===== Direction Rx for GLP-1s used for weight loss (Jesse, 2026-10-16) =====
-   The client PAYS for the medication; what they get through us is the discount - 35% off as a client with an active
+   The client PAYS for the medication; what they get through us is the discount - 30% off as a client with an active
    ManhattanLife product, using the agent's code on Direction Rx's site. So it is a discount they have access to, never
    "covered" and never free. Only for weight loss ("Both" counts); diabetes is pinned. Each agent's link and code live in
    Setup. No dollar saving is worked out - prices depend on the drug and dose - their current cost is said as theirs. */
@@ -4532,7 +4533,10 @@ function drxWho(){ var G=(S.intake&&S.intake.glp1)||{}, C=S.client||{}, out=[];
   [['p',(C.pname||'').trim().split(/\s+/)[0]],['s',(C.sname||'').trim().split(/\s+/)[0]]].forEach(function(x){ var g=G[x[0]]||{};
     if(g.on==='Yes'&&(g.for==='Weight loss'||g.for==='Both')) out.push({w:x[0],name:x[1]||(x[0]==='s'?'your spouse':'you'),drug:medBase(g.drug||'')||'your GLP-1',cost:+g.cost||0}); });
   return out; }
-function drxLink(){ var u=String(S.agentDrxLink||'').trim(); return u?(/^https?:\/\//i.test(u)?u:'https://'+u):''; }
+/* Kyle Lichlyter, 5 Aug 2026 (via Health ZONE): ManhattanLife's tracking link and the shared member code are the defaults */
+var DRX_LINK_DEFAULT='https://bit.ly/4wf5B7V', DRX_CODE_DEFAULT='4-MEM-26-6';
+function drxCode(){ return String(S.agentDrxCode||'').trim()||DRX_CODE_DEFAULT; }
+function drxLink(){ var u=String(S.agentDrxLink||'').trim()||DRX_LINK_DEFAULT; return /^https?:\/\//i.test(u)?u:'https://'+u; }
 function drxOn(){ var P=S.present||{}; return P.drx==null?true:!!P.drx; }
 /* Health ZONE owns the wording (gated); MyPopPro serves the parts. drx.drug empty = the block drops out. */
 function drxParts(){ var W=drxWho(), on=drxOn(); if(!W.length||!on) return {drug:'',pct:'',cost:''};
@@ -4544,10 +4548,10 @@ function presentDrxBox(){ var box=$('prDrx'); if(!box) return; var W=drxWho(); i
   box.innerHTML='<b>Direction Rx — GLP-1 for weight loss</b>'+W.map(function(x){ return '<p class="pw-tags">'+esc(x.name)+': '+esc(x.drug)+(x.cost?' · pays '+fmt2(x.cost)+'/mo now':'')+'</p>'; }).join('')
     +'<div class="pw-row'+(on?' on':'')+'"><label><input type="checkbox" id="drxOn"'+(on?' checked':'')+'> Mention it in Bonus benefits</label>'
     +'<small>A teaser only: no vendor, no percentage, no savings promise before they buy. Direction Rx itself ('+DRX_PCT+' off their own price, with your code) is on the Benefits Review.</small>'
-    +(String(S.agentDrxCode||'').trim()?'':'<small style="color:#b42318">No Direction Rx code in ⚙ Setup yet — add it before the Benefits Review.</small>')+'</div>';
+    +''+'</div>';
   $('drxOn').onchange=function(){ S.present.drx=this.checked; autosave(); presentDrxBox(); try{ var fr=$('prFrame'); if(fr&&fr.contentDocument) presentWire(fr.contentDocument,presentTier()); }catch(e){} }; }
 /* the follow-up they keep: how to use it */
-function drxHowTo(){ var W=drxWho(); if(!W.length) return ''; var R=(S.review||{}), eff=R.eff?reviewDate(R.eff):'', code=String(S.agentDrxCode||'').trim(), link=drxLink();
+function drxHowTo(){ var W=drxWho(); if(!W.length) return ''; var R=(S.review||{}), eff=R.eff?reviewDate(R.eff):'', code=drxCode(), link=drxLink();
   return 'Direction Rx, for '+(W.length>1?'your GLP-1s':W[0].drug)+': as a ManhattanLife client with an active plan, you get '+DRX_PCT+' off Direction Rx’s own price. You pay for the medication. Whether it beats what you pay today depends on their price for your dose, so compare before you switch. '
     +'Once your plan is active'+(eff?' on '+eff:'')+', go to '+(link||'the Direction Rx website')+(code?' and use code '+code:' — I’ll send you your code')+'.'; }
 /* ===== The client's Why (Jesse, 2026-10-16) =====
@@ -4921,7 +4925,7 @@ function reviewTokens(t){ t=reviewT()||t; var C=S.client||{}, R=reviewState(), T
   T['tier.elected']=actualOn()?actualSnap().name:(TIER_NAME[t]||'');
   var RB=S.rec||(S.recommended&&pkSnap(S.recommended));   /* older files: the tool's recommendation stands in */
   if(actualOn()&&RB){ var GS=gapSpoken(RB,actualSnap()); T['gap.missing']=GS.missing; T['gap.lowered']=GS.lowered; T['gap.added']=GS.added; T['gap.kind']=GS.kind; } T['tier.recommended']=TIER_NAME[(S.rec&&S.rec.tier)||S.recommended]||'';
-  var DQ=drxParts(); T['drx.drug']=drxWho().length?DQ.drug||drxWho()[0].drug:''; T['drx.pct']=DRX_PCT; T['drx.link']=drxLink(); T['drx.code']=String(S.agentDrxCode||'').trim(); T['drx.howto']=drxWho().length?'1':'';   /* the block's switch; its words are Health ZONE's */
+  var DQ=drxParts(); T['drx.drug']=drxWho().length?DQ.drug||drxWho()[0].drug:''; T['drx.pct']=DRX_PCT; T['drx.link']=drxLink(); T['drx.code']=drxCode(); T['drx.howto']=drxWho().length?'1':'';   /* the block's switch; its words are Health ZONE's */
   T['review.month']=R.month||(R.eff?MONTHS[+String(R.eff).slice(5,7)-1]:'');
   return T; }
 var REVIEW_CSS='.pp-cardbox{margin:8px 0 14px;padding:10px 14px;border:2px dashed #2f7d4a;border-radius:10px;background:#f2fbf5;font-size:14px}.pp-cardbox b{display:block;color:#17824a;margin-bottom:4px}'
@@ -4989,7 +4993,7 @@ function careCardData(){ var I=S.intake||{}, C=S.client||{}, R=reviewState(), sl
   var rm=R.month||(R.eff?MONTHS[+String(R.eff).slice(5,7)-1]:''); if(rm) o.rm=rm;
   return o; }
 function careCardLink(){ var j=JSON.stringify(careCardData()), b=btoa(unescape(encodeURIComponent(j))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''); return CARE_CARD_URL+'#c='+b; }
-function reviewTicks(){ var L=REVIEW_TICKS.slice(); if(drxWho().length) L.push({k:'drx',t:'Direction Rx code sent (GLP-1)',open:'Open Direction Rx',url:drxLink()||'#',copy:String(S.agentDrxCode||'').trim()||drxLink(),copyLabel:String(S.agentDrxCode||'').trim()?'Copy code':'Copy link',sms:function(f){ return 'Hi '+f+'! '+drxHowTo(); }});
+function reviewTicks(){ var L=REVIEW_TICKS.slice(); if(drxWho().length) L.push({k:'drx',t:'Direction Rx code sent (GLP-1)',open:'Open Direction Rx',url:drxLink()||'#',copy:drxCode()||drxLink(),copyLabel:drxCode()?'Copy code':'Copy link',sms:function(f){ return 'Hi '+f+'! '+drxHowTo(); }});
   L.push({k:'card',t:'Care card sent',open:'Open their care card',url:careCardLink(),copy:careCardLink(),copyLabel:'Copy link',
     sms:function(f){ return 'Hi '+f+'! Here’s your care card — your doctors and the numbers you need, ready to print a card for each adult on the plan or save to your phone: '+careCardLink(); }});
   return L; }
