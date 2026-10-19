@@ -4518,8 +4518,10 @@ function histStrip(where){ var F=histFam(), me=histSelf(), bits=[];
   if(me.length) bits.push('<b class="hs-red">They’ve had '+esc(me.join(' and '))+'</b> — term living benefits are likely off the table; look at whole life (add it as Other).');
   return bits.length?'<div class="histstrip noprint hidein-client">'+bits.map(function(b){ return '<div>'+b+'</div>'; }).join('')+'</div>':''; }
 /* ===== Direction Rx for GLP-1s used for weight loss (Jesse, 2026-10-16) =====
-   The client PAYS for the medication; what they get through us is the discount - 30% off as a client with an active
-   ManhattanLife product, using the agent's code on Direction Rx's site. So it is a discount they have access to, never
+   The client PAYS for the medication; what they get through us is the discount - 30% off, using the member code on
+   Direction Rx's site. UNCONFIRMED (18 Oct): whether the price needs an active ManhattanLife policy. Kyle's code
+   (4-MEM-26-6) is one shared code, so it can't be checking policy status; Jesse is asking Direction. If it's open to
+   anyone, take "as our client" out of the email and rail text and tell Health ZONE. So it is a discount they have access to, never
    "covered" and never free. Only for weight loss ("Both" counts); diabetes is pinned. Each agent's link and code live in
    Setup. No dollar saving is worked out - prices depend on the drug and dose - their current cost is said as theirs. */
 /* ONE place for the figure: 30%, confirmed by Jesse 2026-10-16, matching his DirectionRx pricing chart (member code
