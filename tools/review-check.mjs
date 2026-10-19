@@ -195,7 +195,10 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  S.chosen={tier:'better'}; renderReview(); await w(1500); var pg9=reviewPages('better').map(function(p){ return p.sc; }), ci=pg9.indexOf('close'); reviewGo(ci); S.rec=pkSnap('better'); reviewGo(ci,true);
  ok((reviewPages('better')[reviewState().pg]||{}).sc==='close','the review stays on the same screen when an optional page disappears');
  var R0=S.rec; S.rec=null; S.recommended='best'; actualSeed('good'); ok(!!reviewTokens('good')['gap.kind'],'older files without a saved recommendation still get the section 11 wording'); S.rec=R0;
- return {n:112, fails:fails}; })()`;
+  /* pocket reminder on the care card (Jesse, 18 Oct) */
+ S.chosen={tier:'better'}; S.rec=pkSnap('best'); S.rec.by='presented'; actualSeed('better'); (S.packages.actual.dropped=S.packages.actual.dropped||[]).push('lbp','lbs'); priceTier('actual'); reviewState().month='November';
+ var ccd=careCardData(); ok(ccd.g&&ccd.g.indexOf('lb')>=0&&ccd.rm==='November','the care card carries what is not on the plan yet and the review month: '+JSON.stringify({g:ccd.g,lw:ccd.lw,rm:ccd.rm}));
+ return {n:113, fails:fails}; })()`;
 try {
   let l; for (let i = 0; i < 60 && !l; i++) { await sleep(150); l = await fetch(`http://127.0.0.1:${DBG}/json/list`).then(r => r.json()).catch(() => null); }
   ws = new WebSocket(l.find(t => t.type === 'page').webSocketDebuggerUrl);

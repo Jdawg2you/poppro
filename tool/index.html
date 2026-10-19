@@ -4978,6 +4978,16 @@ function careCardData(){ var I=S.intake||{}, C=S.client||{}, R=reviewState(), sl
   if(String(C.agent||'').trim()) o.a=String(C.agent).trim(); var ph=String(S.agentPhone||'').replace(/\D/g,''); if(ph) o.p=ph;
   var n=acaPeople().filter(function(x){ var a=parseFloat(x.age); return x.role!=='k'||a>=18; }).length; if(n>0) o.n=n;   /* adults only: primary, spouse, and kids 18 and over (Jesse, 18 Oct) */ var et=enrolledTier(); if(et&&tierHasDental(et)) o.d=1;
   [1,2,3].forEach(function(k){ var nm=String(I['docs'+k]||'').trim(), w=I['docs'+k+'who']; if(nm&&I['docs'+k+'net']&&slot[w]) o[slot[w]]=o[slot[w]]?o[slot[w]]+'; '+nm:nm; });
+  /* The pocket reminder (Jesse, 18 Oct): what isn't on their plan yet, whether levels were lowered, and their review month.
+     Dental when the state sells it; life insurance when no living benefits; cancer & heart cover only when it was
+     recommended or the family has that history. */
+  var has=function(k){ return ((S.packages[et]||{}).products||[]).some(function(p){ return (p.k===k||(k==='lb'&&/^lb[ps]$/.test(p.k||'')))&&(+p.monthly||0)>0; }); }, st=(C.state||'').toUpperCase(), g=[];
+  if(et){ if(!has('dvh')&&(mlDentalSold(st)||sparkleSold(st))) g.push('dvh'); if(!has('lb')) g.push('lb');
+    var RB=S.rec||(S.recommended&&pkSnap(S.recommended)), recChas=RB&&(RB.products||[]).some(function(p){ return p.k==='chas'; });
+    if(!has('chas')&&(recChas||histFam().any)) g.push('chas');
+    if(RB&&actualOn()&&gapSpoken(RB,actualSnap()).lowered) o.lw=1; }
+  if(g.length) o.g=g;
+  var rm=R.month||(R.eff?MONTHS[+String(R.eff).slice(5,7)-1]:''); if(rm) o.rm=rm;
   return o; }
 function careCardLink(){ var j=JSON.stringify(careCardData()), b=btoa(unescape(encodeURIComponent(j))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''); return CARE_CARD_URL+'#c='+b; }
 function reviewTicks(){ var L=REVIEW_TICKS.slice(); if(drxWho().length) L.push({k:'drx',t:'Direction Rx code sent (GLP-1)',open:'Open Direction Rx',url:drxLink()||'#',copy:String(S.agentDrxCode||'').trim()||drxLink(),copyLabel:String(S.agentDrxCode||'').trim()?'Copy code':'Copy link',sms:function(f){ return 'Hi '+f+'! '+drxHowTo(); }});
