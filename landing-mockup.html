@@ -20,10 +20,15 @@
   .mockbar{background:#1f6b3b;color:#fff;text-align:center;font-size:13px;font-weight:600;padding:6px 10px}
   /* header */
   .top{position:sticky;top:0;z-index:20;background:rgba(10,24,48,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
-  .top .wrap{display:flex;align-items:center;gap:18px;height:64px}
-  .brand{display:flex;align-items:center;gap:10px;text-decoration:none}
-  .brand img{width:36px;height:36px;border-radius:8px}
-  .brand b{font-size:20px;font-weight:800;letter-spacing:-.01em}.brand b i{font-style:normal;color:var(--gold)}
+  .top .wrap{display:flex;align-items:center;gap:18px;height:78px}
+  .brand{display:flex;align-items:center;gap:12px;text-decoration:none}
+  .brand img{height:52px;width:auto}
+  .bdiv{width:2px;height:44px;background:linear-gradient(var(--gold),rgba(232,197,71,.25));border-radius:2px}
+  .bword{display:flex;flex-direction:column;line-height:1}
+  .bword b{font-size:25px;font-weight:800;letter-spacing:-.02em;display:flex;align-items:center;gap:7px}
+  .bword b em{font-style:normal;font-size:13px;font-weight:800;letter-spacing:.04em;background:var(--gold);color:#0A1830;border-radius:6px;padding:4px 7px 3px;line-height:1}
+  .bword small{margin-top:7px;padding-top:5px;border-top:2px solid var(--red);width:max-content;font-size:11.5px;font-weight:700;color:var(--gold);letter-spacing:.02em}
+  @media (max-width:560px){ .bword small{display:none} .bword b{font-size:21px} .brand img{height:40px} .bdiv{height:34px} }
   .nav{margin-left:auto;display:flex;gap:22px;align-items:center;font-size:14px;color:var(--mut)}
   .nav a{text-decoration:none}.nav a:hover{color:var(--ink)}
   .btn{display:inline-block;font:inherit;font-weight:700;border-radius:10px;padding:12px 20px;text-decoration:none;cursor:pointer;border:1px solid transparent}
@@ -120,7 +125,7 @@
 
 <header class="top">
   <div class="wrap">
-    <a class="brand" href="#"><img src="/assets/apple-touch-icon.png" alt=""><b>MyPop<i>Pro</i></b></a>
+    <a class="brand" href="#" aria-label="MyPopPro"><img src="/assets/pop-shield.png" alt=""><span class="bdiv"></span><span class="bword"><b>MyPop<em>PRO</em></b><small>Compare. Layer. Protect.</small></span></a>
     <nav class="nav">
       <a href="#how">How it works</a><a href="#carriers">Carriers</a><a href="#features">Features</a><a href="#partner">Partner program</a>
       <a class="btn gold" href="#access">Get access — free</a>
@@ -157,7 +162,7 @@
 
 <section id="how" class="alt">
   <div class="wrap">
-    <div class="sh"><div class="kick">How it works</div><h2>Six steps, start to finish — and it walks you through every one.</h2><p>Work left to right. Each step fills the next, so you never type the same thing twice.</p></div>
+    <div class="sh"><div class="kick">How it works</div><h2>Manage every client from hello to a Package of Protection — in place and reviewed.</h2><p>Six steps, and MyPopPro walks you through each one. Every step fills the next, so you never type the same thing twice.</p></div>
     <div class="steps">
       <div class="step"><h3>Discovery call</h3><p>The script, built in. Type answers into the blanks as the client talks — household, health, medications, doctors, budget, their “why”.</p></div>
       <div class="step"><h3>Intake</h3><p>Already filled from the call. Check it, add anything missing, confirm their doctors are in network.</p></div>
