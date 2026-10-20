@@ -6427,8 +6427,22 @@ window.addEventListener('message',function(e){ var f=$('callFrame'); if(!f||e.so
   if(d.source==='insurance-script-navigator'&&d.type==='call-ready') callInit();
   if(d.source==='insurance-script-navigator'&&d.type==='go-intake') goStep('intake');
 });
+/* Stay current without signing in again (Jesse, 20 Oct): at each natural break - changing step, which New and Load
+   both end in - ask the site (no cache) when MyPopPro was last published. If it's newer than the copy running here,
+   save, give any last typing (e.g. the Discovery call's push) a moment to land, and reload the fresh copy onto the same
+   step. document.lastModified is this copy's publish time; a page with no Last-Modified header never reloads itself. */
+var PP_VER={at:Date.parse(document.lastModified)||0,last:0,busy:false};
+function ppUpdateCheck(){ if(location.protocol==='file:'||PP_VER.busy||!PP_VER.at) return; var now=Date.now(); if(now-PP_VER.last<30000) return;
+  PP_VER.last=now; PP_VER.busy=true;
+  fetch(location.pathname+'?vcheck='+now,{method:'HEAD',cache:'no-store'}).then(function(r){ PP_VER.busy=false;
+    var lm=Date.parse(r.headers.get('last-modified')||''); if(!(lm>PP_VER.at+1000)) return;
+    setTimeout(function(){ autosave(); try{ sessionStorage.setItem('pp_updated','1'); }catch(e){} location.replace(location.pathname+'?v='+lm); },800);
+  }).catch(function(){ PP_VER.busy=false; }); }
+function ppUpdatedToast(){ var u=null; try{ u=sessionStorage.getItem('pp_updated'); sessionStorage.removeItem('pp_updated'); }catch(e){} if(!u) return;
+  var t=document.createElement('div'); t.textContent='Updated to the latest MyPopPro ✓'; t.style.cssText='position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#2f7d4a;color:#fff;font:600 14px -apple-system,Segoe UI,sans-serif;padding:10px 18px;border-radius:999px;z-index:99999;box-shadow:0 8px 24px rgba(0,0,0,.25)';
+  document.body.appendChild(t); setTimeout(function(){ t.remove(); },3500); }
 function goStep(s){
-  S.step=s;
+  S.step=s; setTimeout(ppUpdateCheck,0);
   document.querySelectorAll('.step').forEach(function(el){el.classList.toggle('on',el.id==='step-'+s);});
   document.querySelectorAll('#stepper button').forEach(function(b){b.classList.toggle('on',b.dataset.step===s);});
   var cs=$('clientStrip'); if(cs) cs.style.display=(s==='intake'||s==='call')?'none':'';
@@ -6575,7 +6589,8 @@ function bindInputs(){
   $('wlBack').onclick=function(){ showTour(Math.max(0,tourAt-1)); };
   $('wlSkip').onclick=finishSetup;
   document.querySelectorAll('#setupModal .wl-step[data-tour]').forEach(function(el){ el.onclick=function(){ showTour(+el.dataset.tour); }; });
-  if(!welcomeSeen()) openSetup();
+  var ppUpd=false; try{ ppUpd=!!sessionStorage.getItem('pp_updated'); }catch(e){}
+  if(!welcomeSeen()&&!ppUpd) openSetup();   /* an automatic update never interrupts with the Welcome window */
   $('setupModal').addEventListener('click',function(e){ if(e.target===$('setupModal')) closeSetup(); });
   document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&$('setupModal').classList.contains('open')) closeSetup(); });
   agentSetupFold();
@@ -7318,7 +7333,7 @@ restore();
 fill();
 bindInputs();
 compute();
-goStep(S.step||'call');
+goStep(S.step||'call'); ppUpdatedToast();
 loadPortalRates();
 loadBaseRates();
 </script>

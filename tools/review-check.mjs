@@ -221,7 +221,10 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  S.intake.medList=[{name:'A',disc:4,forP:true},{name:'B',disc:11,forP:true}]; compute(); var R15=rxPlan('better'); ok(R15.yr===180&&R15.pay===0,'$4 + $11 a month = $180 a year, under the max: fully covered');
  S.intake.medList=[{name:'Metformin',disc:9,forP:true}]; compute(); await w(200); ok(rxPlan('better').pay===0&&/Covered by the plan/.test(rxLineHTML('better')),'cheap prescriptions: covered by the Rx benefit');
  S.intake.medList=keepM; compute();
- return {n:126, fails:fails}; })()`;
+  /* staying current: a step change checks the publish time; nothing happens when it hasn't changed */
+ ok(typeof ppUpdateCheck==='function'&&PP_VER.at>0,'the update check knows this copy’s publish time');
+ PP_VER.last=0; var before=location.href; ppUpdateCheck(); await w(1500); ok(location.href===before,'no newer version: no reload');
+ return {n:128, fails:fails}; })()`;
 try {
   let l; for (let i = 0; i < 60 && !l; i++) { await sleep(150); l = await fetch(`http://127.0.0.1:${DBG}/json/list`).then(r => r.json()).catch(() => null); }
   ws = new WebSocket(l.find(t => t.type === 'page').webSocketDebuggerUrl);
