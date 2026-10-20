@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MyPopPro — Build your client's Package of Protection</title>
+<meta name="description" content="MyPopPro walks health agents from the discovery call to the benefits review: it prices the plans, builds Good / Better / Best, presents, enrolls and writes the follow-ups.">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<!-- MOCK-UP (Jesse, 20 Oct 2026). Sandbox only, not live. The two forms are look-and-feel only: nothing is sent. -->
+<style>
+  :root{ --navy:#0A1830; --panel:#0E1D3A; --panel2:#132650; --line:#22345C; --gold:#E8C547; --gold2:#F3D978; --red:#E23048; --ink:#F5F7FA; --mut:#9AA8C0; --green:#3DBE7A; }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--navy);color:var(--ink);font:16px/1.6 Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+  a{color:inherit}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+  .mockbar{background:#1f6b3b;color:#fff;text-align:center;font-size:13px;font-weight:600;padding:6px 10px}
+  /* header */
+  .top{position:sticky;top:0;z-index:20;background:rgba(10,24,48,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+  .top .wrap{display:flex;align-items:center;gap:18px;height:64px}
+  .brand{display:flex;align-items:center;gap:10px;text-decoration:none}
+  .brand img{width:36px;height:36px;border-radius:8px}
+  .brand b{font-size:20px;font-weight:800;letter-spacing:-.01em}.brand b i{font-style:normal;color:var(--gold)}
+  .nav{margin-left:auto;display:flex;gap:22px;align-items:center;font-size:14px;color:var(--mut)}
+  .nav a{text-decoration:none}.nav a:hover{color:var(--ink)}
+  .btn{display:inline-block;font:inherit;font-weight:700;border-radius:10px;padding:12px 20px;text-decoration:none;cursor:pointer;border:1px solid transparent}
+  .btn.gold{background:var(--gold);color:#0A1830}.btn.gold:hover{background:var(--gold2)}
+  .btn.ghost{border-color:var(--line);color:var(--ink)}.btn.ghost:hover{border-color:var(--gold)}
+  .nav .btn{padding:9px 16px;color:#0A1830}
+  @media (max-width:820px){ .nav a:not(.btn){display:none} }
+  /* hero */
+  .hero{padding:72px 0 56px;background:radial-gradient(900px 500px at 85% 10%,rgba(232,197,71,.10),transparent 60%),radial-gradient(700px 400px at 0% 100%,rgba(226,48,72,.07),transparent 60%)}
+  .hero .wrap{display:grid;grid-template-columns:1.1fr .9fr;gap:48px;align-items:center}
+  @media (max-width:900px){ .hero .wrap{grid-template-columns:1fr} }
+  .kick{display:inline-flex;gap:8px;align-items:center;font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--gold)}
+  h1,h2,.card h3,.privacy h3{font-family:Georgia,'Times New Roman',serif}
+  h1{font-size:clamp(36px,5.2vw,58px);line-height:1.06;letter-spacing:-.01em;margin:14px 0 16px;font-weight:700}
+  h1 em{font-style:normal;color:var(--gold)}
+  .lede{font-size:19px;color:#C9D3E4;max-width:560px;margin:0 0 10px}
+  .tag{font-weight:800;color:var(--gold);font-size:18px;letter-spacing:.01em;margin:18px 0 26px}
+  .tag span{color:var(--red)}
+  .ctas{display:flex;gap:12px;flex-wrap:wrap}
+  .free{font-size:13px;color:var(--mut);margin-top:12px}
+  /* hero visual: a package card + POP Score */
+  .viz{position:relative}
+  .pk{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 30px 80px rgba(0,0,0,.35)}
+  .pk .row{display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .pk .tiers{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}
+  .pk .t{border:1px solid var(--line);border-radius:12px;padding:10px;font-size:12px;color:var(--mut)}
+  .pk .t b{display:block;color:var(--ink);font-size:14px}.pk .t strong{display:block;color:var(--ink);font-size:18px;margin-top:4px}
+  .pk .t.rec{border-color:var(--gold);background:rgba(232,197,71,.07)}.pk .t.rec small{color:var(--gold);font-weight:700}
+  .pk .line{display:flex;justify-content:space-between;font-size:13px;padding:7px 0;border-top:1px dashed var(--line);color:#C9D3E4}
+  .pk .line b{color:var(--green)}
+  .bigscore{display:flex;gap:16px;align-items:center;margin-top:14px;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:16px 18px}
+  .bigscore p{margin:0;color:#C9D3E4;font-size:14px;font-family:Georgia,serif}.bigscore p b{color:var(--ink)}
+  .bring{flex:none;width:96px;height:96px;border-radius:50%;background:conic-gradient(var(--gold) 0 82%,#1d2c52 82% 100%);display:grid;place-items:center}
+  .bring i{width:80px;height:80px;border-radius:50%;background:var(--panel);display:grid;place-items:center;align-content:center;font-style:normal;font-weight:800;font-size:28px;color:var(--gold);line-height:1}
+  .bring small{display:block;font-size:8.5px;letter-spacing:.14em;color:var(--mut);font-weight:700;margin-top:3px}
+  .score{position:absolute;right:-14px;top:0;background:var(--panel2);border:1px solid var(--line);border-radius:16px;padding:12px 14px;display:flex;gap:12px;align-items:center;box-shadow:0 20px 50px rgba(0,0,0,.4)}
+  .ring{width:58px;height:58px;border-radius:50%;background:conic-gradient(var(--gold) 0 82%,var(--line) 82% 100%);display:grid;place-items:center}
+  .ring i{width:44px;height:44px;border-radius:50%;background:var(--panel2);display:grid;place-items:center;font-style:normal;font-weight:800;font-size:18px}
+  .score small{display:block;color:var(--mut);font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}.score b{font-size:14px}
+  @media (max-width:900px){ .score{right:8px;top:0} }
+  /* sections */
+  section{padding:72px 0}
+  .sh{max-width:720px;margin:0 0 34px}
+  .sh .kick{margin-bottom:8px}
+  h2{font-size:clamp(28px,3.6vw,40px);line-height:1.14;letter-spacing:-.005em;margin:6px 0 12px;font-weight:700}
+  .sh p{color:#C9D3E4;font-size:17px;margin:0}
+  .alt{background:#0C1C38;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  /* steps */
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;counter-reset:s}
+  @media (max-width:900px){ .steps{grid-template-columns:1fr 1fr} } @media (max-width:560px){ .steps{grid-template-columns:1fr} }
+  .step{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px;position:relative}
+  .step::before{counter-increment:s;content:counter(s);position:absolute;top:18px;right:18px;width:30px;height:30px;border-radius:50%;background:rgba(232,197,71,.12);color:var(--gold);display:grid;place-items:center;font-weight:800;font-size:14px}
+  .step h3{margin:0 0 6px;font-size:18px}.step p{margin:0;color:#C9D3E4;font-size:15px}
+  .step ul{margin:10px 0 0;padding-left:18px;color:var(--mut);font-size:14px}
+  /* carriers */
+  .carriers{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  @media (max-width:900px){ .carriers{grid-template-columns:1fr 1fr} }
+  .car{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px}
+  .car b{font-size:17px;display:block}.car span{color:var(--mut);font-size:14px}
+  .soon{display:inline-block;margin-left:6px;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;background:var(--red);color:#fff;border-radius:999px;padding:2px 8px;vertical-align:2px}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+  .chip{border:1px solid var(--line);border-radius:999px;padding:7px 12px;font-size:14px;color:#C9D3E4;background:rgba(255,255,255,.02)}
+  /* features */
+  .feats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  @media (max-width:900px){ .feats{grid-template-columns:1fr 1fr} } @media (max-width:560px){ .feats{grid-template-columns:1fr} }
+  .feat{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px}
+  .feat .ic{width:38px;height:38px;border-radius:10px;background:rgba(232,197,71,.12);display:grid;place-items:center;font-size:19px;margin-bottom:10px}
+  .feat h3{margin:0 0 6px;font-size:17px}.feat p{margin:0;color:#C9D3E4;font-size:15px}
+  /* privacy band */
+  .privacy{display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:center;background:linear-gradient(135deg,#0F2A2A,#0E1D3A);border:1px solid #23524C;border-radius:18px;padding:26px}
+  .privacy .lock{font-size:40px}.privacy h3{margin:0 0 6px;font-size:22px}.privacy p{margin:0;color:#C9D3E4}
+  @media (max-width:560px){ .privacy{grid-template-columns:1fr} }
+  /* forms */
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start}
+  @media (max-width:900px){ .two{grid-template-columns:1fr} }
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:24px}
+  .card h3{margin:0 0 6px;font-size:22px}.card .sub{color:var(--mut);margin:0 0 16px;font-size:15px}
+  .f{display:block;margin:0 0 12px}.f span{display:block;font-size:13px;font-weight:600;color:var(--mut);margin:0 0 4px}
+  .f input,.f select,.f textarea{width:100%;font:inherit;font-size:16px;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:#0A1830;color:var(--ink)}
+  .f textarea{min-height:90px;resize:vertical}
+  .f input:focus,.f select:focus,.f textarea:focus{outline:2px solid var(--gold);outline-offset:1px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}@media (max-width:560px){ .grid2{grid-template-columns:1fr} }
+  .radios{display:flex;gap:10px;flex-wrap:wrap}.radios label{display:flex;gap:6px;align-items:center;white-space:nowrap;border:1px solid var(--line);border-radius:10px;padding:9px 12px;font-size:15px;cursor:pointer}
+  .fine{font-size:12.5px;color:var(--mut);margin:10px 0 0}
+  .card .btn{width:100%;text-align:center;margin-top:4px}
+  .partner{border-color:rgba(232,197,71,.45)}
+  .partner .perks{margin:0 0 16px;padding-left:18px;color:#C9D3E4;font-size:15px}
+  footer{border-top:1px solid var(--line);padding:30px 0 40px;color:var(--mut);font-size:13px}
+  footer .wrap{display:flex;gap:18px;flex-wrap:wrap;justify-content:space-between}
+</style>
+</head>
+<body>
+<div class="mockbar">MOCK-UP — not live · the forms don’t send anything yet · <a href="#access" onclick="document.getElementById('reg').style.display='none';document.getElementById('back').style.display='';var c=document.querySelector('.hero .btn.gold');c.textContent='Open MyPopPro →';return true" style="color:#fff">preview as a returning agent</a></div>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#"><img src="/assets/apple-touch-icon.png" alt=""><b>MyPop<i>Pro</i></b></a>
+    <nav class="nav">
+      <a href="#how">How it works</a><a href="#carriers">Carriers</a><a href="#features">Features</a><a href="#partner">Partner program</a>
+      <a class="btn gold" href="#access">Get access — free</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <div>
+      <div class="kick">MyPopPro · for health agents</div>
+      <h1>Build your client’s <em>Package of Protection.</em></h1>
+      <p class="lede">From the first discovery call to the benefits review, MyPopPro walks you through every step — it prices the plans, builds Good / Better / Best, runs the presentation, and writes your follow-ups for you.</p>
+      <div class="tag">Compare<span>.</span> Layer<span>.</span> Protect<span>.</span></div>
+      <div class="ctas"><a class="btn gold" href="#access">Get access — free</a><a class="btn ghost" href="#how">See how it works</a></div>
+      <div class="free">Built by working agents, for working agents. Your clients’ information stays on your computer.</div>
+    </div>
+    <div class="viz">
+      <div class="pk">
+        <div class="row"><b>Packages for Pat &amp; Sam</b><span style="color:var(--mut);font-size:13px">FL · family</span></div>
+        <div class="tiers">
+          <div class="t"><b>Essential</b>Good<strong>$281</strong></div>
+          <div class="t rec"><b>Complete</b><small>Recommended</small><strong>$404</strong></div>
+          <div class="t"><b>Comprehensive</b>Best<strong>$549</strong></div>
+        </div>
+        <div class="line"><span>Premium vs their ACA plan</span><b>saves $241/mo</b></div>
+        <div class="line"><span>Hospital stay — what the plan pays</span><b>$35,300</b></div>
+        <div class="line"><span>Prescriptions — Rx benefit</span><b>covered</b></div>
+      </div>
+      <div class="bigscore"><div class="bring"><i>82<small>POP SCORE</small></i></div><p><b>The POP Score</b> — how completely a package protects them, weighted to their health and family history.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="how" class="alt">
+  <div class="wrap">
+    <div class="sh"><div class="kick">How it works</div><h2>Six steps, start to finish — and it walks you through every one.</h2><p>Work left to right. Each step fills the next, so you never type the same thing twice.</p></div>
+    <div class="steps">
+      <div class="step"><h3>Discovery call</h3><p>The script, built in. Type answers into the blanks as the client talks — household, health, medications, doctors, budget, their “why”.</p></div>
+      <div class="step"><h3>Intake</h3><p>Already filled from the call. Check it, add anything missing, confirm their doctors are in network.</p></div>
+      <div class="step"><h3>Quote</h3><p>Good / Better / Best, priced from the carriers’ own rate tables for their state and ages — with their true cost against what they pay now.</p></div>
+      <div class="step"><h3>Present</h3><p>A presentation script, screen by screen, with their name, numbers, doctors and medications filled in. Enroll as presented — or adjust the plan right there.</p></div>
+      <div class="step"><h3>Enroll</h3><p>The applications in call order, each person’s details ready to copy, and the thank-you email and text written for you.</p></div>
+      <div class="step"><h3>Benefits Review</h3><p>After approval: confirm the plan, walk them through the portal, telehealth and claims app, and send their client care card.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="carriers">
+  <div class="wrap">
+    <div class="sh"><div class="kick">Carriers &amp; products</div><h2>Prices the major plans — and every layer on top.</h2><p>Real rates for the client’s state and household, not ballpark numbers. Mix and match to build the package that fits.</p></div>
+    <div class="carriers">
+      <div class="car"><b>ManhattanLife</b><span>Affordable Choice and the full ancillary line</span></div>
+      <div class="car"><b>LifeX</b><span>PPO plans</span></div>
+      <div class="car"><b>Cigna</b><span>Triad PPO</span></div>
+      <div class="car"><b>Bright Life<span class="soon">Coming soon</span></b><span>Being added now</span></div>
+    </div>
+    <div class="chips">
+      <span class="chip">Hospital Indemnity</span><span class="chip">24-Hour Accident</span><span class="chip">Out-of-Pocket Protection</span><span class="chip">Cancer · Heart Attack · Stroke</span><span class="chip">Living benefits (term life)</span><span class="chip">Dental · Vision · Hearing</span><span class="chip">Home Health Care</span>
+    </div>
+  </div>
+</section>
+
+<section id="features" class="alt">
+  <div class="wrap">
+    <div class="sh"><div class="kick">Everything in one place</div><h2>The whole client journey, without the paperwork.</h2></div>
+    <div class="feats">
+      <div class="feat"><div class="ic">💲</div><h3>True cost, not sticker price</h3><p>Premium, deductible, copays and prescriptions — the honest number set side by side with their ACA or current plan.</p></div>
+      <div class="feat"><div class="ic">🛡️</div><h3>The POP Score</h3><p>How completely a package protects them, weighted to their health and family history — so you can show, not just tell.</p></div>
+      <div class="feat"><div class="ic">🏥</div><h3>“What if it actually happens?”</h3><p>A hospital stay, a broken arm, a heart attack — what each plan pays, and what the client nets.</p></div>
+      <div class="feat"><div class="ic">📨</div><h3>Send the quote</h3><p>The PDF and the email are written for you, with the follow-up time converted to the client’s time zone.</p></div>
+      <div class="feat"><div class="ic">✉️</div><h3>Wrap-up emails &amp; texts</h3><p>Thank-you email, post-call text, brochures for every product — each one written from the plan they chose.</p></div>
+      <div class="feat"><div class="ic">⚖️</div><h3>Recommended vs. chosen</h3><p>Side by side, benefit by benefit — so every gap is on the record and the conversation at renewal is easy.</p></div>
+      <div class="feat"><div class="ic">📋</div><h3>Benefits Review</h3><p>A guided call after approval, so clients actually use what they bought — and stay.</p></div>
+      <div class="feat"><div class="ic">🪪</div><h3>Client care card</h3><p>Their doctor, urgent care, hospital and the numbers they need, on one wallet card — printed for each adult or saved to their phone.</p></div>
+      <div class="feat"><div class="ic">✨</div><h3>Always improving</h3><p>New carriers, scripts and features show up in “What’s new” the day they ship.</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="privacy"><div class="lock">🔒</div><div><h3>Your clients’ information never leaves your computer.</h3><p>Everything you enter about a client is saved on your own device — not on our servers, not in the cloud. You keep the file; nobody else can see it.</p></div></div>
+  </div>
+</section>
+
+<section id="access" class="alt">
+  <div class="wrap two">
+    <div class="sh" style="margin:0"><div class="kick">Get access</div><h2>Free for licensed agents.</h2><p>Register once and start your next client today. We’ll let you know when new carriers and features arrive.</p></div>
+    <div class="card" id="back" style="display:none">
+      <h3>Welcome back, Jesse 👋</h3><p class="sub">You’re already registered on this device.</p>
+      <a class="btn gold" href="#">Open MyPopPro →</a>
+      <p class="fine"><a href="#" onclick="document.getElementById('back').style.display='none';document.getElementById('reg').style.display='';return false">Not you, or registering someone else? Register again</a></p>
+    </div>
+    <form class="card" id="reg" onsubmit="event.preventDefault();alert('Mock-up: this form does not send anything yet.')">
+      <h3>Register</h3><p class="sub">Takes about 30 seconds.</p>
+      <label class="f"><span>Full name</span><input autocomplete="name"></label>
+      <div class="grid2"><label class="f"><span>Email</span><input type="email" autocomplete="email"></label><label class="f"><span>Phone</span><input type="tel" autocomplete="tel"></label></div>
+      <label class="f"><span>Agency</span><input></label>
+      <button class="btn gold" type="submit">Register &amp; open MyPopPro →</button>
+      <p class="fine">Already registered on another device? <a href="#">Sign in instead</a>. We don’t sell your information.</p>
+    </form>
+  </div>
+</section>
+
+<section id="partner">
+  <div class="wrap two">
+    <div class="sh" style="margin:0">
+      <div class="kick">Partner Agency Program</div>
+      <h2>Not contracted yet? Get the most out of MyPopPro.</h2>
+      <p>MyPopPro is open to every agent. If you’re not yet contracted with the carriers it prices — or you’d like your agency set up to use it — tell us a little about you and someone will reach out.</p>
+    </div>
+    <form class="card partner" onsubmit="event.preventDefault();alert('Mock-up: this form does not send anything yet.')">
+      <h3>Tell us about you</h3><p class="sub">Informational only — no obligation.</p>
+      <ul class="perks"><li>Help getting contracted with the carriers in the tool</li><li>Setting up your agency or team</li><li>Training on the full client journey</li></ul>
+      <label class="f"><span>Full name</span><input autocomplete="name"></label>
+      <div class="grid2"><label class="f"><span>Email</span><input type="email" autocomplete="email"></label><label class="f"><span>Phone</span><input type="tel" autocomplete="tel"></label></div>
+      <div class="grid2"><label class="f"><span>Agency / IMO</span><input></label><label class="f"><span>States licensed for health</span><input placeholder="e.g. FL, TX"></label></div>
+      <div class="f"><span>Contracted with ManhattanLife today?</span><div class="radios"><label><input type="radio" name="ml"> Yes</label><label><input type="radio" name="ml"> No</label><label><input type="radio" name="ml"> Not sure</label></div></div>
+      <label class="f"><span>Anything else? <small style="font-weight:400">(optional)</small></span><textarea></textarea></label>
+      <button class="btn gold" type="submit">Send</button>
+    </form>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap"><span>© MyPopPro. Package of Protection™ · POP Score™</span><span>For licensed insurance professionals. Carrier and product availability vary by state.</span></div>
+</footer>
+</body>
+</html>
