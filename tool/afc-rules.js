@@ -87,3 +87,5 @@ var AFC_PENDING={
   'Still being followed up after surgery':{res:'bad',pg:19,m:'A surgery completed but not yet released from the doctor’s care is on ManhattanLife’s uninsurable list — until they’re released.'},
   'Tests or results pending':{res:'warn',pg:23,m:'Pending tests, biopsies or exams — ManhattanLife postpones until the results are back and there’s a diagnosis.'}};
 var AFC_PENDING_OPTS=['','No','Surgery or procedure recommended','Tests or results pending','Still being followed up after surgery'];
+/* Jesse, 21 Oct: under each of the three "not done yet" answers - it can look worse than it is, or be exactly that bad. */
+var AFC_MENTOR='Note: if you’re a newer agent, connect with your mentor to discuss the best way to navigate this.';

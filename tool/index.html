@@ -660,6 +660,7 @@
   .docmeta{display:flex;gap:8px;align-items:center;margin-top:5px;font-size:12.5px}.docmeta select{font:inherit;font-size:12.5px;padding:3px 6px;border:1px solid var(--line);border-radius:6px;background:#fff}.docmeta label{display:flex;gap:4px;align-items:center;font-weight:600;color:#17824a}
   .pbrx{margin:6px 12px 2px;padding:7px 9px;border:1px dashed #d6cdb4;border-radius:8px;font-size:12px;line-height:1.45;color:#4b5563}.pbrx b{color:var(--navy);margin-right:4px}.pbrx span{display:block}.pbrx .up{color:#17824a;font-weight:700}.pbrx .dn{color:#b42318;font-weight:700}
   .matnote .matq{display:block;margin-top:3px;font-weight:500;font-size:11.5px;color:#7a2a20;line-height:1.4}
+  .mentornote{display:block;margin-top:5px;color:#1c4f8a;font-weight:800}
   .pendsel{font-size:11.5px;padding:2px 4px;margin-left:4px;max-width:210px}
   .ps-ctrl.pendwrap.bad{background:#fbe0dd;border-color:#e6aaa2;color:#8a271a}.ps-ctrl.pendwrap.warn{background:#fff3df;border-color:#e8c98a;color:#7a5200}
   .matnote{display:block;flex-basis:100%;margin-top:3px;font-size:12.5px;font-weight:800;color:#a12525}
@@ -3073,6 +3074,7 @@ function pendWatch(){ var n=$('pendNote'), w=document.querySelector('.pendwrap')
   [['p',$('in_pend_p'),C.pname],['s',$('in_pend_s'),C.sname]].forEach(function(x){ var v=x[1]&&x[1].value, r=AFC_PENDING[v]; if(!r) return;
     var who=String(x[2]||'').trim().split(/\s+/)[0]||(x[0]==='s'?'Spouse':'Applicant'), what=(S.intake||{})[x[0]==='s'?'pendWhatS':'pendWhatP'];
     L.push((r.res==='bad'?'✕ ':'⚠ ')+esc(who)+(what?' ('+esc(what)+')':'')+' — '+esc(r.m)+' <span class="matq" style="display:inline">'+afcGuideLink(r.pg)+'</span>'); if(r.res==='bad') worst='bad'; else if(!worst) worst='warn'; });
+  if(L.length&&typeof AFC_MENTOR!=='undefined') L.push('<b class="mentornote">'+esc(AFC_MENTOR)+'</b>');
   n.style.display=L.length?'':'none'; n.innerHTML=L.join('<br>'); if(w){ w.classList.toggle('bad',worst==='bad'); w.classList.toggle('warn',worst==='warn'); } }
 function pendFill(){ ['p','s'].forEach(function(k){ var el=$('in_pend_'+k); if(!el||typeof AFC_PENDING_OPTS==='undefined') return; var v=(S.intake||{})[k==='s'?'pendS':'pendP']||'';
     el.innerHTML=AFC_PENDING_OPTS.map(function(o){ return '<option value="'+esc(o)+'"'+(o===v?' selected':'')+'>'+(o?(k==='s'?'S: ':'P: ')+esc(o):(k==='s'?'S: —':'P: —'))+'</option>'; }).join('');

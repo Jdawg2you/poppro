@@ -292,6 +292,7 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  ok((S.intake.notes||'').indexOf('Recommended, not done yet (applicant): Surgery or procedure recommended — knee replacement')>=0,'…and it is in the notes');
  var ps=document.getElementById('in_pend_p'); ps.value='Tests or results pending'; ps.dispatchEvent(new Event('change')); await w(80);
  ok(document.querySelector('.pendwrap').classList.contains('warn')&&/postpones/.test(pn.textContent),'tests pending: amber, postponed');
+ ok(/connect with your mentor/.test(pn.textContent)&&!!pn.querySelector('b.mentornote'),'the mentor note shows, in bold');
  ps.value='No'; ps.dispatchEvent(new Event('change')); await w(80); ok(pn.style.display==='none','No: nothing shows');
  S.intake.pendP=''; S.intake.notes='';
  /* Jesse, 21 Oct: deleted on the Intake stays deleted while the call still has it; deleted in the call clears it */
@@ -331,7 +332,7 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  S=JSON.parse(JSON.stringify(rfBase)); S.intake.pregNowP=true; goStep('quote'); compute(); await w(200); var rfe=document.getElementById('rightFit');
  ok(rfe&&rfe.textContent.indexOf('ACA + optional HI Select')>=0&&rfe.textContent.indexOf('p.23')>=0&&/Amerus VL/.test(rfe.textContent)&&/not an underwriting decision/.test(rfe.textContent),'right-fit panel renders on Quote with the path, the guide cite, GI names and the disclaimer: '+(rfe?'':'none'));
  S=JSON.parse(JSON.stringify(rfBase));
- return {n:184, fails:fails}; })()`;
+ return {n:185, fails:fails}; })()`;
 try {
   let l; for (let i = 0; i < 60 && !l; i++) { await sleep(150); l = await fetch(`http://127.0.0.1:${DBG}/json/list`).then(r => r.json()).catch(() => null); }
   ws = new WebSocket(l.find(t => t.type === 'page').webSocketDebuggerUrl);
