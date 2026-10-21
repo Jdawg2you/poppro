@@ -3799,9 +3799,12 @@ function applySuiteClient(c, live){ var sm=$('setupModal'); if(sm&&!live&&sm.cla
 
   /* Conditions this page asks about by name rather than as a chip */
   var names=(c.conds||[]).map(function(x){ return String(x.name||"").toLowerCase(); }).join(", ");
-  if(/diabet/.test(names)) I.diabetic=true;
-  if(/anxiety|depress|ptsd|bipolar|schizo/.test(names)) I.mentalP=true;
-  if(/cancer|heart attack|stroke|stent|bypass/.test(names)) I.majorcond=true;
+  /* Ticked by the call = unticked by the call (Jesse, 21 Oct). A box the call set is remembered as the call's
+     (I.byCall), so taking the condition off in Discovery clears it; a box the agent ticked by hand is left alone. */
+  if(Array.isArray(c.conds)){ var bc=I.byCall=I.byCall||{};
+    [['diabetic',/diabet/],['mentalP',/anxiety|depress|ptsd|bipolar|schizo/],['majorcond',/cancer|heart attack|stroke|stent|bypass/]].forEach(function(r){
+      if(r[1].test(names)){ if(!I[r[0]]) bc[r[0]]=1; I[r[0]]=true; }
+      else if(bc[r[0]]){ I[r[0]]=false; delete bc[r[0]]; } }); }
   /* The script asks surgery or an overnight stay over FIVE years; this box is two. It goes to the notes. */
   if(h.hospStay2===true) I.surg2yrP=true;
 
@@ -3903,16 +3906,19 @@ function applySuiteClient(c, live){ var sm=$('setupModal'); if(sm&&!live&&sm.cla
      Routing notes is the field that is read before a case is placed, so that is where they
      go - primary first with everything that was asked about each, then the spouse. */
   var cl=h.condLines||c.condLines;
-  if(cl && (((cl.primary||[]).length)||((cl.spouse||[]).length))){
+  /* Unticked on the call = gone here too (Jesse, 21 Oct): the old block comes out on every push that carries the
+     call's condition lines, even when there are none left; a new block goes in only when there is something to say. */
+  if(cl && typeof cl==='object'){
     /* The whole block has to come out on a re-push, not just its heading. Filtering only the
        tag line left the PRIMARY/SPOUSE lines behind, so a second push stacked a second copy
        and a third push a third - three sets of conditions in the field that decides placement. */
     var RTAG="From the discovery call";
     var rkept=String(I.routeNote||"").split("\n").filter(function(l){
       return l.indexOf(RTAG)!==0 && l.indexOf("PRIMARY:")!==0 && l.indexOf("SPOUSE:")!==0; });
-    var block=[RTAG+" \u2014 conditions"];
-    block.push("PRIMARY: "+((cl.primary||[]).length? cl.primary.join("; ") : "none recorded"));
-    if(cl.spouse) block.push("SPOUSE: "+(cl.spouse.length? cl.spouse.join("; ") : "none recorded"));
+    var block=[];
+    if(((cl.primary||[]).length)||((cl.spouse||[]).length)){ block=[RTAG+" \u2014 conditions"];
+      block.push("PRIMARY: "+((cl.primary||[]).length? cl.primary.join("; ") : "none recorded"));
+      if(cl.spouse) block.push("SPOUSE: "+(cl.spouse.length? cl.spouse.join("; ") : "none recorded")); }
     I.routeNote=rkept.concat(block).join("\n").replace(/^\n+|\n+$/g,"");
   }
 

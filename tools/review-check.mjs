@@ -271,6 +271,17 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  ok(document.getElementById('uwDrawer').textContent.indexOf('Heart Attack/STEMI/NSTEMI')>=0,'the ⓘ list searches conditions too');
  document.querySelector('#uwDrawer [data-uwx]').click(); await w(50);
  S.intake.conds=[]; renderMeds(); await w(80);
+ /* Jesse, 21 Oct: conditions unticked in the call come out of "Anything else I should know" too; typed notes stay */
+ S.intake.routeNote='Prefers mornings';
+ applySuiteClient({conds:[{name:'Lupus'}],condLines:{primary:['Lupus (2023)']},health:{}},true);
+ ok(S.intake.routeNote.indexOf('PRIMARY: Lupus (2023)')>=0&&/Prefers mornings/.test(S.intake.routeNote),'a ticked condition writes its line');
+ applySuiteClient({conds:[],condLines:{primary:[]},health:{}},true);
+ ok(!/From the discovery call|PRIMARY:/.test(S.intake.routeNote)&&S.intake.routeNote==='Prefers mornings','unticking the last one takes the block out and keeps what was typed: '+JSON.stringify(S.intake.routeNote));
+ S.intake.routeNote=''; S.intake.conds=[];
+ S.intake.diabetic=false; S.intake.majorcond=true; S.intake.byCall={};
+ applySuiteClient({conds:[{name:'Diabetes'}],health:{}},true); ok(S.intake.diabetic===true,'Diabetes in the call ticks Diabetic');
+ applySuiteClient({conds:[],health:{}},true); ok(S.intake.diabetic===false&&S.intake.majorcond===true,'taken off in the call unticks it; a box ticked by hand stays');
+ S.intake.majorcond=false; S.intake.conds=[];
  /* Jesse, 21 Oct: taking a medication or condition off in Discovery takes it off here; Intake-typed ones stay */
  S.intake.medList=[{name:'Atorvastatin (Lipitor)',forP:true}]; S.intake.conds=[{name:'High cholesterol',forP:true}];
  applySuiteClient({meds:['Plaquenil','Copaxone'],conds:[{name:'Lupus'}],health:{}},true); renderMeds(); await w(150);
@@ -297,7 +308,7 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  S=JSON.parse(JSON.stringify(rfBase)); S.intake.pregNowP=true; goStep('quote'); compute(); await w(200); var rfe=document.getElementById('rightFit');
  ok(rfe&&rfe.textContent.indexOf('ACA + optional HI Select')>=0&&rfe.textContent.indexOf('p.23')>=0&&/Amerus VL/.test(rfe.textContent)&&/not an underwriting decision/.test(rfe.textContent),'right-fit panel renders on Quote with the path, the guide cite, GI names and the disclaimer: '+(rfe?'':'none'));
  S=JSON.parse(JSON.stringify(rfBase));
- return {n:171, fails:fails}; })()`;
+ return {n:175, fails:fails}; })()`;
 try {
   let l; for (let i = 0; i < 60 && !l; i++) { await sleep(150); l = await fetch(`http://127.0.0.1:${DBG}/json/list`).then(r => r.json()).catch(() => null); }
   ws = new WebSocket(l.find(t => t.type === 'page').webSocketDebuggerUrl);
