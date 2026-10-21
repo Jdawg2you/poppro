@@ -232,7 +232,18 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  var pw=document.getElementById('in_pweight'); pw.value='480'; pw.dispatchEvent(new Event('input')); await w(150);
  var uw=document.getElementById('uwWatch'); ok(uw.style.display!=='none'&&/build chart/.test(uw.textContent),'over the build chart: the red underwriting box shows under Anything else ('+uw.textContent.slice(0,90)+')');
  pw.value='150'; pw.dispatchEvent(new Event('input')); await w(150); ok(uw.style.display==='none','within build: no box');
- return {n:132, fails:fails}; })()`;
+ /* Right-fit path (sandbox, 20 Oct): follows the decision tree from what the Intake knows */
+ var rfBase=JSON.parse(JSON.stringify(S)); var rf=function(mod){ S=JSON.parse(JSON.stringify(rfBase)); S.client.state='FL'; S.client.page=40; Object.assign(S.intake,{maternityP:false,maternityS:false,maternity:false,pregNowP:false,pregNowS:false,keepaca:'',diabetic:false,majorcond:false,mental:false,surg2yr:false,budget:0,budgetComfort:0}); S.aca.prem=0; S.aca.subsidy=0; S.rightFit={}; ['in_pbuild','in_sbuild'].forEach(function(i){ document.getElementById(i).classList.remove('bad'); }); mod(); return rightFitPath(rightFitFacts()); };
+ ok(rf(function(){})==='pop','right-fit: nothing on file → ManhattanLife POP');
+ ok(rf(function(){ S.intake.pregNowS=true; })==='aca','right-fit: pregnancy → ACA (household decline)');
+ ok(rf(function(){ document.getElementById('in_pbuild').classList.add('bad'); })==='gi','right-fit: over build → exception path');
+ ok(rf(function(){ S.packages.good={products:[{k:'afc',monthly:200}],lb:0}; S.intake.budget=50; })==='budget','right-fit: Essential over budget → BrightLife');
+ ok(rf(function(){ S.rightFit.mm=true; })==='triad','right-fit: wants major medical → Triad');
+ ok(rf(function(){ S.aca.prem=900; S.aca.subsidy=880; })==='aca','right-fit: subsidy covers most of it → ACA');
+ S=JSON.parse(JSON.stringify(rfBase)); S.intake.pregNowP=true; goStep('quote'); compute(); await w(200); var rfe=document.getElementById('rightFit');
+ ok(rfe&&rfe.textContent.indexOf('ACA + optional HI Select')>=0&&rfe.textContent.indexOf('p.23')>=0&&/Amerus VL/.test(rfe.textContent)&&/not an underwriting decision/.test(rfe.textContent),'right-fit panel renders on Quote with the path, the guide cite, GI names and the disclaimer: '+(rfe?'':'none'));
+ S=JSON.parse(JSON.stringify(rfBase));
+ return {n:139, fails:fails}; })()`;
 try {
   let l; for (let i = 0; i < 60 && !l; i++) { await sleep(150); l = await fetch(`http://127.0.0.1:${DBG}/json/list`).then(r => r.json()).catch(() => null); }
   ws = new WebSocket(l.find(t => t.type === 'page').webSocketDebuggerUrl);

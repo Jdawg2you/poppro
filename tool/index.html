@@ -922,6 +922,30 @@
   .tierinc label{flex:1;text-align:center;padding:8px 6px;font-size:12px;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
   .tierinc label b{color:var(--navy);font-weight:700}
   .tierinc input{cursor:pointer;width:15px;height:15px;accent-color:var(--green)}
+  /* Right-fit path (sandbox, Jesse 20 Oct): the decision tree, read from the Intake */
+  .rfit{border:1px solid var(--line);border-radius:12px;margin:0 0 14px;background:#fff}
+  .rfit>summary{cursor:pointer;padding:10px 14px;font-size:13px;list-style:none;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .rfit>summary::-webkit-details-marker{display:none}
+  .rfit>summary:before{content:"▸";color:var(--muted,#777);transition:transform .15s}
+  .rfit[open]>summary:before{transform:rotate(90deg)}
+  .rfit .rfpath{font-weight:700;color:#1c4f8a}
+  .rfit .rfchip{font-size:11px;border-radius:999px;padding:1px 8px;background:#fbeee9;color:#8a2b1c;border:1px solid #e6b7ad}
+  .rfit ol{margin:0;padding:0 14px 6px 14px;list-style:none;counter-reset:rf}
+  .rfit ol>li{counter-increment:rf;display:grid;grid-template-columns:26px 1fr;gap:4px 8px;padding:9px 0;border-top:1px solid var(--line);font-size:12.5px;opacity:.55}
+  .rfit ol>li:before{content:counter(rf,decimal-leading-zero);font-weight:700;color:var(--muted,#777);font-size:11px;padding-top:2px}
+  .rfit ol>li.on{opacity:1}
+  .rfit ol>li.on:before{color:#1c6b38}
+  .rfit ol>li.warn{opacity:1}
+  .rfit ol>li.warn:before{color:#a12525}
+  .rfit .rfq{font-weight:700}
+  .rfit .rfa{display:inline-block;margin-left:6px;font-weight:700;font-size:11.5px;border-radius:6px;padding:1px 7px;background:#eef3f9;color:#1c4f8a}
+  .rfit li.on .rfa{background:#e6f3ea;color:#1c6b38}
+  .rfit li.warn .rfa{background:#fbeee9;color:#a12525}
+  .rfit .rfwhy{grid-column:2;color:#444;font-size:12px;line-height:1.45}
+  .rfit .rfwhy ul{margin:2px 0 0 16px;padding:0}
+  .rfit .rfcite{color:#777;font-size:11px}
+  .rfit .rfmm{grid-column:2;font-size:12px}
+  .rfit .rfcheck{padding:8px 14px 12px;font-size:11.5px;color:#555;border-top:1px solid var(--line)}
   .flagbox{background:#fbeee9;border:1px solid #e6b7ad;color:#8a2b1c;border-radius:10px;padding:10px 14px;font-size:13px;margin:0 0 14px}
   .enroll-card{border:1px solid var(--line);border-radius:12px;padding:18px;background:#fff}
   .portalbtn{display:inline-flex;align-items:center;gap:8px;background:var(--navy);color:#fff;border:1px solid var(--navy);border-radius:10px;padding:12px 18px;font-weight:700;text-decoration:none;margin:6px 8px 6px 0}
@@ -1320,6 +1344,7 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
   <div id="step-quote" class="step on">
 
   <div id="recFlags" class="hidein-client"></div>
+  <details id="rightFit" class="rfit hidein-client"></details>
 
   <div class="estcard hidein-client" id="sec_est">
     <div class="sectitle" style="justify-content:space-between;flex-wrap:wrap;gap:8px"><span><span class="dot">●</span> Ballpark estimate <span class="note" style="display:inline;padding:0;font-style:normal">— full package per tier; AFC from the rate guide; not the final quote</span></span>
@@ -3101,7 +3126,7 @@ function blankState(){
     lastBasis:'',
     follow:{},
     lb:{p:{carrier:'americo',face:'',term:''},s:{carrier:'americo',face:'',term:''}},
-    recFlags:[],
+    recFlags:[], rightFit:{},
     step:'call',
     estBand:null
   };
@@ -4102,6 +4127,7 @@ function compute(){
   applyClientZeroHide();
   if($('estBody')) renderEstimate();
   if($('recFlags')) renderFlags();
+  if($('rightFit')) renderRightFit();
   if($('acaEstNote')) renderAcaNote();
   if($('lbRows')) renderLB(false);
   if($('popScoreBody')) renderPopScore();
@@ -5537,6 +5563,55 @@ function buildQuote(){ if(PR_STATE==='loading'){ BUILD_PENDING=true; var bq=$('b
   S.activeTab=S.recommended;
   goStep('quote');
   fill(); compute();
+}
+/* Right-fit path (sandbox only, Jesse 20 Oct): the Right-Fit Decision Tree, read from what the Intake already
+   knows. It suggests - the agent paths it out. GI options and Amaze are names only; nothing here is priced or
+   decided. Underwriting lines cite the ManhattanLife AFC guide page so the agent reads the rule first. */
+var RF_GUIDE='ManhattanLife AFC guide AGT-AFC7010_1225';
+function rightFitFacts(){ var I=S.intake||{}, C=S.client||{}, e={ok:false};
+  try{ if(C.state) e=acaEstimate(); }catch(x){}
+  var nm=function(w){ var n=String((w==='s'?C.sname:C.pname)||'').trim().split(/\s+/)[0]; return n||(w==='s'?'Spouse':'Applicant'); };
+  var f={I:I, e:e, uw:[], uwHard:false, aca:[], mm:[], budget:0, goodMo:0, overBudget:false};
+  var preg=I.pregNowP||I.pregNowS, mat=I.maternityP||I.maternityS||I.maternity;
+  if(preg||mat){ f.uwHard=true; f.uw.push((preg?'Pregnant now':'Maternity needed')+' — ManhattanLife declines every household applicant while anyone in the household (to age 26) is pregnant or adopting <span class="rfcite">('+RF_GUIDE+' p.23)</span>');
+    f.aca.push('Maternity is covered on the marketplace; ManhattanLife won’t write the household'); }
+  ['p','s'].forEach(function(w){ var el=$('in_'+w+'build'); if(el&&el.classList.contains('bad')){ f.uwHard=true;
+    f.uw.push(esc(nm(w))+': '+esc(String(el.value).replace(/^⚠\s*/,''))+' <span class="rfcite">('+RF_GUIDE+' p.17)</span>'); } });
+  if(I.diabetic) f.uw.push('Diabetes — check before quoting: insulin in the last 5 years or juvenile-onset declines; no more than 2 diabetic meds <span class="rfcite">('+RF_GUIDE+' p.22)</span>');
+  if(I.majorcond||I.surg2yr) f.uw.push('Major condition or recent surgery noted — check the uninsurable list before quoting <span class="rfcite">('+RF_GUIDE+' p.18–20)</span>');
+  if(e.ok&&e.flags.indexOf('medicaid')>=0) f.aca.push('Income looks like the Medicaid range for '+esc(e.st)+' — check Medicaid / CHIP first');
+  if(e.ok&&e.flags.indexOf('gap')>=0) f.aca.push('Under 100% of poverty in a non-expansion state — no subsidy and no Medicaid (the coverage gap)');
+  var net=acaNetPrem(), gross=+S.aca.prem||0;
+  f.goodMo=pkMonthly((S.packages||{}).good||{}); f.budget=(+I.budget)||(+I.budgetComfort)||0;
+  if(gross>0&&net<gross*0.15) f.aca.push('Subsidy covers most of the marketplace premium (about '+fmt(net)+'/mo after it)');
+  else if(gross>0&&f.goodMo>0&&net<=f.goodMo) f.aca.push('Marketplace after subsidy ('+fmt(net)+'/mo) costs no more than our Essential package');
+  if(I.keepaca==='yes') f.aca.push('Their doctor is only in the ACA network');
+  if(I.mental) f.mm.push('Mental-health care requested');
+  if(I.majorcond) f.mm.push('An ongoing major condition');
+  if((S.rightFit||{}).mm) f.mm.push('Client says they want major medical');
+  f.overBudget=f.budget>0&&f.goodMo>f.budget;
+  return f; }
+function rightFitPath(f){ if(f.aca.length) return 'aca'; if(f.uwHard) return 'gi'; if(f.overBudget) return 'budget'; if(f.mm.length) return 'triad'; return 'pop'; }
+function renderRightFit(){ var el=$('rightFit'); if(!el) return; S.rightFit=S.rightFit||{};
+  var f=rightFitFacts(), path=rightFitPath(f), ul=function(a){ return a.length?'<ul>'+a.map(function(x){ return '<li>'+x+'</li>'; }).join('')+'</ul>':''; };
+  var NAME={aca:'ACA + optional HI Select', triad:'USAHealth Triad — BEST', pop:'ManhattanLife POP — BETTER (core)', budget:'BrightLife — GOOD', gi:'Exception path — ACA, then GI options'};
+  var step=function(cls,q,a,why){ return '<li class="'+cls+'"><div><span class="rfq">'+q+'</span><span class="rfa">'+a+'</span></div><div class="rfwhy">'+why+'</div></li>'; };
+  var h='';
+  h+=step('on','Discover in MyPopPro','Done','Household, health and money from the call and the Intake.');
+  h+=step(path==='aca'?'on':'', 'Is ACA the strongest fit?', f.aca.length?'Yes':'Not on what we know',
+    f.aca.length?ul(f.aca)+'→ <b>ACA</b>, with <b>HI Select</b> as an optional add-on.':'No subsidy, Medicaid, maternity or ACA-only doctor reason on file. Re-check if the income or the doctor answer changes.');
+  h+=step(f.uw.length?'warn':'', 'Can they pass ManhattanLife underwriting?', f.uwHard?'Probably not':(f.uw.length?'Check first':'No flags on file'),
+    f.uw.length?ul(f.uw)+(f.uwHard?'→ <b>Exception path:</b> revisit ACA, then the verified GI options — <b>Amerus VL</b>, or <b>Aither Medical / TrioMed</b> through Enrollment First. GI acceptance ≠ full coverage.':'Read the rule before saying anything to the client — a flag is not a decline.'):'Nothing in the Intake trips the AFC guide. Still confirm medications against the list.');
+  h+=step(path==='triad'?'on':(path==='pop'?'on':''), 'Needs or wants major medical?', f.mm.length?'Yes → Triad':'No → POP',
+    (f.mm.length?ul(f.mm)+'→ <b>USAHealth Triad</b> (BEST) — add it as the health-plan base in the builder.':'→ <b>ManhattanLife POP</b> (BETTER) is the core recommendation. If they want major medical later, POP → Triad.')+
+    '<div class="rfmm"><label><input type="checkbox" id="rf_mm"'+(S.rightFit.mm?' checked':'')+'> Client says they want major medical</label></div>');
+  h+=step(path==='budget'?'on':(f.overBudget?'warn':''), 'Within budget?', !f.budget?'No budget on file':(f.overBudget?'Over budget':'Yes'),
+    !f.budget?'Add their max monthly in the Intake to test this.':(f.overBudget?'Essential is '+fmt(f.goodMo)+'/mo against a budget of '+fmt(f.budget)+'/mo.<br>→ <b>BrightLife</b> (GOOD — formerly LifeX, Cigna network).':'Essential is '+fmt(f.goodMo)+'/mo against a budget of '+fmt(f.budget)+'/mo.'));
+  h+=step(f.overBudget?'warn':'', 'Still unaffordable?', f.overBudget?'Follow the tree':'—',
+    'Re-check ACA / Medicaid / CHIP → <b>Amaze</b> ($99/mo per household, care access) → add <b>HI Select</b>, <b>24-hour accident</b> and <b>DVH</b> if eligible.');
+  el.innerHTML='<summary><span>Right-fit path</span><span class="rfpath">→ '+NAME[path]+'</span>'+(f.uw.length?'<span class="rfchip">'+f.uw.length+' underwriting '+(f.uw.length>1?'flags':'flag')+'</span>':'')+'</summary>'+
+    '<ol>'+h+'</ol><div class="rfcheck"><b>Agent check before quoting:</b> state availability, current plan documents, eligibility, effective dates and total cost. This is a suggestion from the Intake, not an underwriting decision.</div>';
+  var mm=$('rf_mm'); if(mm) mm.onchange=function(){ S.rightFit.mm=mm.checked; autosave(); renderRightFit(); };
 }
 function renderFlags(){
   var el=$('recFlags'); if(!el) return;
