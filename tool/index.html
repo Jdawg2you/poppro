@@ -1210,7 +1210,7 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
       <textarea id="in_kids" style="display:none" aria-hidden="true"></textarea>
     </div>
 
-    <div class="intake-sec" id="sec_meds">Medications <button type="button" class="afcinfo hidein-client" data-afcinfo="1" title="ManhattanLife’s medication decline list, with the condition each drug is listed for">ⓘ ManhattanLife list</button> <span class="secnote">— look up best price:</span> <a href="https://www.singlecare.com" target="_blank" rel="noopener" class="seclink">SingleCare ↗</a> <a href="https://www.goodrx.com/" target="_blank" rel="noopener" class="seclink">GoodRx ↗</a> <a href="https://www.costplusdrugs.com/" target="_blank" rel="noopener" class="seclink">Cost Plus ↗</a> <a href="https://www.mdsave.com/" target="_blank" rel="noopener" class="seclink">MDSave ↗</a></div>
+    <div class="intake-sec" id="sec_meds">Medications <button type="button" class="afcinfo hidein-client" data-afcinfo="1" title="ManhattanLife’s medication decline list, with the condition each drug is listed for">ⓘ ManhattanLife list</button> <span class="secnote">— look up best price:</span> <a href="https://www.singlecare.com" target="_blank" rel="noopener" class="seclink">SingleCare ↗</a> <a href="https://www.goodrx.com/" target="_blank" rel="noopener" class="seclink">GoodRx ↗</a> <a href="https://www.costplusdrugs.com/" target="_blank" rel="noopener" class="seclink">Cost Plus ↗</a></div>
     <div class="note" style="padding-top:2px"><b>ACA copay</b> fills itself as an estimate from the bronze averages: a drug sold as a generic ≈ $25/mo; a brand-only drug counts toward the deductible, so it uses the discount price until you type the real figure. Check the drug on HealthSherpa and type over it. <b>Current copay</b> = what they pay now on their current plan. <b>Discount</b> = the cash price from the links above.</div>
     <div class="medhead"><span class="h1">Medication</span><span class="hk" title="G = a generic is sold · B = brand only">Rx</span><span class="h2">ACA copay</span><span class="h2">Current copay</span><span class="h2">Discount</span><span class="hw" title="Primary">P</span><span class="hw" title="Spouse">S</span><span class="hx"></span></div>
     <div id="medList"></div>
@@ -1285,7 +1285,7 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
         <select id="in_keepafc" hidden><option value=""></option><option value="yes">yes</option><option value="no">no</option></select></span></div>
     <div style="margin-top:10px"><label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px">Preferred doctor notes</label><textarea id="in_docsnote" rows="2" style="width:100%;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font:inherit;background:#fff;resize:vertical" placeholder="Notes on providers / networks — e.g. wants to keep current PCP, specialist not in-network, willing to switch."></textarea></div>
 
-    <div class="intake-sec" id="sec_curins">Current Insurance <span class="secnote">— what they have today, if anything</span></div>
+    <div class="intake-sec" id="sec_curins">Current Insurance <span class="secnote">— what they have today, if anything · procedure prices:</span> <a href="https://www.mdsave.com/" target="_blank" rel="noopener" class="seclink" title="A procedure marketplace (MRI, CT, colonoscopy, surgery, labs): the client buys up front and gets a voucher. On a high-deductible plan the purchase may count toward the deductible, but the insurer decides and the client files it. No providers in Hawaii or Maine.">MDsave ↗</a> <a href="https://www.fairhealthconsumer.org/" target="_blank" rel="noopener" class="seclink" title="Look up what a procedure typically costs in their area - nothing to buy.">FAIR Health ↗</a></div>
     <div class="intakegrid">
       <div class="fld"><label>Carrier</label><input id="in_carrier" placeholder="carrier"></div>
       <div class="fld"><label>Plan name</label><input id="in_plan" placeholder="plan name"></div>
@@ -2816,7 +2816,7 @@ function buildTierProducts(c,byKey,extras){
   if(c.sdr){ var sd=pSDR(R,st,age,hh,c.sdr,false);
   add('sdr','Specified Disease Rider — $'+(+c.sdr.max/1000)+'K / $'+((+(sd.ded||c.sdr.ded))/1000)+'K ded', sd); }
   }
-  add('his','Hospital Indemnity — HI Select $10K'+(c.his.outp?' + Outpatient $'+c.his.outp:''), pHIS(R,st,age,hh,c.his));
+  add('his','Hospital Indemnity — HI Select $'+Number(+c.his.ben||10000).toLocaleString('en-US')+(c.his.outp?' + Outpatient $'+Number(c.his.outp).toLocaleString('en-US'):''), pHIS(R,st,age,hh,c.his));   /* the benefit chosen, not a fixed $10K (Health ZONE, 21 Oct: an export read $10K for a $2,000 plan) */
   add('acc','Accident Cash — 24-Hr Accident ('+c.acc+' Unit)', pACC(R,hh,c.acc));
   add('gap','Out-of-Pocket / Gap — $'+c.gap.daily+'/day · $'+c.gap.adm+' admission', pGAP(R,st,age,hh,c.gap));
   var dr=dvhRiders(c.dvh), dres=pDVH(R,age,hh,c.dvh,st);
