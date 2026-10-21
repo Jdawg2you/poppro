@@ -659,6 +659,8 @@
   .fhint{display:block;font-size:11.5px;color:var(--muted);margin-top:3px}
   .docmeta{display:flex;gap:8px;align-items:center;margin-top:5px;font-size:12.5px}.docmeta select{font:inherit;font-size:12.5px;padding:3px 6px;border:1px solid var(--line);border-radius:6px;background:#fff}.docmeta label{display:flex;gap:4px;align-items:center;font-weight:600;color:#17824a}
   .pbrx{margin:6px 12px 2px;padding:7px 9px;border:1px dashed #d6cdb4;border-radius:8px;font-size:12px;line-height:1.45;color:#4b5563}.pbrx b{color:var(--navy);margin-right:4px}.pbrx span{display:block}.pbrx .up{color:#17824a;font-weight:700}.pbrx .dn{color:#b42318;font-weight:700}
+  .matnote{display:block;flex-basis:100%;margin-top:3px;font-size:12.5px;font-weight:800;color:#a12525}
+  .uwwatch{margin-top:8px;border:1.5px solid #c0392b;background:#fdecea;border-radius:10px;padding:10px 14px;color:#8f1d12;font-size:13.5px;line-height:1.45}.uwwatch .uwhd{font-weight:800;margin-bottom:4px}.uwwatch ul{margin:0;padding-left:18px}.uwwatch li{margin:3px 0}.uwwatch b{color:#a12525}
   .rv-actmin{font-size:13.5px;padding:8px 2px}.rv-actmin i{color:var(--muted)}.rv-actmin a{margin-left:8px}.rv-actmin small{display:block;color:var(--muted);margin-top:3px}
   .pr-edit{margin-top:16px;border:2px solid var(--navy);border-radius:12px;padding:12px 14px;background:#fffaf0}.pr-editgo{display:flex;gap:10px;justify-content:flex-end;margin:12px 0}
   .pr-editgo button{font:inherit;font-weight:700;border-radius:9px;padding:10px 16px;cursor:pointer;border:1px solid var(--line);background:#fff}.pr-editgo .go{background:#2f7d4a;border-color:#2f7d4a;color:#fff}
@@ -1202,7 +1204,7 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
       <span class="ps-ctrl">Family history of heart attack / stroke? <label class="tob"><input type="checkbox" id="in_famheart_p"> P</label><label class="tob"><input type="checkbox" id="in_famheart_s"> S</label></span>
       <div class="famrel" id="famRelBox"></div>
       <span class="ps-ctrl">Tobacco use? <label class="tob"><input type="checkbox" id="in_tobacco_p"> P</label><label class="tob"><input type="checkbox" id="in_tobacco_s"> S</label></span>
-      <span class="ps-ctrl red">Needs maternity? <label class="tob"><input type="checkbox" id="in_maternity_p"> P</label><label class="tob"><input type="checkbox" id="in_maternity_s"> S</label></span>
+      <span class="ps-ctrl red matwrap">Needs maternity? <label class="tob"><input type="checkbox" id="in_maternity_p"> P</label><label class="tob"><input type="checkbox" id="in_maternity_s"> S</label><span id="matNote" class="matnote" style="display:none">→ Consider a non-ManhattanLife plan</span></span>
       <label class="chip tone-green"><input type="checkbox" id="in_dv"> Wants dental / vision?</label>
       <span class="ps-ctrl red">Mental health coverage needed? <label class="tob"><input type="checkbox" id="in_mental_p"> P</label><label class="tob"><input type="checkbox" id="in_mental_s"> S</label></span>
       <span class="ps-ctrl">Surgeries / hospitalizations (past 2 yrs)? <label class="tob"><input type="checkbox" id="in_surg2yr_p"> P</label><label class="tob"><input type="checkbox" id="in_surg2yr_s"> S</label></span>
@@ -1216,7 +1218,7 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
         <div class="note" style="padding:4px 0 0;font-size:10.5px">Decline: insulin (last 5 yrs) or juvenile-onset · &gt;2 oral meds · diabetic complications</div>
       </div>
     </div>
-    <div style="margin-top:10px"><label style="font-family:var(--serif);font-size:15px;font-weight:700;color:var(--navy);display:block;margin-bottom:4px">Anything else I should know about?</label><textarea id="in_routenote" rows="6" style="width:100%;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font:inherit;background:#fff;resize:vertical" placeholder="Anything about their health, conditions, timing or situation that should shape the placement. Conditions from the script navigator land here."></textarea></div>
+    <div style="margin-top:10px"><label style="font-family:var(--serif);font-size:15px;font-weight:700;color:var(--navy);display:block;margin-bottom:4px">Anything else I should know about?</label><textarea id="in_routenote" rows="6" style="width:100%;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font:inherit;background:#fff;resize:vertical" placeholder="Anything about their health, conditions, timing or situation that should shape the placement. Conditions from the script navigator land here."></textarea><div id="uwWatch" class="uwwatch" style="display:none"></div></div>
 
     <div class="intake-sec" id="sec_docs">Preferred Doctors <a href="https://providerlocator.firsthealth.com/LocateProvider/LocateProviderSearch/" target="_blank" rel="noopener" class="seclink">↗ Look up First Health network</a></div>
     <div class="intakegrid">
@@ -3005,20 +3007,30 @@ var BUILD_CHART={
 };
 // Diabetic decline: max weight by height (inches). Over this = decline if diabetic.
 var DIABETES_MAX={56:150,57:155,58:161,59:167,60:173,61:181,62:189,63:197,64:206,65:214,66:223,67:231,68:239,69:248,70:256,71:265,72:273,73:280,74:287,75:294,76:301,77:308,78:315};
+/* Underwriting watch (Jesse, 20 Oct): what could keep this household off ManhattanLife. Pregnancy: "Consider a
+   non-ManhattanLife plan" under the red Needs-maternity tick. Under "Anything else I should know": over the build
+   chart or the diabetic maximum (medications and conditions from the AFC agent guide come next). Read live. */
+function uwWatch(){ var box=$('uwWatch'); if(!box) return; var I=S.intake||{}, C=S.client||{}, L=[];
+  var nm=function(w){ var n=String((w==='s'?C.sname:C.pname)||'').trim().split(/\s+/)[0]; return n||(w==='s'?'Spouse':'Applicant'); };
+  var mn=$('matNote'); if(mn) mn.style.display=(($('in_maternity_p')||{}).checked||($('in_maternity_s')||{}).checked)?'':'none';   /* Jesse, 20 Oct: the red tick + this line is enough for pregnancy */
+  ['p','s'].forEach(function(w){ var el=$('in_'+w+'build'); if(el&&el.classList.contains('bad')) L.push('<b>'+esc(nm(w))+': '+esc(String(el.value).replace(/^⚠\s*/,''))+'.</b> Over ManhattanLife’s build chart — expect a rating or a decline on Affordable Choice; look at the other plans.'); });
+  box.style.display=L.length?'':'none';
+  box.innerHTML=L.length?'<div class="uwhd">⚠ Underwriting watch — may rule out ManhattanLife</div><ul>'+L.map(function(x){ return '<li>'+x+'</li>'; }).join('')+'</ul>':''; }
 function buildFlag(who){
   var el=$('in_'+who+'build'); if(!el) return;
   var sx=($('in_'+who+'sex')||{}).value||'', h=+$('in_'+who+'height').value||0, w=+$('in_'+who+'weight').value||0;
   el.classList.remove('bad','warn','ok');
-  if(!h||!w){ el.value=''; return; }
+  if(!h||!w){ el.value=''; setTimeout(uwWatch,0); return; }
   if(!sx){ el.value='Select sex to check'; return; }
   var row=BUILD_CHART[sx]&&BUILD_CHART[sx][h];
   var diab=$('in_diabetic')&&$('in_diabetic').checked;
   var dmax=DIABETES_MAX[h];
-  if(diab&&dmax&&w>dmax){ el.value='⚠ Over diabetic max ('+dmax+' lb) — likely DECLINE'; el.classList.add('bad'); return; }
+  if(diab&&dmax&&w>dmax){ el.value='⚠ Over diabetic max ('+dmax+' lb) — likely DECLINE'; el.classList.add('bad'); setTimeout(uwWatch,0); return; }
   if(!row){ el.value='No chart row for this height'; return; }
-  if(w>row[1]){ el.value='⚠ Over build ('+row[0]+'–'+row[1]+' lb) — likely rated/declined'; el.classList.add('bad'); }
+  if(w>row[1]){ el.value='⚠ Over build ('+row[0]+'–'+row[1]+' lb) — likely rated/declined'; el.classList.add('bad'); setTimeout(uwWatch,0); return; }
   else if(w<row[0]){ el.value='⚠ Under build (min '+row[0]+' lb) — verify'; el.classList.add('warn'); }
   else { el.value='✓ Within build ('+row[0]+'–'+row[1]+' lb)'+(diab&&dmax?' · diab max '+dmax:''); el.classList.add('ok'); }
+  setTimeout(uwWatch,0);
 }
 
 /* Carrier producer portals (enroll step) */
@@ -3626,6 +3638,7 @@ function applySuiteClient(c, live){ var sm=$('setupModal'); if(sm&&!live&&sm.cla
   if(h.spHospStay==="Yes") I.surg2yrS=true;
   if(h.pregnant==="Yes")   I.maternityP=true;
   if(h.spPregnant==="Yes") I.maternityS=true;
+  I.pregNowP=h.pregnant==="Yes"; I.pregNowS=h.spPregnant==="Yes";   /* the warning says "pregnant now" vs "possible" */
 
   var partnered=["Married","Partnered"].indexOf(String(h.married||""))>-1, nKids=parseInt(h.kidsCount,10)||0;
   I.who={app:true, spouse:!!(sname||sp.dob)||partnered, kids:kids.length>0||nKids>0};
@@ -5367,7 +5380,7 @@ function captureIntake(){
   autosave();
 }
 function fillIntake(){
-  if(typeof renderKids==='function') setTimeout(renderKids,0);
+  if(typeof renderKids==='function') setTimeout(renderKids,0); setTimeout(uwWatch,50);
   var I=S.intake||{}; var w=I.who||{app:true};
   $('in_who_app').checked=w.app!==false; $('in_who_spouse').checked=!!w.spouse; $('in_who_kids').checked=!!w.kids;
   $('in_agency').value=S.agency||'HealthFirst'; $('in_aphone').value=S.agentPhone||''; $('in_aemail').value=S.agentEmail||''; $('in_anpn').value=S.agentNPN||''; $('in_aweb').value=S.agentWebsite||''; $('in_acard').value=S.agentCard||''; $('in_abook').value=S.agentBooking||''; $('in_abenefits').value=S.agentBenefits||''; $('in_adrxlink').value=S.agentDrxLink||''; $('in_adrxcode').value=S.agentDrxCode||''; $('in_abio').value=S.agentBio||''; agentSetupFold();
@@ -6555,6 +6568,7 @@ function bindInputs(){
   $('in_psex').addEventListener('change',function(){ buildFlag('p'); captureIntake(); });
   $('in_ssex').addEventListener('change',function(){ buildFlag('s'); captureIntake(); });
   $('in_diabetic').addEventListener('change',function(){ buildFlag('p'); buildFlag('s'); });
+  ['in_maternity_p','in_maternity_s'].forEach(function(id){ $(id).addEventListener('change',function(){ setTimeout(uwWatch,0); }); });
   document.querySelectorAll('#step-intake .chip input').forEach(function(cb){ cb.addEventListener('change',function(){ syncChips(); readIntake(); autosave(); }); });
   ['in_pname','in_sname','in_agent','in_address','in_state','in_zip','in_page','in_sage','in_majorcond_note','in_diabetic_note','in_docs1','in_docs2','in_docs3','in_carrier','in_plan','in_visits','in_budget_comfort','in_income','in_retage','in_savings','in_invest','in_invnote','in_docnote','in_budget','in_notes','in_kids','in_routenote','in_docsnote','in_whyshop','in_whymatters','in_foundplan','in_effdate']
     .forEach(function(id){ var el=$(id); if(el) el.addEventListener('input',function(){ captureIntake(); }); });

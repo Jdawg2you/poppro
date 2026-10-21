@@ -224,7 +224,15 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
   /* staying current: a step change checks the publish time; nothing happens when it hasn't changed */
  ok(typeof ppUpdateCheck==='function'&&PP_VER.at>0,'the update check knows this copy’s publish time');
  PP_VER.last=0; var before=location.href; ppUpdateCheck(); await w(1500); ok(location.href===before,'no newer version: no reload');
- return {n:128, fails:fails}; })()`;
+  /* underwriting watch (Jesse, 20 Oct): pregnancy -> "Consider a non-ManhattanLife plan"; over build -> red box */
+ S=blankState(); applySuiteClient({first:'Preg',last:'Test',state:'FL',age:'30',dob:'01/01/1996',kids:[],health:{pregnant:'Yes'}}); goStep('intake'); await w(400);
+ var mn=document.getElementById('matNote'); ok(document.getElementById('in_maternity_p').checked&&mn&&mn.style.display!=='none'&&/non-ManhattanLife/.test(mn.textContent),'pregnant on the call: Needs maternity ticked and "Consider a non-ManhattanLife plan" shows');
+ document.getElementById('in_maternity_p').checked=false; document.getElementById('in_maternity_p').dispatchEvent(new Event('change')); await w(100); ok(mn.style.display==='none','unticked: the line goes');
+ var ps=document.getElementById('in_psex'); ps.value=ps.options[1].value; ps.dispatchEvent(new Event('change')); var ph=document.getElementById('in_pheight'); ph.value=ph.options[Math.floor(ph.options.length/2)].value; ph.dispatchEvent(new Event('change'));
+ var pw=document.getElementById('in_pweight'); pw.value='480'; pw.dispatchEvent(new Event('input')); await w(150);
+ var uw=document.getElementById('uwWatch'); ok(uw.style.display!=='none'&&/build chart/.test(uw.textContent),'over the build chart: the red underwriting box shows under Anything else ('+uw.textContent.slice(0,90)+')');
+ pw.value='150'; pw.dispatchEvent(new Event('input')); await w(150); ok(uw.style.display==='none','within build: no box');
+ return {n:132, fails:fails}; })()`;
 try {
   let l; for (let i = 0; i < 60 && !l; i++) { await sleep(150); l = await fetch(`http://127.0.0.1:${DBG}/json/list`).then(r => r.json()).catch(() => null); }
   ws = new WebSocket(l.find(t => t.type === 'page').webSocketDebuggerUrl);
