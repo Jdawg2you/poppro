@@ -5246,6 +5246,14 @@ function glp1FromSuite(h){ var one=function(pre){ var k=function(f){ return h[pr
    items the agent hasn't opened yet (localStorage pp_news_seen = newest date they've seen). */
 var NEWS_DAYS=30;
 var NEWS=[
+ {d:'2026-10-21',t:'ManhattanLife check — medications, conditions and recommended care',h:[
+  ['Medications ask what they’re for','A drug on ManhattanLife’s decline list (71, from the agent guide) asks what it’s for — in the Discovery call, right under the medication, and on the Intake. The listed condition turns it red; something else is amber, worth checking with underwriting. Insulin asks diabetes or gestational.'],
+  ['Conditions ask ManhattanLife’s question','Each condition asks the guide’s own rule — five years back, heart attack (more than one, or before 45), pacemaker, epilepsy, and the rules for diabetes, blood pressure, cancer, asthma and arthritis. The follow-up dates colour themselves, and every CARRIER RULE badge links to the guide page.'],
+  ['Asked in the call, answered on the Intake','Answer it in Discovery and the Intake already has it. Discovery has a condition search like the medication one, asks surgeries over five years, and asks about care a doctor recommended that isn’t done yet — red or amber, with a note to talk it through with your mentor.'],
+  ['ⓘ ManhattanLife list','Beside Medications: every drug, condition, procedure and rule, searchable.'],
+  ['Over the build chart','A red box under “Anything else I should know” when someone is over ManhattanLife’s build chart or the diabetic maximum.'],
+  ['Take it off, it’s gone','Delete something in Discovery and it leaves the Intake, its notes and its boxes too. Delete it on the Intake and Discovery keeps the record of the call. Add a medication again and it asks again.'],
+  ['Stays current','When a new version is out, MyPopPro updates itself at the next step — no reload, no signing in again.']]},
  {d:'2026-10-21',t:'Mental health and ManhattanLife',h:[
   ['A short note when it’s ticked','Tick Mental health coverage needed and one line appears: serious mental-health conditions may decline; general depression is typically okay.']]},
  {d:'2026-10-20',t:'Pregnancy and ManhattanLife',h:[
@@ -5692,7 +5700,9 @@ function rightFitFacts(){ var I=S.intake||{}, C=S.client||{}, e={ok:false};
   f.overBudget=f.budget>0&&f.goodMo>f.budget;
   return f; }
 function rightFitPath(f){ if(f.aca.length) return 'aca'; if(f.uwHard) return 'gi'; if(f.overBudget) return 'budget'; if(f.mm.length) return 'triad'; return 'pop'; }
-function renderRightFit(){ var el=$('rightFit'); if(!el) return; S.rightFit=S.rightFit||{};
+/* Not live yet (Jesse, 21 Oct: everything ships but the routing tree) - shown only in the sandbox, or with ?rf=1 */
+var RIGHT_FIT_ON=location.port==='8767'||/[?&]rf=1\b/.test(location.search);
+function renderRightFit(){ var el=$('rightFit'); if(!el) return; if(!RIGHT_FIT_ON){ el.style.display='none'; el.innerHTML=''; return; } S.rightFit=S.rightFit||{};
   var f=rightFitFacts(), path=rightFitPath(f), ul=function(a){ return a.length?'<ul>'+a.map(function(x){ return '<li>'+x+'</li>'; }).join('')+'</ul>':''; };
   var NAME={aca:'ACA + optional HI Select', triad:'USAHealth Triad — BEST', pop:'ManhattanLife POP — BETTER (core)', budget:'BrightLife — GOOD', gi:'Exception path — ACA, then GI options'};
   var step=function(cls,q,a,why){ return '<li class="'+cls+'"><div><span class="rfq">'+q+'</span><span class="rfa">'+a+'</span></div><div class="rfwhy">'+why+'</div></li>'; };
