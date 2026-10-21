@@ -1066,6 +1066,7 @@ body.client #classicWrap>summary{display:none}
 .afcflag.chk{background:#fff8ec;border:1px dashed #d8a23a;color:#6b4a07}
 .afcflag .afct{flex:1 1 320px}
 .afcflag .afcq{display:block;margin-top:3px;font-size:11.5px;opacity:.85}
+.afcflag .afcq a,.matq a{color:inherit;text-decoration:underline}
 .afcflag button{border:1px solid currentColor;background:#fff;color:inherit;border-radius:999px;padding:3px 11px;font-size:12px;font-weight:700;cursor:pointer}
 .afcflag button.y{background:#a12525;border-color:#a12525;color:#fff}
 .afcflag button.lnk{border:0;background:transparent;text-decoration:underline;font-weight:500;padding:3px 4px}
@@ -1250,7 +1251,7 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
       <span class="ps-ctrl">Tobacco use? <label class="tob"><input type="checkbox" id="in_tobacco_p"> P</label><label class="tob"><input type="checkbox" id="in_tobacco_s"> S</label></span>
       <span class="ps-ctrl red matwrap">Needs maternity? <label class="tob"><input type="checkbox" id="in_maternity_p"> P</label><label class="tob"><input type="checkbox" id="in_maternity_s"> S</label><span id="matNote" class="matnote" style="display:none"></span></span>
       <label class="chip tone-green"><input type="checkbox" id="in_dv"> Wants dental / vision?</label>
-      <span class="ps-ctrl red">Mental health coverage needed? <label class="tob"><input type="checkbox" id="in_mental_p"> P</label><label class="tob"><input type="checkbox" id="in_mental_s"> S</label><span id="mentNote" class="matnote" style="display:none">→ Serious mental-health conditions may decline; general depression is typically okay.<span class="matq">ManhattanLife Affordable Choice agent guide AGT-AFC7010_1225, pp.18–24</span></span></span>
+      <span class="ps-ctrl red">Mental health coverage needed? <label class="tob"><input type="checkbox" id="in_mental_p"> P</label><label class="tob"><input type="checkbox" id="in_mental_s"> S</label><span id="mentNote" class="matnote" style="display:none">→ Serious mental-health conditions may decline; general depression is typically okay.<span class="matq"><a href="https://drive.google.com/file/d/1Tk1u7w7MglqIxs82va-mSTWUQ95fKheV/view" target="_blank" rel="noopener">ManhattanLife Affordable Choice agent guide AGT-AFC7010_1225, pp.18–24 ↗</a></span></span></span>
       <span class="ps-ctrl">Surgeries / hospitalizations (past 2 yrs)? <label class="tob"><input type="checkbox" id="in_surg2yr_p"> P</label><label class="tob"><input type="checkbox" id="in_surg2yr_s"> S</label></span>
     </div>
     <div class="intakegrid" style="margin-top:12px">
@@ -3064,7 +3065,7 @@ function matWatch(){ var mh=$('mentNote'); if(mh) mh.style.display=(($('in_menta
   if(($('in_maternity_p')||{}).checked) who.push(nm('p')); if(($('in_maternity_s')||{}).checked) who.push(nm('s'));
   mn.style.display=who.length?'':'none';
   mn.innerHTML=who.length?'→ ManhattanLife unlikely for this household ('+esc(who.join(' and '))+'). Possibly consider a different plan.'+
-    '<span class="matq">ManhattanLife: “An application submitted when the applicant, or any of the applicant’s dependents (spouse or child(ren), under the age of 26), whether applying for coverage or not, is currently pregnant or in the process of adopting a child will be declined. All household applicants will be declined.” — Affordable Choice agent guide AGT-AFC7010_1225, p.23</span>':''; }
+    '<span class="matq">ManhattanLife: “An application submitted when the applicant, or any of the applicant’s dependents (spouse or child(ren), under the age of 26), whether applying for coverage or not, is currently pregnant or in the process of adopting a child will be declined. All household applicants will be declined.” — '+afcGuideLink(23)+'</span>':''; }
 function uwWatch(){ var box=$('uwWatch'); if(!box) return; var I=S.intake||{}, C=S.client||{}, L=[];
   var nm=function(w){ var n=String((w==='s'?C.sname:C.pname)||'').trim().split(/\s+/)[0]; return n||(w==='s'?'Spouse':'Applicant'); };
   matWatch();
@@ -7436,6 +7437,9 @@ var AFC_MEDS=[{"b":"Alkeran","p":"Alkeran","g":"melphalan","c":"Cancer","q":"can
 /* Often prescribed for something off the list - MyPopPro's note, not ManhattanLife's */
 (function(){ var mp={Requip:'Ropinirole is very often prescribed for restless legs, not Parkinson’s.',Mirapex:'Pramipexole is very often prescribed for restless legs, not Parkinson’s.',Megace:'Megestrol is sometimes prescribed only to boost appetite.',Megestrol:'Megestrol is sometimes prescribed only to boost appetite.',Cogentin:'Benztropine often treats side effects of another medication.'};
   AFC_MEDS.forEach(function(r){ if(mp[r.b]&&!r.fp) r.fp='MyPopPro note: '+mp[r.b]; }); })();
+/* The guide in the Optimum Carrier Library (Drive, _agent-guides). Owner-only today - opens for Jesse, not other agents. */
+var AFC_GUIDE_URL='https://drive.google.com/file/d/1Tk1u7w7MglqIxs82va-mSTWUQ95fKheV/view';
+function afcGuideLink(pg){ return '<a href="'+AFC_GUIDE_URL+'" target="_blank" rel="noopener" title="Open the ManhattanLife Affordable Choice agent guide — turn to page '+pg+'">'+AFC_GUIDE+', p.'+pg+' ↗</a>'; }
 var AFC_GUIDE='ManhattanLife AFC guide AGT-AFC7010_1225', AFC_UW_EMAIL='afcunderwriting@ManhattanLife.com';
 var AFC_INSULIN=/^(insulin|lantus|levemir|tresiba|toujeo|basaglar|semglee|rezvoglar|humalog|novolog|humulin|novolin|admelog|apidra|fiasp|lyumjev|afrezza)\b/i;
 function afcMedRow(name){ var n=String(name||'').toLowerCase().replace(/\s+/g,' ').trim(); if(!n) return null;
@@ -7456,7 +7460,7 @@ function afcWho(m){ var C=S.client||{}, f=function(x){ return String(x||'').trim
   if(m.forP) w.push(f(C.pname)||'Applicant'); if(m.forS) w.push(f(C.sname)||'Spouse'); return w.join(' & '); }
 function afcFlagHTML(h){ var m=h.m, r=h.r, nm=esc(String(m.name||r.b)), who=afcWho(m), ins=r.b==='Insulin', q=esc(r.q);
   var lbl=(who?esc(who)+' — ':'')+'<b>'+nm+'</b>';
-  var cite=function(pg){ return '<span class="afcq">'+AFC_GUIDE+', p.'+pg+'</span>'; };
+  var cite=function(pg){ return '<span class="afcq">'+afcGuideLink(pg)+'</span>'; };
   var chg=' <button type="button" class="lnk" data-afc="'+h.i+'" data-v="ask">change</button>';
   if(h.st==='y'){
     var why=ins?'“Juvenile onset or the use of Insulin within the last five years will be declined for coverage.”':'“An application should not be submitted if a client is taking any of the following medications.” Listed for '+esc(r.c)+'.';
@@ -7482,7 +7486,7 @@ function afcDrawer(open){ var dr=$('uwDrawer'); if(!dr) return; if(!open){ dr.cl
   var mine={}; afcHits().forEach(function(h){ mine[h.r.b]=1; });
   dr.innerHTML='<div class="bdhead"><div><b>ManhattanLife medication list</b><small>Affordable Choice · '+AFC_MEDS.length+' drugs and what each is listed for</small></div><button type="button" class="bdx" data-uwx="1" aria-label="Close">×</button></div>'+
     '<div class="bdsec"><input class="uwsearch" id="uwSearch" placeholder="Type a medication or condition…" autocomplete="off"></div><div class="bdsec" id="uwRows"></div>'+
-    '<div class="bdsrc">“An application should not be submitted if a client is taking any of the following medications. This list is not all-inclusive.” — '+AFC_GUIDE+', p.24. Insulin: p.22. Affordable Choice only — HI Select, Out-of-Pocket and Cancer/Heart &amp; Stroke have their own lists. Questions: <a href="mailto:'+AFC_UW_EMAIL+'">'+AFC_UW_EMAIL+'</a></div>';
+    '<div class="bdsrc">“An application should not be submitted if a client is taking any of the following medications. This list is not all-inclusive.” — '+afcGuideLink(24)+'. Insulin: p.22. Affordable Choice only — HI Select, Out-of-Pocket and Cancer/Heart &amp; Stroke have their own lists. Questions: <a href="mailto:'+AFC_UW_EMAIL+'">'+AFC_UW_EMAIL+'</a></div>';
   var paint=function(){ var q=String(($('uwSearch')||{}).value||'').toLowerCase().trim();
     var rows=AFC_MEDS.filter(function(r){ return !q||(r.b+' '+r.p+' '+r.g+' '+r.c+' '+r.q+' '+r.fp).toLowerCase().indexOf(q)>=0; })
       .sort(function(a,b){ return (mine[b.b]?1:0)-(mine[a.b]?1:0)||a.b.localeCompare(b.b); });
