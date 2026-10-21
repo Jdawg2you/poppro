@@ -97,6 +97,25 @@ try {
       ok(cs2.conds.length === 1 && cs2.chip && /Diagnosed or treated in the last 5 years/.test(cs2.q), 'picking it adds a chip and asks ManhattanLife’s question: ' + JSON.stringify(cs2).slice(0, 160));
       const cs3 = await inFrame(`(function(){ document.querySelector('[data-conddel]').click(); return P.conds.length; })()`);
       ok(cs3 === 0, 'the chip’s × takes it off');
+      /* Jesse, 21 Oct: the follow-up date answers the rule - red when it breaks it, and its CARRIER RULE badge links to the guide */
+      const hd = await inFrame(`(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); P.conds=['Heart attack']; P.dob='06/15/1985'; P.afc_cond={}; P.afc_auto={}; pStore(); go('hs_history'); await w(100);
+        var inp=document.querySelector('.cfollow [data-pk="dx_ha"]'); inp.value='2024'; inp.dispatchEvent(new Event('input',{bubbles:true})); await w(150);
+        var box=inp.closest('.pfi'), a=box.querySelector('a.crule');
+        var r1={red:box.classList.contains('afcbad'), link:!!a&&/drive\.google\.com/.test(a.href)&&/p\.18/.test(a.textContent), ans:(P.afc_cond||{})['p|Heart attack'], q:document.querySelector('[data-afcwrap="cond"]').textContent};
+        P.dob='06/15/1960'; pStore(); inp.dispatchEvent(new Event('input',{bubbles:true})); await w(150);
+        var r2={amber:box.classList.contains('afcwarn'), red:box.classList.contains('afcbad')};
+        inp.value='2015'; inp.dispatchEvent(new Event('input',{bubbles:true})); await w(150); var r3={red:box.classList.contains('afcbad'), ans:(P.afc_cond||{})['p|Heart attack']};
+        inp.value='2024'; inp.dispatchEvent(new Event('input',{bubbles:true})); await w(100);
+        document.querySelector('.cfollow [data-pfset="ha_since"][data-pfval="Another heart attack"]').click(); await w(250);
+        var b2=document.querySelector('.cfollow [data-pfset="ha_since"]').closest('.pfi'); var r4={red:b2.classList.contains('afcbad'), ans:(P.afc_cond||{})['p|Heart attack']};
+        return {r1:r1,r2:r2,r3:r3,r4:r4}; })()`);
+      ok(hd.r1.red && hd.r1.link && hd.r1.ans === 'y' && /ManhattanLife Affordable Choice is unlikely/.test(hd.r1.q), 'heart attack in 2024 at 39: the date turns red, the badge links to p.18, the answer is set: ' + JSON.stringify(hd.r1).slice(0, 200));
+      ok(hd.r2.amber && !hd.r2.red, 'the same date at 64: amber, not red');
+      ok(!hd.r3.red && hd.r3.ans === 'old', '2015: outside the look-back (' + hd.r3.ans + ')');
+      ok(hd.r4.red && hd.r4.ans === 'y', '"Another heart attack" turns that answer red');
+      await sleep(900);
+      const hi = await pop.run(`(function(){ var c=(S.intake.conds||[]).filter(function(x){ return x.name==='Heart attack'; })[0]; return c&&c.afc; })()`);
+      ok(hi === 'y', 'the Intake has the heart attack answered red (' + hi + ')');
       const back = await pop.run(`(function(){ S.intake.medList.forEach(function(m){ if(/prednisone/i.test(m.name)) m.afc='n'; }); callInit(); return 1; })()`); await sleep(900);
       const a4 = await inFrame(`(function(){ go('hs_history'); return document.querySelector('[data-afcwrap="med"]').textContent; })()`);
       ok(/not for ongoing treatment/.test(a4), 'an answer changed on the Intake shows in the call when it opens again');
