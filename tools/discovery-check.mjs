@@ -68,6 +68,28 @@ try {
       ok(r.wm === 'keep Dr. Patel' && r.state === 'TX', 'POP Pro’s own answers came in too');
       ok(r.agent === 'Jesse Stamm' && r.agency === 'Optimum Health', 'the agent’s details came in');
     }
+    if (MODE === 'afc') {
+      /* Jesse, 21 Oct: the ManhattanLife question is asked in the call, under the medication, and the Intake shows it answered */
+      let loaded = false; for (let i = 0; i < 30 && !loaded; i++) { await sleep(150); loaded = await inFrame('typeof afcMedRow==="function"&&HOST_AFC'); }
+      ok(loaded, 'the call loaded MyPopPro’s ManhattanLife rules');
+      const a1 = await inFrame(`(function(){ go('hs_history'); medAdd('Prednisone'); medAdd('Eliquis'); var w=document.querySelector('[data-afcwrap="med"]'); return {txt:w?w.textContent:'', flags:document.getElementById('medflagwrap').textContent}; })()`);
+      ok(/Ask: is the Prednisone.* for ongoing treatment for rheumatoid arthritis, lupus, lymphoma or Crohn’s disease\?/.test(a1.txt), 'Prednisone asks what it’s for, under the medication: ' + a1.txt.slice(0, 120));
+      ok(!/Prednisone/.test(a1.flags) && /Eliquis/.test(a1.flags), 'the general "usually for" prompt stays for Eliquis and steps aside for Prednisone');
+      await inFrame(`(function(){ document.querySelector('[data-afcwrap="med"] [data-v="y"]').click(); return 1; })()`); await sleep(900);
+      const a2 = await inFrame(`(function(){ return document.querySelector('[data-afcwrap="med"]').textContent; })()`);
+      ok(/ManhattanLife Affordable Choice is unlikely/.test(a2), 'Yes turns it red in the call');
+      const ip = await pop.run(`(function(){ var m=(S.intake.medList||[]).filter(function(x){ return /prednisone/i.test(x.name); })[0]; goStep('intake'); return {afc:m&&m.afc, cond:(S.intake.conds||[]).some(function(c){ return c.fromAfc; }), bad:!!document.querySelector('#afcFlags .afcflag.bad')}; })()`);
+      ok(ip.afc === 'y' && ip.cond && ip.bad, 'the Intake already has it answered, red, with the condition: ' + JSON.stringify(ip));
+      await pop.run(`(function(){ goStep('call'); return 1; })()`); await sleep(600);
+      const a3 = await inFrame(`(function(){ P.conds=(P.conds||[]).concat(['Heart attack']); pStore(); go('hs_history'); var w=document.querySelector('[data-afcwrap="cond"]'); return w?w.textContent:''; })()`);
+      ok(/more than one heart attack, or the first one before age 45/.test(a3), 'a condition in the call asks ManhattanLife’s question with its follow-ups: ' + a3.slice(0, 100));
+      await inFrame(`(function(){ document.querySelector('[data-afcwrap="cond"] [data-v="n"]').click(); return 1; })()`); await sleep(900);
+      const ic = await pop.run(`(function(){ var c=(S.intake.conds||[]).filter(function(x){ return x.name==='Heart attack'; })[0]; return c&&c.afc; })()`);
+      ok(ic === 'n', 'the condition answer reaches the Intake (' + ic + ')');
+      const back = await pop.run(`(function(){ S.intake.medList.forEach(function(m){ if(/prednisone/i.test(m.name)) m.afc='n'; }); callInit(); return 1; })()`); await sleep(900);
+      const a4 = await inFrame(`(function(){ go('hs_history'); return document.querySelector('[data-afcwrap="med"]').textContent; })()`);
+      ok(/not for ongoing treatment/.test(a4), 'an answer changed on the Intake shows in the call when it opens again');
+    }
     if (MODE === 'live' || MODE === 'save') {
       for (const [k, v] of [['first', 'L'], ['first', 'Li'], ['first', 'Livia']]) { await inFrame(`(function(){ P.${k}=${JSON.stringify(v)}; pStore(); return 1; })()`); await sleep(120); }
       await inFrame(`(function(){ P.last='Test'; P.state='TX'; P.zip='77001'; P.why_matters='keep my doctor'; P.has_assets='Yes'; P.keep_docs='Yes'; pStore(); return 1; })()`);
