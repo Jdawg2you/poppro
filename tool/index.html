@@ -3540,6 +3540,11 @@ function popMedFlags(){
 /* Accept a suggested condition onto the case. yr/mo match the suite's conds shape
    ({name, yr, mo}) so a POP Pro case and a navigator handoff describe a condition the
    same way - see FIELDS.md. */
+/* Discovery is the record of the call (Jesse, 21 Oct). Something the call put on the Intake and the agent deleted here
+   stays in Discovery - it was said - and is remembered as dismissed, so the call doesn't push it back. Deleting it in
+   Discovery removes it everywhere and forgets the dismissal. */
+function callDismiss(kind,who,key){ var I=S.intake=S.intake||{}, d=I.callDismissed=I.callDismissed||{}; d[kind+'|'+who+'|'+key]=1; }
+function callDismissed(kind,who,key){ var d=((S.intake||{}).callDismissed)||{}; return !!d[kind+'|'+who+'|'+key]; }
 function popAddCond(name,yr,mo,who){
   S.intake=S.intake||{}; S.intake.conds=S.intake.conds||[];
   // who: 'p' | 's' | 'ps' — which covered adult the condition belongs to (default primary)
@@ -3769,7 +3774,7 @@ function applySuiteClient(c, live){ var sm=$('setupModal'); if(sm&&!live&&sm.cla
   if(Array.isArray(c.meds)){
     var had={}; (I.medList||[]).forEach(function(m){ had[popMedResolve(m.name).toLowerCase()]=1; });
     I.medList=(I.medList||[]).concat(
-      c.meds.filter(function(n){ return n && !had[popMedResolve(n).toLowerCase()]; })
+      c.meds.filter(function(n){ return n && !had[popMedResolve(n).toLowerCase()] && !callDismissed('m','p',popMedResolve(n).toLowerCase()); })
             .map(function(n){ return {name:popMedDual(n), cost:0, aca:0, disc:0, forP:true, forS:false, fromCall:true}; }));
   }
   /* The spouse's medications land on the same list, ticked to the spouse rather than the
@@ -3778,17 +3783,21 @@ function applySuiteClient(c, live){ var sm=$('setupModal'); if(sm&&!live&&sm.cla
   if(Array.isArray(c.spMeds)){
     var had2={}; (I.medList||[]).forEach(function(m){ if(m.forS) had2[popMedResolve(m.name).toLowerCase()]=1; });
     I.medList=(I.medList||[]).concat(
-      c.spMeds.filter(function(n){ return n && !had2[popMedResolve(n).toLowerCase()]; })
+      c.spMeds.filter(function(n){ return n && !had2[popMedResolve(n).toLowerCase()] && !callDismissed('m','s',popMedResolve(n).toLowerCase()); })
               .map(function(n){ return {name:popMedDual(n), cost:0, aca:0, disc:0, forP:false, forS:true, fromCall:true}; }));
   }
   if(Array.isArray(c.medSkip)) I.medSkip=(I.medSkip||[]).concat(
       c.medSkip.filter(function(k){ return (I.medSkip||[]).indexOf(k)<0; }));
   if(Array.isArray(c.conds)) c.conds.forEach(function(x){
-    if(x && x.name) popAddCond(x.name, x.yr||'', x.mo||'', 'p');
+    if(x && x.name && !callDismissed('c','p',x.name)) popAddCond(x.name, x.yr||'', x.mo||'', 'p');
   });
   if(Array.isArray(c.spConds)) c.spConds.forEach(function(x){
-    if(x && x.name) popAddCond(x.name, x.yr||'', x.mo||'', 's');
+    if(x && x.name && !callDismissed('c','s',x.name)) popAddCond(x.name, x.yr||'', x.mo||'', 's');
   });
+  if(I.callDismissed){ Object.keys(I.callDismissed).forEach(function(k){ var p=k.split('|'), kind=p[0], w=p[1], key=p.slice(2).join('|');
+    var list=kind==='m'?(w==='s'?c.spMeds:c.meds):(w==='s'?c.spConds:c.conds); if(!Array.isArray(list)) return;
+    var still=list.some(function(x){ return kind==='m'?popMedResolve(x).toLowerCase()===key:(x&&x.name)===key; });
+    if(!still) delete I.callDismissed[k]; }); }
   (I.conds||[]).forEach(function(x){ if(!condsBefore[x.name]) x.fromCall=true; });
   (I.conds||[]).forEach(function(x){ if(cP[x.name]||cS[x.name]){ delete x.fromMed; delete x.fromAfc; } });   /* said on the call in its own right */
   /* The ManhattanLife check's answers from the call (Jesse, 21 Oct): asked in Discovery, already answered here. */
@@ -5553,7 +5562,8 @@ function renderMeds(){
     var mkWho=function(key,lbl){ var w=document.createElement('label'); w.className='mwho'; w.title=lbl; var c=document.createElement('input'); c.type='checkbox'; c.checked=!!m[key]; c.onchange=function(){ S.intake.medList[i][key]=c.checked; autosave(); }; w.appendChild(c); return w; };
     var wp=mkWho('forP','Primary'); var ws=mkWho('forS','Spouse');
     var del=document.createElement('button'); del.className='del'; del.title='remove'; del.textContent='×';
-    del.onclick=function(){ S.intake.medList.splice(i,1); renderMeds(); autosave(); };
+    del.onclick=function(){ var g=S.intake.medList[i]; if(g&&g.fromCall) callDismiss('m',g.forS&&!g.forP?'s':'p',popMedResolve(g.name).toLowerCase());
+      S.intake.medList.splice(i,1); renderMeds(); autosave(); };
     var nmWrap=document.createElement('div'); nmWrap.className='medbox'; nmWrap.appendChild(nm);
     row.appendChild(nmWrap); row.appendChild(kb); row.appendChild(ca); row.appendChild(cc); row.appendChild(cd); row.appendChild(wp); row.appendChild(ws); row.appendChild(del); host.appendChild(row);
     medTypeahead(nm,function(label){ S.intake.medList[i].name=label; autosave(); renderMedFlags(); paintKind(); paintEst(); updateMedTotal(); });
@@ -7566,7 +7576,7 @@ function renderConds(){ var host=$('condList'); if(!host) return; var cs=(S.inta
       +'<label class="mwho" title="Spouse"'+(sp||c.forS?'':' style="visibility:hidden"')+'><input type="checkbox" data-cw="s" data-i="'+i+'"'+(c.forS?' checked':'')+'></label>'
       +'<button type="button" class="del" data-ci="'+i+'" aria-label="Remove '+c.name+'">×</button></div>'; }).join(''):'<div class="none">None added yet.</div>';
   host.querySelectorAll('[data-cw]').forEach(function(cb){ cb.onchange=function(){ var c=S.intake.conds[+cb.dataset.i]; c[cb.dataset.cw==='p'?'forP':'forS']=cb.checked; autosave(); }; });
-  host.querySelectorAll('[data-ci]').forEach(function(b){ b.onclick=function(){ S.intake.conds.splice(+b.dataset.ci,1); autosave(); renderConds(); renderMedFlags(); }; }); }
+  host.querySelectorAll('[data-ci]').forEach(function(b){ b.onclick=function(){ var g=S.intake.conds[+b.dataset.ci]; if(g&&g.fromCall) callDismiss('c',g.forS&&g.forP===false?'s':'p',g.name); S.intake.conds.splice(+b.dataset.ci,1); autosave(); renderConds(); renderMedFlags(); }; }); }
 function bindCondInput(){ var inp=$('condInput'), box=$('condSug'); if(!inp||inp.dataset.bound) return; inp.dataset.bound='1';
   var add=function(name){ name=String(name||'').trim(); if(!name) return; popAddCond(name); inp.value=''; box.style.display='none'; autosave(); renderConds(); renderMedFlags(); };
   inp.addEventListener('input',function(){ var q=inp.value.trim().toLowerCase(); var hits=q?PF_CONDS.filter(function(c){ return c.toLowerCase().indexOf(q)>=0; }).slice(0,8):[];

@@ -282,6 +282,15 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  applySuiteClient({conds:[{name:'Diabetes'}],health:{}},true); ok(S.intake.diabetic===true,'Diabetes in the call ticks Diabetic');
  applySuiteClient({conds:[],health:{}},true); ok(S.intake.diabetic===false&&S.intake.majorcond===true,'taken off in the call unticks it; a box ticked by hand stays');
  S.intake.majorcond=false; S.intake.conds=[];
+ /* Jesse, 21 Oct: deleted on the Intake stays deleted while the call still has it; deleted in the call clears it */
+ S.intake.medList=[]; S.intake.conds=[]; S.intake.callDismissed={};
+ applySuiteClient({meds:['Plaquenil'],conds:[{name:'Lupus'}],health:{}},true); renderMeds(); await w(80);
+ document.querySelector('#medList .medrow .del').click(); await w(60); document.querySelector('#condList [data-ci]').click(); await w(60);
+ applySuiteClient({meds:['Plaquenil'],conds:[{name:'Lupus'}],health:{}},true);
+ ok(!S.intake.medList.length&&!S.intake.conds.length,'deleted on the Intake, the call does not push them back: '+JSON.stringify({m:S.intake.medList.length,c:S.intake.conds.length}));
+ applySuiteClient({meds:[],conds:[],health:{}},true); ok(!Object.keys(S.intake.callDismissed||{}).length,'taken off in the call too: the dismissal is forgotten');
+ applySuiteClient({meds:['Plaquenil'],conds:[{name:'Lupus'}],health:{}},true); ok(S.intake.medList.length===1&&S.intake.conds.length===1,'said again in the call: back on the Intake');
+ S.intake.medList=[]; S.intake.conds=[]; S.intake.callDismissed={};
  S.intake.medList=[{name:'Eliquis',forP:true}]; S.intake.medSkip=['Eliquis|Blood clots / DVT']; renderMeds(); await w(80);
  S.intake.medList=[]; renderMeds(); await w(80); ok((S.intake.medSkip||[]).length===0,'a medication taken off forgets its No answers ('+JSON.stringify(S.intake.medSkip)+')');
  /* Jesse, 21 Oct: taking a medication or condition off in Discovery takes it off here; Intake-typed ones stay */
@@ -310,7 +319,7 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  S=JSON.parse(JSON.stringify(rfBase)); S.intake.pregNowP=true; goStep('quote'); compute(); await w(200); var rfe=document.getElementById('rightFit');
  ok(rfe&&rfe.textContent.indexOf('ACA + optional HI Select')>=0&&rfe.textContent.indexOf('p.23')>=0&&/Amerus VL/.test(rfe.textContent)&&/not an underwriting decision/.test(rfe.textContent),'right-fit panel renders on Quote with the path, the guide cite, GI names and the disclaimer: '+(rfe?'':'none'));
  S=JSON.parse(JSON.stringify(rfBase));
- return {n:176, fails:fails}; })()`;
+ return {n:179, fails:fails}; })()`;
 try {
   let l; for (let i = 0; i < 60 && !l; i++) { await sleep(150); l = await fetch(`http://127.0.0.1:${DBG}/json/list`).then(r => r.json()).catch(() => null); }
   ws = new WebSocket(l.find(t => t.type === 'page').webSocketDebuggerUrl);

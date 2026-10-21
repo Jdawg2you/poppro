@@ -16,13 +16,17 @@ const send = (method, params = {}) => new Promise((res, rej) => { const i = ++id
 const ev = async e => { const r = await send('Runtime.evaluate', { expression: e, awaitPromise: true, returnByValue: true }); if (r.exceptionDetails) throw new Error(JSON.stringify(r.exceptionDetails).slice(0, 500)); return r.result.value; };
 
 const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); await w(1500); var fails=[], ok=function(c,m){ if(!c) fails.push(m); };
- var pop={app:'poppro',client:{pname:'Pat Probe'},intake:{conds:[{name:"RA / lupus / lymphoma / Crohn's (ongoing)",fromAfc:true,fromMed:'prednisone',forP:true},{name:'Lupus',forP:true},{name:'Diabetes',forP:false,forS:true}]},nav:{conds:["RA / lupus / lymphoma / Crohn's (ongoing)",'Asthma (chronic)']}};
+ /* before any call: the Intake seeds Discovery - but not MyPopPro's medication-made labels; spouse to spouse */
+ var pop={app:'poppro',client:{pname:'Pat Probe'},intake:{conds:[{name:"RA / lupus / lymphoma / Crohn's (ongoing)",fromAfc:true,fromMed:'prednisone',forP:true},{name:'Lupus',forP:true},{name:'Diabetes',forP:false,forS:true}],medList:[{name:'Metformin',forP:true}]}};
  ok(isPopProFile(pop),'test file reads as MyPopPro');
+ var P1=profileFromFile(pop);
+ ok(P1.conds.indexOf("RA / lupus / lymphoma / Crohn's (ongoing)")<0&&P1.conds.indexOf('Lupus')>=0,'no call yet: the Intake seeds it, without MyPopPro’s own labels: '+JSON.stringify(P1.conds));
+ ok((P1.sp_conds||[]).indexOf('Diabetes')>=0&&P1.conds.indexOf('Diabetes')<0,'spouse conditions go to the spouse');
+ /* Jesse, 21 Oct: once there is a call, Discovery is its record - deleted on the Intake, still here */
+ pop.nav={conds:['Lupus','Asthma (chronic)'],meds_list:['Metformin','Prednisone']};
  var P2=profileFromFile(pop);
- ok(P2.conds.indexOf("RA / lupus / lymphoma / Crohn's (ongoing)")<0,'a MyPopPro medication-made condition does not travel back: '+JSON.stringify(P2.conds));
- ok(P2.conds.indexOf('Asthma (chronic)')<0&&P2.conds.indexOf('Lupus')>=0,'the Intake list wins over the stale saved call');
- ok((P2.sp_conds||[]).indexOf('Diabetes')>=0&&P2.conds.indexOf('Diabetes')<0,'spouse conditions go to the spouse');
- P=P2; var h=condsHTMLFor(''); P.conds.push('Gout (typed)'); h=condsHTMLFor(''); ok(h.indexOf('data-cond="Gout (typed)" data-condwho="" checked')>=0,'a typed condition shows ticked so it can be taken off');
+ ok(P2.conds.indexOf('Asthma (chronic)')>=0&&P2.meds_list.indexOf('Prednisone')>=0,'with a saved call, Discovery keeps what was said even after the Intake dropped it: '+JSON.stringify({c:P2.conds,m:P2.meds_list}));
+ P=P2; P.conds.push('Gout (typed)'); var h=condsHTMLFor(''); ok(h.indexOf('data-cond="Gout (typed)" data-condwho="" checked')>=0,'a typed condition shows ticked so it can be taken off');
  return {n:5, fails:fails}; })()`;
 try {
   let l; for (let i = 0; i < 60 && !l; i++) { await sleep(150); l = await fetch(`http://127.0.0.1:${DBG}/json/list`).then(r => r.json()).catch(() => null); }

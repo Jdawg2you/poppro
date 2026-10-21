@@ -130,6 +130,18 @@ try {
       const back = await pop.run(`(function(){ S.intake.medList.forEach(function(m){ if(/prednisone/i.test(m.name)) m.afc='n'; }); callInit(); return 1; })()`); await sleep(900);
       const a4 = await inFrame(`(function(){ go('hs_history'); return document.querySelector('[data-afcwrap="med"]').textContent; })()`);
       ok(/not for ongoing treatment/.test(a4), 'an answer changed on the Intake shows in the call when it opens again');
+      /* Jesse, 21 Oct: Discovery is the record of the call - an Intake delete stays deleted there, but not here */
+      await inFrame(`(function(){ P.meds_list=['Plaquenil']; P.conds=[]; P.med_skip=[]; pStore(); return 1; })()`); await sleep(900);
+      const d1 = await pop.run(`(function(){ goStep('intake'); var i=S.intake.medList.findIndex(function(m){ return /plaquenil/i.test(m.name); }); var had=i>=0;
+        if(had) document.querySelectorAll('#medList .medrow .del')[i].click(); return {had:had, now:S.intake.medList.some(function(m){ return /plaquenil/i.test(m.name); })}; })()`);
+      await pop.run(`(function(){ goStep('call'); return 1; })()`); await sleep(1500);
+      const d2 = await inFrame(`(function(){ return (P.meds_list||[]).slice(); })()`);
+      await inFrame(`(function(){ P.notes_probe=1; pStore(); return 1; })()`); await sleep(900);
+      const d3 = await pop.run(`(function(){ return S.intake.medList.some(function(m){ return /plaquenil/i.test(m.name); }); })()`);
+      ok(d1.had && !d1.now && d2.some(x => /Plaquenil/.test(x)) && !d3, 'deleted on the Intake: still in Discovery, and the call does not push it back: ' + JSON.stringify({ d1, d2, d3 }));
+      await inFrame(`(function(){ P.meds_list=[]; pStore(); return 1; })()`); await sleep(900);
+      const d4 = await pop.run(`(function(){ return Object.keys(S.intake.callDismissed||{}).length; })()`);
+      ok(d4 === 0, 'deleted in Discovery too: forgotten everywhere (' + d4 + ')');
     }
     if (MODE === 'live' || MODE === 'save') {
       for (const [k, v] of [['first', 'L'], ['first', 'Li'], ['first', 'Livia']]) { await inFrame(`(function(){ P.${k}=${JSON.stringify(v)}; pStore(); return 1; })()`); await sleep(120); }
