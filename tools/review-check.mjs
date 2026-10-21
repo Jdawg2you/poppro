@@ -226,7 +226,7 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  PP_VER.last=0; var before=location.href; ppUpdateCheck(); await w(1500); ok(location.href===before,'no newer version: no reload');
   /* underwriting watch (Jesse, 20 Oct): pregnancy -> "Consider a non-ManhattanLife plan"; over build -> red box */
  S=blankState(); applySuiteClient({first:'Preg',last:'Test',state:'FL',age:'30',dob:'01/01/1996',kids:[],health:{pregnant:'Yes'}}); goStep('intake'); await w(400);
- var mn=document.getElementById('matNote'); ok(document.getElementById('in_maternity_p').checked&&mn&&mn.style.display!=='none'&&/ManhattanLife unlikely for /.test(mn.textContent)&&/different plan/.test(mn.textContent),'pregnant on the call: Needs maternity ticked and "Consider a non-ManhattanLife plan" shows');
+ var mn=document.getElementById('matNote'); ok(document.getElementById('in_maternity_p').checked&&mn&&mn.style.display!=='none'&&/ManhattanLife unlikely for this household/.test(mn.textContent)&&/All household applicants will be declined/.test(mn.textContent),'pregnant on the call: Needs maternity ticked and "Consider a non-ManhattanLife plan" shows');
  document.getElementById('in_maternity_p').checked=false; document.getElementById('in_maternity_p').dispatchEvent(new Event('change')); await w(100); ok(mn.style.display==='none','unticked: the line goes');
  var ps=document.getElementById('in_psex'); ps.value=ps.options[1].value; ps.dispatchEvent(new Event('change')); var ph=document.getElementById('in_pheight'); ph.value=ph.options[Math.floor(ph.options.length/2)].value; ph.dispatchEvent(new Event('change'));
  var pw=document.getElementById('in_pweight'); pw.value='480'; pw.dispatchEvent(new Event('input')); await w(150);
