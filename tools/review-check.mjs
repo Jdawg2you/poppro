@@ -232,6 +232,9 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  var pw=document.getElementById('in_pweight'); pw.value='480'; pw.dispatchEvent(new Event('input')); await w(150);
  var uw=document.getElementById('uwWatch'); ok(uw.style.display!=='none'&&/build chart/.test(uw.textContent),'over the build chart: the red underwriting box shows under Anything else ('+uw.textContent.slice(0,90)+')');
  pw.value='150'; pw.dispatchEvent(new Event('input')); await w(150); ok(uw.style.display==='none','within build: no box');
+ var mhn=document.getElementById('mentNote'), mhc=document.getElementById('in_mental_s'); ok(mhn&&mhn.style.display==='none','mental health unticked: no line');
+ mhc.checked=true; mhc.dispatchEvent(new Event('change')); await w(150); ok(mhn.style.display!=='none'&&/Serious mental-health conditions may decline; general depression is typically okay/.test(mhn.textContent)&&mhc.closest('.ps-ctrl').classList.contains('on'),'mental health ticked: turns red with the one line');
+ mhc.checked=false; mhc.dispatchEvent(new Event('change')); await w(150); ok(mhn.style.display==='none','mental health unticked again: line gone');
  /* Right-fit path (sandbox, 20 Oct): follows the decision tree from what the Intake knows */
  var rfBase=JSON.parse(JSON.stringify(S)); var rf=function(mod){ S=JSON.parse(JSON.stringify(rfBase)); S.client.state='FL'; S.client.page=40; Object.assign(S.intake,{maternityP:false,maternityS:false,maternity:false,pregNowP:false,pregNowS:false,keepaca:'',diabetic:false,majorcond:false,mental:false,surg2yr:false,budget:0,budgetComfort:0}); S.aca.prem=0; S.aca.subsidy=0; S.rightFit={}; ['in_pbuild','in_sbuild'].forEach(function(i){ document.getElementById(i).classList.remove('bad'); }); mod(); return rightFitPath(rightFitFacts()); };
  ok(rf(function(){})==='pop','right-fit: nothing on file → ManhattanLife POP');
@@ -243,7 +246,7 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  S=JSON.parse(JSON.stringify(rfBase)); S.intake.pregNowP=true; goStep('quote'); compute(); await w(200); var rfe=document.getElementById('rightFit');
  ok(rfe&&rfe.textContent.indexOf('ACA + optional HI Select')>=0&&rfe.textContent.indexOf('p.23')>=0&&/Amerus VL/.test(rfe.textContent)&&/not an underwriting decision/.test(rfe.textContent),'right-fit panel renders on Quote with the path, the guide cite, GI names and the disclaimer: '+(rfe?'':'none'));
  S=JSON.parse(JSON.stringify(rfBase));
- return {n:139, fails:fails}; })()`;
+ return {n:142, fails:fails}; })()`;
 try {
   let l; for (let i = 0; i < 60 && !l; i++) { await sleep(150); l = await fetch(`http://127.0.0.1:${DBG}/json/list`).then(r => r.json()).catch(() => null); }
   ws = new WebSocket(l.find(t => t.type === 'page').webSocketDebuggerUrl);
