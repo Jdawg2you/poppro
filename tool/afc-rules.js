@@ -78,3 +78,12 @@ function afcCondMatch(name){ var t=afcNorm(name); if(t.length<4) return null;
   if(!pick) return null;
   var g=pick.sg?{diabetes:'diab','high blood pressure':'bp',cancer:'cancer',asthma:'asthma','rheumatoid arthritis':'ra',arthritis:'ra',osteoarthritis:'ra',arrhythmia:'5y','atrial fibrillation':'5y',hepatitis:'5y','kidney diseases or disorders':'5y','liver disease or disorders':'5y'}[afcNorm(pick.n)]:null;
   return [g||(pick.sg?'chk':'5y'),pick.n+(pick.q?' ('+pick.q.replace(/ \| /g,' · ')+')':''),pick.pg]; }
+
+/* Recommended care not done yet (Jesse, 21 Oct). Guide p.19: "Surgery Pending, Suggested or Completed but Not Released From
+   Doctor's Care" is uninsurable; p.23: "Applicants pending testing, biopsies or any exams needed to establish care, will be
+   postponed until results are received and a definitive diagnosis is made." Keys are Discovery's answer chips. */
+var AFC_PENDING={
+  'Surgery or procedure recommended':{res:'bad',pg:19,m:'A surgery pending or suggested is on ManhattanLife’s uninsurable list — until it’s done and they’re released from the doctor’s care.'},
+  'Still being followed up after surgery':{res:'bad',pg:19,m:'A surgery completed but not yet released from the doctor’s care is on ManhattanLife’s uninsurable list — until they’re released.'},
+  'Tests or results pending':{res:'warn',pg:23,m:'Pending tests, biopsies or exams — ManhattanLife postpones until the results are back and there’s a diagnosis.'}};
+var AFC_PENDING_OPTS=['','No','Surgery or procedure recommended','Tests or results pending','Still being followed up after surgery'];

@@ -130,6 +130,15 @@ try {
       const back = await pop.run(`(function(){ S.intake.medList.forEach(function(m){ if(/prednisone/i.test(m.name)) m.afc='n'; }); callInit(); return 1; })()`); await sleep(900);
       const a4 = await inFrame(`(function(){ go('hs_history'); return document.querySelector('[data-afcwrap="med"]').textContent; })()`);
       ok(/not for ongoing treatment/.test(a4), 'an answer changed on the Intake shows in the call when it opens again');
+      /* Jesse, 21 Oct: Recent history asks five years, and asks about care a doctor recommended that isn't done yet */
+      const pc = await inFrame(`(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); go('hs_conds'); await w(100); var t=document.getElementById('script').innerText;
+        var asks5=/In the last five years, any surgeries/.test(t), asksPend=/Has a doctor recommended any surgery, procedure or tests/.test(t);
+        var b=document.querySelector('[data-pfset="pending_care"][data-pfval="Surgery or procedure recommended"]'); if(b) b.click(); await w(250);
+        var f=document.querySelector('#script .navafc .afcflag.bad'); return {asks5:asks5, asksPend:asksPend, flag:f?f.textContent:'', planGone:(function(){ go('hs_recent'); return !/Is anything planned in the next year/.test(document.getElementById('script').innerText); })()}; })()`);
+      ok(pc.asks5 && pc.asksPend && /uninsurable/.test(pc.flag) && /p\.19/.test(pc.flag) && pc.planGone, 'Recent history: five years, the recommended-care question, a red flag with p.19; the old planned line is gone: ' + JSON.stringify(pc).slice(0, 220));
+      await sleep(900);
+      const pi = await pop.run(`(function(){ return S.intake.pendP; })()`);
+      ok(pi === 'Surgery or procedure recommended', 'the answer reaches the Intake (' + pi + ')');
       /* Jesse, 21 Oct: Discovery is the record of the call - an Intake delete stays deleted there, but not here */
       await inFrame(`(function(){ P.meds_list=['Plaquenil']; P.conds=[]; P.med_skip=[]; pStore(); return 1; })()`); await sleep(900);
       const d1 = await pop.run(`(function(){ goStep('intake'); var i=S.intake.medList.findIndex(function(m){ return /plaquenil/i.test(m.name); }); var had=i>=0;

@@ -285,6 +285,15 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  (function(){ var keep=JSON.parse(JSON.stringify(S.cfg||{})); S.client.state=S.client.state||'FL'; S.client.page=S.client.page||40; effCfg('better').his={ben:2000,amb:1,outp:1500}; autoPriceTiers();
    var p=(S.packages.better.products||[]).filter(function(x){ return x.k==='his'; })[0];
    ok(p&&p.name.indexOf('HI Select $2,000 + Outpatient $1,500')>=0,'the exported HI Select name follows the benefit chosen: '+(p&&p.name)); S.cfg=keep; autoPriceTiers(); })();
+ /* Jesse, 21 Oct: care a doctor recommended, not done yet - from the call, flagged with ManhattanLife's rule */
+ S.intake.pendP=''; S.intake.pendS='';
+ applySuiteClient({health:{pendingCare:'Surgery or procedure recommended',pendingWhat:'knee replacement'}},true); goStep('intake'); await w(150);
+ var pn=document.getElementById('pendNote'); ok(document.getElementById('in_pend_p').value==='Surgery or procedure recommended'&&pn.style.display!=='none'&&/knee replacement/.test(pn.textContent)&&/uninsurable/.test(pn.textContent)&&document.querySelector('.pendwrap').classList.contains('bad'),'a recommended surgery from the call: the Intake box is set and it flags red with what it is');
+ ok((S.intake.notes||'').indexOf('Recommended, not done yet (applicant): Surgery or procedure recommended — knee replacement')>=0,'…and it is in the notes');
+ var ps=document.getElementById('in_pend_p'); ps.value='Tests or results pending'; ps.dispatchEvent(new Event('change')); await w(80);
+ ok(document.querySelector('.pendwrap').classList.contains('warn')&&/postpones/.test(pn.textContent),'tests pending: amber, postponed');
+ ps.value='No'; ps.dispatchEvent(new Event('change')); await w(80); ok(pn.style.display==='none','No: nothing shows');
+ S.intake.pendP=''; S.intake.notes='';
  /* Jesse, 21 Oct: deleted on the Intake stays deleted while the call still has it; deleted in the call clears it */
  S.intake.medList=[]; S.intake.conds=[]; S.intake.callDismissed={};
  applySuiteClient({meds:['Plaquenil'],conds:[{name:'Lupus'}],health:{}},true); renderMeds(); await w(80);
@@ -322,7 +331,7 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  S=JSON.parse(JSON.stringify(rfBase)); S.intake.pregNowP=true; goStep('quote'); compute(); await w(200); var rfe=document.getElementById('rightFit');
  ok(rfe&&rfe.textContent.indexOf('ACA + optional HI Select')>=0&&rfe.textContent.indexOf('p.23')>=0&&/Amerus VL/.test(rfe.textContent)&&/not an underwriting decision/.test(rfe.textContent),'right-fit panel renders on Quote with the path, the guide cite, GI names and the disclaimer: '+(rfe?'':'none'));
  S=JSON.parse(JSON.stringify(rfBase));
- return {n:180, fails:fails}; })()`;
+ return {n:184, fails:fails}; })()`;
 try {
   let l; for (let i = 0; i < 60 && !l; i++) { await sleep(150); l = await fetch(`http://127.0.0.1:${DBG}/json/list`).then(r => r.json()).catch(() => null); }
   ws = new WebSocket(l.find(t => t.type === 'page').webSocketDebuggerUrl);

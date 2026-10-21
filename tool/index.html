@@ -660,6 +660,8 @@
   .docmeta{display:flex;gap:8px;align-items:center;margin-top:5px;font-size:12.5px}.docmeta select{font:inherit;font-size:12.5px;padding:3px 6px;border:1px solid var(--line);border-radius:6px;background:#fff}.docmeta label{display:flex;gap:4px;align-items:center;font-weight:600;color:#17824a}
   .pbrx{margin:6px 12px 2px;padding:7px 9px;border:1px dashed #d6cdb4;border-radius:8px;font-size:12px;line-height:1.45;color:#4b5563}.pbrx b{color:var(--navy);margin-right:4px}.pbrx span{display:block}.pbrx .up{color:#17824a;font-weight:700}.pbrx .dn{color:#b42318;font-weight:700}
   .matnote .matq{display:block;margin-top:3px;font-weight:500;font-size:11.5px;color:#7a2a20;line-height:1.4}
+  .pendsel{font-size:11.5px;padding:2px 4px;margin-left:4px;max-width:210px}
+  .ps-ctrl.pendwrap.bad{background:#fbe0dd;border-color:#e6aaa2;color:#8a271a}.ps-ctrl.pendwrap.warn{background:#fff3df;border-color:#e8c98a;color:#7a5200}
   .matnote{display:block;flex-basis:100%;margin-top:3px;font-size:12.5px;font-weight:800;color:#a12525}
   .uwwatch{margin-top:8px;border:1.5px solid #c0392b;background:#fdecea;border-radius:10px;padding:10px 14px;color:#8f1d12;font-size:13.5px;line-height:1.45}.uwwatch .uwhd{font-weight:800;margin-bottom:4px}.uwwatch ul{margin:0;padding-left:18px}.uwwatch li{margin:3px 0}.uwwatch b{color:#a12525}
   .rv-actmin{font-size:13.5px;padding:8px 2px}.rv-actmin i{color:var(--muted)}.rv-actmin a{margin-left:8px}.rv-actmin small{display:block;color:var(--muted);margin-top:3px}
@@ -1257,6 +1259,7 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
       <label class="chip tone-green"><input type="checkbox" id="in_dv"> Wants dental / vision?</label>
       <span class="ps-ctrl red">Mental health coverage needed? <label class="tob"><input type="checkbox" id="in_mental_p"> P</label><label class="tob"><input type="checkbox" id="in_mental_s"> S</label><span id="mentNote" class="matnote" style="display:none">→ Serious mental-health conditions may decline; general depression is typically okay.<span class="matq"><a href="https://drive.google.com/file/d/1Tk1u7w7MglqIxs82va-mSTWUQ95fKheV/view" target="_blank" rel="noopener">ManhattanLife Affordable Choice agent guide AGT-AFC7010_1225, pp.18–24 ↗</a></span></span></span>
       <span class="ps-ctrl">Surgeries / hospitalizations (past 2 yrs)? <label class="tob"><input type="checkbox" id="in_surg2yr_p"> P</label><label class="tob"><input type="checkbox" id="in_surg2yr_s"> S</label></span>
+      <span class="ps-ctrl pendwrap">Care a doctor recommended, not done yet? <select id="in_pend_p" class="pendsel" title="Applicant"></select><select id="in_pend_s" class="pendsel" title="Spouse"></select><span id="pendNote" class="matnote" style="display:none"></span></span>
     </div>
     <div class="intakegrid" style="margin-top:12px">
       <div class="fld"><label>Major health conditions?</label>
@@ -3064,6 +3067,17 @@ var DIABETES_MAX={56:150,57:155,58:161,59:167,60:173,61:181,62:189,63:197,64:206
    chart or the diabetic maximum (medications and conditions from the AFC agent guide come next). Read live. */
 /* Pregnancy (Jesse, 20 Oct): under the red Needs-maternity tick - who it's for, then ManhattanLife's own words.
    The guide declines the whole household, not just the person who's pregnant. */
+/* Recommended care not done yet (Jesse, 21 Oct): from Discovery's question, or set here. Surgery pending / suggested, or
+   not yet released after one = uninsurable (p.19); tests pending = postponed (p.23). Rules in afc-rules.js. */
+function pendWatch(){ var n=$('pendNote'), w=document.querySelector('.pendwrap'); if(!n||typeof AFC_PENDING==='undefined') return; var C=S.client||{}, L=[], worst='';
+  [['p',$('in_pend_p'),C.pname],['s',$('in_pend_s'),C.sname]].forEach(function(x){ var v=x[1]&&x[1].value, r=AFC_PENDING[v]; if(!r) return;
+    var who=String(x[2]||'').trim().split(/\s+/)[0]||(x[0]==='s'?'Spouse':'Applicant'), what=(S.intake||{})[x[0]==='s'?'pendWhatS':'pendWhatP'];
+    L.push((r.res==='bad'?'✕ ':'⚠ ')+esc(who)+(what?' ('+esc(what)+')':'')+' — '+esc(r.m)+' <span class="matq" style="display:inline">'+afcGuideLink(r.pg)+'</span>'); if(r.res==='bad') worst='bad'; else if(!worst) worst='warn'; });
+  n.style.display=L.length?'':'none'; n.innerHTML=L.join('<br>'); if(w){ w.classList.toggle('bad',worst==='bad'); w.classList.toggle('warn',worst==='warn'); } }
+function pendFill(){ ['p','s'].forEach(function(k){ var el=$('in_pend_'+k); if(!el||typeof AFC_PENDING_OPTS==='undefined') return; var v=(S.intake||{})[k==='s'?'pendS':'pendP']||'';
+    el.innerHTML=AFC_PENDING_OPTS.map(function(o){ return '<option value="'+esc(o)+'"'+(o===v?' selected':'')+'>'+(o?(k==='s'?'S: ':'P: ')+esc(o):(k==='s'?'S: —':'P: —'))+'</option>'; }).join('');
+    el.style.display=(k==='s'&&!($('in_who_spouse')||{}).checked)?'none':''; });
+  pendWatch(); }
 function matWatch(){ var mh=$('mentNote'); if(mh) mh.style.display=(($('in_mental_p')||{}).checked||($('in_mental_s')||{}).checked)?'':'none';   /* Jesse, 21 Oct: a short line only, don't push it */
   var mn=$('matNote'); if(!mn) return; var C=S.client||{}, who=[];
   var nm=function(w){ var n=String((w==='s'?C.sname:C.pname)||'').trim().split(/\s+/)[0]; return n||(w==='s'?'the spouse':'the applicant'); };
@@ -3075,6 +3089,7 @@ function uwWatch(){ var box=$('uwWatch'); if(!box) return; var I=S.intake||{}, C
   var nm=function(w){ var n=String((w==='s'?C.sname:C.pname)||'').trim().split(/\s+/)[0]; return n||(w==='s'?'Spouse':'Applicant'); };
   matWatch();
   ['p','s'].forEach(function(w){ var el=$('in_'+w+'build'); if(el&&el.classList.contains('bad')) L.push('<b>'+esc(nm(w))+': '+esc(String(el.value).replace(/^⚠\s*/,''))+'.</b> Over ManhattanLife’s build chart — expect a rating or a decline on Affordable Choice; look at the other plans.'); });
+  if(typeof AFC_PENDING!=='undefined') [['P',C.pname,'p'],['S',C.sname,'s']].forEach(function(x){ var r=AFC_PENDING[I['pend'+x[0]]]; if(r&&r.res==='bad') L.push('<b>'+esc(nm(x[2]))+': '+esc(I['pend'+x[0]])+'.</b> '+esc(r.m)+' ('+AFC_GUIDE+' p.'+r.pg+')'); });
   if(typeof afcCondHits==='function') afcCondHits().forEach(function(h){ if(h.res==='bad') L.push('<b>'+esc(h.c.name)+'</b> — on ManhattanLife’s uninsurable list ('+AFC_GUIDE+' p.'+h.pg+'). Don’t submit Affordable Choice.'); });
   if(typeof afcHits==='function') afcHits().forEach(function(h){ if(h.st==='y') L.push('<b>'+esc(h.m.name)+'</b> for '+esc(h.r.b==='Insulin'?'diabetes':h.r.q)+' — on ManhattanLife’s medication decline list ('+AFC_GUIDE+' p.'+(h.r.b==='Insulin'?22:h.r.pg)+'). Don’t submit Affordable Choice.'); });
   box.style.display=L.length?'':'none';
@@ -3865,7 +3880,7 @@ function applySuiteClient(c, live){ var sm=$('setupModal'); if(sm&&!live&&sm.cla
     extra.push("Current plan real cost (as told): "+h.curTotal);
   if(h.covGap)     extra.push("On their old cover: "+h.covGap);
   if(h.spHealthNotes) extra.push("Spouse health: "+h.spHealthNotes);
-  if(h.spSurgeryWhat) extra.push("Spouse surgery (2 yrs): "+h.spSurgeryWhat);
+  if(h.spSurgeryWhat) extra.push("Spouse surgery (5 yrs): "+h.spSurgeryWhat);
   if(h.spHospStay==="Yes"||h.spStayWhat) extra.push("Spouse hospital stay (last 2 yrs)"+(h.spStayWhat?": "+h.spStayWhat:""));
   var appt=[h.apptWhen,h.apptDate,h.apptTime].filter(Boolean).join(" ");
   if(appt||h.apptWho) extra.push("PRESENTATION BOOKED: "+(appt||"(no time set)")+(h.apptWho?" (with "+h.apptWho+")":""));
@@ -3886,6 +3901,11 @@ function applySuiteClient(c, live){ var sm=$('setupModal'); if(sm&&!live&&sm.cla
   if(h.pregnant==="Yes")   extra.push("PREGNANT NOW (applicant)");
   if(h.spPregnant==="Yes") extra.push("PREGNANT NOW (spouse)");
   if(h.planned)     extra.push("Planned in the next 12 months: "+h.planned);
+  /* recommended care not done yet - the call's answer sets the Intake box; what it is goes with it */
+  if(h.pendingCare!=null){ I.pendP=h.pendingCare==='No'?'No':(h.pendingCare||I.pendP||''); I.pendWhatP=h.pendingWhat||''; }
+  if(h.spPendingCare!=null){ I.pendS=h.spPendingCare==='No'?'No':(h.spPendingCare||I.pendS||''); I.pendWhatS=h.spPendingWhat||''; }
+  if(h.pendingCare&&h.pendingCare!=='No') extra.push("Recommended, not done yet (applicant): "+h.pendingCare+(h.pendingWhat?" — "+h.pendingWhat:""));
+  if(h.spPendingCare&&h.spPendingCare!=='No') extra.push("Recommended, not done yet (spouse): "+h.spPendingCare+(h.spPendingWhat?" — "+h.spPendingWhat:""));
   if(h.billTomorrow) extra.push("Could pay a bill of "+h.billTomorrow+" tomorrow without stress");
   if(h.lifeNow)     extra.push("Life insurance now: "+h.lifeNow);
   if(h.bankKind)    extra.push("Premium drafts from: "+h.bankKind);
@@ -5480,7 +5500,7 @@ function captureIntake(){
   autosave();
 }
 function fillIntake(){
-  if(typeof renderKids==='function') setTimeout(renderKids,0); setTimeout(uwWatch,50);
+  if(typeof renderKids==='function') setTimeout(renderKids,0); setTimeout(uwWatch,50); setTimeout(pendFill,0);
   var I=S.intake||{}; var w=I.who||{app:true};
   $('in_who_app').checked=w.app!==false; $('in_who_spouse').checked=!!w.spouse; $('in_who_kids').checked=!!w.kids;
   $('in_agency').value=S.agency||'HealthFirst'; $('in_aphone').value=S.agentPhone||''; $('in_aemail').value=S.agentEmail||''; $('in_anpn').value=S.agentNPN||''; $('in_aweb').value=S.agentWebsite||''; $('in_acard').value=S.agentCard||''; $('in_abook').value=S.agentBooking||''; $('in_abenefits').value=S.agentBenefits||''; $('in_adrxlink').value=S.agentDrxLink||''; $('in_adrxcode').value=S.agentDrxCode||''; $('in_abio').value=S.agentBio||''; agentSetupFold();
@@ -5575,7 +5595,7 @@ function syncChips(){
   document.querySelectorAll('#step-intake .ps-ctrl').forEach(function(l){ var on=false; l.querySelectorAll('input').forEach(function(i){ if(i.checked) on=true; }); l.classList.toggle('on',on); });
   syncSpouse();
 }
-function syncSpouse(){ var on=$('in_who_spouse')&&$('in_who_spouse').checked, g=$('spouseGrid'), h=$('spouseHint'); if(g) g.style.display=on?'':'none'; if(h) h.innerHTML=on?'(if applicable)':'(to expand, select <b>Spouse</b> under “Who needs coverage” above)';
+function syncSpouse(){ var on=$('in_who_spouse')&&$('in_who_spouse').checked, g=$('spouseGrid'), h=$('spouseHint'); var pss=$('in_pend_s'); if(pss) pss.style.display=on?'':'none'; if(g) g.style.display=on?'':'none'; if(h) h.innerHTML=on?'(if applicable)':'(to expand, select <b>Spouse</b> under “Who needs coverage” above)';
   var kon=$('in_who_kids')&&$('in_who_kids').checked, kg=$('kidsGrid'), kh=$('kidsHint'); if(kg) kg.style.display=kon?'':'none'; if(kh) kh.innerHTML=kon?'— any number of children is the same price':'(to expand, select <b>Children</b> under “Who needs coverage” above)';   if(typeof kidsShowCount==='function') kidsShowCount();
 }
 
@@ -5652,6 +5672,7 @@ function rightFitFacts(){ var I=S.intake||{}, C=S.client||{}, e={ok:false};
     f.aca.push('Maternity is covered on the marketplace; ManhattanLife won’t write the household'); }
   ['p','s'].forEach(function(w){ var el=$('in_'+w+'build'); if(el&&el.classList.contains('bad')){ f.uwHard=true;
     f.uw.push(esc(nm(w))+': '+esc(String(el.value).replace(/^⚠\s*/,''))+' <span class="rfcite">('+RF_GUIDE+' p.17)</span>'); } });
+  if(typeof AFC_PENDING!=='undefined') ['P','S'].forEach(function(k){ var r=AFC_PENDING[I['pend'+k]]; if(r){ if(r.res==='bad') f.uwHard=true; f.uw.push(esc(I['pend'+k])+' — '+esc(r.m)+' <span class="rfcite">('+RF_GUIDE+' p.'+r.pg+')</span>'); } });
   if(typeof afcCondHits==='function') afcCondHits().forEach(function(h){ if(h.res==='bad'){ f.uwHard=true; f.uw.push(esc(h.c.name)+' — on the uninsurable list <span class="rfcite">('+RF_GUIDE+' p.'+h.pg+')</span>'); } });
   if(typeof afcHits==='function') afcHits().forEach(function(h){ if(h.st==='y'){ f.uwHard=true; f.uw.push(esc(h.m.name)+' for '+esc(h.r.b==='Insulin'?'diabetes':h.r.q)+' — on the medication decline list <span class="rfcite">('+RF_GUIDE+' p.'+(h.r.b==='Insulin'?22:h.r.pg)+')</span>'); } });
   if(I.diabetic) f.uw.push('Diabetes — check before quoting: insulin in the last 5 years or juvenile-onset declines; no more than 2 diabetic meds <span class="rfcite">('+RF_GUIDE+' p.22)</span>');
@@ -6720,6 +6741,7 @@ function bindInputs(){
   $('in_psex').addEventListener('change',function(){ buildFlag('p'); captureIntake(); });
   $('in_ssex').addEventListener('change',function(){ buildFlag('s'); captureIntake(); });
   $('in_diabetic').addEventListener('change',function(){ buildFlag('p'); buildFlag('s'); });
+  ['in_pend_p','in_pend_s'].forEach(function(id){ var el=$(id); if(el) el.addEventListener('change',function(){ S.intake[id==='in_pend_s'?'pendS':'pendP']=el.value; autosave(); pendWatch(); uwWatch(); }); });
   ['in_maternity_p','in_maternity_s','in_mental_p','in_mental_s'].forEach(function(id){ $(id).addEventListener('change',function(){ setTimeout(uwWatch,0); }); });
   document.querySelectorAll('#step-intake .chip input').forEach(function(cb){ cb.addEventListener('change',function(){ syncChips(); readIntake(); autosave(); }); });
   ['in_pname','in_sname','in_agent','in_address','in_state','in_zip','in_page','in_sage','in_majorcond_note','in_diabetic_note','in_docs1','in_docs2','in_docs3','in_carrier','in_plan','in_visits','in_budget_comfort','in_income','in_retage','in_savings','in_invest','in_invnote','in_docnote','in_budget','in_notes','in_kids','in_routenote','in_docsnote','in_whyshop','in_whymatters','in_foundplan','in_effdate']
