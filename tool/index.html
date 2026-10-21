@@ -1228,7 +1228,7 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
       <span class="ps-ctrl">Family history of heart attack / stroke? <label class="tob"><input type="checkbox" id="in_famheart_p"> P</label><label class="tob"><input type="checkbox" id="in_famheart_s"> S</label></span>
       <div class="famrel" id="famRelBox"></div>
       <span class="ps-ctrl">Tobacco use? <label class="tob"><input type="checkbox" id="in_tobacco_p"> P</label><label class="tob"><input type="checkbox" id="in_tobacco_s"> S</label></span>
-      <span class="ps-ctrl red matwrap">Needs maternity? <label class="tob"><input type="checkbox" id="in_maternity_p"> P</label><label class="tob"><input type="checkbox" id="in_maternity_s"> S</label><span id="matNote" class="matnote" style="display:none">→ Consider a non-ManhattanLife plan</span></span>
+      <span class="ps-ctrl red matwrap">Needs maternity? <label class="tob"><input type="checkbox" id="in_maternity_p"> P</label><label class="tob"><input type="checkbox" id="in_maternity_s"> S</label><span id="matNote" class="matnote" style="display:none"></span></span>
       <label class="chip tone-green"><input type="checkbox" id="in_dv"> Wants dental / vision?</label>
       <span class="ps-ctrl red">Mental health coverage needed? <label class="tob"><input type="checkbox" id="in_mental_p"> P</label><label class="tob"><input type="checkbox" id="in_mental_s"> S</label></span>
       <span class="ps-ctrl">Surgeries / hospitalizations (past 2 yrs)? <label class="tob"><input type="checkbox" id="in_surg2yr_p"> P</label><label class="tob"><input type="checkbox" id="in_surg2yr_s"> S</label></span>
@@ -3035,9 +3035,15 @@ var DIABETES_MAX={56:150,57:155,58:161,59:167,60:173,61:181,62:189,63:197,64:206
 /* Underwriting watch (Jesse, 20 Oct): what could keep this household off ManhattanLife. Pregnancy: "Consider a
    non-ManhattanLife plan" under the red Needs-maternity tick. Under "Anything else I should know": over the build
    chart or the diabetic maximum (medications and conditions from the AFC agent guide come next). Read live. */
+/* Pregnancy (Jesse, 20 Oct): under the red Needs-maternity tick, name who it's for. */
+function matWatch(){ var mn=$('matNote'); if(!mn) return; var C=S.client||{}, who=[];
+  var nm=function(w){ var n=String((w==='s'?C.sname:C.pname)||'').trim().split(/\s+/)[0]; return n||(w==='s'?'the spouse':'the applicant'); };
+  if(($('in_maternity_p')||{}).checked) who.push(nm('p')); if(($('in_maternity_s')||{}).checked) who.push(nm('s'));
+  mn.style.display=who.length?'':'none';
+  mn.textContent=who.length?'→ ManhattanLife unlikely for '+who.join(' and ')+'. Possibly consider a different plan for the person who’s pregnant or plans on getting pregnant.':''; }
 function uwWatch(){ var box=$('uwWatch'); if(!box) return; var I=S.intake||{}, C=S.client||{}, L=[];
   var nm=function(w){ var n=String((w==='s'?C.sname:C.pname)||'').trim().split(/\s+/)[0]; return n||(w==='s'?'Spouse':'Applicant'); };
-  var mn=$('matNote'); if(mn) mn.style.display=(($('in_maternity_p')||{}).checked||($('in_maternity_s')||{}).checked)?'':'none';   /* Jesse, 20 Oct: the red tick + this line is enough for pregnancy */
+  matWatch();
   ['p','s'].forEach(function(w){ var el=$('in_'+w+'build'); if(el&&el.classList.contains('bad')) L.push('<b>'+esc(nm(w))+': '+esc(String(el.value).replace(/^⚠\s*/,''))+'.</b> Over ManhattanLife’s build chart — expect a rating or a decline on Affordable Choice; look at the other plans.'); });
   box.style.display=L.length?'':'none';
   box.innerHTML=L.length?'<div class="uwhd">⚠ Underwriting watch — may rule out ManhattanLife</div><ul>'+L.map(function(x){ return '<li>'+x+'</li>'; }).join('')+'</ul>':''; }
