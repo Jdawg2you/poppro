@@ -86,6 +86,17 @@ try {
       await inFrame(`(function(){ document.querySelector('[data-afcwrap="cond"] [data-v="n"]').click(); return 1; })()`); await sleep(900);
       const ic = await pop.run(`(function(){ var c=(S.intake.conds||[]).filter(function(x){ return x.name==='Heart attack'; })[0]; return c&&c.afc; })()`);
       ok(ic === 'n', 'the condition answer reaches the Intake (' + ic + ')');
+      /* Jesse, 21 Oct: the card reads meds, ★ spell them, then a condition search with its own ASK, above the GLP-1 question */
+      const lay = await inFrame(`(function(){ go('hs_history'); var t=document.getElementById('script').innerText, w=document.querySelector('.line .note.star'), inp=document.querySelector('.medinput');
+        return {tip:/Type them here and they land on the profile/.test(t), starAfterInput:!!(w&&inp&&(inp.compareDocumentPosition(w)&4)), ask:t.indexOf('conditions we haven')>=0&&t.indexOf('conditions we haven')<t.indexOf('weight-loss or diabetes injections'), cs:!!document.querySelector('.condsinput')}; })()`);
+      ok(!lay.tip && lay.starAfterInput && lay.ask && lay.cs, 'Health history layout: ' + JSON.stringify(lay));
+      const cs1 = await inFrame(`(function(){ P.conds=[]; pStore(); go('hs_history'); var i=document.querySelector('.condsinput'); i.value='crohn'; i.dispatchEvent(new Event('input',{bubbles:true}));
+        var b=[].map.call(document.querySelectorAll('.condsug [data-condadd]'),function(x){ return x.getAttribute('data-condadd'); }); return b; })()`);
+      ok(cs1.some(x => /Crohn/.test(x)), 'typing finds conditions from ManhattanLife’s list too: ' + cs1.join(' | '));
+      const cs2 = await inFrame(`(function(){ document.querySelector('.condsug [data-condadd]').click(); go('hs_history'); return {conds:P.conds.slice(), chip:!!document.querySelector('[data-conddel]'), q:(document.querySelector('[data-afcwrap="cond"]')||{}).textContent||''}; })()`);
+      ok(cs2.conds.length === 1 && cs2.chip && /Diagnosed or treated in the last 5 years/.test(cs2.q), 'picking it adds a chip and asks ManhattanLife’s question: ' + JSON.stringify(cs2).slice(0, 160));
+      const cs3 = await inFrame(`(function(){ document.querySelector('[data-conddel]').click(); return P.conds.length; })()`);
+      ok(cs3 === 0, 'the chip’s × takes it off');
       const back = await pop.run(`(function(){ S.intake.medList.forEach(function(m){ if(/prednisone/i.test(m.name)) m.afc='n'; }); callInit(); return 1; })()`); await sleep(900);
       const a4 = await inFrame(`(function(){ go('hs_history'); return document.querySelector('[data-afcwrap="med"]').textContent; })()`);
       ok(/not for ongoing treatment/.test(a4), 'an answer changed on the Intake shows in the call when it opens again');
