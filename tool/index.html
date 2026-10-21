@@ -920,6 +920,8 @@
   .tierinc label{flex:1;text-align:center;padding:8px 6px;font-size:12px;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
   .tierinc label b{color:var(--navy);font-weight:700}
   .tierinc input{cursor:pointer;width:15px;height:15px;accent-color:var(--green)}
+  .matnote .matq{display:block;margin-top:3px;font-weight:500;font-size:11.5px;color:#7a2a20;line-height:1.4}
+  .matnote{display:block;flex-basis:100%;margin-top:3px;font-size:12.5px;font-weight:800;color:#a12525}
   .flagbox{background:#fbeee9;border:1px solid #e6b7ad;color:#8a2b1c;border-radius:10px;padding:10px 14px;font-size:13px;margin:0 0 14px}
   .enroll-card{border:1px solid var(--line);border-radius:12px;padding:18px;background:#fff}
   .portalbtn{display:inline-flex;align-items:center;gap:8px;background:var(--navy);color:#fff;border:1px solid var(--navy);border-radius:10px;padding:12px 18px;font-weight:700;text-decoration:none;margin:6px 8px 6px 0}
@@ -1202,7 +1204,7 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
       <span class="ps-ctrl">Family history of heart attack / stroke? <label class="tob"><input type="checkbox" id="in_famheart_p"> P</label><label class="tob"><input type="checkbox" id="in_famheart_s"> S</label></span>
       <div class="famrel" id="famRelBox"></div>
       <span class="ps-ctrl">Tobacco use? <label class="tob"><input type="checkbox" id="in_tobacco_p"> P</label><label class="tob"><input type="checkbox" id="in_tobacco_s"> S</label></span>
-      <span class="ps-ctrl red">Needs maternity? <label class="tob"><input type="checkbox" id="in_maternity_p"> P</label><label class="tob"><input type="checkbox" id="in_maternity_s"> S</label></span>
+      <span class="ps-ctrl red matwrap">Needs maternity? <label class="tob"><input type="checkbox" id="in_maternity_p"> P</label><label class="tob"><input type="checkbox" id="in_maternity_s"> S</label><span id="matNote" class="matnote" style="display:none"></span></span>
       <label class="chip tone-green"><input type="checkbox" id="in_dv"> Wants dental / vision?</label>
       <span class="ps-ctrl red">Mental health coverage needed? <label class="tob"><input type="checkbox" id="in_mental_p"> P</label><label class="tob"><input type="checkbox" id="in_mental_s"> S</label></span>
       <span class="ps-ctrl">Surgeries / hospitalizations (past 2 yrs)? <label class="tob"><input type="checkbox" id="in_surg2yr_p"> P</label><label class="tob"><input type="checkbox" id="in_surg2yr_s"> S</label></span>
@@ -3005,6 +3007,14 @@ var BUILD_CHART={
 };
 // Diabetic decline: max weight by height (inches). Over this = decline if diabetic.
 var DIABETES_MAX={56:150,57:155,58:161,59:167,60:173,61:181,62:189,63:197,64:206,65:214,66:223,67:231,68:239,69:248,70:256,71:265,72:273,73:280,74:287,75:294,76:301,77:308,78:315};
+/* Pregnancy (Jesse, 20 Oct): under the red Needs-maternity tick - who it's for, then ManhattanLife's own words.
+   The guide declines the whole household, not just the person who's pregnant. */
+function matWatch(){ var mn=$('matNote'); if(!mn) return; var C=S.client||{}, who=[];
+  var nm=function(w){ var n=String((w==='s'?C.sname:C.pname)||'').trim().split(/\s+/)[0]; return n||(w==='s'?'the spouse':'the applicant'); };
+  if(($('in_maternity_p')||{}).checked) who.push(nm('p')); if(($('in_maternity_s')||{}).checked) who.push(nm('s'));
+  mn.style.display=who.length?'':'none';
+  mn.innerHTML=who.length?'→ ManhattanLife unlikely for this household ('+esc(who.join(' and '))+'). Possibly consider a different plan.'+
+    '<span class="matq">ManhattanLife: “An application submitted when the applicant, or any of the applicant’s dependents (spouse or child(ren), under the age of 26), whether applying for coverage or not, is currently pregnant or in the process of adopting a child will be declined. All household applicants will be declined.” — Affordable Choice agent guide AGT-AFC7010_1225, p.23</span>':''; }
 function buildFlag(who){
   var el=$('in_'+who+'build'); if(!el) return;
   var sx=($('in_'+who+'sex')||{}).value||'', h=+$('in_'+who+'height').value||0, w=+$('in_'+who+'weight').value||0;
@@ -5115,6 +5125,8 @@ function glp1FromSuite(h){ var one=function(pre){ var k=function(f){ return h[pr
    items the agent hasn't opened yet (localStorage pp_news_seen = newest date they've seen). */
 var NEWS_DAYS=30;
 var NEWS=[
+ {d:'2026-10-20',t:'Pregnancy and ManhattanLife',h:[
+  ['Needs maternity now warns','Tick Needs maternity — by hand or from the call’s pregnancy answers — and ManhattanLife’s own rule appears under it: anyone in the household pregnant or adopting declines every household applicant. Consider a different plan.']]},
  {d:'2026-10-19',t:'Prescription discounts move to EasyCare2go',h:[
   ['Prescriptions sit under the total','Monthly is the premium only now. Under each package: what their prescriptions cost a year against the Rx benefit’s yearly maximum — covered in green, or what they’d still pay in red.'],
   ['RxEDO is gone','Prescription discounts now come through EasyCare2go — the same account as the telehealth. RxEDO is out of the partner benefits, the emails, the client page and the care card.'],
@@ -5367,7 +5379,7 @@ function captureIntake(){
   autosave();
 }
 function fillIntake(){
-  if(typeof renderKids==='function') setTimeout(renderKids,0);
+  if(typeof renderKids==='function') setTimeout(renderKids,0); setTimeout(matWatch,50);
   var I=S.intake||{}; var w=I.who||{app:true};
   $('in_who_app').checked=w.app!==false; $('in_who_spouse').checked=!!w.spouse; $('in_who_kids').checked=!!w.kids;
   $('in_agency').value=S.agency||'HealthFirst'; $('in_aphone').value=S.agentPhone||''; $('in_aemail').value=S.agentEmail||''; $('in_anpn').value=S.agentNPN||''; $('in_aweb').value=S.agentWebsite||''; $('in_acard').value=S.agentCard||''; $('in_abook').value=S.agentBooking||''; $('in_abenefits').value=S.agentBenefits||''; $('in_adrxlink').value=S.agentDrxLink||''; $('in_adrxcode').value=S.agentDrxCode||''; $('in_abio').value=S.agentBio||''; agentSetupFold();
@@ -6541,6 +6553,7 @@ function bindInputs(){
   $('in_psex').addEventListener('change',function(){ buildFlag('p'); captureIntake(); });
   $('in_ssex').addEventListener('change',function(){ buildFlag('s'); captureIntake(); });
   $('in_diabetic').addEventListener('change',function(){ buildFlag('p'); buildFlag('s'); });
+  ['in_maternity_p','in_maternity_s'].forEach(function(id){ $(id).addEventListener('change',function(){ setTimeout(matWatch,0); }); });
   document.querySelectorAll('#step-intake .chip input').forEach(function(cb){ cb.addEventListener('change',function(){ syncChips(); readIntake(); autosave(); }); });
   ['in_pname','in_sname','in_agent','in_address','in_state','in_zip','in_page','in_sage','in_majorcond_note','in_diabetic_note','in_docs1','in_docs2','in_docs3','in_carrier','in_plan','in_visits','in_budget_comfort','in_income','in_retage','in_savings','in_invest','in_invnote','in_docnote','in_budget','in_notes','in_kids','in_routenote','in_docsnote','in_whyshop','in_whymatters','in_foundplan','in_effdate']
     .forEach(function(id){ var el=$(id); if(el) el.addEventListener('input',function(){ captureIntake(); }); });
