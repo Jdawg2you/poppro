@@ -247,14 +247,32 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  ok(/gestational diabetes — ManhattanLife postpones/.test(af.textContent),'Insulin: gestational only gets the postpone rule');
  S.intake.medList.push({name:'Enbrel',forP:true}); S.intake.conds.push({name:'Rheumatoid arthritis',forP:true}); renderMeds(); await w(150); af=document.getElementById('afcFlags');
  ok(af.innerHTML.indexOf('Enbrel</b> for rheumatoid arthritis (on the Intake)')>=0,'a listed condition already on the Intake answers it');
- goStep('call'); await w(200); var cu=document.getElementById('callUw'); ok(cu&&/ManhattanLife medication check — 2 don’t-submit/.test(cu.textContent),'Discovery shows the same check above the call: '+(cu?cu.textContent.slice(0,60):'none'));
+ goStep('call'); await w(200); var cu=document.getElementById('callUw'); ok(cu&&/ManhattanLife check — 2 don’t-submit/.test(cu.textContent),'Discovery shows the same check above the call: '+(cu?cu.textContent.slice(0,60):'none'));
  goStep('intake'); await w(150);
- document.querySelector('[data-afcinfo]').click(); await w(150); var dr=document.getElementById('uwDrawer'); ok(dr.classList.contains('open')&&dr.querySelectorAll('.uwrow').length===71,'ⓘ opens the full list of 71');
+ document.querySelector('[data-afcinfo]').click(); await w(150); var dr=document.getElementById('uwDrawer'); ok(dr.classList.contains('open')&&[].filter.call(dr.querySelectorAll('.uwrow .tag'),function(t){ return t.textContent==='Medication'; }).length===71,'ⓘ opens the full list of 71');
  ok(dr.querySelectorAll('.uwrow.hit').length>=3,'the client’s drugs sit at the top, highlighted');
  var us=document.getElementById('uwSearch'); us.value='restless'; us.dispatchEvent(new Event('input')); await w(50); ok(dr.querySelectorAll('.uwrow').length===2,'search finds Requip and Mirapex by "restless"');
  us.value='zzzz'; us.dispatchEvent(new Event('input')); await w(50); ok(/Not on ManhattanLife’s list/.test(dr.textContent),'no match says not on the list');
  dr.querySelector('[data-uwx]').click(); await w(50); ok(!dr.classList.contains('open'),'× closes it');
  S.intake.medList=[]; S.intake.conds=[]; renderMeds(); await w(100);
+ /* ManhattanLife condition check (sandbox, 21 Oct) */
+ S.intake.medList=[]; S.intake.conds=[{name:'Heart attack',forP:true},{name:'High blood pressure',forP:true},{name:'COPD',forP:true},{name:'Depression',forP:true},{name:'Crohn’s disease',forP:true}]; renderMeds(); await w(150);
+ var cf=document.getElementById('afcCondFlags'); ok(cf&&cf.querySelectorAll('.afcflag.ask').length===4,'four listed conditions ask their question, depression does not ('+(cf?cf.querySelectorAll('.afcflag').length:'none')+')');
+ ok(/more than one heart attack, or the first one before age 45/.test(cf.textContent),'heart attack asks the guide’s own qualifier');
+ cf.querySelector('[data-afcc="0"][data-v="n"]').click(); await w(120); cf=document.getElementById('afcCondFlags');
+ ok(/coronary artery disease, angina, a stent/.test(cf.textContent)&&/check with underwriting/.test(cf.textContent),'one heart attack after 45: amber, names what still declines');
+ cf.querySelector('[data-afcc="1"][data-v="y"]').click(); await w(120); cf=document.getElementById('afcCondFlags');
+ ok(/✓/.test(cf.textContent)&&/Meets the high-blood-pressure rule/.test(cf.textContent),'blood pressure within the rule: green');
+ cf.querySelector('[data-afcc="2"][data-v="y"]').click(); await w(120); cf=document.getElementById('afcCondFlags');
+ ok(cf.querySelector('.afcflag.bad')&&/COPD/.test(cf.querySelector('.afcflag.bad').textContent),'COPD in the last 5 years: red');
+ ok(/Crohn’s disease — ManhattanLife: Diagnosed or treated in the last 5 years/.test(cf.textContent),'a typed condition matches the guide by name');
+ ok(document.querySelectorAll('#condList .cname.afcbad').length===1,'the COPD row turns red');
+ goStep('call'); await w(200); var cu2=document.getElementById('callUw'); ok(/ManhattanLife check — 1 don’t-submit/.test(cu2.textContent)&&!/Meets the high-blood-pressure rule/.test(cu2.textContent),'Discovery shows open and red conditions, not the green ones');
+ goStep('intake'); await w(120);
+ document.querySelector('[data-afcinfo]').click(); await w(150); var us2=document.getElementById('uwSearch'); us2.value='heart attack'; us2.dispatchEvent(new Event('input')); await w(50);
+ ok(document.getElementById('uwDrawer').textContent.indexOf('Heart Attack/STEMI/NSTEMI')>=0,'the ⓘ list searches conditions too');
+ document.querySelector('#uwDrawer [data-uwx]').click(); await w(50);
+ S.intake.conds=[]; renderMeds(); await w(80);
  /* Jesse, 21 Oct: taking a medication or condition off in Discovery takes it off here; Intake-typed ones stay */
  S.intake.medList=[{name:'Atorvastatin (Lipitor)',forP:true}]; S.intake.conds=[{name:'High cholesterol',forP:true}];
  applySuiteClient({meds:['Plaquenil','Copaxone'],conds:[{name:'Lupus'}],health:{}},true); renderMeds(); await w(150);
@@ -281,7 +299,7 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  S=JSON.parse(JSON.stringify(rfBase)); S.intake.pregNowP=true; goStep('quote'); compute(); await w(200); var rfe=document.getElementById('rightFit');
  ok(rfe&&rfe.textContent.indexOf('ACA + optional HI Select')>=0&&rfe.textContent.indexOf('p.23')>=0&&/Amerus VL/.test(rfe.textContent)&&/not an underwriting decision/.test(rfe.textContent),'right-fit panel renders on Quote with the path, the guide cite, GI names and the disclaimer: '+(rfe?'':'none'));
  S=JSON.parse(JSON.stringify(rfBase));
- return {n:163, fails:fails}; })()`;
+ return {n:173, fails:fails}; })()`;
 try {
   let l; for (let i = 0; i < 60 && !l; i++) { await sleep(150); l = await fetch(`http://127.0.0.1:${DBG}/json/list`).then(r => r.json()).catch(() => null); }
   ws = new WebSocket(l.find(t => t.type === 'page').webSocketDebuggerUrl);
