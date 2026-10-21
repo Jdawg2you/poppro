@@ -232,6 +232,29 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  var pw=document.getElementById('in_pweight'); pw.value='480'; pw.dispatchEvent(new Event('input')); await w(150);
  var uw=document.getElementById('uwWatch'); ok(uw.style.display!=='none'&&/build chart/.test(uw.textContent),'over the build chart: the red underwriting box shows under Anything else ('+uw.textContent.slice(0,90)+')');
  pw.value='150'; pw.dispatchEvent(new Event('input')); await w(150); ok(uw.style.display==='none','within build: no box');
+ /* ManhattanLife medication check (sandbox, 21 Oct): drug -> what's it for -> red / check with underwriting */
+ S.intake.conds=[]; S.intake.medList=[{name:'Copaxone',forP:true},{name:'Prednisone',forP:true},{name:'Insulin glargine (Lantus)',forP:true},{name:'Atorvastatin (Lipitor)',forP:true}]; renderMeds(); await w(150);
+ var af=document.getElementById('afcFlags'); ok(af&&af.querySelectorAll('.afcflag.ask').length===3,'three listed drugs ask what they are for, atorvastatin does not ('+(af?af.querySelectorAll('.afcflag').length:'none')+')');
+ ok(/decline list when it’s for <b>Parkinson’s, multiple sclerosis/.test(af.innerHTML),'Copaxone asks about Parkinson’s / MS / ALS / epilepsy');
+ ok(document.querySelectorAll('#medList .mname.afcwarn').length===3,'the three med boxes go amber');
+ af.querySelector('[data-afc="0"][data-v="y"]').click(); await w(150);
+ ok(af.querySelector('.afcflag.bad')&&/don’t submit to ManhattanLife/.test(af.textContent),'Yes: red, don’t submit');
+ ok((S.intake.conds||[]).some(function(c){ return c.name==="Parkinson's / MS / ALS / epilepsy"; }),'Yes adds the condition to the Intake');
+ ok(document.querySelectorAll('#medList .mname.afcbad').length===1,'Copaxone box goes red');
+ document.getElementById('afcFlags').querySelector('[data-afc="1"][data-v="n"]').click(); await w(150); af=document.getElementById('afcFlags');
+ ok(/Prednisone<\\/b> is on ManhattanLife’s decline list when it’s for ongoing treatment/.test(af.innerHTML)&&/check with underwriting/.test(af.textContent)&&/short steroid burst/.test(af.textContent),'No: amber, check with underwriting, with the short-course note');
+ af.querySelector('[data-afc="2"][data-v="g"]').click(); await w(150); af=document.getElementById('afcFlags');
+ ok(/gestational diabetes — ManhattanLife postpones/.test(af.textContent),'Insulin: gestational only gets the postpone rule');
+ S.intake.medList.push({name:'Enbrel',forP:true}); S.intake.conds.push({name:'Rheumatoid arthritis',forP:true}); renderMeds(); await w(150); af=document.getElementById('afcFlags');
+ ok(af.innerHTML.indexOf('Enbrel</b> for rheumatoid arthritis (on the Intake)')>=0,'a listed condition already on the Intake answers it');
+ goStep('call'); await w(200); var cu=document.getElementById('callUw'); ok(cu&&/ManhattanLife medication check — 2 don’t-submit/.test(cu.textContent),'Discovery shows the same check above the call: '+(cu?cu.textContent.slice(0,60):'none'));
+ goStep('intake'); await w(150);
+ document.querySelector('[data-afcinfo]').click(); await w(150); var dr=document.getElementById('uwDrawer'); ok(dr.classList.contains('open')&&dr.querySelectorAll('.uwrow').length===71,'ⓘ opens the full list of 71');
+ ok(dr.querySelectorAll('.uwrow.hit').length>=3,'the client’s drugs sit at the top, highlighted');
+ var us=document.getElementById('uwSearch'); us.value='restless'; us.dispatchEvent(new Event('input')); await w(50); ok(dr.querySelectorAll('.uwrow').length===2,'search finds Requip and Mirapex by "restless"');
+ us.value='zzzz'; us.dispatchEvent(new Event('input')); await w(50); ok(/Not on ManhattanLife’s list/.test(dr.textContent),'no match says not on the list');
+ dr.querySelector('[data-uwx]').click(); await w(50); ok(!dr.classList.contains('open'),'× closes it');
+ S.intake.medList=[]; S.intake.conds=[]; renderMeds(); await w(100);
  var mhn=document.getElementById('mentNote'), mhc=document.getElementById('in_mental_s'); ok(mhn&&mhn.style.display==='none','mental health unticked: no line');
  mhc.checked=true; mhc.dispatchEvent(new Event('change')); await w(150); ok(mhn.style.display!=='none'&&/Serious mental-health conditions may decline; general depression is typically okay/.test(mhn.textContent)&&mhc.closest('.ps-ctrl').classList.contains('on'),'mental health ticked: turns red with the one line');
  mhc.checked=false; mhc.dispatchEvent(new Event('change')); await w(150); ok(mhn.style.display==='none','mental health unticked again: line gone');
@@ -246,7 +269,7 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  S=JSON.parse(JSON.stringify(rfBase)); S.intake.pregNowP=true; goStep('quote'); compute(); await w(200); var rfe=document.getElementById('rightFit');
  ok(rfe&&rfe.textContent.indexOf('ACA + optional HI Select')>=0&&rfe.textContent.indexOf('p.23')>=0&&/Amerus VL/.test(rfe.textContent)&&/not an underwriting decision/.test(rfe.textContent),'right-fit panel renders on Quote with the path, the guide cite, GI names and the disclaimer: '+(rfe?'':'none'));
  S=JSON.parse(JSON.stringify(rfBase));
- return {n:142, fails:fails}; })()`;
+ return {n:157, fails:fails}; })()`;
 try {
   let l; for (let i = 0; i < 60 && !l; i++) { await sleep(150); l = await fetch(`http://127.0.0.1:${DBG}/json/list`).then(r => r.json()).catch(() => null); }
   ws = new WebSocket(l.find(t => t.type === 'page').webSocketDebuggerUrl);
