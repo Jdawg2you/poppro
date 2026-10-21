@@ -116,6 +116,17 @@ try {
       await sleep(900);
       const hi = await pop.run(`(function(){ var c=(S.intake.conds||[]).filter(function(x){ return x.name==='Heart attack'; })[0]; return c&&c.afc; })()`);
       ok(hi === 'y', 'the Intake has the heart attack answered red (' + hi + ')');
+      /* Jesse, 21 Oct: delete a medication, add it again - it asks again */
+      const re = await inFrame(`(function(){ P.meds_list=[]; P.med_skip=[]; P.conds=[]; pStore(); go('hs_history'); medAdd('Eliquis');
+        var f1=medFlags('').filter(function(x){ return /Eliquis/.test(x.m); }).length;
+        var no=document.querySelector('#medflagwrap [data-cond-skip]'); if(no) no.click();
+        var f2=medFlags('').filter(function(x){ return /Eliquis/.test(x.m); }).length;
+        var i=P.meds_list.indexOf(P.meds_list.filter(function(m){ return /Eliquis/.test(m); })[0]); var d=document.createElement('button'); d.setAttribute('data-meddel',i); d.setAttribute('data-medwho',''); document.body.appendChild(d); d.click(); d.remove();
+        medAdd('Eliquis'); var f3=medFlags('').filter(function(x){ return /Eliquis/.test(x.m); }).length;
+        medAdd('Copaxone'); var k='p|'+P.meds_list.filter(function(m){ return /Copaxone/.test(m); })[0]; P.afc_med=P.afc_med||{}; P.afc_med[k]='n'; pStore();
+        var j=P.meds_list.indexOf(k.slice(2)); var d2=document.createElement('button'); d2.setAttribute('data-meddel',j); d2.setAttribute('data-medwho',''); document.body.appendChild(d2); d2.click(); d2.remove();
+        return {f1:f1,f2:f2,f3:f3,afc:(P.afc_med||{})[k]===undefined}; })()`);
+      ok(re.f1 >= 1 && re.f2 === re.f1 - 1 && re.f3 === re.f1 && re.afc, 'deleted and re-added, Eliquis asks again; a deleted drug’s ManhattanLife answer is forgotten: ' + JSON.stringify(re));
       const back = await pop.run(`(function(){ S.intake.medList.forEach(function(m){ if(/prednisone/i.test(m.name)) m.afc='n'; }); callInit(); return 1; })()`); await sleep(900);
       const a4 = await inFrame(`(function(){ go('hs_history'); return document.querySelector('[data-afcwrap="med"]').textContent; })()`);
       ok(/not for ongoing treatment/.test(a4), 'an answer changed on the Intake shows in the call when it opens again');

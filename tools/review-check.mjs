@@ -282,6 +282,8 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  applySuiteClient({conds:[{name:'Diabetes'}],health:{}},true); ok(S.intake.diabetic===true,'Diabetes in the call ticks Diabetic');
  applySuiteClient({conds:[],health:{}},true); ok(S.intake.diabetic===false&&S.intake.majorcond===true,'taken off in the call unticks it; a box ticked by hand stays');
  S.intake.majorcond=false; S.intake.conds=[];
+ S.intake.medList=[{name:'Eliquis',forP:true}]; S.intake.medSkip=['Eliquis|Blood clots / DVT']; renderMeds(); await w(80);
+ S.intake.medList=[]; renderMeds(); await w(80); ok((S.intake.medSkip||[]).length===0,'a medication taken off forgets its No answers ('+JSON.stringify(S.intake.medSkip)+')');
  /* Jesse, 21 Oct: taking a medication or condition off in Discovery takes it off here; Intake-typed ones stay */
  S.intake.medList=[{name:'Atorvastatin (Lipitor)',forP:true}]; S.intake.conds=[{name:'High cholesterol',forP:true}];
  applySuiteClient({meds:['Plaquenil','Copaxone'],conds:[{name:'Lupus'}],health:{}},true); renderMeds(); await w(150);
@@ -308,7 +310,7 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  S=JSON.parse(JSON.stringify(rfBase)); S.intake.pregNowP=true; goStep('quote'); compute(); await w(200); var rfe=document.getElementById('rightFit');
  ok(rfe&&rfe.textContent.indexOf('ACA + optional HI Select')>=0&&rfe.textContent.indexOf('p.23')>=0&&/Amerus VL/.test(rfe.textContent)&&/not an underwriting decision/.test(rfe.textContent),'right-fit panel renders on Quote with the path, the guide cite, GI names and the disclaimer: '+(rfe?'':'none'));
  S=JSON.parse(JSON.stringify(rfBase));
- return {n:175, fails:fails}; })()`;
+ return {n:176, fails:fails}; })()`;
 try {
   let l; for (let i = 0; i < 60 && !l; i++) { await sleep(150); l = await fetch(`http://127.0.0.1:${DBG}/json/list`).then(r => r.json()).catch(() => null); }
   ws = new WebSocket(l.find(t => t.type === 'page').webSocketDebuggerUrl);

@@ -7486,7 +7486,10 @@ function medCondPrune(){ var I=S.intake||{}, L=I.medList||[], n0=(I.conds||[]).l
   I.conds=(I.conds||[]).filter(function(c){ if(!c.fromMed) return true;
     var m=L.filter(function(x){ return popMedResolve(x.name).toLowerCase()===c.fromMed; })[0];
     return !!m&&(!c.fromAfc||m.afc==='y'); });
-  if(I.conds.length!==n0){ if(typeof renderConds==='function') renderConds(); autosave(); } }
+  /* a medication taken off forgets its "No, that's not why" answers too, so adding it again asks again (Jesse, 21 Oct) */
+  var onL={}, s0=(I.medSkip||[]).length; L.forEach(function(x){ onL[popMedResolve(x.name).toLowerCase()]=1; });
+  I.medSkip=(I.medSkip||[]).filter(function(k){ var mm=String(k).split('|')[0]; return onL[popMedResolve(mm).toLowerCase()]; });
+  if(I.conds.length!==n0||I.medSkip.length!==s0){ if(typeof renderConds==='function') renderConds(); autosave(); } }
 function afcCondHits(){ var L=((S.intake||{}).conds)||[], out=[];
   L.forEach(function(c,i){ if(c.fromAfc) return; var k=AFC_CK[c.name]||afcCondMatch(c.name); if(!k) return;
     var kind=k[0], st=(c.afc&&AFC_CQ[kind]&&AFC_CQ[kind].r[c.afc])?c.afc:null, res=kind==='chk'?'warn':(st?AFC_CQ[kind].r[st]:null);
