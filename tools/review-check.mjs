@@ -255,6 +255,18 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  us.value='zzzz'; us.dispatchEvent(new Event('input')); await w(50); ok(/Not on ManhattanLife’s list/.test(dr.textContent),'no match says not on the list');
  dr.querySelector('[data-uwx]').click(); await w(50); ok(!dr.classList.contains('open'),'× closes it');
  S.intake.medList=[]; S.intake.conds=[]; renderMeds(); await w(100);
+ /* Jesse, 21 Oct: taking a medication or condition off in Discovery takes it off here; Intake-typed ones stay */
+ S.intake.medList=[{name:'Atorvastatin (Lipitor)',forP:true}]; S.intake.conds=[{name:'High cholesterol',forP:true}];
+ applySuiteClient({meds:['Plaquenil','Copaxone'],conds:[{name:'Lupus'}],health:{}},true); renderMeds(); await w(150);
+ ok(S.intake.medList.length===3&&S.intake.conds.some(function(c){ return c.name==='Lupus'; }),'the call adds Plaquenil, Copaxone and Lupus');
+ document.getElementById('afcFlags').querySelector('[data-v="y"]').click(); await w(150);
+ ok(S.intake.conds.some(function(c){ return c.fromAfc; }),'Yes on Copaxone adds its condition');
+ applySuiteClient({meds:['Plaquenil'],conds:[],health:{}},true); renderMeds(); await w(150);
+ ok(!S.intake.medList.some(function(m){ return /copaxone/i.test(m.name); }),'Copaxone taken off in the call comes off here');
+ ok(!S.intake.conds.some(function(c){ return c.fromAfc; }),'…and the condition its Yes added goes with it');
+ ok(!S.intake.conds.some(function(c){ return c.name==='Lupus'; }),'Lupus taken off in the call comes off here');
+ ok(S.intake.medList.some(function(m){ return /atorvastatin/i.test(m.name); })&&S.intake.conds.some(function(c){ return c.name==='High cholesterol'; }),'Intake-typed medication and condition stay');
+ S.intake.medList=[]; S.intake.conds=[]; renderMeds(); await w(100);
  var mhn=document.getElementById('mentNote'), mhc=document.getElementById('in_mental_s'); ok(mhn&&mhn.style.display==='none','mental health unticked: no line');
  mhc.checked=true; mhc.dispatchEvent(new Event('change')); await w(150); ok(mhn.style.display!=='none'&&/Serious mental-health conditions may decline; general depression is typically okay/.test(mhn.textContent)&&mhc.closest('.ps-ctrl').classList.contains('on'),'mental health ticked: turns red with the one line');
  mhc.checked=false; mhc.dispatchEvent(new Event('change')); await w(150); ok(mhn.style.display==='none','mental health unticked again: line gone');
@@ -269,7 +281,7 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  S=JSON.parse(JSON.stringify(rfBase)); S.intake.pregNowP=true; goStep('quote'); compute(); await w(200); var rfe=document.getElementById('rightFit');
  ok(rfe&&rfe.textContent.indexOf('ACA + optional HI Select')>=0&&rfe.textContent.indexOf('p.23')>=0&&/Amerus VL/.test(rfe.textContent)&&/not an underwriting decision/.test(rfe.textContent),'right-fit panel renders on Quote with the path, the guide cite, GI names and the disclaimer: '+(rfe?'':'none'));
  S=JSON.parse(JSON.stringify(rfBase));
- return {n:157, fails:fails}; })()`;
+ return {n:163, fails:fails}; })()`;
 try {
   let l; for (let i = 0; i < 60 && !l; i++) { await sleep(150); l = await fetch(`http://127.0.0.1:${DBG}/json/list`).then(r => r.json()).catch(() => null); }
   ws = new WebSocket(l.find(t => t.type === 'page').webSocketDebuggerUrl);

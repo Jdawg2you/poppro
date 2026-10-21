@@ -3750,11 +3750,21 @@ function applySuiteClient(c, live){ var sm=$('setupModal'); if(sm&&!live&&sm.cla
   /* Medications and conditions travel in the suite's shape. This file already holds the
      navigator's medication dictionary, so popMedFlags() reads these the same way the
      navigator and the wizard do. */
+  /* The call's lists are the truth for what the call put here (Jesse, 21 Oct): a medication or condition taken off
+     in Discovery comes off here too. Anything typed on the Intake (no fromCall) is never touched. */
+  var mk=function(n){ return popMedResolve(n).toLowerCase(); }, nowP={}, nowS={};
+  (c.meds||[]).forEach(function(n){ if(n) nowP[mk(n)]=1; }); (c.spMeds||[]).forEach(function(n){ if(n) nowS[mk(n)]=1; });
+  I.medList=(I.medList||[]).filter(function(m){ if(!m.fromCall) return true;
+    return (m.forP&&(!Array.isArray(c.meds)||nowP[mk(m.name)]))||(m.forS&&(!Array.isArray(c.spMeds)||nowS[mk(m.name)])); });
+  var cP={}, cS={}; (c.conds||[]).forEach(function(x){ if(x&&x.name) cP[x.name]=1; }); (c.spConds||[]).forEach(function(x){ if(x&&x.name) cS[x.name]=1; });
+  I.conds=(I.conds||[]).filter(function(x){ if(!x.fromCall) return true;
+    return (x.forP&&(!Array.isArray(c.conds)||cP[x.name]))||(x.forS&&(!Array.isArray(c.spConds)||cS[x.name])); });
+  var condsBefore={}; (I.conds||[]).forEach(function(x){ condsBefore[x.name]=1; });
   if(Array.isArray(c.meds)){
     var had={}; (I.medList||[]).forEach(function(m){ had[popMedResolve(m.name).toLowerCase()]=1; });
     I.medList=(I.medList||[]).concat(
       c.meds.filter(function(n){ return n && !had[popMedResolve(n).toLowerCase()]; })
-            .map(function(n){ return {name:popMedDual(n), cost:0, aca:0, disc:0, forP:true, forS:false}; }));
+            .map(function(n){ return {name:popMedDual(n), cost:0, aca:0, disc:0, forP:true, forS:false, fromCall:true}; }));
   }
   /* The spouse's medications land on the same list, ticked to the spouse rather than the
      applicant. That is the distinction this form has always had a column for and the
@@ -3763,7 +3773,7 @@ function applySuiteClient(c, live){ var sm=$('setupModal'); if(sm&&!live&&sm.cla
     var had2={}; (I.medList||[]).forEach(function(m){ if(m.forS) had2[popMedResolve(m.name).toLowerCase()]=1; });
     I.medList=(I.medList||[]).concat(
       c.spMeds.filter(function(n){ return n && !had2[popMedResolve(n).toLowerCase()]; })
-              .map(function(n){ return {name:popMedDual(n), cost:0, aca:0, disc:0, forP:false, forS:true}; }));
+              .map(function(n){ return {name:popMedDual(n), cost:0, aca:0, disc:0, forP:false, forS:true, fromCall:true}; }));
   }
   if(Array.isArray(c.medSkip)) I.medSkip=(I.medSkip||[]).concat(
       c.medSkip.filter(function(k){ return (I.medSkip||[]).indexOf(k)<0; }));
@@ -3773,6 +3783,8 @@ function applySuiteClient(c, live){ var sm=$('setupModal'); if(sm&&!live&&sm.cla
   if(Array.isArray(c.spConds)) c.spConds.forEach(function(x){
     if(x && x.name) popAddCond(x.name, x.yr||'', x.mo||'', 's');
   });
+  (I.conds||[]).forEach(function(x){ if(!condsBefore[x.name]) x.fromCall=true; });
+  (I.conds||[]).forEach(function(x){ if(cP[x.name]||cS[x.name]){ delete x.fromMed; delete x.fromAfc; } });   /* said on the call in its own right */
 
   /* Conditions this page asks about by name rather than as a chip */
   var names=(c.conds||[]).map(function(x){ return String(x.name||"").toLowerCase(); }).join(", ");
@@ -7470,14 +7482,22 @@ function afcFlagHTML(h){ var m=h.m, r=h.r, nm=esc(String(m.name||r.b)), who=afcW
   if(h.st==='n') return '<div class="afcflag chk"><span class="afct">'+lbl+' is on ManhattanLife’s decline list when it’s for '+q+'. Not for that here — you may want to check with underwriting before submitting (<a href="mailto:'+AFC_UW_EMAIL+'">'+AFC_UW_EMAIL+'</a>).'+(r.fp?'<span class="afcq">'+esc(r.fp)+'</span>':'')+cite(r.pg)+'</span>'+chg+'</div>';
   if(ins) return '<div class="afcflag ask"><span class="afct">⚠ '+lbl+' — insulin in the last 5 years declines ManhattanLife Affordable Choice; gestational diabetes has its own rule. What is it for?'+cite(22)+'</span><button type="button" class="y" data-afc="'+h.i+'" data-v="y">Diabetes</button><button type="button" data-afc="'+h.i+'" data-v="g">Gestational only</button></div>';
   return '<div class="afcflag ask"><span class="afct">⚠ '+lbl+' is on ManhattanLife’s decline list when it’s for <b>'+q+'</b>. Is that what it’s for?'+cite(r.pg)+'</span><button type="button" class="y" data-afc="'+h.i+'" data-v="y">Yes</button><button type="button" data-afc="'+h.i+'" data-v="n">No — something else</button></div>'; }
-function afcRender(){ var hits=afcHits(), html=hits.map(afcFlagHTML).join('');
+/* A condition a medication put on the Intake comes off when that medication does (or, for the ManhattanLife
+   check, when its answer is no longer "yes"). Conditions typed or pushed in their own right are never touched. */
+function medCondPrune(){ var I=S.intake||{}, L=I.medList||[], n0=(I.conds||[]).length;
+  I.conds=(I.conds||[]).filter(function(c){ if(!c.fromMed) return true;
+    var m=L.filter(function(x){ return popMedResolve(x.name).toLowerCase()===c.fromMed; })[0];
+    return !!m&&(!c.fromAfc||m.afc==='y'); });
+  if(I.conds.length!==n0){ if(typeof renderConds==='function') renderConds(); autosave(); } }
+function afcRender(){ medCondPrune(); var hits=afcHits(), html=hits.map(afcFlagHTML).join('');
   var a=$('afcFlags'); if(a) a.innerHTML=html;
   var c=$('callUw'); if(c){ var bad=hits.filter(function(h){ return h.st==='y'; }).length;
     c.innerHTML=hits.length?'<div class="afchd">⚠ ManhattanLife medication check'+(bad?' — '+bad+' don’t-submit':'')+' <button type="button" class="afcinfo" data-afcinfo="1">ⓘ ManhattanLife list</button></div>'+html:''; }
   document.querySelectorAll('#medList .medrow').forEach(function(row,i){ var nm=row.querySelector('.mname'); if(!nm) return;
     var h=hits.filter(function(x){ return x.i===i; })[0]; nm.classList.toggle('afcbad',!!h&&h.st==='y'); nm.classList.toggle('afcwarn',!!h&&h.st!=='y'); });
   document.querySelectorAll('[data-afc]').forEach(function(b){ b.onclick=function(){ var i=+b.dataset.afc, v=b.dataset.v, m=(S.intake.medList||[])[i]; if(!m) return;
-    m.afc=v; if(v==='y'){ var r=afcMedRow(m.name); if(r){ var add=r.b==='Insulin'?'Diabetes':r.add; if(afcCondNames().indexOf(add)<0&&!r.auto.some(function(k){ return afcCondNames().indexOf(k)>=0; })) popAddCond(add,'','',(m.forP?'p':'')+(m.forS?'s':'')||'p'); } }
+    m.afc=v; if(v==='y'){ var r=afcMedRow(m.name); if(r){ var add=r.b==='Insulin'?'Diabetes':r.add; if(afcCondNames().indexOf(add)<0&&!r.auto.some(function(k){ return afcCondNames().indexOf(k)>=0; })){ popAddCond(add,'','',(m.forP?'p':'')+(m.forS?'s':'')||'p');
+      S.intake.conds.forEach(function(c){ if(c.name===add){ c.fromMed=popMedResolve(m.name).toLowerCase(); c.fromAfc=true; } }); } } }
     autosave(); if(typeof renderConds==='function') renderConds(); renderMedFlags(); if(typeof uwWatch==='function') uwWatch(); }; });
   document.querySelectorAll('[data-afcinfo]').forEach(function(b){ b.onclick=function(e){ e.preventDefault(); afcDrawer(true); }; });
   if(typeof uwWatch==='function') setTimeout(uwWatch,0);
@@ -7498,7 +7518,9 @@ function renderMedFlags(){ var host=$('medFlags'); if(!host) return; var fl=popM
   host.innerHTML=fl.map(function(f,i){ return '<div class="mflag"><span><b>'+f.m+'</b> is usually for <b>'+f.c+'</b> — is that why?</span><button type="button" class="yes" data-i="'+i+'">Yes, add it</button><button type="button" data-no="'+i+'">No</button></div>'; }).join('');
   host.querySelectorAll('[data-i]').forEach(function(b){ b.onclick=function(){ var f=fl[+b.dataset.i], who='';
     (S.intake.medList||[]).forEach(function(m){ if(popMedResolve(m.name)===f.m){ if(m.forP) who+='p'; if(m.forS) who+='s'; } });
-    popAddCond(f.c,'','',who||'p'); autosave(); renderMedFlags(); renderConds(); }; });
+    var had0=(S.intake.conds||[]).some(function(c){ return c.name===f.c; }); popAddCond(f.c,'','',who||'p');
+    if(!had0) S.intake.conds.forEach(function(c){ if(c.name===f.c) c.fromMed=f.m.toLowerCase(); });
+    autosave(); renderMedFlags(); renderConds(); }; });
   host.querySelectorAll('[data-no]').forEach(function(b){ b.onclick=function(){ var f=fl[+b.dataset.no]; popSkipCond(f.m,f.c); autosave(); renderMedFlags(); }; }); afcRender(); }
 
 /* Conditions — the navigator's list (PF_CONDS) plus anything typed. Stored in S.intake.conds ({name,yr,mo}). */
