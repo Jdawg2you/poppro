@@ -295,6 +295,27 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  ok(/connect with your mentor/.test(pn.textContent)&&!!pn.querySelector('b.mentornote'),'the mentor note shows, in bold');
  ps.value='No'; ps.dispatchEvent(new Event('change')); await w(80); ok(pn.style.display==='none','No: nothing shows');
  S.intake.pendP=''; S.intake.notes='';
+ /* Triad flow (sandbox, Jesse 22 Oct): a Cigna PPO package gets its own Present, Enroll and Benefits Review */
+ await (async function(){ var keep=JSON.parse(JSON.stringify(S)), errs=[], onErr=function(e){ errs.push(e.message); }; window.addEventListener('error',onErr); try{
+   S=blankState(); S.client.pname='Tara Test'; S.client.state='TX'; S.client.zip='77095'; S.client.page='45'; S.intake.email='tara@example.com'; S.intake.docs1='Dr. Patel'; S.intake.medList=[{name:'Lisinopril',forP:true}];
+   fill(); recommendBundles(); autoPriceTiers(); var c=effCfg('best'); c.base='triad'; c.triadPlan='2500'; c.his={ben:3000,amb:1,outp:1000}; autoPriceTiers(); chooseTier('best'); await benLoadSafe('triad'); await w(50); ok(!document.getElementById('nmhModal').classList.contains('open'),'choosing the Cigna package doesn’t pop the old “present it in your own words” note');
+   ok(triadFlowOn('best')&&popIsMajor('best'),'a Cigna base on the sandbox turns the Triad flow on');
+   presentOpen(); await w(200); var ph=document.getElementById('presentHost').textContent;
+   ok(/Cigna PPO 2500/.test(ph)&&/Cigna is the network/.test(ph)&&!document.getElementById('prFrame'),'Present shows the Triad presentation, not the ManhattanLife script');
+   ok(triadDedNum('best')===2500&&String(triadVal('best',/^Calendar-year deductible/)).indexOf('$2,500/individual')===0,'…with the 2500 plan’s own deductible from the SBC');
+   for(var i=0;i<4;i++){ var nx=document.querySelector('#presentHost .trd-nav .next'); if(nx) nx.click(); await w(60); }
+   ph=document.getElementById('presentHost').textContent; ok(/HI Select|Hospital Indemnity/.test(ph)&&/enough to cover the whole/.test(ph),'the deductible-buster page explains HI Select against the deductible: '+ph.slice(ph.indexOf('busters'),ph.indexOf('busters')+90));
+   goStep('enroll'); await w(200); var eb=document.getElementById('enTriad');
+   ok(eb&&eb.style.display!=='none'&&/EIN/.test(eb.textContent)&&/by [A-Z][a-z]+ 15/.test(eb.textContent)&&/signed by [A-Z][a-z]+ 25/.test(eb.textContent)&&document.getElementById('enScriptEnd').style.display==='none','Enroll shows the Triad steps (EIN, by the 15th, by the 25th) and hides the ManhattanLife wrap-up');
+   var rate=eb&&eb.querySelector('[data-trdf="rate"]'); if(!rate){ fails.push('DIAG enroll: chosen='+chosenTier()+' on='+triadFlowOn(chosenTier())+' display='+(eb&&eb.style.display)+' html='+(eb?eb.innerHTML.length:'none')+' step='+S.step); rate=document.createElement('input'); }
+   rate.value=String(Math.round(triadPremium('best')+250)); rate.dispatchEvent(new Event('input')); await w(50);
+   ok((document.getElementById('trdRateNote')||{textContent:''}).textContent.indexOf('Outside the ±$100 range')>=0,'an approved rate outside the range warns before they sign');
+   goStep('review'); await w(200); var rv=document.getElementById('reviewHost').textContent;
+   ok(/Your card/.test(rv)&&/Precertification/.test(rv)&&!/This Benefits Review is the ManhattanLife call/.test(rv),'Benefits Review runs the Triad review');
+   var em=triadEmail('best'); ok(/Triad Cigna PPO 2500/.test(em.body)&&em.body.indexOf('186pV59ok')<0&&em.body.indexOf('1HT8SuqRo1UFiaMYcZRMpD')>=0&&/precertified/.test(em.body)&&em.to==='tara@example.com','the email carries the 2500 plan summary link, the formulary and precertification');
+   }catch(e){ fails.push('Triad block threw: '+e.message); }
+   window.removeEventListener('error',onErr); ok(!errs.length,'no errors walking the Triad flow: '+errs.join(' | '));
+   S=keep; fill(); })();
  /* Jesse, 21 Oct (Joel Richardson): a file with lb / review stored as JSON text blanked the Quote */
  (function(){ var keep=JSON.parse(JSON.stringify(S)); S=blankState(); S.client.state='TX'; S.client.page='57'; S.lb='{"p": {"carrier": "moo", "face": "", "term": ""}, "s": {"carrier": "", "face": "", "term": ""}}'; S.review='{}'; S.follow='{}';
    var err=''; try{ fill(); compute(); }catch(e){ err=e.message; }
@@ -352,7 +373,7 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  S=JSON.parse(JSON.stringify(rfBase)); S.intake.pregNowP=true; goStep('quote'); compute(); await w(200); var rfe=document.getElementById('rightFit');
  ok(rfe&&rfe.textContent.indexOf('ACA + optional HI Select')>=0&&rfe.textContent.indexOf('p.23')>=0&&/Amerus VL/.test(rfe.textContent)&&/not an underwriting decision/.test(rfe.textContent),'right-fit panel renders on Quote with the path, the guide cite, GI names and the disclaimer: '+(rfe?'':'none'));
  S=JSON.parse(JSON.stringify(rfBase));
- return {n:189, fails:fails}; })()`;
+ return {n:199, fails:fails}; })()`;
 try {
   let l; for (let i = 0; i < 60 && !l; i++) { await sleep(150); l = await fetch(`http://127.0.0.1:${DBG}/json/list`).then(r => r.json()).catch(() => null); }
   ws = new WebSocket(l.find(t => t.type === 'page').webSocketDebuggerUrl);

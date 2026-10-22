@@ -659,6 +659,19 @@
   .fhint{display:block;font-size:11.5px;color:var(--muted);margin-top:3px}
   .docmeta{display:flex;gap:8px;align-items:center;margin-top:5px;font-size:12.5px}.docmeta select{font:inherit;font-size:12.5px;padding:3px 6px;border:1px solid var(--line);border-radius:6px;background:#fff}.docmeta label{display:flex;gap:4px;align-items:center;font-weight:600;color:#17824a}
   .pbrx{margin:6px 12px 2px;padding:7px 9px;border:1px dashed #d6cdb4;border-radius:8px;font-size:12px;line-height:1.45;color:#4b5563}.pbrx b{color:var(--navy);margin-right:4px}.pbrx span{display:block}.pbrx .up{color:#17824a;font-weight:700}.pbrx .dn{color:#b42318;font-weight:700}
+  /* Triad flow (sandbox) */
+  .trd{font-size:14px}.trd-chips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}.trd-chips button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:5px 11px;font:inherit;font-size:12.5px;cursor:pointer}.trd-chips button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+  .trd-page{border:1px solid var(--line);border-radius:12px;padding:14px 16px;background:#fff}.trd-page h4{margin:0 0 10px;font-family:var(--serif);font-size:19px;color:var(--navy)}
+  .trd-say{display:grid;grid-template-columns:44px 1fr;gap:10px;background:#eef3f9;border-left:3px solid #2b4c7e;border-radius:8px;padding:10px 12px;margin:0 0 10px}.trd-say span{font-size:10px;font-weight:800;letter-spacing:.08em;background:#2b4c7e;color:#fff;border-radius:4px;padding:3px 0;text-align:center;height:fit-content}.trd-say p{margin:0;font-family:var(--serif);font-size:16.5px;line-height:1.5;color:#1d2f4f}
+  .trd-do{background:#fbf8f0;border:1px solid #eadfc4;border-radius:8px;padding:9px 12px;margin:0 0 10px;font-size:13.5px;line-height:1.5}
+  .trd-nav{display:flex;justify-content:space-between;margin-top:10px}.trd-nav button{border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 13px;font:inherit;font-weight:700;cursor:pointer}.trd-nav button.next{background:var(--navy);color:#fff;border-color:var(--navy)}
+  .trd-docs{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 10px}.trd-doc{border:1px solid #c9b88f;background:#fffaf0;color:#8a6a1f;border-radius:999px;padding:3px 10px;font-size:12px;font-weight:700;text-decoration:none}.trd-doc.priv{border-style:dashed;color:#7a6a55}
+  .trd-bus{margin:0 0 10px;padding-left:18px;line-height:1.5}.trd-bus li{margin:0 0 8px}.trd-bus small{color:var(--muted)}
+  .trd-blk{border-top:1px solid var(--line);padding:12px 0}.trd-blk h5{margin:0 0 8px;font-size:14px;color:var(--navy)}
+  .trd-f{display:flex;gap:10px;align-items:center;margin:0 0 8px;flex-wrap:wrap}.trd-f span{min-width:230px;font-weight:600;font-size:13px}.trd-f input,.trd-f select{border:1px solid var(--line);border-radius:7px;padding:6px 8px;font:inherit;font-size:13.5px;min-width:200px}
+  .trd-tick{display:flex;gap:8px;align-items:center;margin:4px 0 8px;font-weight:600;font-size:13.5px}.trd-tick.on{color:#1c6b38}
+  .trd-stop{background:#fdecea;border:1px solid #e6aaa2;color:#8f1d12;border-radius:8px;padding:8px 12px;margin:0 0 10px;font-weight:700;font-size:13px}.trd-note{font-size:13px;margin:-2px 0 10px;color:#3a4358}
+  .trd-pre{white-space:pre-wrap;background:#f7f7f4;border:1px solid var(--line);border-radius:8px;padding:12px;font-size:12.5px;line-height:1.5;max-height:340px;overflow:auto;margin-top:10px}
   .matnote .matq{display:block;margin-top:3px;font-weight:500;font-size:11.5px;color:#7a2a20;line-height:1.4}
   .mentornote{display:block;margin-top:5px;color:#1c4f8a;font-weight:800}
   .pendsel{font-size:11.5px;padding:2px 4px;margin-left:4px;max-width:210px}
@@ -1570,6 +1583,7 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
     <div class="note" style="padding-top:2px">In call order: the life application first (it has the health questions), each person’s details, the finish — then the health carriers after the call.</div>
     <div id="enDiff" class="hidein-client"></div>
     <div id="enrollSummary" style="margin:14px 0"></div>
+    <div class="enroll-card hidein-client" id="enTriad" style="display:none"></div>
     <div class="enroll-card" id="enLife">
       <div class="en-step"><span>1</span> Open your life application <small class="en-hint">— use the information below</small></div>
       <div>
@@ -3183,7 +3197,7 @@ function blankState(){
     lastBasis:'',
     follow:{},
     lb:{p:{carrier:'americo',face:'',term:''},s:{carrier:'americo',face:'',term:''}},
-    recFlags:[], rightFit:{},
+    recFlags:[], rightFit:{}, triad:{},
     step:'call',
     estBand:null
   };
@@ -5187,10 +5201,155 @@ function reviewConfFold(pg){ var cf=document.querySelector('#reviewHost .rv-conf
   cf.classList.toggle('folds',on); cf.classList.toggle('min',min);
   bar.innerHTML='<span class="car">'+(min?'▸':'▾')+'</span> <b>Setup</b> '+esc([A?A.name+' · '+fmt2(reviewPrem())+'/mo':'',R.eff?'effective '+reviewDate(R.eff):'',R.draft?'drafts '+reviewDate(R.draft):'draft date not entered'].filter(Boolean).join(' · '))+' <small>'+(min?'click to open':'click to fold away')+'</small>';
   bar.onclick=bar.onkeydown=function(e){ if(e.type==='keydown'&&e.key!=='Enter'&&e.key!==' ') return; RV_CONF_OPEN=!RV_CONF_OPEN; reviewConfFold(+reviewState().pg||0); }; }
+/* ===== TRIAD FLOW (sandbox only, Jesse 22 Oct) =====================================================================
+   When the plan they chose is the Cigna PPO through Triad (USA Health Plans, enrolled on 1Enrollment), Present, Enroll
+   and Benefits Review run a Triad flow instead of the "present it in your own words" note. ManhattanLife add-ons in the
+   same package are framed as the deductible busters. Everything here comes from the 2026 SBCs (benefits/triad.json), the
+   USA Health product page and rate sheet (data/triad/TRIAD-Cigna-PPO.md) and the EBA Cigna underwriting guide.
+   Shown only in the sandbox (port 8767 or ?triad=1) until Jesse ships it. */
+var TRIAD_FLOW_ON=location.port==='8767'||/[?&]triad=1\b/.test(location.search);
+function triadFlowOn(t){ return TRIAD_FLOW_ON&&!!t&&effCfg(t).base==='triad'&&popIsMajor(t); }
+/* Client-facing documents in the Carrier Library (Optimum Carrier Library/Triad Cigna/_all-states) */
+var TRIAD_SBC={'1000':'1IsUaoaOEElitukIQUYrAHFaFtgM-avdO','1500':'186pV59okJdncrf7zUrP54Wh9roXH8FiW','2500':'1HT8SuqRo1UFiaMYcZRMpD-PI36cCCnWA','3500':'1hHuKCkPIS1mBys4rS9DiEYmkFbaTFvCh',
+  '5000':'156zWvClgAKPSAZnv9sBCyOR2mbCH4RFS','7350':'1CIuu6xraUavC04XPNPrCVpE4aFcBiuK0','3500 HSA':'1z9D03OgdLOvFUtUB0X7QPCuyE9XNnUmC','5000 HSA':'1ZseyFYd7EPOxzEyJrKTgamlIpwPf2RjA'};
+var TRIAD_FORMULARY='1DmTwOw1re4DOU43LhSb-UmvRZPcKYrjC', TRIAD_FORMULARY_SUM='1z7kAij9QS6LE21_wd4hJ_d75zUkccho5';
+var TRIAD_AGENT={uw:'1YNYvHZ4Mb9X_JnjWg5yKN9zcsBcOp1Op',hq:'16hY4PhI1Z0uiERFlZdp9SdGQVwiFRMvN',rates:'1lKxUiOur10YonLnaZhOgKvuNbTPdgR6S'};   /* private - agent only */
+var TRIAD_EIN_URL='https://www.irs.gov/businesses/small-businesses-self-employed/get-an-employer-identification-number';
+var TRIAD_PROVIDER_URL='https://hcpdirectory.cigna.com/';
+function triadDrive(id){ return 'https://drive.google.com/file/d/'+id+'/view'; }
+function triadPlanOf(t){ return String(effCfg(t).triadPlan||'3500'); }
+function triadIsHsa(t){ return /HSA/.test(triadPlanOf(t)); }
+/* One SBC line for the chosen plan, in-network part only ("$3,500/individual or $7,000/family in network; ..." -> before ';') */
+function triadVal(t,re,full){ var d=BEN_DATA.triad; if(!d){ benLoadSafe('triad').then(function(x){ if(x) triadRerender(); }); return '…'; }
+  var key='Triad Cigna '+triadPlanOf(t), v='';
+  (d.brochures||[]).forEach(function(b){ (b.sections||[]).forEach(function(s){ (s.rows||[]).forEach(function(r){ if(!v&&re.test(r.label)) v=(r.values||{})[key]||''; }); }); });
+  return full?v:String(v).split(';')[0].replace(/\s*in network$/,'').trim(); }
+function triadRerender(){ if(S.step==='present') renderPresent(); else if(S.step==='enroll') renderEnroll(); else if(S.step==='review') renderReview(); }
+function triadState(){ S.triad=S.triad||{}; S.triad.ticks=S.triad.ticks||{}; return S.triad; }
+function triadFirst(){ return ((S.client.pname||'').trim().split(/\s+/)[0])||'your client'; }
+function triadPremium(t){ var p=((S.packages[t]||{}).products||[]).filter(function(x){ return x.k==='base'; })[0]; return p?(+p.monthly||0):0; }
+function triadRange(){ return {i:100,s:200,c:200,f:300}[householdKey()]||100; }
+/* The ManhattanLife (and dental) lines riding with the Cigna plan - what each one does about the deductible */
+/* the individual in-network deductible as a number: the first dollar amount in the SBC line ('$2,500/individual or $5,000/family') */
+function triadDedNum(t){ var m=String(triadVal(t,/^Calendar-year deductible/)).match(/\$([0-9,]+)/); return m?+m[1].replace(/,/g,''):(+(triadPlanOf(t).replace(/\D/g,''))||0); }
+function triadBusters(t){ var c=effCfg(t), ded=triadDedNum(t), out=[];
+  ((S.packages[t]||{}).products||[]).forEach(function(p){ if(!(+p.monthly>0)||p.k==='base') return; var m=fmt2(+p.monthly)+'/mo', b='';
+    if(p.k==='his'&&c.his){ var ben=+c.his.ben||0; b='Pays <b>'+fmt(ben)+'</b> the day they’re admitted — observation stays included — '+(ben>=ded&&ded?'enough to cover the whole <b>'+fmt(ded)+'</b> deductible on a hospital stay.':'toward the <b>'+fmt(ded)+'</b> deductible.')+(c.his.outp?' Plus up to '+fmt(+c.his.outp)+' for outpatient surgery.':''); }
+    else if(p.k==='gap'&&c.gap) b='Pays <b>'+fmt(+c.gap.adm||0)+'</b> on admission and <b>$'+(c.gap.daily||0)+' a day</b> in hospital'+(+c.gap.outp?', and '+fmt(+c.gap.outp)+' for outpatient surgery':'')+' — cash toward the deductible and the 20% after it.';
+    else if(p.k==='acc') b='Pays cash for an accident — the ER, a fracture, follow-up care — the visits that would otherwise come out of the deductible.';
+    else if(p.k==='chas') b='A lump sum on a cancer, heart attack or stroke diagnosis — for the out-of-pocket maximum and the bills the plan never sees (income, travel).';
+    else if(p.k==='dvh') b='Dental and vision — the Cigna plan doesn’t cover adult dental.';
+    else if(p.k==='lbp'||p.k==='lbs') b='Living benefits — life insurance they can draw on during a serious illness.';
+    else if(p.k==='hhc') b='Home health care cash after a hospital stay.';
+    else return;
+    out.push({k:p.k,name:p.name,m:m,b:b}); });
+  return out; }
+/* Next submit-by-15th and sign-by-25th dates from today */
+function triadDates(){ var n=new Date(), y=n.getFullYear(), mo=n.getMonth(); if(n.getDate()>15){ mo++; if(mo>11){ mo=0; y++; } }
+  var f=function(d){ return MONTHS[d.getMonth()]+' '+d.getDate(); }, s=new Date(y,mo,15), g=new Date(y,mo,25), e=new Date(y,mo+1,1);
+  return {submit:f(s), sign:f(g), start:MONTHS[e.getMonth()]+' 1'}; }
+function triadDoc(label,id,priv){ return '<a class="trd-doc'+(priv?' priv':'')+'" href="'+triadDrive(id)+'" target="_blank" rel="noopener">'+esc(label)+' ↗</a>'; }
+function triadDocs(t,agent){ var p=triadPlanOf(t), h=triadDoc('Plan summary (SBC) — '+p,TRIAD_SBC[p]||TRIAD_SBC['3500'])+triadDoc('Formulary summary',TRIAD_FORMULARY_SUM)+triadDoc('Full formulary',TRIAD_FORMULARY);
+  if(agent) h+=triadDoc('Underwriting guide (agent)',TRIAD_AGENT.uw,1)+triadDoc('Health questions (agent)',TRIAD_AGENT.hq,1)+triadDoc('2026 rate sheet (agent)',TRIAD_AGENT.rates,1);
+  return '<div class="trd-docs">'+h+'</div>'; }
+function triadSay(x){ return '<div class="trd-say"><span>SAY</span><p>'+x+'</p></div>'; }
+function triadDo(x){ return '<div class="trd-do">'+x+'</div>'; }
+function triadTick(id,label){ var on=!!triadState().ticks[id]; return '<label class="trd-tick'+(on?' on':'')+'"><input type="checkbox" data-trdtick="'+id+'"'+(on?' checked':'')+'> '+label+'</label>'; }
+function triadField(id,label,ph,type){ var v=triadState()[id]||''; return '<label class="trd-f"><span>'+label+'</span><input data-trdf="'+id+'"'+(type?' type="'+type+'"':'')+' value="'+esc(v).replace(/"/g,'&quot;')+'" placeholder="'+(ph||'')+'"></label>'; }
+function triadPick(id,label,opts){ var v=triadState()[id]||''; return '<label class="trd-f"><span>'+label+'</span><select data-trdf="'+id+'">'+['—'].concat(opts).map(function(o,i){ return '<option value="'+(i?esc(o):'')+'"'+((i?o:'')===v?' selected':'')+'>'+esc(o)+'</option>'; }).join('')+'</select></label>'; }
+function triadSteps(list,key){ var st=triadState(), i=Math.max(0,Math.min(list.length-1,+st[key]||0));
+  return '<div class="trd-chips">'+list.map(function(p,j){ return '<button type="button" class="'+(j===i?'on':'')+'" data-trdpg="'+key+'|'+j+'">'+(j+1)+'. '+esc(p.t)+'</button>'; }).join('')+'</div>'
+    +'<div class="trd-page"><h4>'+esc(list[i].t)+'</h4>'+list[i].h+'</div>'
+    +'<div class="trd-nav">'+(i>0?'<button type="button" data-trdpg="'+key+'|'+(i-1)+'">← Back</button>':'<span></span>')+(i<list.length-1?'<button type="button" class="next" data-trdpg="'+key+'|'+(i+1)+'">Next: '+esc(list[i+1].t)+' →</button>':'')+'</div>'; }
+function triadBind(host){
+  host.querySelectorAll('[data-trdpg]').forEach(function(b){ b.onclick=function(){ var a=b.dataset.trdpg.split('|'); triadState()[a[0]]=+a[1]; autosave(); triadRerender(); var h=host.querySelector('.trd-page'); if(h) h.scrollIntoView({behavior:'smooth',block:'start'}); }; });
+  host.querySelectorAll('[data-trdtick]').forEach(function(c){ c.onchange=function(){ triadState().ticks[c.dataset.trdtick]=c.checked; c.parentNode.classList.toggle('on',c.checked); autosave(); }; });
+  host.querySelectorAll('[data-trdf]').forEach(function(f){ f.onchange=f.oninput=function(){ triadState()[f.dataset.trdf]=f.value; autosave(); if(f.dataset.trdf==='rate'){ var w=host.querySelector('#trdRateNote'); if(w) w.innerHTML=triadRateNote(); } }; });
+  var em=host.querySelector('#trdEmail'); if(em) em.onclick=function(){ var m=triadEmail(chosenTier()); window.open('https://mail.google.com/mail/?view=cm&fs=1&to='+encodeURIComponent(m.to)+'&su='+encodeURIComponent(m.su)+'&body='+encodeURIComponent(m.body),'_blank','noopener'); };
+  var ec=host.querySelector('#trdEmailCopy'); if(ec) ec.onclick=function(){ var m=triadEmail(chosenTier()); try{ navigator.clipboard.writeText(m.su+'\n\n'+m.body); ec.textContent='Copied ✓'; }catch(e){} };
+  host.querySelectorAll('[data-pr="quote"]').forEach(function(b){ b.onclick=function(){ goStep('quote'); }; }); }
+function triadRateNote(){ var t=chosenTier(), q=triadPremium(t), r=triadRange(), a=parseFloat(String(triadState().rate||'').replace(/[^0-9.]/g,''));
+  if(!a) return 'Quoted '+fmt2(q)+'/mo — the approved rate can land anywhere from '+fmt2(Math.max(0,q-r))+' to '+fmt2(q+r)+'.';
+  var d=a-q; return (Math.abs(d)<=r?'✓ Within the range we told them':'⚠ Outside the ±'+fmt(r)+' range we told them — call them before they sign')+' ('+(d>=0?'+':'−')+fmt2(Math.abs(d))+' against the quote).'; }
+
+/* ---------- PRESENT ---------- */
+function triadPresentHTML(t){ var first=triadFirst(), plan=triadPlanOf(t), ded=triadVal(t,/^Calendar-year deductible/), oop=triadVal(t,/^Out-of-pocket maximum/), pc=triadVal(t,/^Primary care/), sp=triadVal(t,/^Specialist/), uc=triadVal(t,/^Urgent care/),
+  er=triadVal(t,/^Emergency room/), hosp=triadVal(t,/^Hospital facility/), rx=triadVal(t,/^Generic \/ preferred/,true).split(';')[0], prem=triadPremium(t), r=triadRange(), bus=triadBusters(t), tot=pkMonthly(S.packages[t]||{});
+  var docs=[S.intake.docs1,S.intake.docs2,S.intake.docs3].filter(Boolean), meds=(S.intake.medList||[]).map(function(m){ return m.name; }).filter(Boolean);
+  var pages=[
+   {t:'Why this plan',h:triadSay('“'+esc(first)+', this is real major medical. It’s a PPO on the <b>Cigna network</b> — doctors, specialists and hospitals across the country — with an <b>unlimited lifetime benefit</b> and a hard ceiling on what you can spend in a year: <b>'+esc(oop)+'</b>. Once you hit that, covered in-network care is paid in full for the rest of the year.”')
+      +triadDo('<b>Say it right:</b> Cigna is the <i>network</i>. The plan is a self-insured group plan run by Triad through USA Health Plans — never call Cigna the insurance company.')},
+   {t:'How it works',h:triadSay('“Day to day you pay a flat copay: <b>'+esc(pc)+'</b> for your regular doctor, <b>'+esc(sp)+'</b> for a specialist, <b>'+esc(uc)+'</b> at urgent care. Preventive care in network is free.”')
+      +triadSay('“For the big things — a hospital stay, surgery, an MRI, the ER — you pay the <b>'+esc(ded)+'</b> deductible first, then <b>'+esc(hosp)+'</b> of the rest, up to the '+esc(oop)+' cap.”')
+      +triadDo('<b>The calendar trap — say it now, not after:</b> the deductible and the cap run January 1 to December 31, whatever the start date. Starting mid-year means a full deductible for part of a year, then it resets in January.')},
+   {t:'Your doctors',h:(docs.length?triadSay('“You mentioned '+docs.map(esc).join(', ')+'. Let’s check them on the Cigna PPO list together.”'):triadSay('“Who do you see now? Let’s check them on the Cigna PPO list together.”'))
+      +triadDo('<a href="'+TRIAD_PROVIDER_URL+'" target="_blank" rel="noopener">Cigna provider search ↗</a> — choose <b>“Employer or School”</b>, continue as a guest, then pick <b>“PPO, Choice Fund PPO”</b>. Out of network still pays (40% after the deductible, and they can be balance-billed).')},
+   {t:'Prescriptions',h:triadSay('“Prescriptions run through TrueScripts: '+esc(rx)+' for a month’s supply.”')
+      +(meds.length?triadDo('Check each one on the formulary now: '+meds.map(esc).join(', ')+'. Specialty drugs are 50% with prior authorization — say so before they sign, not after.'):triadDo('No medications on the Intake. Ask once more — the formulary decides what they pay.'))+triadDocs(t)},
+   {t:'The deductible busters',h:(bus.length?triadSay('“The one thing this plan doesn’t do is the deductible — that’s on you. So we put cash plans next to it that pay <i>you</i> when the big thing happens:”')
+      +'<ul class="trd-bus">'+bus.map(function(x){ return '<li><b>'+esc(x.name)+'</b> <small>'+x.m+'</small><br>'+x.b+'</li>'; }).join('')+'</ul>'
+      +triadDo('These are ManhattanLife plans — they pay the client directly, on top of the Cigna plan, and they’re a separate application with their own underwriting.'):triadSay('“The one thing this plan doesn’t do is the deductible — that’s on you.”')
+      +triadDo('<b>No deductible buster in this package.</b> HI Select sized to the '+esc(ded)+' deductible is the usual pairing — add it on the Quote.'))},
+   {t:'The price, honestly',h:triadSay('“The plan is <b>'+fmt2(prem)+' a month</b>'+(tot>prem?' — <b>'+fmt2(tot)+'</b> with everything in your package':'')+'. That’s the pre-underwriting rate: after they look at your health it can come back up to <b>'+fmt(r)+' a month either way</b>. I’ll tell you the real number before you sign anything.”')
+      +triadDo('<b>Quote the range, never the point.</b> On the 1000, 1500 and 2500 plans the spread can be wider. There’s a one-time <b>$35</b> underwriting fee at checkout.')},
+   {t:'Next steps',h:(function(){ var d=triadDates(); return triadSay('“Here’s how it goes: we apply by <b>'+d.submit+'</b>, they review your health, and if you’re approved you’ll get a final offer that has to be signed by <b>'+d.sign+'</b> — miss that and there’s no coverage. Your start date is usually the 1st of the next month — <b>'+d.start+'</b> — and the offer confirms it.”')
+      +triadDo('Before you apply: <b>they must be self-employed with their own EIN</b> — no EIN, no Cigna plan. If they don’t have one, it’s free and instant on the <a href="'+TRIAD_EIN_URL+'" target="_blank" rel="noopener">IRS site ↗</a>.')
+      +'<button type="button" class="btn-gold" onclick="goStep(\'enroll\')">Go to Enroll →</button>'; })()}];
+  return '<div class="pr-top"><div><h3>Presenting the <em class="pr-plan">Cigna PPO '+esc(plan)+'</em> to '+esc(first)+'</h3><small>Agent-only — Triad flow (sandbox). Figures come from the 2026 plan summary for the '+esc(plan)+' plan.</small></div>'
+    +'<button type="button" data-pr="quote" style="font:inherit;font-weight:700;border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 13px;cursor:pointer">← Back to the Quote</button></div>'
+    +'<div class="trd">'+triadSteps(pages,'prpg')+'</div>'; }
+
+/* ---------- ENROLL ---------- */
+function triadEnrollHTML(t){ var d=triadDates(), first=triadFirst(), plan=triadPlanOf(t), bus=triadBusters(t), ml=bus.some(function(x){ return /^(his|gap|acc|chas|hhc|dvh)$/.test(x.k); });
+  return '<div class="en-step"><span>★</span> Enrolling '+esc(first)+' in the Cigna PPO '+esc(plan)+' <small style="font-weight:600;color:var(--muted)">— Triad flow (sandbox)</small></div><div class="trd">'
+   +'<div class="trd-blk"><h5>1 · Can they have it?</h5>'+triadPick('ein','Self-employed with their own EIN?',['Yes — has an EIN','Self-employed, getting an EIN now','No — not self-employed'])
+     +(triadState().ein==='No — not self-employed'?'<div class="trd-stop">✕ Not eligible for this plan — it’s for the self-employed only. Back to the Quote.</div>':'')
+     +triadDo('No EIN yet? Free and instant on the <a href="'+TRIAD_EIN_URL+'" target="_blank" rel="noopener">IRS site ↗</a> — five minutes on the phone with them.')
+     +triadPick('survey','Willing to answer short health surveys during the year? (a condition of the plan)',['Yes','No — not eligible'])
+     +triadTick('hq','Screened against the health questions and the auto-decline drug list')+triadDocs(t,1)+'</div>'
+   +'<div class="trd-blk"><h5>2 · Apply on 1Enrollment — by '+d.submit+'</h5><a class="portalbtn cigna" href="'+esc(CIGNA_URL)+'" target="_blank" rel="noopener">Cigna PPO (USA Health / Triad) — 1Enrollment ↗</a>'
+     +triadDo('Pick the <b>'+esc(plan)+'</b> plan. A <b>$35</b> underwriting fee is charged at checkout. Full medical underwriting — approval isn’t guaranteed.')
+     +triadField('submitted','Submitted on','MM/DD/YYYY')+'</div>'
+   +'<div class="trd-blk"><h5>3 · The final offer — signed by '+d.sign+'</h5>'+triadField('rate','Approved monthly rate','$0.00')+'<div class="trd-note" id="trdRateNote">'+triadRateNote()+'</div>'
+     +triadField('signed','Final offer signed on','MM/DD/YYYY')+'<div class="trd-stop" style="background:#fff8ec;border-color:#e8c98a;color:#6b4a07">Not signed by the 25th = no coverage. Not a delay — none.</div>'
+     +triadField('eff','Effective date','MM/DD/YYYY')+triadField('member','Cigna / Triad member ID','from the welcome packet')+'</div>'
+   +(ml?'<div class="trd-blk"><h5>4 · The ManhattanLife add-ons</h5><a class="portalbtn" href="'+esc(MANHATTAN_URL)+'" target="_blank" rel="noopener">Manhattan Life Producer Portal ↗</a>'
+     +triadDo('One ManhattanLife application for '+bus.filter(function(x){ return /^(his|gap|acc|chas|hhc|dvh)$/.test(x.k); }).map(function(x){ return esc(x.name.split(' — ')[0]); }).join(', ')+'. Match the effective date to the Cigna plan so nothing starts before the main coverage.')
+     +triadTick('ml','ManhattanLife application submitted')+'</div>':'')
+   +'<div class="trd-blk"><h5>'+(ml?'5':'4')+' · Next</h5>'+triadDo('Once it’s signed: book the Benefits Review before the start date — it walks them through the card, doctors, prescriptions and precertification.')
+     +'<button type="button" class="btn-gold" onclick="goStep(\'review\')">Benefits Review →</button></div></div>'; }
+
+/* ---------- BENEFITS REVIEW ---------- */
+function triadReviewHTML(t){ var first=triadFirst(), plan=triadPlanOf(t), st=triadState(), ded=triadVal(t,/^Calendar-year deductible/), oop=triadVal(t,/^Out-of-pocket maximum/), rx=triadVal(t,/^Generic \/ preferred/,true).split(';')[0], bus=triadBusters(t);
+  var pages=[
+   {t:'Your card',h:triadSay('“Your Triad member card should be with you'+(st.member?' — member ID <b>'+esc(st.member)+'</b>':'')+'. Show it everywhere: the doctor, the pharmacy, the hospital. The Cigna logo on it is what tells them you’re in network.”')+triadTick('card','They have the card (or the ID)')},
+   {t:'Finding a doctor',h:triadSay('“Before any new doctor, check they’re Cigna PPO.”')+triadDo('<a href="'+TRIAD_PROVIDER_URL+'" target="_blank" rel="noopener">Cigna provider search ↗</a> — “Employer or School”, continue as a guest, then “PPO, Choice Fund PPO”. Do it with them on the call for their main doctor.')+triadTick('doc','Looked up their doctor together')},
+   {t:'Precertification',h:triadSay('“This is the one that costs people money. Before a <b>hospital stay, surgery, an MRI or CT, home health, skilled nursing, hospice or medical equipment</b>, the doctor’s office has to get approval from the plan first. If nobody does, the plan pays <b>half</b> — up to <b>$2,500</b> out of your pocket.”')+triadDo('Tell them: ask the office “have you precertified this?” every time — and call the number on the back of the card if unsure.')+triadTick('precert','Explained precertification')},
+   {t:'Prescriptions',h:triadSay('“Prescriptions go through TrueScripts: '+esc(rx)+'. Use an in-network pharmacy — out-of-network pharmacies aren’t covered.”')+triadDocs(t)+triadTick('rx','Checked their medications on the formulary')},
+   {t:'The deductible',h:triadSay('“Your deductible is <b>'+esc(ded)+'</b> and your cap is <b>'+esc(oop)+'</b>. Both reset on <b>January 1</b> — whatever month you started.”')+triadTick('ded','Explained the calendar-year reset')},
+   {t:'Your deductible busters',h:(bus.length?triadSay('“And here’s what pays you when the deductible hits:”')+'<ul class="trd-bus">'+bus.map(function(x){ return '<li><b>'+esc(x.name)+'</b><br>'+x.b+'</li>'; }).join('')+'</ul>'
+      +triadDo('<b>How they claim:</b> the Cigna plan pays the doctor and hospital; the ManhattanLife plans pay <i>them</i> — they file the ManhattanLife claim with the bill or discharge papers.'):triadDo('No ManhattanLife add-ons in this package.'))+triadTick('bus','Walked through the add-ons and how to claim')},
+   {t:'Send it in writing',h:triadDo('One email with the plan summary, the formulary, the doctor search and the precertification list — so they have it when they need it.')
+      +'<div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn-gold" id="trdEmail">Open in Gmail →</button><button type="button" class="btn" id="trdEmailCopy">Copy the email</button></div>'
+      +'<pre class="trd-pre">'+esc(triadEmail(t).body)+'</pre>'}];
+  return '<div class="trd">'+triadSteps(pages,'rvpg')+'</div>'; }
+function triadEmail(t){ var first=triadFirst(), plan=triadPlanOf(t), st=triadState(), ded=triadVal(t,/^Calendar-year deductible/), oop=triadVal(t,/^Out-of-pocket maximum/), pc=triadVal(t,/^Primary care/), sp=triadVal(t,/^Specialist/), uc=triadVal(t,/^Urgent care/), rx=triadVal(t,/^Generic \/ preferred/,true).split(';')[0], bus=triadBusters(t);
+  var agent=S.client.agent||'', agency=S.agency||'';
+  var body='Hi '+first+',\n\nWelcome to your Cigna PPO plan'+(st.eff?' — it starts '+st.eff:'')+'. Here’s everything in one place.\n\n'
+   +'YOUR PLAN — Triad Cigna PPO '+plan+(st.member?' (member ID '+st.member+')':'')+'\n'
+   +'• Deductible: '+ded+'  •  Out-of-pocket maximum: '+oop+'\n• Doctor '+pc+' · Specialist '+sp+' · Urgent care '+uc+' · Preventive care free\n• Prescriptions (TrueScripts): '+rx+'\n'
+   +'• The deductible and the maximum reset every January 1.\n\n'
+   +'BEFORE A HOSPITAL STAY, SURGERY, MRI/CT, HOME HEALTH OR EQUIPMENT\nAsk the doctor’s office to get it precertified. If it isn’t, the plan pays half — up to $2,500 out of your pocket. Call the number on the back of your card if you’re unsure.\n\n'
+   +'FINDING A DOCTOR\n'+TRIAD_PROVIDER_URL+'\nChoose "Employer or School", continue as a guest, then "PPO, Choice Fund PPO".\n\n'
+   +'YOUR DOCUMENTS\nPlan summary: '+triadDrive(TRIAD_SBC[plan]||TRIAD_SBC['3500'])+'\nFormulary (summary): '+triadDrive(TRIAD_FORMULARY_SUM)+'\nFormulary (full): '+triadDrive(TRIAD_FORMULARY)+'\n'
+   +(bus.length?'\nYOUR DEDUCTIBLE BUSTERS (ManhattanLife — these pay you directly)\n'+bus.map(function(x){ return '• '+x.name+': '+x.b.replace(/<[^>]+>/g,''); }).join('\n')+'\nWhen one of these happens, send me the bill or discharge papers and I’ll help you file.\n':'')
+   +'\nAny question, any time — call or text me.\n\n'+(agent||agency)+(agent&&agency?'\n'+agency:'')+(S.agentPhone?'\n'+S.agentPhone:'')+(S.agentEmail?'\n'+S.agentEmail:'');
+  return {to:(S.intake&&S.intake.email)||'',su:'Your Cigna PPO plan — what to know'+(st.eff?' before '+st.eff:''),body:body}; }
 function renderReview(){ var host=$('reviewHost'); if(!host) return; var t=chosenTier(), R=reviewState(), C=S.client||{};
   if(t&&!tierNonMh(t)&&(!actualOn()||S.actual.from!==t)) actualSeed(t);
   var head='<div class="sectitle"><span class="dot">●</span> Benefits Review <small style="font-family:inherit;font-weight:600;color:var(--muted);font-size:13px">— after approval, before the effective date · about fifteen minutes</small></div>';
   if(!t){ host.innerHTML=head+'<p class="note">Mark the plan they bought first: <b>Choose this plan</b> on the Quote page. This call is built from it.</p><button type="button" class="btn-gold" onclick="goStep(\'quote\')">← Quote</button>'; return; }
+  if(triadFlowOn(t)){ host.innerHTML=head+triadReviewHTML(t); triadBind(host); return; }
   if(tierNonMh(t)){ host.innerHTML=head+'<p class="note">This Benefits Review is the ManhattanLife call — portal, EasyCare2go, Easy Upload and CareGuide. '+esc(tierNonMh(t).name)+' clients get their onboarding from the carrier.</p>'; return; }
   var mo=MONTHS.map(function(m){ return '<option'+(R.month===m?' selected':'')+'>'+m+'</option>'; }).join('');
   var ownLink=reviewUrl(S.agentBenefits);
@@ -5776,6 +5935,10 @@ function renderEnroll(){
      health - Manhattan, Cigna, LifeX. Sparkle dental only when this package has it. */
   ['lnkMutual','lnkNLG','lnkAmerico','lnkManhattan','lnkCigna','lnkLifex'].forEach(function(id){ if($(id)) $(id).style.display=''; });
   enrollScript(); enrollPeople();
+  /* Triad flow (sandbox): the Cigna enrollment steps up top; the ManhattanLife wrap-up script is not theirs */
+  (function(){ var tt=chosenTier(), on=triadFlowOn(tt), box=$('enTriad'), se=$('enScriptEnd');
+    if(box){ box.style.display=on?'':'none'; box.innerHTML=on?triadEnrollHTML(tt):''; if(on) triadBind(box); }
+    if(se) se.style.display=on?'none':''; })();
 }
 /* the script's application and finish screens, filled and wired the same as on Present */
 function enrollScript(){ var t=enrolledTier()||S.activeTab, fr=$('enFrame2'); if(!fr) return;
@@ -6022,7 +6185,7 @@ function nonMhNotice(t){ var N=tierNonMh(t); if(!N) return; var first=((S.client
     +'<li><b>Enroll them with '+esc(N.name)+'</b>: <a href="'+esc(N.url())+'" target="_blank" rel="noopener">'+esc(N.lab)+' ↗</a></li></ul>'
     +'<p style="margin:0;padding:10px 12px;background:#fff8e6;border:1px solid #e6d3a3;border-radius:8px"><b>💾 Save Quote/Package of Protection when you’re done.</b> It keeps everything you collected; <b>Load Quote</b> brings it all back later.</p>';
   $('nmhModal').classList.add('open'); }
-function presentOpen(){ if(tierNonMh(chosenTier())){ nonMhNotice(chosenTier()); return; } if(!chosenTier()){ var t=S.activeTab||'best'; if(!confirm('No package is marked as their plan yet. Present '+TIER_NAME[t]+'?')) return; chooseTier(t); }
+function presentOpen(){ if(triadFlowOn(chosenTier())){ recLock(chosenTier()); goStep('present'); return; } if(tierNonMh(chosenTier())){ nonMhNotice(chosenTier()); return; } if(!chosenTier()){ var t=S.activeTab||'best'; if(!confirm('No package is marked as their plan yet. Present '+TIER_NAME[t]+'?')) return; chooseTier(t); }
   S.present=S.present||{}; S.present.pg=S.present.pg||0; recLock(chosenTier()); goStep('present'); }
 function presentHas(t,cond){ if(!cond) return true; var m=String(cond).match(/^(has|base):(\w+)$/); if(!m) return true;
   if(m[1]==='base') return (effCfg(t).base||'afc')===m[2];
@@ -6163,7 +6326,7 @@ var PR_STORY_HEAD='<b>Story repository (who to tell)</b>';
 var PE_GO='<div class="pr-editgo"><button type="button" data-pe="cancel">Cancel edits — enroll what was presented →</button><button type="button" class="go" data-pe="go">✓ They’re in — enroll with these adjustments →</button></div>';
 function presentEditsOpen(){ var t=presentTier(), box=$('prEdit'); if(!box||!t) return; if(!actualOn()||(S.actual.base||S.actual.from)!==t){ actualSeed(t); S.actual.base=t; }
   box.style.display=''; renderActual(); box.scrollIntoView({behavior:'smooth',block:'start'}); }
-function renderPresent(){ var host=$('presentHost'); if(!host) return; var t=presentTier(), T=presentTokens(t), pages=presentPages();
+function renderPresent(){ var host=$('presentHost'); if(!host) return; if(triadFlowOn(presentTier())){ host.innerHTML=triadPresentHTML(presentTier()); triadBind(host); return; } var t=presentTier(), T=presentTokens(t), pages=presentPages();
   S.present=S.present||{}; var pg=Math.max(0,Math.min(pages.length-1,+S.present.pg||0));
   var who=(T['client.first']||'the client')+(S.client&&S.client.sname?' & '+enSplit(S.client.sname)[0]:'');
   var h='<div class="pr-top"><div><h3>Presenting the <em class="pr-plan">'+esc(TIER_NAME[t])+'</em> plan to '+esc(who)+'</h3><small>Agent-only — never on Client View or the printout. Blue blanks fill from this quote; red ones are missing.</small></div>'
@@ -7202,7 +7365,7 @@ function chosenTier(){ return (S.chosen&&S.chosen.tier)||null; }
    package, otherwise the package itself. Enroll, its script and wrap-up text, the thank-you email and follow-ups read it. */
 function enrolledTier(){ var t=chosenTier(); return (t&&actualOn()&&S.actual.from===t)?'actual':t; }
 Object.defineProperty(TIER_NAME,'actual',{enumerable:false,get:function(){ return (S.actual&&TIER_NAME[S.actual.tier])||''; }});
-function chooseTier(t){ S.chosen=S.chosen||{}; S.chosen.tier=(S.chosen.tier===t)?null:t; if(S.step==='enroll'&&S.chosen.tier){ electedLock(); setTimeout(renderRecGap,0); } if(S.chosen.tier) celebrate('thumbs'); if(S.chosen.tier&&tierNonMh(t)) setTimeout(function(){ nonMhNotice(t); },0); if(S.chosen.tier){ S.activeTab=t; S.include=S.include||{}; S.include[t]=true; } compute(); autosave(); }
+function chooseTier(t){ S.chosen=S.chosen||{}; S.chosen.tier=(S.chosen.tier===t)?null:t; if(S.step==='enroll'&&S.chosen.tier){ electedLock(); setTimeout(renderRecGap,0); } if(S.chosen.tier) celebrate('thumbs'); if(S.chosen.tier&&tierNonMh(t)&&!triadFlowOn(t)) setTimeout(function(){ nonMhNotice(t); },0);   /* the Triad flow (sandbox) presents it instead */ if(S.chosen.tier){ S.activeTab=t; S.include=S.include||{}; S.include[t]=true; } compute(); autosave(); }
 function tierHasDental(t){ return ((S.packages[t]||{}).products||[]).some(function(p){ return p.k==='dvh'&&(+p.monthly||0)>0; }); }
 function dentalPrice(t){ try{ var r=pDVH(HF_RATES,ratingAge(),householdKey(),effCfg(t).dvh,(S.client.state||'').toUpperCase()); return r&&r.price!=null?+r.price:null; }catch(e){ return null; } }
 /* Dental stays a yes/no after the choice: the three packages are compared without it, then the
