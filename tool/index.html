@@ -2820,11 +2820,13 @@ function buildTierProducts(c,byKey,extras){
   if(c.sdr){ var sd=pSDR(R,st,age,hh,c.sdr,false);
   add('sdr','Specified Disease Rider — $'+(+c.sdr.max/1000)+'K / $'+((+(sd.ded||c.sdr.ded))/1000)+'K ded', sd); }
   }
-  add('his','Hospital Indemnity — HI Select $'+Number(+c.his.ben||10000).toLocaleString('en-US')+(c.his.outp?' + Outpatient $'+Number(c.his.outp).toLocaleString('en-US'):''), pHIS(R,st,age,hh,c.his));   /* the benefit chosen, not a fixed $10K (Health ZONE, 21 Oct: an export read $10K for a $2,000 plan) */
-  add('acc','Accident Cash — 24-Hr Accident ('+c.acc+' Unit)', pACC(R,hh,c.acc));
-  add('gap','Out-of-Pocket / Gap — $'+c.gap.daily+'/day · $'+c.gap.adm+' admission', pGAP(R,st,age,hh,c.gap));
+  /* a product whose settings are empty (null - a file written outside MyPopPro, 21 Oct) is simply not offered, rather than crashing the Quote */
+  if(c.his) add('his','Hospital Indemnity — HI Select $'+Number(+c.his.ben||10000).toLocaleString('en-US')+(c.his.outp?' + Outpatient $'+Number(c.his.outp).toLocaleString('en-US'):''), pHIS(R,st,age,hh,c.his));   /* the benefit chosen, not a fixed $10K (Health ZONE, 21 Oct: an export read $10K for a $2,000 plan) */
+  if(c.acc) add('acc','Accident Cash — 24-Hr Accident ('+c.acc+' Unit)', pACC(R,hh,c.acc));
+  if(c.gap) add('gap','Out-of-Pocket / Gap — $'+c.gap.daily+'/day · $'+c.gap.adm+' admission', pGAP(R,st,age,hh,c.gap));
+  if(c.dvh){
   var dr=dvhRiders(c.dvh), dres=pDVH(R,age,hh,c.dvh,st);
-  add('dvh',dres.sparkle?'Sparkle Care Dental — $4,500 per member per year':dres.plan7016?'Dental, Vision & Hearing (7016) — $'+(+dres.max/1000)+'K':'DVH Select — Dental $'+(+c.dvh.max/1000)+'K'+(dr.vis?' + Vision':'')+(dr.hear?' + Hearing':''), dres);
+  add('dvh',dres.sparkle?'Sparkle Care Dental — $4,500 per member per year':dres.plan7016?'Dental, Vision & Hearing (7016) — $'+(+dres.max/1000)+'K':'DVH Select — Dental $'+(+c.dvh.max/1000)+'K'+(dr.vis?' + Vision':'')+(dr.hear?' + Hearing':''), dres); }
   if(c.hhc){ var hr=pHHC(R,st,age,c.hhc); add('hhc','Home Health Care'+(hr.prod==='Select'?' Select':'')+' — HHC '+c.hhc, hr); }
   if(c.lb){ lbPersons().forEach(function(pp){ var lc=c.lb[pp.k]; if(!lc||!lc.face) return;
     var r=pLB1(pp,lc); add('lb'+pp.k,lc.carrier==='other'?'Living Benefits — '+pp.tag+' '+lbFaceLabel(lc.face)+' ('+(r.carrier||'Other carrier')+')':'Living Benefits — '+pp.tag+' $'+(+lc.face/1000)+'K term life, 20-year ('+(r.carrier||'')+')', r); }); }

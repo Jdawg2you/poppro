@@ -299,6 +299,16 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  (function(){ var keep=JSON.parse(JSON.stringify(S)); S=blankState(); S.client.state='TX'; S.client.page='57'; S.lb='{"p": {"carrier": "moo", "face": "", "term": ""}, "s": {"carrier": "", "face": "", "term": ""}}'; S.review='{}'; S.follow='{}';
    var err=''; try{ fill(); compute(); }catch(e){ err=e.message; }
    ok(!err&&typeof S.lb==='object'&&typeof S.review==='object','a file with objects saved as text loads and prices ('+(err||'ok')+')'); S=keep; fill(); })();
+ /* Joel Richardson, 21 Oct: a file from outside MyPopPro - products set to null, no event cards, objects as text - must load and step through */
+ await (async function(){ var keep=JSON.parse(JSON.stringify(S)), errs=[], onErr=function(e){ errs.push(e.message); }; window.addEventListener('error',onErr);
+   var F=JSON.parse(JSON.stringify(blankState())); F.client.pname='Joel Test'; F.client.state='TX'; F.client.zip='77095'; F.client.date='07/07/1969'; F.client.page='57';
+   ['good','better','best'].forEach(function(t,i){ F.cfg=F.cfg||{}; F.cfg[t]={afc:i?'ElitePlus':'Elite',sdr:null,his:{ben:10000,amb:1,outp:i?1000:0},acc:i?2:0,gap:null,dvh:i===2?{max:'3000',ded:'0'}:null,hhc:null,chas:i===2?{cancer:35000,hs:35000}:null,lb:null,base:'afc'}; });
+   F.ev=[]; F.lb='{"p": {"carrier": "moo", "face": "", "term": ""}}'; F.review='{}'; F.cfgVersion='B-core4-v2';
+   try{ loadQuoteObject(F); }catch(e){ errs.push('load: '+e.message); }
+   for(const st of ['intake','quote','present','enroll','review','quote']){ try{ goStep(st); fill(); compute(); }catch(e){ errs.push(st+': '+e.message); } await w(150); }
+   var bt=Math.round(pkMonthly(S.packages.best)); window.removeEventListener('error',onErr);
+   ok(!errs.length&&bt>0&&(S.ev||[]).length===2,'a file with empty products, no event cards and text objects loads and steps through every page (best $'+bt+'; '+(errs.join(' | ')||'no errors')+')');
+   S=keep; fill(); })();
  /* Jesse, 21 Oct: a date of birth from the call with no age priced nothing */
  (function(){ var keep=JSON.parse(JSON.stringify(S)); S=blankState(); applySuiteClient({first:'Deb',last:'Test',dob:'05/10/1966',state:'OH',zip:'43215',health:{}},true); fill();
    ok(+S.client.page>=59&&ratingAge()>=59,'a DOB from the call fills the age ('+S.client.page+')');
@@ -342,7 +352,7 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  S=JSON.parse(JSON.stringify(rfBase)); S.intake.pregNowP=true; goStep('quote'); compute(); await w(200); var rfe=document.getElementById('rightFit');
  ok(rfe&&rfe.textContent.indexOf('ACA + optional HI Select')>=0&&rfe.textContent.indexOf('p.23')>=0&&/Amerus VL/.test(rfe.textContent)&&/not an underwriting decision/.test(rfe.textContent),'right-fit panel renders on Quote with the path, the guide cite, GI names and the disclaimer: '+(rfe?'':'none'));
  S=JSON.parse(JSON.stringify(rfBase));
- return {n:188, fails:fails}; })()`;
+ return {n:189, fails:fails}; })()`;
 try {
   let l; for (let i = 0; i < 60 && !l; i++) { await sleep(150); l = await fetch(`http://127.0.0.1:${DBG}/json/list`).then(r => r.json()).catch(() => null); }
   ws = new WebSocket(l.find(t => t.type === 'page').webSocketDebuggerUrl);
