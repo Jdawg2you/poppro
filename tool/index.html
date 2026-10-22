@@ -1610,6 +1610,7 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
         <div class="note" style="padding:0 0 8px">Checked items save with the quote. Prompts appear automatically based on what you captured.</div>
         <div id="followList"></div>
         <div id="enBrochHost"></div>
+        <div id="enTextHost"></div>
         <div id="enNotesHost" style="margin-top:12px"></div>
       </div>
       <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--line)">
@@ -2676,13 +2677,43 @@ function enrollEmail(){ var L=brochList(), first=((S.client.pname||'').trim().sp
     +'And know that I’m your agent for life. Insurance can be a lot to navigate, and that’s my job — whenever you have a question, a claim or a change in your life, I’m the person to call.\n\n'
     +'Best,\n'+(agent||agency)+(agent&&agency?'\n'+agency:'')+(S.agentPhone?'\n'+S.agentPhone:'')+(S.agentEmail?'\n'+S.agentEmail:'')+(site?'\n'+site:'')+(String(S.agentNPN||'').trim()?'\nNational Producer Number: '+String(S.agentNPN).trim():'');
   return {to:(S.intake&&S.intake.email)||'',subject:'Your new coverage! (+ your plan brochures)',body:body,L:L}; }
+/* A text keeps its paragraphs (Jesse, 22 Oct: "it was really compressed"): <br> becomes a real line break and
+   nothing is read off the screen, where a collapsed panel loses them. */
+function textFromHTML(h){ var d=document.createElement('div'); d.innerHTML=String(h||'').replace(/<br\s*\/?>/gi,'\n'); return d.textContent.replace(/[ \t]+\n/g,'\n').replace(/\n{3,}/g,'\n\n').trim(); }
+/* The enrollment text (Jesse, 22 Oct): sent after the enrollment email - thanks, a ✅ recap of what they applied for,
+   a pointer to the email, the timing, and the agent's digital business card. Built from the plan they chose. */
+function enrollTextPlain(t){ t=t||chosenTier()||S.activeTab||'best'; var c=effCfg(t), pk=S.packages[t]||{}, N=tierNonMh(t), first=enSplit(S.client.pname)[0]||'there', me=enSplit(S.client.agent||'')[0]||'', fam=householdKey()!=='i';
+  var lines=[], LB=lbSummary(t), both=LB.length>1;
+  (pk.products||[]).forEach(function(p){ if(!((+p.monthly||0)>0)||p.k==='lbp'||p.k==='lbs') return; var sl=PB_SLOTS.filter(function(x){ return x.k===p.k; })[0];
+    if(p.k==='afc') lines.push('Affordable Choice (your core health plan)');
+    else if(p.k==='base') lines.push((c.base==='triad'?'Cigna PPO '+(c.triadPlan||'3500'):c.base==='lifex'?'LifeX PPO':'Health plan')+' (your core health plan)');
+    else lines.push(sl?sl.name:String(p.name||'').split(' — ')[0]); });
+  LB.forEach(function(x){ lines.push((x.face?'$'+x.face.toLocaleString('en-US')+' ':'')+'Living Benefits'+(both?' for '+x.who:'')+' ('+x.carrier+')'); });
+  var P=[];
+  P.push('Hi '+first+(me?', it’s '+me:'')+'. Thank you again for trusting me today, you did something really good for yourself'+(fam?' and your family':'')+'! 🙌');
+  if(lines.length) P.push('Quick recap of what we applied for:\n'+lines.map(function(x){ return '✅ '+x; }).join('\n'));
+  P.push(N?'I’m emailing you the full details of your plan so you have everything in one place.':'I just emailed you the full details plus a brochure for every part of your plan. Look for “Your new coverage!” in your inbox.');
+  P.push(N&&c.base==='triad'?'The plan reviews your application next, and I’ll send you the final offer the moment it’s in — it has to be signed by the 25th, so keep an eye out.':'Approval usually takes 3–5 business days, and I’ll send your ID card the moment it comes through.');
+  if(String(S.agentCard||'').trim()) P.push('Here’s my digital business card so you have me saved: '+String(S.agentCard).trim());
+  P.push('Any questions, just text me. I’m your agent for life!');
+  return P.join('\n\n'); }
+/* Jesse, 22 Oct: two buttons beside "Copy partner benefits" - one opens Messages with the recap, one copies it */
+function enTextBtns(){ var ph=String((S.intake&&S.intake.phone)||'').replace(/[^\d+]/g,'');
+  return '<span style="display:inline-block;width:10px"></span><button type="button" class="picbtn noprint" data-entext="sms" title="Opens Messages with the client recap filled in'+(ph?'':' — add their phone on the Intake')+'">💬 Text client recap</button>'
+    +'<button type="button" class="picbtn noprint" data-entext="copy" title="Copies the client recap, with its spacing, ready to paste into a text">📋 Copy client recap to text</button>'; }
+function wireEnText(root){ (root||document).querySelectorAll('[data-entext]').forEach(function(b){ b.onclick=function(){ var t=chosenTier()||S.activeTab||'best', txt=enrollTextPlain(t);
+    if(b.dataset.entext==='copy'){ copy(txt); var o=b.textContent; b.textContent='✓ Copied'; setTimeout(function(){ b.textContent=o; },1600); return; }
+    var ph=String((S.intake&&S.intake.phone)||'').replace(/[^\d+]/g,''); window.location.href='sms:'+ph+'?&body='+encodeURIComponent(txt); }; }); }
+function renderEnText(){ var host=$('enTextHost'); if(!host) return; var hasEmail=!!document.querySelector('#enBrochHost [data-entext]');
+  host.innerHTML=(chosenTier()&&!hasEmail)?'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;align-items:center"><b style="font-size:13px;color:var(--navy)">Client recap text</b>'+enTextBtns()+'</div>':'';
+  wireEnText(host); }
 function renderEnBroch(){ var host=$('enBrochHost'); if(!host) return; if(!BROCH){ brochLoad().then(function(d){ if(d) renderEnBroch(); }); return; }
   var m=enrollEmail(); if(!m.L.list.length){ host.innerHTML=''; return; }
   host.innerHTML='<div class="sectitle" style="margin:14px 0 4px">Enrollment email — with their plan brochures</div>'
     +'<div class="note" style="padding:0 0 8px">A draft: edit it to sound like you. The links are '+(m.L.t==='all'?'every shown plan’s':'the <i>'+esc(TIER_NAME[m.L.t]||'')+'</i> plan’s')+' ManhattanLife brochures for '+esc(m.L.st)+'.</div>'
     +'<textarea id="enEmailTxt" rows="26" style="width:100%;font:inherit;font-size:13px;line-height:1.45;padding:10px;border:1px solid var(--line);border-radius:8px">'+esc('Subject: '+m.subject+'\n\n'+m.body)+'</textarea>'
     +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button type="button" class="picbtn" id="enEmailCopy">📋 Copy the email</button>'
-    +'<button type="button" class="picbtn" id="enEmailGmail">Open in Gmail ↗</button><button type="button" class="picbtn" id="enEmailOutlook">Open in Outlook ↗</button>'+(afcInPk(S.packages[TIERCFG[m.L.t]?m.L.t:(chosenTier()||S.activeTab||'best')])?'<button type="button" class="picbtn noprint" data-copypic="partners" title="Paste it into the email under the partner benefits">📋 Copy partner benefits picture</button>':'')+'</div>'
+    +'<button type="button" class="picbtn" id="enEmailGmail">Open in Gmail ↗</button><button type="button" class="picbtn" id="enEmailOutlook">Open in Outlook ↗</button>'+(afcInPk(S.packages[TIERCFG[m.L.t]?m.L.t:(chosenTier()||S.activeTab||'best')])?'<button type="button" class="picbtn noprint" data-copypic="partners" title="Paste it into the email under the partner benefits">📋 Copy partner benefits picture</button>':'')+enTextBtns()+'</div>'
     +'<div style="margin-top:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap"><b style="font-size:13px;color:var(--navy)">The links on their own</b><button type="button" class="picbtn" id="enCopyAll" style="margin-left:auto">📋 Copy all links</button></div>'+brochListHTML(m.L);
   $('enEmailCopy').onclick=function(){ brochCopy($('enEmailTxt').value,this); };
   $('enCopyAll').onclick=function(){ brochCopy(brochLines(m.L),this); };
@@ -2690,7 +2721,7 @@ function renderEnBroch(){ var host=$('enBrochHost'); if(!host) return; if(!BROCH
   var edited=function(){ var v=$('enEmailTxt').value, su=m.subject, mm=v.match(/^Subject:(.*)\n+/); if(mm){ su=mm[1].trim(); v=v.slice(mm[0].length); } return {su:su,body:v}; };
   $('enEmailGmail').onclick=function(){ var e=edited(); goldFinale(); window.open('https://mail.google.com/mail/?view=cm&fs=1&to='+encodeURIComponent(m.to)+'&su='+encodeURIComponent(e.su)+'&body='+encodeURIComponent(e.body),'_blank','noopener'); };
   $('enEmailOutlook').onclick=function(){ var e=edited(); goldFinale(); window.open('https://outlook.office.com/mail/deeplink/compose?to='+encodeURIComponent(m.to)+'&subject='+encodeURIComponent(e.su)+'&body='+encodeURIComponent(e.body),'_blank','noopener'); };
-  wireBroch(host); }
+  wireBroch(host); wireEnText(host); renderEnText(); }
 /* ===== AGENT FOLLOW-UP ITEMS (Enroll) — always-on prompts + opportunity flags ===== */
 function followTasks(){
   var I=S.intake||{}, tier=enrolledTier()||S.activeTab, pk=S.packages[tier]||{products:[],lb:0}, t=[];
@@ -5908,6 +5939,7 @@ function renderFlags(){
 }
 function renderEnroll(){
   if($('followList')) renderFollowUps();
+  renderEnText();
   /* the separate "Other follow-up notes" box is gone - anything typed there joins the one Notes field, once */
   if(S.follow&&String(S.follow.note||'').trim()){ S.intake=S.intake||{}; S.intake.notes=(String(S.intake.notes||'').replace(/\s+$/,'')+(S.intake.notes?'\n':'')+'Follow-up: '+S.follow.note.trim()); S.follow.note=''; autosave(); }
   var t=chosenTier()||S.activeTab;
@@ -6760,7 +6792,7 @@ function presentWire(doc,t){ if(!doc||!doc.body) return 0; var T=presentScriptTo
       if(need.length){ cpy.innerHTML=cpy.dataset.orig; var bn=cpy.querySelector('var[data-k="agent.blanks_n"]'); if(bn){ bn.textContent=String(need.length); bn.className=''; bn.removeAttribute('title'); } }
       else cpy.textContent='⧉ COPY THE TEXT';
       cpy.classList.toggle('dim',!!need.length);
-      cpy.onclick=function(e){ e.preventDefault(); if(need.length) return; var pEl=body.querySelector('p'); if(pEl){ copy(pEl.innerText.trim()); cpy.textContent='✓ Copied'; } }; }
+      cpy.onclick=function(e){ e.preventDefault(); if(need.length) return; copy(textFromHTML(postTextHTML(t))); cpy.textContent='✓ Copied'; }; }
     if(needs){ needs.classList.toggle('pp-off',!need.length); var nl=needs.querySelector('[data-needs-list]');
       if(nl&&need.length){ nl.textContent=''; need.forEach(function(x,i){ if(i) nl.appendChild(doc.createTextNode(i===need.length-1?' and ':', ')); var bb=doc.createElement('b'); bb.textContent=x; nl.appendChild(bb); }); } } }
   return n; }

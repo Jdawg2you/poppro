@@ -295,6 +295,16 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  ok(/connect with your mentor/.test(pn.textContent)&&!!pn.querySelector('b.mentornote'),'the mentor note shows, in bold');
  ps.value='No'; ps.dispatchEvent(new Event('change')); await w(80); ok(pn.style.display==='none','No: nothing shows');
  S.intake.pendP=''; S.intake.notes='';
+ /* Enrollment text (Jesse, 22 Oct): recap + card, with real blank lines between paragraphs */
+ await (async function(){ var keep=JSON.parse(JSON.stringify(S)); try{
+   S=blankState(); S.client.pname='Joel Richardson'; S.client.agent='Jesse Stamm'; S.client.state='TX'; S.client.zip='77095'; S.client.page='57'; S.intake.phone='(281) 409-8523'; S.agentCard='https://myagentisverified.com/BusinessCard/jessestamm';
+   fill(); recommendBundles(); autoPriceTiers(); chooseTier('better'); await w(50);
+   var tx=enrollTextPlain('better'), paras=tx.split(String.fromCharCode(10,10));
+   ok(/^Hi Joel, it’s Jesse\./.test(tx)&&tx.indexOf('✅ Affordable Choice (your core health plan)')>=0&&tx.indexOf('BusinessCard/jessestamm')>=0&&/Your new coverage!/.test(tx),'the enrollment text: greeting, ✅ recap, the email’s subject, the card link');
+   ok(paras.length>=5&&paras.every(function(x){ return x.trim().length; }),'paragraphs are separated by a blank line ('+paras.length+')');
+   goStep('enroll'); await w(400); var bs=document.querySelectorAll('[data-entext]'); ok(bs.length===2&&/Text client recap/.test(bs[0].textContent)&&/Copy client recap to text/.test(bs[1].textContent),'Enroll has the two recap buttons ('+bs.length+')');
+   var wrap=textFromHTML(postTextHTML('better')); ok(wrap.split(String.fromCharCode(10,10)).length>=4,'the wrap-up text copies with its blank lines too');
+ }catch(e){ fails.push('enrollment text block threw: '+e.message); } S=keep; fill(); })();
  /* Triad flow (sandbox, Jesse 22 Oct): a Cigna PPO package gets its own Present, Enroll and Benefits Review */
  await (async function(){ var keep=JSON.parse(JSON.stringify(S)), errs=[], onErr=function(e){ errs.push(e.message); }; window.addEventListener('error',onErr); try{
    S=blankState(); S.client.pname='Tara Test'; S.client.state='TX'; S.client.zip='77095'; S.client.page='45'; S.intake.email='tara@example.com'; S.intake.docs1='Dr. Patel'; S.intake.medList=[{name:'Lisinopril',forP:true}];
@@ -375,7 +385,7 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  S=JSON.parse(JSON.stringify(rfBase)); S.intake.pregNowP=true; goStep('quote'); compute(); await w(200); var rfe=document.getElementById('rightFit');
  ok(rfe&&rfe.textContent.indexOf('ACA + optional HI Select')>=0&&rfe.textContent.indexOf('p.23')>=0&&/Amerus VL/.test(rfe.textContent)&&/not an underwriting decision/.test(rfe.textContent),'right-fit panel renders on Quote with the path, the guide cite, GI names and the disclaimer: '+(rfe?'':'none'));
  S=JSON.parse(JSON.stringify(rfBase));
- return {n:201, fails:fails}; })()`;
+ return {n:205, fails:fails}; })()`;
 try {
   let l; for (let i = 0; i < 60 && !l; i++) { await sleep(150); l = await fetch(`http://127.0.0.1:${DBG}/json/list`).then(r => r.json()).catch(() => null); }
   ws = new WebSocket(l.find(t => t.type === 'page').webSocketDebuggerUrl);
