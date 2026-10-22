@@ -312,7 +312,9 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
    ok((document.getElementById('trdRateNote')||{textContent:''}).textContent.indexOf('Outside the ±$100 range')>=0,'an approved rate outside the range warns before they sign');
    goStep('review'); await w(200); var rv=document.getElementById('reviewHost').textContent;
    ok(/Your card/.test(rv)&&/Precertification/.test(rv)&&!/This Benefits Review is the ManhattanLife call/.test(rv),'Benefits Review runs the Triad review');
-   var em=triadEmail('best'); ok(/Triad Cigna PPO 2500/.test(em.body)&&em.body.indexOf('186pV59ok')<0&&em.body.indexOf('1HT8SuqRo1UFiaMYcZRMpD')>=0&&/precertified/.test(em.body)&&em.to==='tara@example.com','the email carries the 2500 plan summary link, the formulary and precertification');
+   S.triad.rate=''; ok(triadWideRange('best')&&/further on the 2500 plan/.test(triadRateNote()),'the 2500 plan’s rate range says it can move further');
+   S.triad.prpg=0; renderPresent(); ok(/Minimum Essential Coverage/.test(document.getElementById('presentHost').textContent),'Present says it is Minimum Essential Coverage');
+   var em=triadEmail('best'); ok(/Triad Cigna PPO 2500/.test(em.body)&&em.body.indexOf('186pV59ok')<0&&em.body.indexOf('1HT8SuqRo1UFiaMYcZRMpD')>=0&&/precertified/.test(em.body)&&/844-257-1955/.test(em.body)&&/1-888-932-4365/.test(em.body)&&em.to==='tara@example.com','the email carries the 2500 plan summary link, the formulary and precertification');
    }catch(e){ fails.push('Triad block threw: '+e.message); }
    window.removeEventListener('error',onErr); ok(!errs.length,'no errors walking the Triad flow: '+errs.join(' | '));
    S=keep; fill(); })();
@@ -373,7 +375,7 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  S=JSON.parse(JSON.stringify(rfBase)); S.intake.pregNowP=true; goStep('quote'); compute(); await w(200); var rfe=document.getElementById('rightFit');
  ok(rfe&&rfe.textContent.indexOf('ACA + optional HI Select')>=0&&rfe.textContent.indexOf('p.23')>=0&&/Amerus VL/.test(rfe.textContent)&&/not an underwriting decision/.test(rfe.textContent),'right-fit panel renders on Quote with the path, the guide cite, GI names and the disclaimer: '+(rfe?'':'none'));
  S=JSON.parse(JSON.stringify(rfBase));
- return {n:199, fails:fails}; })()`;
+ return {n:201, fails:fails}; })()`;
 try {
   let l; for (let i = 0; i < 60 && !l; i++) { await sleep(150); l = await fetch(`http://127.0.0.1:${DBG}/json/list`).then(r => r.json()).catch(() => null); }
   ws = new WebSocket(l.find(t => t.type === 'page').webSocketDebuggerUrl);
