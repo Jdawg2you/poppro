@@ -295,6 +295,16 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  ok(/connect with your mentor/.test(pn.textContent)&&!!pn.querySelector('b.mentornote'),'the mentor note shows, in bold');
  ps.value='No'; ps.dispatchEvent(new Event('change')); await w(80); ok(pn.style.display==='none','No: nothing shows');
  S.intake.pendP=''; S.intake.notes='';
+ /* Jesse, 21 Oct (Joel Richardson): a file with lb / review stored as JSON text blanked the Quote */
+ (function(){ var keep=JSON.parse(JSON.stringify(S)); S=blankState(); S.client.state='TX'; S.client.page='57'; S.lb='{"p": {"carrier": "moo", "face": "", "term": ""}, "s": {"carrier": "", "face": "", "term": ""}}'; S.review='{}'; S.follow='{}';
+   var err=''; try{ fill(); compute(); }catch(e){ err=e.message; }
+   ok(!err&&typeof S.lb==='object'&&typeof S.review==='object','a file with objects saved as text loads and prices ('+(err||'ok')+')'); S=keep; fill(); })();
+ /* Jesse, 21 Oct: a date of birth from the call with no age priced nothing */
+ (function(){ var keep=JSON.parse(JSON.stringify(S)); S=blankState(); applySuiteClient({first:'Deb',last:'Test',dob:'05/10/1966',state:'OH',zip:'43215',health:{}},true); fill();
+   ok(+S.client.page>=59&&ratingAge()>=59,'a DOB from the call fills the age ('+S.client.page+')');
+   S=blankState(); S.client.state='OH'; goStep('quote'); renderBuilder(); var bh=document.getElementById('sec_builder');
+   ok(/No plans yet — the client’s age or date of birth is missing/.test(bh.textContent)&&!!document.getElementById('bhToIntake'),'with no age, Quote says so plainly with a button to the Intake');
+   S=keep; fill(); })();
  /* Jesse, 21 Oct: deleted on the Intake stays deleted while the call still has it; deleted in the call clears it */
  S.intake.medList=[]; S.intake.conds=[]; S.intake.callDismissed={};
  applySuiteClient({meds:['Plaquenil'],conds:[{name:'Lupus'}],health:{}},true); renderMeds(); await w(80);
@@ -332,7 +342,7 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  S=JSON.parse(JSON.stringify(rfBase)); S.intake.pregNowP=true; goStep('quote'); compute(); await w(200); var rfe=document.getElementById('rightFit');
  ok(rfe&&rfe.textContent.indexOf('ACA + optional HI Select')>=0&&rfe.textContent.indexOf('p.23')>=0&&/Amerus VL/.test(rfe.textContent)&&/not an underwriting decision/.test(rfe.textContent),'right-fit panel renders on Quote with the path, the guide cite, GI names and the disclaimer: '+(rfe?'':'none'));
  S=JSON.parse(JSON.stringify(rfBase));
- return {n:185, fails:fails}; })()`;
+ return {n:188, fails:fails}; })()`;
 try {
   let l; for (let i = 0; i < 60 && !l; i++) { await sleep(150); l = await fetch(`http://127.0.0.1:${DBG}/json/list`).then(r => r.json()).catch(() => null); }
   ws = new WebSocket(l.find(t => t.type === 'page').webSocketDebuggerUrl);

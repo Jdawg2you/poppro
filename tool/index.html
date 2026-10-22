@@ -3975,7 +3975,13 @@ window.addEventListener("message", function(e){
   try{ if(e.source) e.source.postMessage({source:"optimum-poppro", type:"applied", v:1, ok:!!ok}, "*"); }catch(x){}
 });
 
+/* A file written outside MyPopPro (the Health Insurance thread's make_json.py, 21 Oct) stored lb / review / decl / follow /
+   negot / pension as JSON text instead of objects; pricing the life line threw and the whole Quote stopped drawing.
+   Anything that should be an object but arrives as JSON text is read as the object it says it is. */
+function fixStringObjects(){ var B=blankState(); Object.keys(S||{}).forEach(function(k){ var v=S[k];
+  if(typeof v==='string'&&/^\s*[\[{]/.test(v)&&(B[k]===undefined||(B[k]!==null&&typeof B[k]==='object'))){ try{ S[k]=JSON.parse(v); }catch(e){} } }); }
 function normClient(){
+  fixStringObjects();
   var c=S.client||{};
   if(c.pname===undefined && c.name!==undefined) c.pname=c.name;
   if(c.page===undefined && c.ages){ var a=String(c.ages).split('/'); c.page=(a[0]||'').trim(); if(c.sage===undefined)c.sage=(a[1]||'').trim(); }
@@ -3989,6 +3995,10 @@ function normClient(){
   if(c.page===undefined && c.age!==undefined) c.page=c.age;
   if(c['spouse.dob']===undefined && c.sdob!==undefined) c['spouse.dob']=c.sdob;
   S.client=Object.assign({pname:'',sname:'',date:'',dob:'',agent:'',state:'',zip:'',page:'',age:'',sage:''},c);
+  /* A date of birth with no age (from the Discovery call or a saved file) priced nothing - the age was only worked out
+     when the date was typed on the Intake (Jesse, 21 Oct: "no plans are loading"). Work it out wherever it's missing. */
+  var C2=S.client; if(!String(C2.page||'').trim()&&C2.date){ var a2=ageFromDOB(C2.date); if(a2){ C2.page=String(a2); C2.age=String(a2); } }
+  if(!String(C2.sage||'').trim()&&C2.sdob){ var a3=ageFromDOB(C2.sdob); if(a3) C2.sage=String(a3); }
   S.intake=S.intake||{}; if(!S.intake.conds)S.intake.conds=[]; if(!S.intake.medSkip)S.intake.medSkip=[];
 }
 function fill(){
@@ -7301,7 +7311,9 @@ function pbColBind(col,rr,rd){
 function renderBuilder(){
   var host=$('sec_builder'); if(!host) return;
   var st=(S.client.state||'').toUpperCase(), age=ratingAge();
-  if(!st||!age){ host.innerHTML='<div class="bh"><h3>Package builder</h3><small>Enter the client’s state and age on the Intake to build packages.</small></div>'; return; }
+  if(!st||!age){ var miss=[!st?'state':'',!age?'age or date of birth':''].filter(Boolean).join(' and ');
+    host.innerHTML='<div class="bh"><h3>Package builder</h3></div><div class="flagbox" style="margin:10px 0 0;display:flex;gap:12px;align-items:center;flex-wrap:wrap"><span style="flex:1 1 260px">⚠ <b>No plans yet — the client’s '+miss+' is missing.</b> Add it on the Intake and the packages price straight away.</span><button type="button" class="btn" id="bhToIntake">Go to the Intake →</button></div>';
+    var gi=$('bhToIntake'); if(gi) gi.onclick=function(){ goStep('intake'); setTimeout(function(){ var f=$(!st?'in_state':'in_date'); if(f){ f.scrollIntoView({behavior:'smooth',block:'center'}); f.focus(); } },80); }; return; }
   if(PR_STATE==='loading'){ host.innerHTML='<div class="bh"><h3>Package builder</h3><small>Loading the ManhattanLife rates… the packages appear in a moment.</small></div>'; return; }
   // Version B structure (2026-09-29): saved quotes from before it carry old per-package settings (SDR in
   // every tier, a flat $45 life line). Reset those once so every package starts from the core four.
