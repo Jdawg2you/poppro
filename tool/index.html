@@ -4851,6 +4851,8 @@ function whyChips(){ var host=$('whyTagBox'); if(!host||host.dataset.built) retu
   host.querySelectorAll('[data-why]').forEach(function(c){ c.addEventListener('change',function(){ c.closest('.chip').classList.toggle('on',c.checked); S.intake.whyTags=whyReadTags(); whySay(); autosave(); }); }); }
 function whyReadTags(){ return Array.prototype.filter.call(document.querySelectorAll('#whyTagBox [data-why]'),function(c){ return c.checked; }).map(function(c){ return c.dataset.why; }); }
 function whyFillTags(){ whyChips(); var tags=whyTagList((S.intake||{}).whyTags); document.querySelectorAll('#whyTagBox [data-why]').forEach(function(c){ c.checked=tags.indexOf(c.dataset.why)>=0; c.closest('.chip').classList.toggle('on',c.checked); }); whySay(); }
+/* A blank that must never show the script's sample: a made-up quote in red reads like the client's words (Jesse, 23 Oct). */
+var PRESENT_MISS={'client.why_quote':'‹their words — type their why on the Intake the way they said it›'};
 function whySay(){ var el=$('whySay'); if(!el) return; var I=Object.assign({},S.intake||{},{whyMatters:($('in_whymatters')||{}).value,whyTags:whyReadTags()});
   var raw=whyRaw(I), note=whyLooksLikeNote(raw), r=whyReadBack(I);
   el.innerHTML=note?'<b class="ws-warn">That reads like a note, not their words</b> — it won’t be quoted back as “you said”. Type it the way they said it: <i>“I’m paying way too much for what I get.”</i>'
@@ -5176,7 +5178,7 @@ function reviewWire(doc,t){ if(!doc||!doc.body) return; scriptClean(doc); review
   Array.prototype.forEach.call(doc.querySelectorAll('var[data-k]'),function(v){ var k=v.getAttribute('data-k');
     if(v.dataset.ex==null) v.dataset.ex=v.textContent; var val=T[k]; v.classList.remove('pp-ok','pp-miss');
     if(val!=null&&String(val).trim()!==''){ v.textContent=String(val); v.classList.add('pp-ok'); v.removeAttribute('title'); }
-    else { v.textContent=v.dataset.ex; v.classList.add('pp-miss'); v.title='missing: '+k; } });
+    else { v.textContent=PRESENT_MISS[k]||v.dataset.ex; v.classList.add('pp-miss'); v.title='missing: '+k; } });
   var show=function(sel,on){ Array.prototype.forEach.call(doc.querySelectorAll(sel),function(x){ x.classList.toggle('pp-off',!on); }); };
   show('[data-rx="has"]',X.meds.length>0); show('[data-rx="none"]',!X.meds.length);
   show('[data-rx-math="gain"]',X.math==='gain'); show('[data-rx-math="partial"]',X.math==='partial'); show('[data-rx-math="wash"]',X.math==='wash');
@@ -6568,7 +6570,7 @@ function presentScriptTokens(t){ var T=presentTokens(t), C=S.client||{}, I=S.int
   T['client.legal_name']=(C.pname||'').trim(); T['client.dob']=C.dob||C.date||''; T['client.phone']=I.phone||''; T['client.email']=I.email||'';
   var ht=parseInt(I.pheight,10); T['client.ht']=ht>=48&&ht<=84?Math.floor(ht/12)+'′'+(ht%12)+'″':''; T['client.wt']=I.pweight?String(I.pweight)+' lb':'';
   if(+S.aca.prem>0){ T['aca.premium']=m0(acaNetPrem()); T['aca.deductible']=m0(S.aca.ded); }
-  if(+Cu.prem>0){ T['cur.premium']=m0(Cu.prem); if(+Cu.ded>0) T['cur.deductible']=m0(Cu.ded); if(+Cu.emp>0) T['cur.deduction']=m0(Cu.prem)+' a month'; }
+  if(+Cu.prem>0){ T['cur.premium']=m0(Cu.prem); if(+Cu.ded>0) T['cur.deductible']=m0(Cu.ded); else if(Cu.dedSet) T['cur.deductible']='$0';   /* a typed 0 is a real $0, not a blank (Jesse, 23 Oct) */ if(+Cu.emp>0) T['cur.deduction']=m0(Cu.prem)+' a month'; }
   /* every doctor on file, each as "Dr <name>" (roles like "- primary care" and "(cardiology)" dropped), joined for speech */
   var docs=[]; [I.docs1,I.docs2,I.docs3].forEach(function(x){ String(x||'').split(/[;,]|\s+and\s+/i).forEach(function(d){
       d=d.replace(/\s*\(.*?\)\s*/g,' ').replace(/\s+[-–—]\s+.*$/,'').replace(/^\s*(dr\.?|doctor)\s+/i,'').trim(); if(d&&docs.indexOf(d)<0) docs.push(d); }); });
@@ -6779,7 +6781,7 @@ function presentWire(doc,t){ scriptClean(doc); if(!doc||!doc.body) return 0; var
     var val=T[k];
     v.className=String(v.className||'').replace(/\bpp-(ok|miss)\b/g,'').trim();
     if(val!=null&&String(val).trim()!==''){ v.textContent=String(val); v.classList.add('pp-ok'); v.removeAttribute('title'); v.removeAttribute('contenteditable'); n++; }
-    else { v.textContent=v.dataset.ex; v.classList.add('pp-miss'); v.title='missing: '+k;
+    else { v.textContent=PRESENT_MISS[k]||v.dataset.ex; v.classList.add('pp-miss'); v.title='missing: '+k;
       if(PRESENT_WRITEBACK[k]&&v.closest('[data-mount="lifeapp"],div')&&doc.querySelector('[data-mount="lifeapp"]')&&doc.querySelector('[data-mount="lifeapp"]').parentNode.parentNode.contains(v)){
         v.setAttribute('contenteditable','true'); v.textContent=''; v.onblur=function(){ var x=v.textContent.trim(); if(!x) return; var w=PRESENT_WRITEBACK[k];
           if(w.indexOf('c:')===0){ S.client[w.slice(2)]=x; if(w==='c:dob') S.client.date=x; } else S.intake[w.slice(2)]=x; autosave(); presentWire(doc,t); }; } } });
