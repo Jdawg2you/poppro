@@ -83,6 +83,9 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  ok(reviewTicks().some(function(x){ return x.k==='drx'&&/hormone/.test(x.t); })&&reviewTicks().some(function(x){ return x.k==='rxv'; }),'checklist: Rx Valet and Direction Rx for every member');
  var rd=document.getElementById('rvFrame').contentDocument;
  ok(rd.querySelectorAll('[data-product]').length>=10&&rd.querySelector('[data-screen="labs"]')&&/getting used to/.test(rd.body.textContent)&&rd.body.textContent.indexOf('is a claim, not a greeting')<0,'Benefits Review script: product tags, labs screen, Dawn’s additions, old note gone');
+ var pl=reviewPages(reviewT()); ok(pl[pl.length-1].sc==='recap'&&!pl.some(function(p){ return p.sc==='notes'; }),'last review step is the recap email; coaching notes are no longer a step');
+ reviewGo(0); await w(400); var nh=rd.querySelector('h2[data-screen="notes"]'); ok(nh&&nh.style.display!=='none'&&+nh.dataset.rv===0,'coaching notes show on page 1, under Before you dial');
+ reviewGo(pl.length-1); await w(400); var mw=document.querySelector('#reviewHost .rv-mail'); ok(document.getElementById('rvFrame').style.display==='none'&&mw&&mw.style.display!=='none'&&document.getElementById('rvMailSms'),'the recap step shows the email and the recap text in place of the script'); reviewGo(0); await w(200);
  var tt=reviewT(), pk=S.packages[tt], orig=JSON.parse(JSON.stringify(pk.products));
  pk.products=orig.map(function(p){ return Object.assign({},p,{monthly:p.k==='his'?(+p.monthly||10):0}); });
  var pg=reviewPages(tt).map(function(p){ return p.sc||''; }); ok(pg.indexOf('careguide')<0&&pg.indexOf('telehealth')>=0,'reviews only what they bought: Hospital Indemnity only skips CareGuide ('+pg.join(',')+')');

@@ -698,6 +698,7 @@
   @media(max-width:820px){.rv-actwrap{grid-template-columns:1fr}}
   .rv-apbar{display:none;cursor:pointer;font-size:13.5px;color:#14532d}.rv-approved.folds .rv-apbar{display:block}.rv-approved.folds:not(.min) .rv-apbar{margin-bottom:8px}.rv-approved.min .rv-apall{display:none}.rv-approved.min{padding:9px 14px}
   .rv-approved{border:2px solid #22a05a;background:#f2fbf5;border-radius:12px;padding:12px 14px;margin:0 0 14px}.rv-appart{margin-top:10px}.rv-apmail{border-top:1px solid #b9dcc6;margin-top:14px;padding-top:12px}.rv-aphd{font-size:12px;font-weight:800;color:#17824a;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}.rv-apbody{max-height:220px;overflow:auto;line-height:1.5}.rv-apt{background:#fff;border:1px solid #cfe7d8;border-radius:8px;padding:8px 10px;font-size:13.5px;margin-top:3px}
+  #rvMailSlot .rv-mail{margin-top:0}
   .rv-care,.rv-mail{border:1px solid var(--line);background:#fff;border-radius:12px;padding:12px 14px;margin:0 0 14px}.rv-mail{margin-top:16px}
   .rv-pair{display:flex;gap:6px}.rv-pair input{flex:1;min-width:0;padding:8px 9px;border:1px solid var(--line);border-radius:8px;background:#fbfaf6;font:inherit}.rv-pair input.ph{flex:0 0 120px}
   .netseg{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;vertical-align:middle}.netseg button{border:0;background:#fff;padding:3px 9px;font:inherit;font-size:12px;font-weight:700;color:#6b7280;cursor:pointer}
@@ -4963,7 +4964,7 @@ var REVIEW_PAGES=[
  {t:'Dental',sc:'dental',when:'dental'},
  {t:'If they elected below',sc:'tierdown',when:'below'},
  {t:'Close',sc:'close'},
- {t:'Coaching notes',sc:'notes'}];
+ {t:'Recap email',sc:'recap',virtual:true}];   /* Jesse, 23 Oct: the coaching notes open the call (page 1); the last step is sending the recap */
 /* The four on-call registrations; links are the ones on the client resource page. Each row: open it, text it to the
    client (Messages opens with a short note and the link written), or copy the link (Jesse, 2026-10-16). A text can't
    attach a contact card, so CareGuide's text carries the number plus a link to a .vcf - tapping that on a phone opens
@@ -5172,7 +5173,7 @@ function reviewPageEmpty(doc,i){ var any=false; Array.prototype.forEach.call(doc
 function reviewPages(t){ var fr=$('rvFrame'), doc=fr&&fr.contentDocument, ready=doc&&doc.body&&doc.body.dataset.rvp;
   if(ready) reviewProdFilter(doc,t);
   return REVIEW_PAGES.filter(function(p,i){ if(p.when&&!(p.when==='dental'?reviewDental(t):reviewBelow(t))) return false;
-    return !(ready&&p.sc&&reviewPageEmpty(doc,i)); }); }
+    return p.virtual||!(ready&&p.sc&&reviewPageEmpty(doc,i)); }); }
 /* Prescriptions: the day's fills against the per-day benefit. "You made $X" only when the fills really come to less
    (Health ZONE's gate); a med with no price means no priced list, and then neither sentence is served. */
 function reviewRx(t){ t=reviewT()||t; var I=S.intake||{}, meds=(I.medList||[]).filter(function(m){ return m&&String(m.name||'').trim(); });
@@ -5215,6 +5216,10 @@ var REVIEW_CSS='.pp-prodoff{display:none!important}.pp-cardbox{margin:8px 0 14px
  +'.rv-tick input{width:20px;height:20px}.rv-tick.on{border-style:solid;background:#e3f4e8}.rv-tick b{color:#17824a}'
  +'.btnrow a[data-rv-off]{opacity:.45;pointer-events:none}';
 function reviewPaginate(doc,t){ if(!doc||!doc.body) return; var pages=REVIEW_PAGES, cur=0;
+  /* Coaching notes read before the call, under Before you dial (Jesse, 23 Oct): move that screen ahead of Open */
+  var nh=doc.querySelector('h2[data-screen="notes"]'), oh=doc.querySelector('h2[data-screen="open"]');
+  if(nh&&oh&&(oh.compareDocumentPosition(nh)&Node.DOCUMENT_POSITION_FOLLOWING)){ var run=[], x=nh; while(x&&!(x!==nh&&x.matches&&x.matches('h2[data-screen]'))){ run.push(x); x=x.nextElementSibling; }
+    run.forEach(function(el){ oh.parentNode.insertBefore(el,oh); }); var n=nh.querySelector('.n'); if(n) n.remove(); }
   Array.prototype.forEach.call(doc.body.children,function(el){ var sc=el.getAttribute&&el.getAttribute('data-screen');
     if(sc) pages.forEach(function(p,i){ if(p.sc===sc) cur=i; }); el.dataset.rv=String(cur); });
   /* a tick box at the end of each registration screen, inside the script where the agent is looking */
@@ -5381,7 +5386,10 @@ function approvedPaint(){ var host=$('rvApproved'); if(!host) return; var R=revi
     +(S.agentBooking?'':'<div class="rv-miss" style="margin-top:6px">No booking link in ⚙ Setup — both ask them for a day instead.</div>')+'</div>';
   approvedFold(+R.pg||0);
   host.querySelectorAll('[data-apc]').forEach(function(b){ b.onclick=function(){ var t=b.dataset.apc==='sms'?m.sms:'Subject: '+m.subject+'\n\n'+m.body, o=b.textContent; try{ navigator.clipboard.writeText(t); }catch(e){} b.textContent='✓ Copied'; setTimeout(function(){ b.textContent=o; },1600); }; }); }
-function reviewEmailPaint(){ var ta=$('rvEmailTxt'); if(!ta||ta.dataset.edited) return; var m=reviewEmail(); ta.value='Subject: '+m.subject+'\n\n'+m.body; }
+function reviewRecapSms(){ var C=S.client||{}, first=((C.pname||'').trim().split(/\s+/)[0])||'there';
+  return 'Hi '+first+'! Thanks again for today. I just emailed you a recap of everything we went over — your care card is in there too, so you can save it to your phone: '+careCardLink(); }
+function reviewEmailPaint(){ var sm=$('rvMailSms'); if(sm){ var ph=String((S.intake||{}).phone||'').replace(/[^\d+]/g,''); sm.href='sms:'+ph+'?&body='+encodeURIComponent(reviewRecapSms()); }
+  var ta=$('rvEmailTxt'); if(!ta||ta.dataset.edited) return; var m=reviewEmail(); ta.value='Subject: '+m.subject+'\n\n'+m.body; }
 /* Direction Rx is open to every ManhattanLife member - weight loss and hormone therapy (Jesse, 23 Oct); the GLP-1 wording stays for GLP-1 clients */
 function drxForAll(){ var ct=chosenTier(); return !(ct&&tierNonMh(ct)); }
 function drxGeneral(){ return 'As a ManhattanLife member you also get Direction Rx member pricing, for weight loss and hormone therapy. Your member code: '+drxCode()+' — start here: '+drxLink(); }
@@ -5403,7 +5411,9 @@ function reviewGo(pg,stay){ var t=chosenTier(), pages=reviewPages(t), R=reviewSt
   if(stay&&R.pgSc!=null){ var keep=pages.map(function(p){ return p.sc||''; }).indexOf(R.pgSc); if(keep>=0) pg=keep; }   /* same screen even if dental/below came or went */
   pg=Math.max(0,Math.min(pages.length-1,pg|0)); R.pg=pg; R.pgSc=(pages[pg]&&pages[pg].sc)||''; autosave();
   if(!stay){ RV_CONF_OPEN=false; RV_AP_OPEN=false; } reviewConfFold(pg);
-  var fr=$('rvFrame'), doc=fr&&fr.contentDocument; if(!doc||!doc.body) return; var want=REVIEW_PAGES.indexOf(pages[pg]);
+  var fr=$('rvFrame'), doc=fr&&fr.contentDocument; if(!doc||!doc.body) return;
+  /* the last step is the recap email itself, in place of the script (Jesse, 23 Oct) */
+  var vr=!!(pages[pg]&&pages[pg].virtual), mw=document.querySelector('#reviewHost .rv-mail'); fr.style.display=vr?'none':''; if(mw){ mw.style.display=vr?'':'none'; if(vr) reviewEmailPaint(); } var want=REVIEW_PAGES.indexOf(pages[pg]);
   Array.prototype.forEach.call(doc.body.children,function(el){ if(el.dataset.rv==null) return; el.style.display=(+el.dataset.rv===want)?'':'none'; });
   reviewWire(doc,t); reviewRail(); fr.style.height='60px'; fr.style.height=(doc.documentElement.scrollHeight+8)+'px';
   $('rvChips').innerHTML=pages.map(function(p,i){ return '<button type="button" data-pg="'+i+'" title="'+esc(p.t)+'" class="'+(i===pg?'on':(i<pg?'done':''))+'">'+(i+1)+(i===pg?'. '+esc(p.t):'')+(p.tick&&R.ticks[p.tick]?' ✓':'')+'</button>'; }).join('');
@@ -5627,18 +5637,19 @@ function renderReview(){ var host=$('reviewHost'); if(!host) return; var t=chose
    +reviewCareHTML()
    +'<div class="pr-prog" id="rvChips"></div><div class="pr-grid"><div>'
    +'<iframe id="rvFrame" src="benefits-review.html" title="Benefits Review script" style="width:100%;border:1px solid var(--line);border-radius:12px;background:#fff;min-height:200px"></iframe>'
-   +'<div class="pr-nav" id="rvNav"></div></div>'
+   +'<div id="rvMailSlot"></div><div class="pr-nav" id="rvNav"></div></div>'
    +'<div class="pr-rail"><div class="box rv-ticks" id="rvTicks"></div>'
    +'<div class="box"><b>Open before you dial</b>'
    +(reviewLink()?'<a class="rv-a" href="'+esc(reviewLink())+'" target="_blank" rel="noopener">Their resource page ↗</a>':'<span class="rv-miss">No resource page yet — add yours in ⚙ Setup</span>')
-   +'<a class="rv-a" href="https://clients.manhattanlife.com" target="_blank" rel="noopener">ManhattanLife portal ↗</a><a class="rv-a" href="https://providerlocator.firsthealth.com/home/index" target="_blank" rel="noopener">First Health locator ↗</a><a class="rv-a" href="https://www.singlecare.com" target="_blank" rel="noopener">SingleCare — Rx pricing ↗</a><a class="rv-a" href="'+RXVALET_URL+'" target="_blank" rel="noopener">Rx Valet — via EasyCare2go ↗</a></div>'
+   +'<a class="rv-a" href="https://clients.manhattanlife.com" target="_blank" rel="noopener">ManhattanLife portal ↗</a><a class="rv-a" href="https://providerlocator.firsthealth.com/home/index" target="_blank" rel="noopener">First Health locator ↗</a><a class="rv-a" href="'+RXVALET_URL+'" target="_blank" rel="noopener">Rx Valet — via EasyCare2go ↗</a></div>'
    +'</div></div>'
-   +'<div class="rv-mail"><div class="rv-ch">Recap email <small>— send within the hour; the script promises it. Builds itself from this page: the plan, their care card link, what was set up and what’s still to do.</small></div>'
-   +'<textarea id="rvEmailTxt" rows="22"></textarea><div class="rv-cbtns"><button type="button" class="picbtn" id="rvMailCopy">📋 Copy the email</button><button type="button" class="picbtn" id="rvMailOpen">✉️ Open in my email</button><button type="button" class="picbtn" id="rvMailGmail">Open in Gmail ↗</button><button type="button" class="picbtn" id="rvMailOutlook">Open in Outlook ↗</button><button type="button" class="picbtn" id="rvMailReset" hidden>↺ Rebuild from the page</button>'+((S.intake||{}).email?'':'<span class="rv-miss">No email on the Intake — the To line will be blank.</span>')+'</div></div>';
+   +'<div class="rv-mail"><div class="rv-ch">Recap email + text <small>— the last step: send it within the hour, the call promised it. It builds itself from the call: the plan, their care card link, what was set up and what’s still to do. Then text them that it’s on its way.</small></div>'
+   +'<textarea id="rvEmailTxt" rows="22"></textarea><div class="rv-cbtns"><button type="button" class="picbtn" id="rvMailCopy">📋 Copy the email</button><button type="button" class="picbtn" id="rvMailOpen">✉️ Open in my email</button><button type="button" class="picbtn" id="rvMailGmail">Open in Gmail ↗</button><button type="button" class="picbtn" id="rvMailOutlook">Open in Outlook ↗</button><button type="button" class="picbtn" id="rvMailReset" hidden>↺ Rebuild from the page</button><a class="picbtn" id="rvMailSms" href="#">💬 Text: recap sent</a>'+((S.intake||{}).email?'':'<span class="rv-miss">No email on the Intake — the To line will be blank.</span>')+'</div></div>';
   var save=function(){ R.appr=$('rv_appr').value; R.eff=$('rv_eff').value; var pv=moneyNum($('rv_prem').value)||0; R.prem=(Math.abs(pv-reviewPremTool())<0.005)?0:pv; R.draft=$('rv_draft').value;
     R.month=$('rv_month').value; R.link=$('rv_link').value.trim(); autosave(); reviewCheck(); renderActual();
     var fr=$('rvFrame'); if(fr&&fr.contentDocument&&fr.contentDocument.body&&fr.contentDocument.body.dataset.rvp) reviewWire(fr.contentDocument,t); };
   ['rv_appr','rv_eff','rv_prem','rv_draft','rv_month','rv_link'].forEach(function(id){ $(id).addEventListener('change',save); $(id).addEventListener('input',function(){ if(id!=='rv_prem') save(); }); $(id).addEventListener('change',reviewEmailPaint); $(id).addEventListener('change',approvedPaint); });
+  var mw=document.querySelector('#reviewHost .rv-mail'); if(mw&&$('rvMailSlot')) $('rvMailSlot').appendChild(mw);   /* the recap email is the last step (Jesse, 23 Oct) */
   reviewCareWire(); reviewMailWire(); approvedPaint();
   renderActual(); reviewRail(); reviewCheck(); reviewEmailPaint();
   var fr=$('rvFrame'); fr.onload=function(){ try{ scriptClean(fr.contentDocument); reviewPaginate(fr.contentDocument,t); reviewGo(+R.pg||0); }catch(e){} }; }
