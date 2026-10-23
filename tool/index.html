@@ -4860,7 +4860,9 @@ function whyChips(){ var host=$('whyTagBox'); if(!host||host.dataset.built) retu
 function whyReadTags(){ return Array.prototype.filter.call(document.querySelectorAll('#whyTagBox [data-why]'),function(c){ return c.checked; }).map(function(c){ return c.dataset.why; }); }
 function whyFillTags(){ whyChips(); var tags=whyTagList((S.intake||{}).whyTags); document.querySelectorAll('#whyTagBox [data-why]').forEach(function(c){ c.checked=tags.indexOf(c.dataset.why)>=0; c.closest('.chip').classList.toggle('on',c.checked); }); whySay(); }
 /* A blank that must never show the script's sample: a made-up quote in red reads like the client's words (Jesse, 23 Oct). */
-var PRESENT_MISS={'client.why_quote':'‹their words — type their why on the Intake the way they said it›'};
+var PRESENT_MISS={'client.why_quote':'‹their words — type their why on the Intake the way they said it›',
+  /* 7.2 before living benefits are added: say what fills the blank, not a sample number (Jesse, 23 Oct) */
+  'lb.addback':'‹add living benefits just above — their price fills in here›','lb.who':'‹who it covers›','new.total':'‹the new total›'};
 /* Each doctor: ✓ in network, ✗ not, or ? not checked yet (Jesse, 23 Oct). Stored as true / 'no' / ''. The old single
    "network verified" box is derived from them, so everything that read it still works. */
 function docNetRead(n){ var v=($('in_docs'+n+'_net')||{dataset:{}}).dataset.v; return v==='in'?true:v==='out'?'no':''; }
@@ -6655,7 +6657,7 @@ function presentScriptTokens(t){ var T=presentTokens(t), C=S.client||{}, I=S.int
   if(exDed){ T['anchor.deductible']=m0(exDed); T['_exDedWords']=m0(exDed); }
   T['anchor.aside_obj']=(presentHasCur()&&!(+curIn().emp>0))?'those':'that one';
   var planMo=tierTotals(t).mo-lbMo,   /* premium only: the anchor side has no drug costs either */ ak=presentAnchor(), anc=ak==='aca'?(+S.aca.prem>0?acaNetPrem():null):ak==='cur'||ak==='employer'?(+Cu.prem>0?+Cu.prem:null):null;
-  T['plan.monthly']=fmt2(planMo); T['lb.addback']=lbMo>0?fmt2(lbMo):''; T['new.total']=fmt2(planMo+lbMo);
+  T['plan.monthly']=fmt2(planMo); T['lb.addback']=lbMo>0?fmt2(lbMo):''; T['new.total']=lbMo>0?fmt2(planMo+lbMo):'';   /* no living benefits yet: the line prompts rather than repeating the plan price (Jesse, 23 Oct) */
   T['anchor.deductible']=ak==='aca'?T['aca.deductible']:(ak==='cur'||ak==='employer')?T['cur.deductible']:'';
   if(anc!=null){ T['anchor.today']=fmt2(anc); var sv=anc-planMo; T['savings.monthly']=fmt2(sv); T['saving']=fmt2(anc-planMo-lbMo);
     /* 20-25% of the monthly saving. Nearest $10 collapsed small savings into "$30 to $30" (Jesse, 10 Oct): use $5 steps
@@ -6823,7 +6825,18 @@ function presentShared(doc){ if(!doc||!doc.body) return; var I=S.intake||{}, tag
     if(!at) return; box=doc.createElement('div'); box.className='do pp-shared'; if(at.dataset.pg!=null) box.dataset.pg=at.dataset.pg; at.parentNode.insertBefore(box,at.nextSibling); }
   box.innerHTML='<span class="lab">NOT SPOKEN · WHAT THEY SHARED ON THE DISCOVERY CALL</span>'+L.join('');
   box.classList.toggle('pp-off',!L.length); }
-function presentWire(doc,t){ scriptClean(doc); if(!doc||!doc.body) return 0; var T=presentScriptTokens(t), n=0; presentShared(doc);
+/* Under the 7.2 add-back line, until living benefits are on the plan: how the line works (Jesse, 23 Oct) */
+function presentLbCue(doc,T,t){
+  /* what it WOULD add: the box above already prices each adult who isn't on the plan yet (Jesse, 23 Oct) */
+  var would=0; try{ var cfg=effCfg(t)||{}, prods=(S.packages[t]||{}).products||[];
+    lbPersons().forEach(function(pp){ var w=pp.k; if(prods.some(function(x){ return x.k==='lb'+w&&(+x.monthly||0)>0; })) return;
+      var l=(cfg.lb||{})[w]; if(!l||!l.face) return; var q=pLB1(pp,l); if(q&&+q.price>0) would+=+q.price; }); }catch(e){}
+  PRESENT_MISS['lb.addback']=would>0?'‹'+fmt2(would)+' once you click + Add just above›':'‹add living benefits just above — their price fills in here›';
+  var v=doc.querySelector('var[data-k="lb.addback"]'); if(!v) return; var say=v.closest('.say'); if(!say) return;
+  var cue=doc.querySelector('.pp-lbcue'); if(!cue){ cue=doc.createElement('div'); cue.className='do pp-lbcue'; if(say.dataset.pg!=null) cue.dataset.pg=say.dataset.pg; say.parentNode.insertBefore(cue,say.nextSibling);
+    cue.innerHTML='<span class="lab">NOT SPOKEN · HOW THIS LINE WORKS</span>Add their living benefits in the box just above first. Their monthly price, who it covers and the new total fill into this line, and the plan picks them up. Not taking them today? Leave the middle out: “You were at …, I’ve got you at …, and you’re still saving … a month.”'; }
+  cue.classList.toggle('pp-off',!!String(T['lb.addback']||'').trim()); }
+function presentWire(doc,t){ scriptClean(doc); if(!doc||!doc.body) return 0; var T=presentScriptTokens(t), n=0; presentShared(doc); presentLbCue(doc,T,t);
   if(!doc.getElementById('ppcss')){ var st=doc.createElement('style'); st.id='ppcss'; st.textContent=PRESENT_CSS; doc.head.appendChild(st); }
   var copy=function(x){ try{ navigator.clipboard.writeText(x); }catch(e){} };
   /* blanks */
