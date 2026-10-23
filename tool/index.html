@@ -5294,7 +5294,7 @@ function careCardData(){ var I=S.intake||{}, C=S.client||{}, R=reviewState(), sl
 var CARE_F=[['me_doc','My doctor'],['sp_doc','Spouse’s doctor'],['kid_doc','Kids’ doctor'],['urgent','Urgent care'],['hosp','Hospital / ER'],['dent','Dentist']];   /* no pharmacy: it depends on the medication, they choose (Jesse, 23 Oct) */
 var CARE_KEYS=['people','agent','agent_ph'].concat([].concat.apply([],CARE_F.map(function(x){ return [x[0],x[0]+'_ph']; })));
 function careShown(k){ var I=S.intake||{}, w=I.who||{}, C=S.client||{};   /* a spouse or kids on the file get their own doctor slot (Jesse, 23 Oct) */
-  return k==='sp_doc'?!!(w.spouse||String(C.sname||'').trim()):k==='kid_doc'?!!(w.kids||(typeof kidsList==='function'&&kidsList().length)):true; }
+  return k==='sp_doc'?!!(w.spouse||String(C.sname||'').trim()):k==='kid_doc'?!!(w.kids||(typeof kidsList==='function'&&kidsList().length)):k==='dent'?reviewDental():true; }   /* dentist only with dental on the plan - the card page shows it (and Careington) only then */
 /* Everything the card should open with: the review-call boxes first, then the Intake's in-network doctors and the
    pharmacy as fall-backs, then the agent from Setup. Only filled keys. */
 function careFields(){ var I=S.intake||{}, R=reviewState(), C=R.care||{}, f={}, slot={me:'me_doc',sp:'sp_doc',kid:'kid_doc'};

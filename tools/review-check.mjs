@@ -33,7 +33,7 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  set('rv_eff','2026-11-01'); set('rv_prem','$412.50'); await w(100);
  var T=reviewTokens('better'); ok(T['policy.draft_date']==='','draft date is never defaulted to the effective date: '+T['policy.draft_date']);
  ok(/Draft date is empty/.test(document.getElementById('rv_warn').textContent),'an empty draft date is flagged');
- set('rv_draft','2026-11-03'); ok(!document.querySelector('[data-care="pharm"]')&&!!document.querySelector('[data-care="dent"]'),'care card: no pharmacy box (they choose by medication), a dentist box instead (23 Oct)'); ok(reviewTokens('better')['client.pharmacy']==='pharmacy','no pharmacy chosen: the script says "the pharmacy", never a sample name'); S.review.pharmacy='Walgreens'; await w(100); T=reviewTokens('better');
+ set('rv_draft','2026-11-03'); ok(!document.querySelector('[data-care="pharm"]')&&!!document.querySelector('[data-care="dent"]')===reviewDental(),'care card: no pharmacy box (they choose by medication); a dentist box only when the plan has dental (23 Oct)'); ok(reviewTokens('better')['client.pharmacy']==='pharmacy','no pharmacy chosen: the script says "the pharmacy", never a sample name'); S.review.pharmacy='Walgreens'; await w(100); T=reviewTokens('better');
  ok(T['policy.effective_date']==='November 1, 2026'&&T['policy.draft_date']==='November 3, 2026'&&T['policy.premium']==='$412.50','policy figures fill: '+[T['policy.effective_date'],T['policy.draft_date'],T['policy.premium']].join(' / '));
  ok(/Custom draft date/.test(document.getElementById('rv_warn').textContent),'a custom draft date says so');
  ok(T['review.month']==='November','review month defaults to the effective month: '+T['review.month']);
