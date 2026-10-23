@@ -6665,6 +6665,7 @@ function presentScriptTokens(t){ var T=presentTokens(t), C=S.client||{}, I=S.int
     if(sv>=20){ var stp=sv*0.25<100?5:10, lo=Math.round(sv*0.20/stp)*stp, hi=Math.round(sv*0.25/stp)*stp; if(lo<5) lo=5; if(hi<lo) hi=lo;   /* under $20 a month there is no sensible slice */
       T['lb.suggested_low']=m0(lo); T['lb.suggested_high']=m0(hi); T['lb.suggested']=hi>lo?m0(lo)+' to '+m0(hi):'about '+m0(lo); T['lb.share']='20 to 25%'; } }
   else { T['anchor.today']=''; T['savings.monthly']=''; T['saving']=''; }
+  T['lb.share']='20 to 25%';   /* the rule itself, not a figure - always said */
   return T; }
 /* where a blank can be typed into on the Apply panel, and the profile field it writes back to */
 var PRESENT_WRITEBACK={'client.legal_name':'c:pname','client.dob':'c:dob','client.phone':'i:phone','client.email':'i:email','client.wt':'i:pweight','doctor.name':'i:docs1'};
@@ -6831,6 +6832,8 @@ function presentLbCue(doc,T,t){
   var would=0; try{ var cfg=effCfg(t)||{}, prods=(S.packages[t]||{}).products||[];
     lbPersons().forEach(function(pp){ var w=pp.k; if(prods.some(function(x){ return x.k==='lb'+w&&(+x.monthly||0)>0; })) return;
       var l=(cfg.lb||{})[w]; if(!l||!l.face) return; var q=pLB1(pp,l); if(q&&+q.price>0) would+=+q.price; }); }catch(e){}
+  /* 7.3's figure is 20-25% of the saving: say why it's blank instead of showing the script's sample (Health ZONE, 23 Oct) */
+  PRESENT_MISS['lb.suggested']=!String(T['anchor.today']||'').trim()?'‹pick the anchor on screen 4 — this comes from their saving›':'‹their saving is under $20 a month — leave the figure out›';
   PRESENT_MISS['lb.addback']=would>0?'‹'+fmt2(would)+' once you click + Add just above›':'‹add living benefits just above — their price fills in here›';
   var v=doc.querySelector('var[data-k="lb.addback"]'); if(!v) return; var say=v.closest('.say'); if(!say) return;
   var cue=doc.querySelector('.pp-lbcue'); if(!cue){ cue=doc.createElement('div'); cue.className='do pp-lbcue'; if(say.dataset.pg!=null) cue.dataset.pg=say.dataset.pg; say.parentNode.insertBefore(cue,say.nextSibling);
