@@ -206,7 +206,7 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  var rvR=document.getElementById('rvFrame').contentDocument; reviewWire(rvR,'better'); var spoken=Array.prototype.map.call(rvR.querySelectorAll('.say'),function(x){ return x.textContent; }).join(' ');
  ok(!/RxEDO/i.test(spoken)&&/EasyCare2go/.test(spoken),'no RxEDO in anything spoken on the Benefits Review; the prescriptions screen names EasyCare2go');
  ok(reviewTokens('better')['plan.has_afc']==='1','plan.has_afc is set when the plan includes Affordable Choice');
- ok(!AFC_PARTNERS.some(function(p){ return /rxedo/i.test(p.name+p.desc); })&&/prescription/i.test(afcPartnerLines()),'partner benefits: no RxEDO, EasyCare2go carries the prescription discounts');
+ ok(!AFC_PARTNERS.some(function(p){ return /rxedo/i.test(p.name+p.desc+(p.bullets||[]).join(' ')); })&&!/prescription/i.test(afcPartnerLines())&&RXVALET_URL.indexOf('myrxvalet.com')>=0,'partner benefits: no RxEDO, and no prescription claim on EasyCare2go — prescriptions are Rx Valet (22 Oct)');
   /* a client without Affordable Choice is never told about EasyCare2go pharmacy savings (Health ZONE gates on plan.has_afc) */
  S.chosen={tier:'better'}; actualSeed('better'); (S.packages.actual.dropped=S.packages.actual.dropped||[]).push('afc'); priceTier('actual');
  var rvA=document.getElementById('rvFrame').contentDocument; reviewWire(rvA,'better'); var gA=rvA.querySelector('[data-needs="plan.has_afc"]');
@@ -303,6 +303,7 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
    ok(/^Hi Joel, it’s Jesse\./.test(tx)&&tx.indexOf('✅ Affordable Choice (your core health plan)')>=0&&tx.indexOf('BusinessCard/jessestamm')>=0&&/Your new coverage!/.test(tx),'the enrollment text: greeting, ✅ recap, the email’s subject, the card link');
    ok(paras.length>=5&&paras.every(function(x){ return x.trim().length; }),'paragraphs are separated by a blank line ('+paras.length+')');
    goStep('enroll'); await w(400); var bs=document.querySelectorAll('[data-entext]'); ok(bs.length===2&&/Text client recap/.test(bs[0].textContent)&&/Copy client recap to text/.test(bs[1].textContent),'Enroll has the two recap buttons ('+bs.length+')');
+   var ee=enrollEmail(); ok(ee.body.indexOf('Rx Valet')>=0&&ee.body.indexOf('myrxvalet.com')>=0&&ee.body.indexOf('EasyCare2go — 24/7 telemedicine doctors, mental health')>=0,'the enrollment email names Rx Valet for prescriptions; EasyCare2go no longer claims Rx');
    var wrap=textFromHTML(postTextHTML('better')); ok(wrap.split(String.fromCharCode(10,10)).length>=4,'the wrap-up text copies with its blank lines too');
  }catch(e){ fails.push('enrollment text block threw: '+e.message); } S=keep; fill(); })();
  /* Triad flow (sandbox, Jesse 22 Oct): a Cigna PPO package gets its own Present, Enroll and Benefits Review */
@@ -385,7 +386,7 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  S=JSON.parse(JSON.stringify(rfBase)); S.intake.pregNowP=true; goStep('quote'); compute(); await w(200); var rfe=document.getElementById('rightFit');
  ok(rfe&&rfe.textContent.indexOf('ACA + optional HI Select')>=0&&rfe.textContent.indexOf('p.23')>=0&&/Amerus VL/.test(rfe.textContent)&&/not an underwriting decision/.test(rfe.textContent),'right-fit panel renders on Quote with the path, the guide cite, GI names and the disclaimer: '+(rfe?'':'none'));
  S=JSON.parse(JSON.stringify(rfBase));
- return {n:205, fails:fails}; })()`;
+ return {n:206, fails:fails}; })()`;
 try {
   let l; for (let i = 0; i < 60 && !l; i++) { await sleep(150); l = await fetch(`http://127.0.0.1:${DBG}/json/list`).then(r => r.json()).catch(() => null); }
   ws = new WebSocket(l.find(t => t.type === 'page').webSocketDebuggerUrl);
