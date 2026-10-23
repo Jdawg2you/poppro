@@ -25,7 +25,10 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  S=blankState(); applySuiteClient({first:'Pat',last:'Care',state:'TX',age:'45',dob:'01/01/1981',kids:[],health:{}});
  S.intake.email='pat@example.com'; S.client.agent='Sam Agent'; S.agency='Optimum Health'; S.agentPhone='555-201-3344'; S.agentBenefits='optimumprotects.com/manhattanlife';
  ['good','better','best'].forEach(function(t){ S.include[t]=true; }); autoPriceTiers(); compute(); S.chosen={tier:'better'}; compute();
+ Object.assign(S.intake,{docs1:'Dr. Patel',docs1who:'me',docs1net:true,docs2:'Dr. Lee',docs2who:'me',docs2net:false,docs3:'Kids Clinic',docs3who:'',docs3net:true});
  goStep('review'); await w(1800);
+ ok((document.querySelector('[data-care="me_doc"]')||{}).value==='Dr. Patel','an in-network Intake doctor with an owner comes over');
+ var left=(document.querySelector('.rv-cleft')||{}).textContent||''; ok(/Dr\. Lee — not marked in network/.test(left)&&/Kids Clinic — no “whose” picked/.test(left),'Intake doctors left out are named with the reason: '+left);
  var box=document.querySelector('.rv-care'); ok(!!box,'care card box on the Benefits Review');
  ok(!document.querySelector('[data-care="sp_doc"]'),'no spouse box for a single client');
  var put=function(k,v){ var e=document.querySelector('[data-care="'+k+'"]'); e.value=v; e.dispatchEvent(new Event('input')); };
