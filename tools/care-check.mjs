@@ -36,7 +36,7 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  ok(J.f.agent==='Sam Agent'&&J.f.agent_ph==='5552013344','link carries the agent');
  var ta=document.getElementById('rvEmailTxt'), v=ta.value;
  ok(v.indexOf(careCardLink())>=0,'email has the up-to-date card link');
- ok(/My doctor: Dr\\. Rivera · 5125550101/.test(v)&&/Urgent care: CareNow Main St/.test(v),'email lists what was filled');
+ ok(/My doctor: Dr\\. Rivera · 512-555-0101/.test(v)&&/Urgent care: CareNow Main St/.test(v),'email lists what was filled');
  ok(v.indexOf('Hospital / ER')<0,'email has no line for an empty box');
  ok(v.indexOf('https://optimumprotects.com/manhattanlife')>=0,'email has the page to bookmark');
  ok(/STILL TO DO[^]*easyupload/.test(v),'unticked set-ups go under Still to do');

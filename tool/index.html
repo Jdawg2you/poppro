@@ -5248,6 +5248,7 @@ function careImport(url){ var m=/[#&]c=([A-Za-z0-9_-]+)/.exec(String(url||'')); 
 function careCardLink(){ var j=JSON.stringify(careCardData()), b=btoa(unescape(encodeURIComponent(j))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''); return CARE_CARD_URL+'#c='+b; }
 /* The recap email the script promises ("You'll get a recap email from me within the hour", Jesse 23 Oct): only what
    the call covered and what's known - no doctor line that wasn't filled, no figure the script doesn't say. */
+function carePh(v){ var d=String(v||'').replace(/\D/g,''); if(d.length===11&&d[0]==='1') d=d.slice(1); return d.length===10?d.slice(0,3)+'-'+d.slice(3,6)+'-'+d.slice(6):String(v||'').trim(); }
 function reviewEmail(){ var t=reviewT()||chosenTier(), R=reviewState(), C=S.client||{}, first=((C.pname||'').trim().split(/\s+/)[0])||'there';
   var c=effCfg(t)||{}, pk=S.packages[t]||{}, prods=[];
   (pk.products||[]).forEach(function(p){ if(!((+p.monthly||0)>0)||p.k==='lbp'||p.k==='lbs') return; var sl=PB_SLOTS.filter(function(x){ return x.k===p.k; })[0];
@@ -5258,7 +5259,7 @@ function reviewEmail(){ var t=reviewT()||chosenTier(), R=reviewState(), C=S.clie
   sec('YOUR PLAN',['ManhattanLife'+(prods.length?' · '+prods.join(' · '):''),
     prem>0?fmt2(prem)+' a month'+(R.draft?', drafted on '+reviewDate(R.draft):''):'',
     R.eff?'Coverage starts '+reviewDate(R.eff):'']);
-  var cf=careFields(), got=CARE_F.filter(function(x){ return cf[x[0]]; }).map(function(x){ return x[1]+': '+cf[x[0]]+(cf[x[0]+'_ph']?' · '+cf[x[0]+'_ph']:''); });
+  var cf=careFields(), got=CARE_F.filter(function(x){ return cf[x[0]]; }).map(function(x){ return x[1]+': '+cf[x[0]]+(cf[x[0]+'_ph']?' · '+carePh(cf[x[0]+'_ph']):''); });
   sec('YOUR CARE CARD',['Your doctors and the numbers you need, ready to save to your phone or print a card for your wallet:',careCardLink()]
     .concat(got.length?['','Already on it:'].concat(got).concat(['Add anything else right on the page — it saves on your phone.']):['Add your doctor, urgent care and hospital right on the page — it saves on your phone.']));
   var link=reviewLink(); if(link) sec('BOOKMARK THIS PAGE',['How to use your plan, who to call and the apps, all on one page:',link]);
@@ -5464,7 +5465,7 @@ function triadEmail(t){ var first=triadFirst(), plan=triadPlanOf(t), st=triadSta
   return {to:(S.intake&&S.intake.email)||'',su:'Your Cigna PPO plan — what to know'+(st.eff?' before '+st.eff:''),body:body}; }
 function reviewCareHTML(){ var cf=careFields();
   var row=function(x){ if(!careShown(x[0])) return ''; var k=x[0];
-    return '<div class="fld"><label>'+esc(x[1])+'</label><div class="rv-pair"><input data-care="'+k+'" placeholder="name — optional" value="'+esc(cf[k]||'')+'"><input data-care="'+k+'_ph" class="ph" inputmode="tel" placeholder="phone" value="'+esc(cf[k+'_ph']||'')+'"></div></div>'; };
+    return '<div class="fld"><label>'+esc(x[1])+'</label><div class="rv-pair"><input data-care="'+k+'" placeholder="name" value="'+esc(cf[k]||'')+'"><input data-care="'+k+'_ph" class="ph" inputmode="tel" placeholder="phone" value="'+esc(cf[k+'_ph']||'')+'"></div></div>'; };
   return '<div class="rv-care"><div class="rv-ch">Their care card <small>— fill what you get to on the call; every box is optional. What’s here goes into their card link and the recap email. Doctors marked in network on the Intake start here.</small></div>'
    +'<div class="rv-grid rv-cgrid">'+CARE_F.map(row).join('')+'</div>'
    +'<div class="rv-cbtns"><a class="picbtn" id="rvCareOpen" href="'+esc(careCardLink())+'" target="_blank" rel="noopener">Open their care card ↗</a><button type="button" class="picbtn" id="rvCareCopy">🔗 Copy their card link</button>'
