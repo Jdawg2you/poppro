@@ -704,6 +704,7 @@
   .pe-cue.on{display:block;animation:peBlink 1.1s ease-in-out infinite}.pe-cue span{display:inline-block;animation:peBob 1.1s ease-in-out infinite}
   @keyframes peBlink{0%,100%{opacity:1}50%{opacity:.55}}@keyframes peBob{0%,100%{transform:translateY(0)}50%{transform:translateY(4px)}}
   @media print{.pe-cue{display:none!important}}
+  .rv-conf .needfill input,.rv-conf .needfill select{border-color:#22a05a!important;background:#f2fbf5!important;animation:agglow 1.8s ease-in-out infinite}.rv-conf .needfill label{color:#17824a}
   .rv-cleft{font-size:13px;color:#92400e;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:6px 10px;margin:8px 0}
   .rv-cgrid{grid-template-columns:repeat(2,1fr)}.rv-cbtns{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}.rv-cbtns a.picbtn{text-decoration:none}
   .rv-paste{display:flex;gap:6px;flex:1;min-width:260px}.rv-paste input{flex:1;padding:8px 9px;border:1px dashed var(--line);border-radius:8px;font:inherit;font-size:13px}.rv-cmsg{font-size:13px;color:#166534}
@@ -5498,7 +5499,7 @@ function triadEmail(t){ var first=triadFirst(), plan=triadPlanOf(t), st=triadSta
 function reviewCareHTML(){ var cf=careFields();
   var row=function(x){ if(!careShown(x[0])) return ''; var k=x[0];
     return '<div class="fld"><label>'+esc(x[1])+'</label><div class="rv-pair"><input data-care="'+k+'" placeholder="name" value="'+esc(cf[k]||'')+'"><input data-care="'+k+'_ph" class="ph" inputmode="tel" placeholder="phone" value="'+esc(cf[k+'_ph']||'')+'"></div></div>'; };
-  return '<div class="rv-care"><div class="rv-ch">Their care card <small>— fill what you get to on the call; every box is optional. What’s here goes into their card link and the recap email. Doctors marked in network on the Intake start here.</small></div>'
+  return '<div class="rv-care"><div class="rv-ch">Client care card <small>— optional: you can fill in their doctor information immediately below. What’s here goes into their card link and the recap email. Doctors marked “✓ In network” on the Intake fill in below automatically.</small></div>'
    +reviewCareLeft()
    +'<div class="rv-grid rv-cgrid">'+CARE_F.map(row).join('')+'</div>'
    +'<div class="rv-cbtns"><a class="picbtn" id="rvCareOpen" href="'+esc(careCardLink())+'" target="_blank" rel="noopener">Open their care card ↗</a><button type="button" class="picbtn" id="rvCareCopy">🔗 Copy their card link</button>'
@@ -5534,12 +5535,12 @@ function renderReview(){ var host=$('reviewHost'); if(!host) return; var t=chose
   host.innerHTML=head
    +'<div class="rv-conf"><div class="rv-confbar" id="rvConfBar" role="button" tabindex="0"></div><div class="rv-ch">From the carrier’s confirmation <small>typed once, off the approval — not the quote. Saved with this client.</small></div>'
    +'<div class="rv-grid">'
-   +'<div class="fld"><label>Approved</label><select id="rv_appr"><option value="">—</option><option value="as"'+(R.appr==='as'?' selected':'')+'>As applied for</option><option value="chg"'+(R.appr==='chg'?' selected':'')+'>With a change</option></select></div>'
+   +'<div class="fld"><label>Approved</label><select id="rv_appr"><option value="">—</option><option value="as"'+(R.appr==='as'?' selected':'')+'>Yes</option><option value="chg"'+(R.appr==='chg'?' selected':'')+'>Yes — with a change</option><option value="no"'+(R.appr==='no'?' selected':'')+'>Not yet</option></select></div>'
    +'<div class="fld"><label>Effective date</label><input type="date" id="rv_eff" value="'+esc(R.eff||'')+'"></div>'
    +'<div class="fld"><label>Monthly premium <small>'+(+R.prem>0?'typed in — the plan below adds up to '+fmt2(reviewPremTool()):'from the plan below — type over it if the carrier’s differs')+'</small></label><input id="rv_prem" class="money2" inputmode="decimal" placeholder="from the confirmation" value="'+(reviewPrem()>0?fmtMoney2(reviewPrem()):'')+'"></div>'
    +'<div class="fld"><label>Draft date <small>from the carrier — never assumed</small></label><input type="date" id="rv_draft" value="'+esc(R.draft||'')+'"></div>'
    +'<div class="fld"><label>Annual review month</label><select id="rv_month"><option value="">'+(R.eff?'— '+MONTHS[+String(R.eff).slice(5,7)-1]+' (effective month)':'—')+'</option>'+mo+'</select></div>'
-   +'<div class="fld rv-wide"><label>Their resource page <small>'+(ownLink?'your Setup link, unless this client has their own':'add yours in ⚙ Setup')+'</small></label><input id="rv_link" placeholder="'+esc(ownLink||'yoursite.com/manhattanlife')+'" value="'+esc(R.link||'')+'"></div>'
+   +'<div class="fld rv-wide"><label>Your client’s resource page <small>'+(ownLink?'(this link pulls over from your agent Setup page)':'(add yours in ⚙ Setup and it pulls over here)')+'</small></label><input id="rv_link" placeholder="'+esc(ownLink||'yoursite.com/manhattanlife')+'" value="'+esc(R.link||'')+'"></div>'
    +'</div><div id="rv_warn" class="rv-warn"></div><div id="rvActual" class="rv-actual"></div></div>'
    +reviewCareHTML()
    +'<div class="pr-prog" id="rvChips"></div><div class="pr-grid"><div>'
@@ -5559,7 +5560,12 @@ function renderReview(){ var host=$('reviewHost'); if(!host) return; var t=chose
   reviewCareWire(); reviewMailWire();
   renderActual(); reviewRail(); reviewCheck(); reviewEmailPaint();
   var fr=$('rvFrame'); fr.onload=function(){ try{ scriptClean(fr.contentDocument); reviewPaginate(fr.contentDocument,t); reviewGo(+R.pg||0); }catch(e){} }; }
-function reviewCheck(){ var R=reviewState(), w=[], el=$('rv_warn'); if(!el) return;
+/* Every empty box in the carrier's confirmation glows green until it's filled (Jesse, 23 Oct) - the same treatment as Setup */
+function reviewNeed(){ ['rv_appr','rv_eff','rv_prem','rv_draft','rv_month','rv_link'].forEach(function(id){ var el=$(id); if(!el) return; var f=el.closest('.fld'); if(!f) return;
+    var empty=!String(el.value||'').trim()&&!(id==='rv_link'&&reviewLink())&&!(id==='rv_month'&&reviewState().eff)&&!(id==='rv_prem'&&reviewPrem()>0);
+    f.classList.toggle('needfill',empty); }); }
+function reviewCheck(){ var R=reviewState(), w=[], el=$('rv_warn'); if(!el) return; reviewNeed();
+  if(R.appr==='no') w.push('<b>You selected Not yet for Approved.</b> Be careful about promising what coverage they have until you know the carrier has actually approved it.');
   if(R.appr==='chg') w.push('<b>Approved with a change:</b> open with it — say what moved, what it costs and what it means — before “approved as applied for”.');
   if(R.eff&&!R.draft) w.push('<b>Draft date is empty.</b> Read it off the carrier’s confirmation. A custom date (a benefit week, a payday) is not done until the carrier confirms it back.');
   if(R.eff&&R.draft&&R.draft!==R.eff) w.push('<b>Custom draft date</b> ('+esc(reviewDate(R.draft))+'): don’t say “usually that same day” — say the date.');
