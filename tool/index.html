@@ -706,6 +706,7 @@
   @keyframes peBlink{0%,100%{opacity:1}50%{opacity:.55}}@keyframes peBob{0%,100%{transform:translateY(0)}50%{transform:translateY(4px)}}
   @media print{.pe-cue{display:none!important}}
   .rv-conf .needfill input,.rv-conf .needfill select{border-color:#22a05a!important;background:#f2fbf5!important;animation:agglow 1.8s ease-in-out infinite}.rv-conf .needfill label{color:#17824a}
+  .pw-story{font-size:12.5px;color:#4b5563;margin:4px 0 8px;line-height:1.45}.pw-story b{color:#1f2937}
   .rv-cleft{font-size:13px;color:#92400e;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:6px 10px;margin:8px 0}
   .rv-cgrid{grid-template-columns:repeat(2,1fr)}.rv-cbtns{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}.rv-cbtns a.picbtn{text-decoration:none}
   .rv-paste{display:flex;gap:6px;flex:1;min-width:260px}.rv-paste input{flex:1;padding:8px 9px;border:1px dashed var(--line);border-radius:8px;font:inherit;font-size:13px}.rv-cmsg{font-size:13px;color:#166534}
@@ -4845,8 +4846,10 @@ function whyOn(a){ var W=((S.present||{}).why)||{}; return a.none?false:(W[a.tag
 function whyAnswerText(t){ return whyAnswers(t).filter(whyOn).map(function(a){ var E=((S.present||{}).whyText||{})[a.tag]; return String(E||a.text).trim(); }).filter(Boolean).join(' '); }
 function presentWhyBox(t){ var box=$('prWhy'); if(!box) return; var I=S.intake||{}, q=whyQuote(I), A=whyAnswers(t);
   S.present=S.present||{}; S.present.why=S.present.why||{}; S.present.whyText=S.present.whyText||{};
-  if(!q&&!A.length){ box.innerHTML='<b>About their why</b><p class="pw-none">No why on the Intake yet — their words and tags fill this.</p>'; return; }
-  box.innerHTML='<b>About their why</b>'+(q?'<p class="pw-q">“'+esc(q)+'”</p>':'')+(whyTagList(I.whyTags).length?'<p class="pw-tags">'+whyTagList(I.whyTags).map(esc).join(' · ')+'</p>':'')
+  /* their story rides along on every Present screen, agent-only (Jesse, 23 Oct) - screen 3 shows it too */
+  var story=String(I.whyShop||'').trim(), stHTML=story?'<p class="pw-story"><b>Their story:</b> '+esc(story)+'</p>':'';
+  if(!q&&!A.length){ box.innerHTML='<b>About their why</b>'+(stHTML||'<p class="pw-none">No why on the Intake yet — their words and tags fill this.</p>'); return; }
+  box.innerHTML='<b>About their why</b>'+(q?'<p class="pw-q">“'+esc(q)+'”</p>':'')+(whyTagList(I.whyTags).length?'<p class="pw-tags">'+whyTagList(I.whyTags).map(esc).join(' · ')+'</p>':'')+stHTML
     +(A.length?'<div class="pw-sub">What you’ll say at the close — only the ones switched on:</div>':'')
     +A.map(function(a,i){ if(a.none) return '<div class="pw-row pw-no"><span>'+esc(a.tag)+': nothing to claim</span><small>'+esc(a.basis)+'</small></div>';
       var on=whyOn(a), txt=S.present.whyText[a.tag]||a.text;
