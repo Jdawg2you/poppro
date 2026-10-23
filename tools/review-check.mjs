@@ -206,7 +206,7 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  var rvR=document.getElementById('rvFrame').contentDocument; reviewWire(rvR,'better'); var spoken=Array.prototype.map.call(rvR.querySelectorAll('.say'),function(x){ return x.textContent; }).join(' ');
  ok(!/RxEDO/i.test(spoken)&&/EasyCare2go/.test(spoken),'no RxEDO in anything spoken on the Benefits Review; the prescriptions screen names EasyCare2go');
  ok(reviewTokens('better')['plan.has_afc']==='1','plan.has_afc is set when the plan includes Affordable Choice');
- ok(!AFC_PARTNERS.some(function(p){ return /rxedo/i.test(p.name+p.desc+(p.bullets||[]).join(' ')); })&&!/EasyCare2go[^•]*prescription/i.test(afcPartnerLines())&&/Rx Valet — prescription discount card/.test(afcPartnerLines())&&RXVALET_URL.indexOf('myrxvalet.com')>=0,'partner benefits: no RxEDO, and no prescription claim on EasyCare2go — prescriptions are Rx Valet (22 Oct)');
+ ok(!AFC_PARTNERS.some(function(p){ return /rxedo/i.test(p.name+p.desc+(p.bullets||[]).join(' ')); })&&/Rx Valet — prescription discount card/.test(afcPartnerLines())&&RXVALET_URL.indexOf('myeasycare2go.com')>=0,'partner benefits: no RxEDO, and no prescription claim on EasyCare2go — prescriptions are Rx Valet (22 Oct)');
   /* Rx Valet is for every client (22 Oct): no Affordable Choice still hears it; the $50-a-day blocks still follow the AFC figure */
  S.chosen={tier:'better'}; actualSeed('better'); (S.packages.actual.dropped=S.packages.actual.dropped||[]).push('afc'); priceTier('actual');
  var rvA=document.getElementById('rvFrame').contentDocument; reviewWire(rvA,'better');
@@ -306,10 +306,10 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
    ok(/^Hi Joel, it’s Jesse\./.test(tx)&&tx.indexOf('✅ Affordable Choice (your core health plan)')>=0&&tx.indexOf('BusinessCard/jessestamm')>=0&&/Your new coverage!/.test(tx),'the enrollment text: greeting, ✅ recap, the email’s subject, the card link');
    ok(paras.length>=5&&paras.every(function(x){ return x.trim().length; }),'paragraphs are separated by a blank line ('+paras.length+')');
    goStep('enroll'); await w(400); var bs=document.querySelectorAll('[data-entext]'); ok(bs.length===2&&/Text client recap/.test(bs[0].textContent)&&/Copy client recap to text/.test(bs[1].textContent),'Enroll has the two recap buttons ('+bs.length+')');
-   var ee=enrollEmail(); ok(ee.body.indexOf('Rx Valet')>=0&&ee.body.indexOf('myrxvalet.com')>=0&&ee.body.indexOf('EasyCare2go — 24/7 telemedicine doctors, mental health')>=0,'the enrollment email names Rx Valet for prescriptions; EasyCare2go no longer claims Rx');
-   ok(tx.indexOf('💊 Plus Rx Valet for prescription discounts: https://www.myrxvalet.com')>=0,'the recap text lists Rx Valet');
+   var ee=enrollEmail(); ok(ee.body.indexOf('Rx Valet')>=0&&ee.body.indexOf('myrxvalet.com')<0&&ee.body.indexOf('EasyCare2go login (Group ID mlins2023)')>=0,'the enrollment email names Rx Valet for prescriptions; EasyCare2go no longer claims Rx');
+   ok(tx.indexOf('💊 Plus Rx Valet prescription discounts, in your EasyCare2go login (Group ID mlins2023)')>=0&&tx.indexOf('myrxvalet')<0,'the recap text lists Rx Valet');
    ok(AFC_PARTNERS.some(function(p){ return p.name==='Rx Valet'; })&&/Rx Valet/.test(renderAfcPartnersHTML(false)||'Rx Valet'),'Rx Valet is a card in the partner benefits panel');
-   ok(REVIEW_TICKS.some(function(x){ return x.k==='rxv'&&/myrxvalet/.test(x.sms('Joel')); }),'the Benefits Review checklist can text Rx Valet');
+   ok(REVIEW_TICKS.some(function(x){ return x.k==='rxv'&&/myeasycare2go/.test(x.sms('Joel'))&&!/myrxvalet/.test(x.sms('Joel')); }),'the Benefits Review checklist can text Rx Valet');
    var wrap=textFromHTML(postTextHTML('better')); ok(wrap.split(String.fromCharCode(10,10)).length>=4,'the wrap-up text copies with its blank lines too');
  }catch(e){ fails.push('enrollment text block threw: '+e.message); } S=keep; fill(); })();
  /* Triad flow (sandbox, Jesse 22 Oct): a Cigna PPO package gets its own Present, Enroll and Benefits Review */
