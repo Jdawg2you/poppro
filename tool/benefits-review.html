@@ -83,6 +83,36 @@ ul,ol{margin:0 0 11px;padding-left:22px}li{margin-bottom:6px}
 </ul>
 </div>
 
+<h2 data-screen="notes">Coaching notes <span style="font-size:13px;font-weight:400;color:#666">&mdash; agent only, never on screen for a client</span></h2>
+
+<div class="prep">
+<h4>Why the call is built this way</h4>
+<ul>
+<li><b>Pass the baton.</b> Make them log in, register, and install <i>on the call</i>. A client who never logged into their portal will call you for everything; a client who did will call <var data-k="policy.carrier">ManhattanLife</var>. Most of the &ldquo;needy&rdquo; clients are the result of not following this process through.</li>
+<li><b>Teach a man to fish.</b> You&rsquo;re the broker, not the carrier. The point of the call is that they leave knowing <i>who solves each problem</i>.</li>
+<li><b>Fifteen minutes each.</b> Eight policies a month is two hours that eliminates most of the support burden.</li>
+<li><b>Don&rsquo;t quote the visit count from memory.</b> Read it off the schedule for the tier and state.</li>
+<li><b>Say &ldquo;First Health,&rdquo; not &ldquo;Aetna.&rdquo;</b> First Health is Aetna-owned, which is where the &ldquo;it&rsquo;s Aetna&rsquo;s network&rdquo; habit comes from, but a front desk searches for First Health. Keep the client&rsquo;s script to the network name.</li>
+</ul>
+</div>
+
+<div class="prep">
+<h4>What this call is for, structurally</h4>
+<ul>
+<li><b>It is the lapse-prevention call.</b> The premium, the date and the account are said in section 2 and nowhere else. Most of what we have seen flagged as a &ldquo;lapse&rdquo; in the first month was a <b>first draft that bounced</b> &mdash; which is this call&rsquo;s job to prevent.</li>
+<li><b>It is the four-registration call.</b> Portal, telehealth, app, CareGuide. Each one not done on the call is a future phone call to you.</li>
+<li><b>It is the referral ask.</b> It is the only moment in the relationship where they are grateful and nothing has gone wrong yet.</li>
+<li><b>It sets up the annual review</b> by naming the month out loud, and by putting the tier-down note on the record.</li>
+</ul>
+</div>
+
+<div class="needs" data-author="note"><b>Open questions for Jesse &mdash; three.</b>
+<ol>
+<li><b>The &ldquo;wink, wink&rdquo; line on the per-day Rx benefit.</b> Kept as the plain rule above, with the wink removed from the written version. Confirm that is how you want it to read, or tell me to put your wording back verbatim.</li>
+<li><b>The dental frequencies</b> (two cleanings, two exams, two X-rays, two fluoride). Not in our reference file. Give me the schedule line and I will put the counts back in the spoken sentence.</li>
+<li><b>Provenance.</b> This came through as one finished piece. If any of it is Kyle&rsquo;s or Gaylan&rsquo;s wording rather than yours, say so and I will tag the blocks the way the presentation script is tagged.</li>
+</ol></div>
+
 <h2 data-screen="open"><span class="n">1</span>Open</h2>
 
 <div class="say">Hey <var data-k="client.first">&lt;client first name&gt;</var>, it&rsquo;s <var data-k="agent.first">&lt;your first name&gt;</var><span data-needs="agent.agency"> with <var data-k="agent.agency">Optimum</var></span>. Thanks for taking a few minutes. I just want to cross the T&rsquo;s and dot the I&rsquo;s before your policy goes effective on <var data-k="policy.effective_date">&lt;effective date&gt;</var> so there are no surprises. You&rsquo;ve been approved as applied for with <var data-k="policy.carrier">ManhattanLife</var>. I sent you an email a little earlier &mdash; you&rsquo;ll also get one from the carrier &mdash; and I&rsquo;d like to walk through mine with you now. Can you open it?</div>
@@ -238,36 +268,7 @@ The <b>frequencies</b> (two cleanings, two exams, two X-rays, two fluoride) are 
 
 <div class="say">The biggest thank-you I can get is an introduction &mdash; if anyone you know is paying too much or has nothing, send them to me. And <var data-k="client.first">&lt;client first name&gt;</var>, I&rsquo;m not just the health guy. Life insurance, retirement, protecting your savings &mdash; I want to be your one advocate for all of it, and I want your family to know who to call if anything ever happens to you. Save my number under &ldquo;<var data-k="agent.first">&lt;your first name&gt;</var><span data-needs="agent.agency"> &mdash; <var data-k="agent.agency">Optimum</var></span>.&rdquo; I&rsquo;ll check in every six to twelve months, I&rsquo;ll keep an eye on your claims, and your annual review is already on my calendar for <var data-k="review.month">&lt;month&gt;</var>. You&rsquo;ll get a recap email from me within the hour.</div>
 
-<div class="do"><span class="lab">AFTER THE CALL</span>The recap email inside the hour, because you just promised it. The annual review on the calendar, because you just said it is there. Both are commitments made out loud on a recorded relationship.</div>
+<div class="do"><span class="lab">AFTER THE CALL</span><b>Next step: the recap email.</b> Inside the hour, because you just promised it. The annual review on the calendar, because you just said it is there. Both are commitments made out loud on a recorded relationship.</div>
 
-<h2 data-screen="notes">Coaching notes <span style="font-size:13px;font-weight:400;color:#666">&mdash; agent only, never on screen for a client</span></h2>
-
-<div class="prep">
-<h4>Why the call is built this way</h4>
-<ul>
-<li><b>Pass the baton.</b> Make them log in, register, and install <i>on the call</i>. A client who never logged into their portal will call you for everything; a client who did will call <var data-k="policy.carrier">ManhattanLife</var>. Most of the &ldquo;needy&rdquo; clients are the result of not following this process through.</li>
-<li><b>Teach a man to fish.</b> You&rsquo;re the broker, not the carrier. The point of the call is that they leave knowing <i>who solves each problem</i>.</li>
-<li><b>Fifteen minutes each.</b> Eight policies a month is two hours that eliminates most of the support burden.</li>
-<li><b>Don&rsquo;t quote the visit count from memory.</b> Read it off the schedule for the tier and state.</li>
-<li><b>Say &ldquo;First Health,&rdquo; not &ldquo;Aetna.&rdquo;</b> First Health is Aetna-owned, which is where the &ldquo;it&rsquo;s Aetna&rsquo;s network&rdquo; habit comes from, but a front desk searches for First Health. Keep the client&rsquo;s script to the network name.</li>
-</ul>
-</div>
-
-<div class="prep">
-<h4>What this call is for, structurally</h4>
-<ul>
-<li><b>It is the lapse-prevention call.</b> The premium, the date and the account are said in section 2 and nowhere else. Most of what we have seen flagged as a &ldquo;lapse&rdquo; in the first month was a <b>first draft that bounced</b> &mdash; which is this call&rsquo;s job to prevent.</li>
-<li><b>It is the four-registration call.</b> Portal, telehealth, app, CareGuide. Each one not done on the call is a future phone call to you.</li>
-<li><b>It is the referral ask.</b> It is the only moment in the relationship where they are grateful and nothing has gone wrong yet.</li>
-<li><b>It sets up the annual review</b> by naming the month out loud, and by putting the tier-down note on the record.</li>
-</ul>
-</div>
-
-<div class="needs" data-author="note"><b>Open questions for Jesse &mdash; three.</b>
-<ol>
-<li><b>The &ldquo;wink, wink&rdquo; line on the per-day Rx benefit.</b> Kept as the plain rule above, with the wink removed from the written version. Confirm that is how you want it to read, or tell me to put your wording back verbatim.</li>
-<li><b>The dental frequencies</b> (two cleanings, two exams, two X-rays, two fluoride). Not in our reference file. Give me the schedule line and I will put the counts back in the spoken sentence.</li>
-<li><b>Provenance.</b> This came through as one finished piece. If any of it is Kyle&rsquo;s or Gaylan&rsquo;s wording rather than yours, say so and I will tag the blocks the way the presentation script is tagged.</li>
-</ol></div>
 
 </body></html>
