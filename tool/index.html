@@ -696,6 +696,7 @@
   .rv-actwrap{grid-template-columns:minmax(300px,400px) 1fr}.rv-actnote li.rv-hist{background:#fff6dc;border-left:3px solid var(--gold);padding:3px 8px;margin:3px 0;list-style-position:inside}
   .rg-hist{display:block;margin-top:4px;padding:3px 8px;background:#fff6dc;border-left:3px solid var(--gold);color:#7a5a12;font-size:12.5px;font-weight:600}.pbcol.actual{border:2px solid var(--navy)}.pbcol.actual select[data-act=actname]{font:inherit;font-family:var(--serif);font-size:20px;color:var(--navy);border:1px solid #d6cdb4;border-radius:7px;padding:2px 6px;background:#fff}
   @media(max-width:820px){.rv-actwrap{grid-template-columns:1fr}}
+  .rv-approved{border:2px solid #22a05a;background:#f2fbf5;border-radius:12px;padding:12px 14px;margin:0 0 14px}.rv-apmsg{margin-top:8px}.rv-apmsg b{font-size:12px;color:#17824a;text-transform:uppercase;letter-spacing:.06em}.rv-apt{background:#fff;border:1px solid #cfe7d8;border-radius:8px;padding:8px 10px;font-size:13.5px;margin-top:3px}
   .rv-care,.rv-mail{border:1px solid var(--line);background:#fff;border-radius:12px;padding:12px 14px;margin:0 0 14px}.rv-mail{margin-top:16px}
   .rv-pair{display:flex;gap:6px}.rv-pair input{flex:1;min-width:0;padding:8px 9px;border:1px solid var(--line);border-radius:8px;background:#fbfaf6;font:inherit}.rv-pair input.ph{flex:0 0 120px}
   .netseg{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;vertical-align:middle}.netseg button{border:0;background:#fff;padding:3px 9px;font:inherit;font-size:12px;font-weight:700;color:#6b7280;cursor:pointer}
@@ -5301,17 +5302,46 @@ function reviewEmail(){ var t=reviewT()||chosenTier(), R=reviewState(), C=S.clie
     rxv:'Rx Valet, your prescription discounts — inside your EasyCare2go login · '+RXVALET_PHONE,
     upload:'Easy Upload app, for sending in receipts: https://easyupload.manhattanlife.com/',
     cg:'CareGuide — call before you pay any medical bill over $2,500: 469-902-2267',
-    drx:drxWho().length?'Direction Rx: '+(drxCode()?'code '+drxCode()+' · ':'')+drxLink():''};
+    drx:drxForAll()?'Direction Rx member pricing — weight loss and hormone therapy: code '+drxCode()+' · '+drxLink():''};
   var ks=reviewTicks().map(function(x){ return x.k; }).filter(function(k){ return LINE[k]; });
   sec('SET UP ON OUR CALL ✓',ks.filter(function(k){ return R.ticks[k]; }).map(function(k){ return LINE[k]; }));
   sec('STILL TO DO — a few minutes each',ks.filter(function(k){ return !R.ticks[k]; }).map(function(k){ return LINE[k]; }));
+  /* Dawn's training, Jesse's rulings (23 Oct): the ManhattanLife cards are not the care card; labs and imaging are Affordable Choice perks */
+  sec('GOOD TO KNOW',['Your temporary ID card is in the member portal from day one — use that. Your physical ManhattanLife ID cards come in the mail about 10 days after your start date.',
+    afcInPk(S.packages[t]||{})?'Labs or imaging? Before your doctor sends you to the hospital for bloodwork or an MRI, check DirectLabs (https://www.directlabs.com/) and Green Imaging (https://www.greenimaging.net) first — they come with your plan and are usually far cheaper.':'']);
   var rm=R.month||(R.eff?MONTHS[+String(R.eff).slice(5,7)-1]:''); if(rm) sec('YOUR ANNUAL REVIEW',['It’s on my calendar for '+rm+'. I’ll reach out — nothing for you to do.']);
   L.push(''); L.push('If anyone you know is paying too much for coverage, or has none, I’d be grateful for the introduction.');
   var agent=String(C.agent||'').trim(), agency=(S.agency&&S.agency!=='HealthFirst')?S.agency:'', card=reviewUrl(S.agentCard);
   L.push('','Best,'); [agent||agency, agent&&agency?agency:'', S.agentPhone||'', S.agentEmail||'', card].forEach(function(x){ if(String(x||'').trim()) L.push(String(x).trim()); });
   return {to:(S.intake&&S.intake.email)||'',subject:'Your ManhattanLife plan — everything from today in one place',body:L.join('\n')}; }
+/* The approval step (Jesse, 23 Oct): enroll → enrollment email + text → APPROVED → this text + email, book the review →
+   Benefits Review call → recap email + text. Optional; shown once Approved is Yes. */
+function approvedMsgs(){ var R=reviewState(), C=S.client||{}, first=((C.pname||'').trim().split(/\s+/)[0])||'there', me=((C.agent||'').trim().split(/\s+/)[0])||'';
+  var eff=R.eff?reviewDate(R.eff):'', prem=reviewPrem(), book=reviewUrl(S.agentBooking), chg=R.appr==='chg';
+  var sms='Hi '+first+(me?', it’s '+me:'')+'! Great news — ManhattanLife approved your plan'+(chg?' (with one change I’ll walk you through)':'')+'.'+(eff?' Your coverage starts '+eff+'.':'')
+    +' Let’s set up a quick 15-minute call before then so you know exactly how to use it'+(book?': '+book:' — what day works for you?')+' I’m also sending you an email with the details.';
+  var L=['Hi '+first+',','','Great news — ManhattanLife has approved your plan'+(chg?', with one change from what we applied for. I’ll walk you through it on our call so you know exactly what it means':'')+'.',''];
+  if(eff) L.push('Your coverage starts: '+eff); if(prem>0) L.push('Your monthly premium: '+fmt2(prem)+(R.draft?', drafted on '+reviewDate(R.draft):''));
+  L.push('','Your temporary ID card is in the member portal from day one: https://clients.manhattanlife.com — your physical ManhattanLife ID cards come in the mail about 10 days after your start date.');
+  L.push('','Next step: a quick 15-minute call before your start date, so you know how to use everything — your portal, telehealth, prescription savings and who to call for what.'+(book?' Book a time that suits you here: '+book:' Reply with a day and time that works for you.'));
+  var agent=String(C.agent||'').trim(), agency=(S.agency&&S.agency!=='HealthFirst')?S.agency:'';
+  L.push('','Talk soon,'); [agent||agency, agent&&agency?agency:'', S.agentPhone||'', S.agentEmail||'', reviewUrl(S.agentCard)].forEach(function(x){ if(String(x||'').trim()) L.push(String(x).trim()); });
+  return {sms:sms, to:(S.intake&&S.intake.email)||'', subject:'You’re approved — welcome to ManhattanLife', body:L.join('\n')}; }
+function approvedPaint(){ var host=$('rvApproved'); if(!host) return; var R=reviewState();
+  if(R.appr!=='as'&&R.appr!=='chg'){ host.innerHTML=''; host.style.display='none'; return; } host.style.display='';
+  var m=approvedMsgs(), ph=String((S.intake||{}).phone||'').replace(/[^\d+]/g,'');
+  host.innerHTML='<div class="rv-ch">They’re approved — let them know <small>optional · send now, before the Benefits Review call: the good news, their start date and a link to book the call</small></div>'
+    +'<div class="rv-apmsg"><b>Text</b><div class="rv-apt">'+esc(m.sms)+'</div></div>'
+    +'<div class="rv-cbtns"><a class="picbtn" href="sms:'+esc(ph)+'?&body='+encodeURIComponent(m.sms)+'">💬 Text them</a><button type="button" class="picbtn" data-apc="sms">📋 Copy text</button>'
+    +'<button type="button" class="picbtn" data-apc="mail">📋 Copy approval email</button><a class="picbtn" href="mailto:'+esc(m.to)+'?subject='+encodeURIComponent(m.subject)+'&body='+encodeURIComponent(m.body)+'">✉️ Open approval email</a>'
+    +(S.agentBooking?'':'<span class="rv-miss">No booking link in ⚙ Setup — the message asks them for a day instead.</span>')+'</div>';
+  host.querySelectorAll('[data-apc]').forEach(function(b){ b.onclick=function(){ var t=b.dataset.apc==='sms'?m.sms:'Subject: '+m.subject+'\n\n'+m.body, o=b.textContent; try{ navigator.clipboard.writeText(t); }catch(e){} b.textContent='✓ Copied'; setTimeout(function(){ b.textContent=o; },1600); }; }); }
 function reviewEmailPaint(){ var ta=$('rvEmailTxt'); if(!ta||ta.dataset.edited) return; var m=reviewEmail(); ta.value='Subject: '+m.subject+'\n\n'+m.body; }
-function reviewTicks(){ var L=REVIEW_TICKS.slice(); if(drxWho().length) L.push({k:'drx',t:'Direction Rx code sent (GLP-1)',open:'Open Direction Rx',url:drxLink()||'#',copy:drxCode()||drxLink(),copyLabel:drxCode()?'Copy code':'Copy link',sms:function(f){ return 'Hi '+f+'! '+drxHowTo(); }});
+/* Direction Rx is open to every ManhattanLife member - weight loss and hormone therapy (Jesse, 23 Oct); the GLP-1 wording stays for GLP-1 clients */
+function drxForAll(){ var ct=chosenTier(); return !(ct&&tierNonMh(ct)); }
+function drxGeneral(){ return 'As a ManhattanLife member you also get Direction Rx member pricing, for weight loss and hormone therapy. Your member code: '+drxCode()+' — start here: '+drxLink(); }
+function reviewTicks(){ var L=REVIEW_TICKS.slice(); if(!drxWho().length&&drxForAll()) L.push({k:'drx',t:'Direction Rx offered (weight loss, hormone therapy)',open:'Open Direction Rx',url:drxLink()||'#',copy:drxCode()||drxLink(),copyLabel:drxCode()?'Copy code':'Copy link',sms:function(f){ return 'Hi '+f+'! '+drxGeneral(); }});
+  if(drxWho().length) L.push({k:'drx',t:'Direction Rx code sent (GLP-1)',open:'Open Direction Rx',url:drxLink()||'#',copy:drxCode()||drxLink(),copyLabel:drxCode()?'Copy code':'Copy link',sms:function(f){ return 'Hi '+f+'! '+drxHowTo(); }});
   L.push({k:'card',t:'Care card sent',open:'Open their care card',url:careCardLink(),copy:careCardLink(),copyLabel:'Copy link',
     sms:function(f){ return 'Hi '+f+'! Here’s your care card — your doctors and the numbers you need, ready to print a card for each adult on the plan or save to your phone: '+careCardLink(); }});
   return L; }
@@ -5542,6 +5572,7 @@ function renderReview(){ var host=$('reviewHost'); if(!host) return; var t=chose
    +'<div class="fld"><label>Annual review month</label><select id="rv_month"><option value="">'+(R.eff?'— '+MONTHS[+String(R.eff).slice(5,7)-1]+' (effective month)':'—')+'</option>'+mo+'</select></div>'
    +'<div class="fld rv-wide"><label>Your client’s resource page <small>'+(ownLink?'(this link pulls over from your agent Setup page)':'(add yours in ⚙ Setup and it pulls over here)')+'</small></label><input id="rv_link" placeholder="'+esc(ownLink||'yoursite.com/manhattanlife')+'" value="'+esc(R.link||'')+'"></div>'
    +'</div><div id="rv_warn" class="rv-warn"></div><div id="rvActual" class="rv-actual"></div></div>'
+   +'<div id="rvApproved" class="rv-approved" style="display:none"></div>'
    +reviewCareHTML()
    +'<div class="pr-prog" id="rvChips"></div><div class="pr-grid"><div>'
    +'<iframe id="rvFrame" src="benefits-review.html" title="Benefits Review script" style="width:100%;border:1px solid var(--line);border-radius:12px;background:#fff;min-height:200px"></iframe>'
@@ -5556,8 +5587,8 @@ function renderReview(){ var host=$('reviewHost'); if(!host) return; var t=chose
   var save=function(){ R.appr=$('rv_appr').value; R.eff=$('rv_eff').value; var pv=moneyNum($('rv_prem').value)||0; R.prem=(Math.abs(pv-reviewPremTool())<0.005)?0:pv; R.draft=$('rv_draft').value;
     R.month=$('rv_month').value; R.link=$('rv_link').value.trim(); autosave(); reviewCheck(); renderActual();
     var fr=$('rvFrame'); if(fr&&fr.contentDocument&&fr.contentDocument.body&&fr.contentDocument.body.dataset.rvp) reviewWire(fr.contentDocument,t); };
-  ['rv_appr','rv_eff','rv_prem','rv_draft','rv_month','rv_link'].forEach(function(id){ $(id).addEventListener('change',save); $(id).addEventListener('input',function(){ if(id!=='rv_prem') save(); }); $(id).addEventListener('change',reviewEmailPaint); });
-  reviewCareWire(); reviewMailWire();
+  ['rv_appr','rv_eff','rv_prem','rv_draft','rv_month','rv_link'].forEach(function(id){ $(id).addEventListener('change',save); $(id).addEventListener('input',function(){ if(id!=='rv_prem') save(); }); $(id).addEventListener('change',reviewEmailPaint); $(id).addEventListener('change',approvedPaint); });
+  reviewCareWire(); reviewMailWire(); approvedPaint();
   renderActual(); reviewRail(); reviewCheck(); reviewEmailPaint();
   var fr=$('rvFrame'); fr.onload=function(){ try{ scriptClean(fr.contentDocument); reviewPaginate(fr.contentDocument,t); reviewGo(+R.pg||0); }catch(e){} }; }
 /* Every empty box in the carrier's confirmation glows green until it's filled (Jesse, 23 Oct) - the same treatment as Setup */
