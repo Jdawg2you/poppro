@@ -700,6 +700,10 @@
   .rv-pair{display:flex;gap:6px}.rv-pair input{flex:1;min-width:0;padding:8px 9px;border:1px solid var(--line);border-radius:8px;background:#fbfaf6;font:inherit}.rv-pair input.ph{flex:0 0 120px}
   .netseg{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;vertical-align:middle}.netseg button{border:0;background:#fff;padding:3px 9px;font:inherit;font-size:12px;font-weight:700;color:#6b7280;cursor:pointer}
   .netseg button+button{border-left:1px solid var(--line)}.netseg button[data-net=""].on{background:#fef3c7;color:#92400e}.netseg button[data-net="in"].on{background:#16a34a;color:#fff}.netseg button[data-net="out"].on{background:#dc2626;color:#fff}
+  .pe-cue{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:60;display:none;background:#dc2626;color:#fff;border:0;border-radius:999px;padding:10px 20px;font:inherit;font-weight:800;font-size:15px;box-shadow:0 6px 18px rgba(220,38,38,.35);cursor:pointer}
+  .pe-cue.on{display:block;animation:peBlink 1.1s ease-in-out infinite}.pe-cue span{display:inline-block;animation:peBob 1.1s ease-in-out infinite}
+  @keyframes peBlink{0%,100%{opacity:1}50%{opacity:.55}}@keyframes peBob{0%,100%{transform:translateY(0)}50%{transform:translateY(4px)}}
+  @media print{.pe-cue{display:none!important}}
   .rv-cleft{font-size:13px;color:#92400e;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:6px 10px;margin:8px 0}
   .rv-cgrid{grid-template-columns:repeat(2,1fr)}.rv-cbtns{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}.rv-cbtns a.picbtn{text-decoration:none}
   .rv-paste{display:flex;gap:6px;flex:1;min-width:260px}.rv-paste input{flex:1;padding:8px 9px;border:1px dashed var(--line);border-radius:8px;font:inherit;font-size:13px}.rv-cmsg{font-size:13px;color:#166534}
@@ -5192,8 +5196,8 @@ function reviewPaginate(doc,t){ if(!doc||!doc.body) return; var pages=REVIEW_PAG
 function scriptClean(doc){ try{ if(!doc||!doc.head||doc.getElementById('ppClean')) return; var st=doc.createElement('style'); st.id='ppClean';
   st.textContent='.flag,[data-author="note"]{display:none!important}'
       /* a Top tip is for the agent, never read out (Jesse, 23 Oct): set apart from SAY - dashed box, smaller, labelled */
-      +'.tip{background:#fbfaf6!important;border:1.5px dashed #b6a77a!important;border-left:1.5px dashed #b6a77a!important;border-radius:8px;font-size:13.5px!important;color:#4b4636;padding:9px 13px!important}'
-      +'.tip:before{content:"\\1F4A1  TOP TIP \\2014  FOR YOU, NOT READ ALOUD"!important;color:#8a6d1f!important}'; doc.head.appendChild(st); }catch(e){} }
+      +'.tip{position:relative;border:0!important;border-left:2px solid #c9a94f!important;border-right:2px solid #c9a94f!important;border-radius:0!important;background:linear-gradient(#c9a94f,#c9a94f) left top/12px 2px no-repeat,linear-gradient(#c9a94f,#c9a94f) left bottom/12px 2px no-repeat,linear-gradient(#c9a94f,#c9a94f) right top/12px 2px no-repeat,linear-gradient(#c9a94f,#c9a94f) right bottom/12px 2px no-repeat,#fffcf2!important;padding:10px 18px!important;margin:10px 4px!important;font-size:13.5px!important;color:#4b4636}'
+      +'.tip:before{content:"\\1F4A1  TOP TIP \\2014  NOT SPOKEN"!important;color:#8a6d1f!important}'; doc.head.appendChild(st); }catch(e){} }
 function reviewWire(doc,t){ if(!doc||!doc.body) return; scriptClean(doc); reviewPendingEdits(doc); reviewCardBox(doc); var T=reviewTokens(t), X=reviewRx(t), I=S.intake||{};
   if(!doc.getElementById('ppcss')){ var st=doc.createElement('style'); st.id='ppcss'; st.textContent=PRESENT_CSS+REVIEW_CSS; doc.head.appendChild(st); }
   Array.prototype.forEach.call(doc.querySelectorAll('var[data-k]'),function(v){ var k=v.getAttribute('data-k');
@@ -6502,7 +6506,15 @@ var PR_STORY_HEAD='<b>Story repository (who to tell)</b>';
 /* the same two buttons above and below the edit section, so nobody has to scroll to find them (Jesse, 17 Oct) */
 var PE_GO='<div class="pr-editgo"><button type="button" data-pe="cancel">Cancel edits — enroll what was presented →</button><button type="button" class="go" data-pe="go">✓ They’re in — enroll with these adjustments →</button></div>';
 function presentEditsOpen(){ var t=presentTier(), box=$('prEdit'); if(!box||!t) return; if(!actualOn()||(S.actual.base||S.actual.from)!==t){ actualSeed(t); S.actual.base=t; }
-  box.style.display=''; renderActual(); box.scrollIntoView({behavior:'smooth',block:'start'}); }
+  box.style.display=''; renderActual(); peCue(box);
+  /* after the render settles - a smooth scroll started straight away was being cancelled, and the box stayed off screen */
+  setTimeout(function(){ var y=box.getBoundingClientRect().top+window.scrollY-12; window.scrollTo(0,y); },120); }
+/* "Scroll down" cue (Jesse, 23 Oct): a flashing red arrow pinned to the bottom until the edit section is on screen */
+function peCue(box){ var c=$('peCue'); if(!c){ c=document.createElement('button'); c.type='button'; c.id='peCue'; c.className='pe-cue'; c.innerHTML='<span>▼</span> Scroll down to edit their plan <span>▼</span>'; document.body.appendChild(c); }
+  c.onclick=function(){ window.scrollTo(0,box.getBoundingClientRect().top+window.scrollY-12); chk(); };
+  var seen=function(){ var r=box.getBoundingClientRect(); return r.top<window.innerHeight*0.45; };
+  var tm=null, off=function(){ c.classList.remove('on'); window.removeEventListener('scroll',chk); clearInterval(tm); }, chk=function(){ if(box.style.display==='none'||S.step!=='present'){ off(); return; } c.classList.toggle('on',box.getBoundingClientRect().top>window.innerHeight*0.6); };   /* back up the page while editing: the cue comes back */
+  c.classList.add('on'); window.addEventListener('scroll',chk,{passive:true}); clearInterval(c._tm); tm=c._tm=setInterval(chk,400); }
 function renderPresent(){ var host=$('presentHost'); if(!host) return; if(triadFlowOn(presentTier())){ host.innerHTML=triadPresentHTML(presentTier()); triadBind(host); return; } var t=presentTier(), T=presentTokens(t), pages=presentPages();
   S.present=S.present||{}; var pg=Math.max(0,Math.min(pages.length-1,+S.present.pg||0));
   var who=(T['client.first']||'the client')+(S.client&&S.client.sname?' & '+enSplit(S.client.sname)[0]:'');
