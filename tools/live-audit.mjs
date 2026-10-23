@@ -83,7 +83,7 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  ok(reviewTicks().some(function(x){ return x.k==='drx'&&/hormone/.test(x.t); })&&reviewTicks().some(function(x){ return x.k==='rxv'; }),'checklist: Rx Valet and Direction Rx for every member');
  var rd=document.getElementById('rvFrame').contentDocument;
  ok(rd.querySelectorAll('[data-product]').length>=10&&rd.querySelector('[data-screen="labs"]')&&/getting used to/.test(rd.body.textContent)&&rd.body.textContent.indexOf('is a claim, not a greeting')<0,'Benefits Review script: product tags, labs screen, Dawn’s additions, old note gone');
- ok(/How to use your new health plan: https:\/\/optimumprotects\.com\/manhattanlife/.test(approvedMsgs().body),'approval email links “How to use your new health plan” to their resource page');
+ ok(approvedMsgs().body.indexOf('How to use your new health plan: https://optimumprotects.com/manhattanlife')>=0,'approval email links “How to use your new health plan” to their resource page');
  reviewGo(3); await w(300); var cb=[].map.call(document.querySelectorAll('#rvChips button'),function(b){ return b.textContent.trim(); }); var p3=reviewPages(reviewT())[3];
  ok(cb[0]==='Before you dial'&&/^3\./.test(cb[3])&&(rd.querySelector('h2[data-screen="'+p3.sc+'"] .n')||{}).textContent==='3','step buttons and script headings agree: Before you dial unnumbered, Open is 1');
  var pl=reviewPages(reviewT()); ok(pl[pl.length-1].sc==='recap'&&!pl.some(function(p){ return p.sc==='notes'; }),'last review step is the recap email; coaching notes are no longer a step');
