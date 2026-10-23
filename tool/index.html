@@ -696,6 +696,7 @@
   .rv-actwrap{grid-template-columns:minmax(300px,400px) 1fr}.rv-actnote li.rv-hist{background:#fff6dc;border-left:3px solid var(--gold);padding:3px 8px;margin:3px 0;list-style-position:inside}
   .rg-hist{display:block;margin-top:4px;padding:3px 8px;background:#fff6dc;border-left:3px solid var(--gold);color:#7a5a12;font-size:12.5px;font-weight:600}.pbcol.actual{border:2px solid var(--navy)}.pbcol.actual select[data-act=actname]{font:inherit;font-family:var(--serif);font-size:20px;color:var(--navy);border:1px solid #d6cdb4;border-radius:7px;padding:2px 6px;background:#fff}
   @media(max-width:820px){.rv-actwrap{grid-template-columns:1fr}}
+  .rv-apbar{display:none;cursor:pointer;font-size:13.5px;color:#14532d}.rv-approved.folds .rv-apbar{display:block}.rv-approved.folds:not(.min) .rv-apbar{margin-bottom:8px}.rv-approved.min .rv-apall{display:none}.rv-approved.min{padding:9px 14px}
   .rv-approved{border:2px solid #22a05a;background:#f2fbf5;border-radius:12px;padding:12px 14px;margin:0 0 14px}.rv-appart{margin-top:10px}.rv-apmail{border-top:1px solid #b9dcc6;margin-top:14px;padding-top:12px}.rv-aphd{font-size:12px;font-weight:800;color:#17824a;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}.rv-apbody{max-height:220px;overflow:auto;line-height:1.5}.rv-apt{background:#fff;border:1px solid #cfe7d8;border-radius:8px;padding:8px 10px;font-size:13.5px;margin-top:3px}
   .rv-care,.rv-mail{border:1px solid var(--line);background:#fff;border-radius:12px;padding:12px 14px;margin:0 0 14px}.rv-mail{margin-top:16px}
   .rv-pair{display:flex;gap:6px}.rv-pair input{flex:1;min-width:0;padding:8px 9px;border:1px solid var(--line);border-radius:8px;background:#fbfaf6;font:inherit}.rv-pair input.ph{flex:0 0 120px}
@@ -5370,14 +5371,15 @@ function approvedPaint(){ var host=$('rvApproved'); if(!host) return; var R=revi
   var gm='https://mail.google.com/mail/?view=cm&fs=1&to='+encodeURIComponent(m.to)+'&su='+encodeURIComponent(m.subject)+'&body='+encodeURIComponent(m.body);
   var ol='https://outlook.office.com/mail/deeplink/compose?to='+encodeURIComponent(m.to)+'&subject='+encodeURIComponent(m.subject)+'&body='+encodeURIComponent(m.body);
   /* send both (Jesse, 23 Oct): the text gets read, the email keeps the details - two clearly separate parts, same buttons as Enroll */
-  host.innerHTML='<div class="rv-ch">They’re approved — let them know <small>optional · send before the Benefits Review call · do both: the text gets read, the email keeps the details</small></div>'
+  host.innerHTML='<div class="rv-apbar" id="rvApBar" role="button" tabindex="0"></div><div class="rv-apall"><div class="rv-ch">They’re approved — let them know <small>optional · send before the Benefits Review call · do both: the text gets read, the email keeps the details</small></div>'
     +'<div class="rv-appart"><div class="rv-aphd">1 · Text</div><div class="rv-apt">'+esc(m.sms)+'</div>'
     +'<div class="rv-cbtns"><a class="picbtn" href="sms:'+esc(ph)+'?&body='+encodeURIComponent(m.sms)+'">💬 Text approval</a><button type="button" class="picbtn" data-apc="sms">📋 Copy text</button>'
     +(ph?'':'<span class="rv-miss">No phone on the Intake — Text opens a blank message.</span>')+'</div></div>'
     +'<div class="rv-appart rv-apmail"><div class="rv-aphd">2 · Email</div><div class="rv-apt rv-apbody"><b>Subject:</b> '+esc(m.subject)+'<br><br>'+esc(m.body).replace(/\n/g,'<br>')+'</div>'
     +'<div class="rv-cbtns"><button type="button" class="picbtn" data-apc="mail">📋 Copy email</button><a class="picbtn" href="'+esc(gm)+'" target="_blank" rel="noopener">Open in Gmail ↗</a><a class="picbtn" href="'+esc(ol)+'" target="_blank" rel="noopener">Open in Outlook ↗</a>'
     +(m.to?'':'<span class="rv-miss">No email on the Intake — the To line will be blank.</span>')+'</div></div>'
-    +(S.agentBooking?'':'<div class="rv-miss" style="margin-top:6px">No booking link in ⚙ Setup — both ask them for a day instead.</div>');
+    +(S.agentBooking?'':'<div class="rv-miss" style="margin-top:6px">No booking link in ⚙ Setup — both ask them for a day instead.</div>')+'</div>';
+  approvedFold(+R.pg||0);
   host.querySelectorAll('[data-apc]').forEach(function(b){ b.onclick=function(){ var t=b.dataset.apc==='sms'?m.sms:'Subject: '+m.subject+'\n\n'+m.body, o=b.textContent; try{ navigator.clipboard.writeText(t); }catch(e){} b.textContent='✓ Copied'; setTimeout(function(){ b.textContent=o; },1600); }; }); }
 function reviewEmailPaint(){ var ta=$('rvEmailTxt'); if(!ta||ta.dataset.edited) return; var m=reviewEmail(); ta.value='Subject: '+m.subject+'\n\n'+m.body; }
 /* Direction Rx is open to every ManhattanLife member - weight loss and hormone therapy (Jesse, 23 Oct); the GLP-1 wording stays for GLP-1 clients */
@@ -5400,7 +5402,7 @@ function reviewRail(){ var REVIEW_TICKS=reviewTicks(), R=reviewState(), box=$('r
 function reviewGo(pg,stay){ var t=chosenTier(), pages=reviewPages(t), R=reviewState();
   if(stay&&R.pgSc!=null){ var keep=pages.map(function(p){ return p.sc||''; }).indexOf(R.pgSc); if(keep>=0) pg=keep; }   /* same screen even if dental/below came or went */
   pg=Math.max(0,Math.min(pages.length-1,pg|0)); R.pg=pg; R.pgSc=(pages[pg]&&pages[pg].sc)||''; autosave();
-  if(!stay) RV_CONF_OPEN=false; reviewConfFold(pg);
+  if(!stay){ RV_CONF_OPEN=false; RV_AP_OPEN=false; } reviewConfFold(pg);
   var fr=$('rvFrame'), doc=fr&&fr.contentDocument; if(!doc||!doc.body) return; var want=REVIEW_PAGES.indexOf(pages[pg]);
   Array.prototype.forEach.call(doc.body.children,function(el){ if(el.dataset.rv==null) return; el.style.display=(+el.dataset.rv===want)?'':'none'; });
   reviewWire(doc,t); reviewRail(); fr.style.height='60px'; fr.style.height=(doc.documentElement.scrollHeight+8)+'px';
@@ -5412,8 +5414,13 @@ function reviewGo(pg,stay){ var t=chosenTier(), pages=reviewPages(t), R=reviewSt
   if(!stay) window.scrollTo(0,0); }
 /* The setup (carrier confirmation + What they have + the side-by-side) is open on page 1 only; from page 2 it folds to
    one line with a caret, out of the way while the script speaks to it (Jesse, 17 Oct). */
-var RV_CONF_OPEN=false;
-function reviewConfFold(pg){ var cf=document.querySelector('#reviewHost .rv-conf'), bar=$('rvConfBar'); if(!cf||!bar) return;
+var RV_CONF_OPEN=false, RV_AP_OPEN=false;
+/* the approval text + email fold away past the first page too, like Setup (Jesse, 23 Oct) */
+function approvedFold(pg){ var host=$('rvApproved'), bar=$('rvApBar'); if(!host||!bar) return; var on=pg>0, min=on&&!RV_AP_OPEN;
+  host.classList.toggle('folds',on); host.classList.toggle('min',min);
+  bar.innerHTML='<span class="car">'+(min?'▸':'▾')+'</span> <b>They’re approved</b> — the text and email to let them know <small>'+(min?'click to open':'click to fold away')+'</small>';
+  bar.onclick=bar.onkeydown=function(e){ if(e.type==='keydown'&&e.key!=='Enter'&&e.key!==' ') return; RV_AP_OPEN=!RV_AP_OPEN; approvedFold(+reviewState().pg||0); }; }
+function reviewConfFold(pg){ approvedFold(pg); var cf=document.querySelector('#reviewHost .rv-conf'), bar=$('rvConfBar'); if(!cf||!bar) return;
   var R=reviewState(), on=pg>0, min=on&&!RV_CONF_OPEN, A=actualOn()?actualSnap():null;
   cf.classList.toggle('folds',on); cf.classList.toggle('min',min);
   bar.innerHTML='<span class="car">'+(min?'▸':'▾')+'</span> <b>Setup</b> '+esc([A?A.name+' · '+fmt2(reviewPrem())+'/mo':'',R.eff?'effective '+reviewDate(R.eff):'',R.draft?'drafts '+reviewDate(R.draft):'draft date not entered'].filter(Boolean).join(' · '))+' <small>'+(min?'click to open':'click to fold away')+'</small>';
