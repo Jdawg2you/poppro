@@ -4958,6 +4958,7 @@ var REVIEW_PAGES=[
  {t:'Prescriptions',sc:'rx'},
  {t:'CareGuide',sc:'careguide',tick:'cg'},
  {t:'Finding a doctor',sc:'doctor'},
+ {t:'Labs & imaging',sc:'labs'},   /* its own screen (Health ZONE, 23 Oct): skipped when the plan has neither vendor */
  {t:'Dental',sc:'dental',when:'dental'},
  {t:'If they elected below',sc:'tierdown',when:'below'},
  {t:'Close',sc:'close'},
@@ -5157,8 +5158,12 @@ function reviewProducts(t){ t=reviewT()||t; var pk=S.packages[t]||{}, c=effCfg(t
   (pk.products||[]).forEach(function(p){ if(!((+p.monthly||0)>0)) return; var k=p.k; if(k==='lbp'||k==='lbs') k='lb'; if(k==='base') k=c.base||'base'; P[k]=1; });
   return P; }
 function reviewProdFilter(doc,t){ if(!doc||!doc.body) return; var P=reviewProducts(t);
-  Array.prototype.forEach.call(doc.querySelectorAll('[data-product]'),function(el){ var toks=String(el.getAttribute('data-product')||'').trim().split(/\s+/).filter(Boolean);
-    el.classList.toggle('pp-prodoff',!toks.some(function(x){ return !!P[x]; })); }); }
+  Array.prototype.forEach.call(doc.querySelectorAll('[data-product],[data-product-none]'),function(el){ var tk=function(a){ return String(el.getAttribute(a)||'').trim().split(/\s+/).filter(Boolean); };
+    var any=tk('data-product'), none=tk('data-product-none');
+    /* data-product: shown when the plan holds ANY of them. data-product-none: shown only when it holds NONE of them
+       (e.g. "no network" lines for a client without Affordable Choice or Hospital Indemnity) */
+    var show=(!any.length||any.some(function(x){ return !!P[x]; }))&&!none.some(function(x){ return !!P[x]; });
+    el.classList.toggle('pp-prodoff',!show); }); }
 function reviewPageEmpty(doc,i){ var any=false; Array.prototype.forEach.call(doc.body.children,function(el){ if(any||+el.dataset.rv!==i) return;
     if(/^H[1-6]$/.test(el.tagName)||el.classList.contains('rv-tick')||el.classList.contains('pp-off')||el.classList.contains('pp-prodoff')) return;
     if(el.matches('.flag,[data-author="note"],style,script')) return; if(!String(el.textContent||'').trim()) return; any=true; });
@@ -5199,6 +5204,8 @@ function reviewTokens(t){ t=reviewT()||t; var C=S.client||{}, R=reviewState(), T
   var RB=S.rec||(S.recommended&&pkSnap(S.recommended));   /* older files: the tool's recommendation stands in */
   if(actualOn()&&RB){ var GS=gapSpoken(RB,actualSnap()); T['gap.missing']=GS.missing; T['gap.lowered']=GS.lowered; T['gap.added']=GS.added; T['gap.kind']=GS.kind; } T['tier.recommended']=TIER_NAME[(S.rec&&S.rec.tier)||S.recommended]||'';
   var DQ=drxParts(); T['drx.drug']=drxWho().length?DQ.drug||drxWho()[0].drug:''; T['drx.pct']=DRX_PCT; T['drx.link']=drxLink(); T['drx.code']=drxCode(); T['drx.howto']=drxWho().length?'1':'';   /* the block's switch; its words are Health ZONE's */
+  /* the product the front desk should hear, for the First Health network line (Health ZONE, 23 Oct) */
+  var RP=reviewProducts(t); T['plan.network_product']=RP.afc?'Affordable Choice':RP.his?'Hospital Indemnity Select':'';
   T['review.month']=R.month||(R.eff?MONTHS[+String(R.eff).slice(5,7)-1]:'');
   return T; }
 var REVIEW_CSS='.pp-prodoff{display:none!important}.pp-cardbox{margin:8px 0 14px;padding:10px 14px;border:2px dashed #2f7d4a;border-radius:10px;background:#f2fbf5;font-size:14px}.pp-cardbox b{display:block;color:#17824a;margin-bottom:4px}'
