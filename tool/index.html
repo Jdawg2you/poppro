@@ -5339,7 +5339,7 @@ function reviewEmail(){ var t=reviewT()||chosenTier(), R=reviewState(), C=S.clie
   var cf=careFields(), got=CARE_F.filter(function(x){ return cf[x[0]]; }).map(function(x){ return x[1]+': '+cf[x[0]]+(cf[x[0]+'_ph']?' · '+carePh(cf[x[0]+'_ph']):''); });
   sec('YOUR CARE CARD',['Your doctors and the numbers you need, ready to save to your phone or print a card for your wallet:',careCardLink()]
     .concat(got.length?['','Already on it:'].concat(got).concat(['Add anything else right on the page — it saves on your phone.']):['Add your doctor, urgent care and hospital right on the page — it saves on your phone.']));
-  var link=reviewLink(); if(link) sec('BOOKMARK THIS PAGE',['How to use your plan, who to call and the apps, all on one page:',link]);
+  var link=reviewLink(); if(link) sec('HOW TO USE YOUR NEW HEALTH PLAN — bookmark this page',['What to do now, how to find a doctor, who to call and the apps, all on one page:',link]);
   var LINE={portal:'Member portal (ID card and claims): https://clients.manhattanlife.com',
     ecg:'EasyCare2go, your 24/7 telehealth: https://manhattanlife.myeasycare2go.com/login · Group ID mlins2023',
     rxv:'Rx Valet, your prescription discounts — inside your EasyCare2go login · '+RXVALET_PHONE,
@@ -5365,6 +5365,7 @@ function approvedMsgs(){ var R=reviewState(), C=S.client||{}, first=((C.pname||'
     +' Let’s set up a quick 15-minute call before then so you know exactly how to use it'+(book?': '+book:' — what day works for you?')+' I’m also sending you an email with the details.';
   var L=['Hi '+first+',','','Great news — ManhattanLife has approved your plan'+(chg?', with one change from what we applied for. I’ll walk you through it on our call so you know exactly what it means':'')+'.',''];
   if(eff) L.push('Your coverage starts: '+eff); if(prem>0) L.push('Your monthly premium: '+fmt2(prem)+(R.draft?', drafted on '+reviewDate(R.draft):''));
+  var res=reviewLink(); if(res) L.push('','How to use your new health plan: '+res,'That’s your home base for everything — what to do now, how to find a doctor, who to call. Bookmark it; we’ll open it together on our call.');   /* the link the Benefits Review's screen 3 asks them to click (Jesse, 23 Oct) */
   L.push('','Your temporary ID card is in the member portal from day one: https://clients.manhattanlife.com — your physical ManhattanLife ID cards come in the mail about 10 days after your start date.');
   L.push('','Next step: a quick 15-minute call before your start date, so you know how to use everything — your portal, telehealth, prescription savings and who to call for what.'+(book?' Book a time that suits you here: '+book:' Reply with a day and time that works for you.'));
   var agent=String(C.agent||'').trim(), agency=(S.agency&&S.agency!=='HealthFirst')?S.agency:'';
@@ -5416,7 +5417,10 @@ function reviewGo(pg,stay){ var t=chosenTier(), pages=reviewPages(t), R=reviewSt
   var vr=!!(pages[pg]&&pages[pg].virtual), mw=document.querySelector('#reviewHost .rv-mail'); fr.style.display=vr?'none':''; if(mw){ mw.style.display=vr?'':'none'; if(vr) reviewEmailPaint(); } var want=REVIEW_PAGES.indexOf(pages[pg]);
   Array.prototype.forEach.call(doc.body.children,function(el){ if(el.dataset.rv==null) return; el.style.display=(+el.dataset.rv===want)?'':'none'; });
   reviewWire(doc,t); reviewRail(); fr.style.height='60px'; fr.style.height=(doc.documentElement.scrollHeight+8)+'px';
-  $('rvChips').innerHTML=pages.map(function(p,i){ return '<button type="button" data-pg="'+i+'" title="'+esc(p.t)+'" class="'+(i===pg?'on':(i<pg?'done':''))+'">'+(i+1)+(i===pg?'. '+esc(p.t):'')+(p.tick&&R.ticks[p.tick]?' ✓':'')+'</button>'; }).join('');
+  /* Before you dial is unnumbered; Open is 1 - and the script's own screen numbers are rewritten to match, so a skipped
+     screen never leaves a gap between the step buttons and the headings (Jesse, 23 Oct) */
+  pages.forEach(function(p,i){ if(!p.sc) return; var h=doc.querySelector('h2[data-screen="'+p.sc+'"] .n'); if(h) h.textContent=String(i); });
+  $('rvChips').innerHTML=pages.map(function(p,i){ var lab=i===0?esc(p.t):(i+(i===pg?'. '+esc(p.t):'')); return '<button type="button" data-pg="'+i+'" title="'+esc(p.t)+'" class="'+(i===pg?'on':(i<pg?'done':''))+'">'+lab+(p.tick&&R.ticks[p.tick]?' ✓':'')+'</button>'; }).join('');
   $('rvChips').querySelectorAll('[data-pg]').forEach(function(b){ b.onclick=function(){ reviewGo(+b.dataset.pg); }; });
   var nx=pages[pg+1];
   $('rvNav').innerHTML='<button type="button" data-go="-1"'+(pg?'':' disabled')+'>← Back</button>'+(nx?'<button type="button" class="go" data-go="1">Next: '+esc(nx.t)+' →</button>':'<span></span>');
