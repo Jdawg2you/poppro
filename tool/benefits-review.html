@@ -62,11 +62,11 @@ ul,ol{margin:0 0 11px;padding-left:22px}li{margin-bottom:6px}
 <p class="sub0">The call that happens after the application is approved and before the policy goes effective. Jesse&rsquo;s script, supplied whole on 16 October 2026 with its agent-only coaching notes; twelve screens, about fifteen minutes. This folder is the source of truth &mdash; POP Pro renders a copy and hides this line, the coaching notes and the working flags. Three lines carry corrections against the carrier documents; they are flagged in place and nothing was silently reworded.</p>
 
 <p class="legend"><var>Blue</var> = filled automatically from the policy, the plan or the client&rsquo;s intake &mdash; you never type or remember these.
-<span class="pinmark">?</span> = waiting on an answer from Jesse.<br>
+<span class="pinmark">?</span> = still being confirmed. The block it sits on tells you what to say in the meantime &mdash; say that, and nothing that depends on the unconfirmed part.<br>
 <b>Provenance:</b> this arrived as one finished piece, so there are no per-block source tags. Everything here is <span class="who wJ">JESSE</span> unless a flag says otherwise.</p>
 
 <div class="btnrow">
-<a href="#">ManhattanLife portal</a><a href="#">First Health locator</a><a href="#">Careington dentist finder</a><a href="#">SingleCare &mdash; Rx pricing</a><a href="#">The client&rsquo;s resource page</a>
+<a href="#">ManhattanLife portal</a><a href="#">First Health locator</a><a href="#">Careington dentist finder</a><a href="https://manhattanlife.myeasycare2go.com/login">EasyCare2go &mdash; Rx Valet</a><a href="#">The client&rsquo;s resource page</a>
 <p style="margin:4px 0 0;font-size:12.5px;color:#555">Each opens in a <b>separate window</b> so this script stays on screen behind it. Open them before you dial &mdash; you are about to walk someone through four registrations and you cannot be hunting for links while they wait.</p>
 </div>
 
@@ -89,6 +89,10 @@ ul,ol{margin:0 0 11px;padding-left:22px}li{margin-bottom:6px}
 
 <div class="do"><span class="lab">NOT SPOKEN</span>Wait for the email to be open on their screen. The entire call runs off it. If they cannot find it, stop and fix that before anything else &mdash; resend it, read the subject line out, check the spam folder.</div>
 
+<div class="say">Before we go through it &mdash; any new plan takes a little getting used to. Even on a plan through work, when you change jobs you have to learn how the new one works. So we&rsquo;ll take it one thing at a time, and by the end of this you&rsquo;ll know where everything is.</div>
+
+<div class="tip">Say this before the first instruction, not after the third. It gives the client permission to not know things, which is the whole reason this call exists &mdash; and it is cheaper to say here than to recover from a client who has decided halfway through that the plan is complicated.</div>
+
 <h2 data-screen="money"><span class="n">2</span>The money line</h2>
 
 <div class="say">Your policy goes effective <var data-k="policy.effective_date">&lt;effective date&gt;</var>, and the draft is usually that same day. The draft for everything, including the riders, is <var data-k="policy.premium">$&lt;premium&gt;</var>. So you need <var data-k="policy.premium">$&lt;premium&gt;</var> in the account on <var data-k="policy.draft_date">&lt;draft date&gt;</var> &mdash; there&rsquo;s no coverage until money changes hands.</div>
@@ -110,6 +114,12 @@ ul,ol{margin:0 0 11px;padding-left:22px}li{margin-bottom:6px}
 <div class="do"><span class="lab">DO IT NOW</span>Wait for them. Screen-share your own portal if it helps. <b>They type their own Social &mdash; you never ask for it on this call and you never read it back.</b></div>
 
 <div class="say">Once you&rsquo;re in you&rsquo;ll see your policy documents, your temporary ID cards, your premium payments on the right, where to change your banking or your draft date, and your claims. Down at the bottom, customer service email and phone. Go ahead and open your temporary ID card &mdash; save that to your phone.</div>
+
+<div class="say">Two cards, and they come at different times. The one you just saved is your temporary card and it works from day one &mdash; that is the one to use. Your physical <var data-k="policy.carrier">ManhattanLife</var> cards arrive in the mail about 10 days after your start date.</div>
+
+<div class="do"><span class="lab">NOT SPOKEN</span>Keep the two cards apart, here and later. The <b>ID cards</b> are the carrier&rsquo;s &mdash; they come from <var data-k="policy.carrier">ManhattanLife</var> in the mail, and they are what a front desk asks to see. The <b>Client Care Card</b> is <b>ours</b>: the page you text them with their doctor, urgent care, ER and pharmacy already filled in. A client who has just been told a card is coming in the post, and then gets a card from you by text, is owed that difference in one sentence.</div>
+
+<div class="warn" data-author="note"><b>Where the 10 days comes from.</b> It is Dawn&rsquo;s figure from the field, not a carrier service standard, and Jesse approved it going in on <b>23 Oct</b>. Say &ldquo;about 10 days&rdquo; &mdash; never a date, and never &ldquo;guaranteed&rdquo;. If a client is still waiting at three weeks that is a carrier call, not a broken promise.</div>
 
 <div class="say">Did you get logged in? Card saved? Great.</div>
 
@@ -154,9 +164,17 @@ ul,ol{margin:0 0 11px;padding-left:22px}li{margin-bottom:6px}
 
 <div class="warn">&#9888; <b>Availability is theirs to state, not ours.</b> Direction Rx is available in most states but not all, and their own site is the authority. Do not promise enrolment before they have been through it. If the client is in a state it does not serve, this block should not have been served at all &mdash; tell MyPopPro if you see it appear for one.</div>
 
+<div class="say">And this part is open to every <var data-k="policy.carrier">ManhattanLife</var> member, not only people on one particular medication: Direction Rx member pricing, for <b>weight loss</b> and <b>hormone therapy</b>. <b>You pay for the medication</b> &mdash; the plan does not cover it and it will not touch your deductible &mdash; but the member price is yours while the plan is active. Here is your code: <var data-k="drx.code">4-MEM-26-6</var>, and I am sending you the link now.</div>
+
+<div class="do"><span class="lab">NOT SPOKEN</span>Say the code <b>once</b>. If the medication-specific block above has already run, the client has this same code and link, so give it in one place and skip the other. <b>The availability rule above governs this line too</b> &mdash; Direction Rx does not serve every state, so do not promise enrolment before they have been through the site themselves.</div>
+
+<div class="warn" data-author="note"><b>Open to all &mdash; Jesse, 23 Oct:</b> &ldquo;we can offer to all, it is open.&rdquo; Weight loss <b>and</b> hormone therapy, every ManhattanLife member, not just the GLP-1 cases. MyPopPro serves <code>drx.code</code> and <code>drx.link</code> here &mdash; default code <b>4-MEM-26-6</b>, default link <b>https://bit.ly/4wf5B7V</b>, or the agent&rsquo;s own from Setup. <b>No percentage on this line</b>: the unsettled-figure rule above applies to it exactly as it does to the block before.</div>
+
 <div class="say">Before you fill anything, check the price. Same drug can be $5 at one pharmacy and $20 at another. Your pharmacy savings come through <b>Rx Valet</b> &mdash; it opens from that same EasyCare2go login you just set up, so there is nothing else to register for. The page has SingleCare and GoodRx on it too, which anyone can use.<span data-needs="plan.rx_per_day"> You get your <var data-k="plan.rx_per_day">$50</var> either way, so go where it&rsquo;s cheapest and keep more of it.</span></div>
 
 <div class="tip">That last clause is the one that lands: the benefit is fixed, so every dollar they save on the fill is a dollar they keep. It is the only part of the whole plan where the client can beat the system by paying attention, and it costs them nothing to learn.</div>
+
+<div class="tip"><b>A second place to check, if the counter price still stings.</b> <b>Amazon Pharmacy</b> fills prescriptions and ships to the door, and it is often far cheaper than paying retail at a Walgreens or CVS counter. Offer it as somewhere else to compare &mdash; never as part of the plan. It is not a plan benefit, and we hold no figure for it, so <b>quote no percentage and no saving</b>.</div>
 
 <h2 data-screen="careguide"><span class="n">8</span>CareGuide</h2>
 
@@ -181,6 +199,10 @@ ul,ol{margin:0 0 11px;padding-left:22px}li{margin-bottom:6px}
 <div class="do"><span class="lab">NOT SPOKEN</span>Four things before they need them, and the ER is the one they will skip. Walk them to it on the locator while you are on the phone &mdash; nobody looks up a hospital on a good day.</div>
 
 <div class="warn"><b>&ldquo;Out of network it pays exactly the same&rdquo; is true here and false next door.</b> It holds for the <b>fixed-dollar</b> products &mdash; Affordable Choice, Hospital Indemnity, Accident, Gap. Those pay a set amount per event, so the network changes what they <i>owe</i>, never what the plan <i>pays</i>. It does <b>not</b> hold for <b>DVH</b>, which pays a percentage of a basis: in network the basis is the contracted rate, out of network it is UCR at a lower percentage. Keep this sentence in the health section and never let it drift into the dental paragraph.</div>
+
+<div class="say" data-needs="plan.has_afc">One more to know before you need it. If your doctor sends you out for labs or a scan, check <b>DirectLabs</b> and <b>Green Imaging</b> before you let the hospital do it. They come with this plan, and the hospital is usually the most expensive place to have either one done. Both are on your page.</div>
+
+<div class="warn" data-author="note"><b>Affordable Choice only, which is why it is gated.</b> DirectLabs and Green Imaging are Affordable Choice partner programmes, so this line is served on <code>plan.has_afc</code> and must not be read to a client who did not buy that plan. The links are the same two the <var data-k="policy.carrier">ManhattanLife</var> resource page uses: <b>https://www.directlabs.com/</b> and <b>https://www.greenimaging.net</b>. <b>Say no percentage</b> &mdash; &ldquo;usually far cheaper than the hospital&rdquo; is what we can support; the Green Imaging 50&ndash;90% range is unverified, so it is not ours to say.</div>
 
 <h2 data-screen="dental"><span class="n">10</span>Dental <span style="font-size:13px;font-weight:400;color:#666">&mdash; if elected</span></h2>
 

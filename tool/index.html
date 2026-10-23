@@ -4976,7 +4976,7 @@ var REVIEW_TICKS=[
  {k:'cg',t:'CareGuide saved in their phone',open:'Call 469-902-2267',url:'tel:+14699022267',copy:'469-902-2267',copyLabel:'Copy number',
   sms:function(f){ return 'Hi '+f+'! Save this one: CareGuide, 469-902-2267. Call them before you pay any medical bill over $2,500. Tap to add them to your contacts: '+CG_VCF; }}];
 /* The script's button row, in its own order; the last one is the agent's own page (Setup). */
-var REVIEW_LINKS=['https://clients.manhattanlife.com','https://providerlocator.firsthealth.com/home/index','https://manhattanlife.solutionssimplified.com/','https://www.singlecare.com',null];
+var REVIEW_LINKS=['https://clients.manhattanlife.com','https://providerlocator.firsthealth.com/home/index','https://manhattanlife.solutionssimplified.com/',RXVALET_URL,null];   /* 4th button is EasyCare2go — Rx Valet now (Health ZONE, 23 Oct); SingleCare is gone */
 var MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
 function reviewState(){ S.review=S.review||{}; S.review.ticks=S.review.ticks||{}; return S.review; }
 function reviewUrl(u){ u=String(u||'').trim(); if(!u) return ''; return /^https?:\/\//i.test(u)?u:'https://'+u; }

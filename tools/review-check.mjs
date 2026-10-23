@@ -212,7 +212,9 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  var rvA=document.getElementById('rvFrame').contentDocument; reviewWire(rvA,'better');
  var rxv=[].filter.call(rvA.querySelectorAll('.say,.warn,.tip,p,div'),function(e){ return /Rx Valet/.test(e.textContent)&&!e.closest('.pp-off')&&!e.querySelector('div'); });
  var perDay=[].slice.call(rvA.querySelectorAll('[data-needs="plan.rx_per_day"]'));
- ok(rxv.length>0&&!rvA.querySelector('[data-needs="plan.has_afc"]'),'no Affordable Choice: Rx Valet still shows, ungated');
+ ok(rxv.length>0&&!rxv.some(function(e){ return e.closest('[data-needs="plan.has_afc"]'); }),'no Affordable Choice: Rx Valet still shows, ungated');
+ var labs=[].filter.call(rvA.querySelectorAll('[data-needs="plan.has_afc"]'),function(e){ return /DirectLabs|Green Imaging/.test(e.textContent); });
+ ok(labs.length>0&&labs.every(function(e){ return e.classList.contains('pp-off'); }),'no Affordable Choice: the DirectLabs / Green Imaging line is hidden (an Affordable Choice perk, 23 Oct)');
  ok(!reviewTokens('better')['plan.rx_per_day']&&perDay.length===3&&perDay.every(function(e){ return e.classList.contains('pp-off'); }),'…while the three $50-a-day blocks are hidden (rx_per_day='+JSON.stringify(reviewTokens('better')['plan.rx_per_day'])+', blocks='+perDay.length+', off='+perDay.filter(function(e){ return e.classList.contains('pp-off'); }).length+', has_afc='+JSON.stringify(reviewTokens('better')['plan.has_afc'])+')');
  actualSeed('better'); reviewWire(rvA,'better'); ok(perDay.every(function(e){ return !e.classList.contains('pp-off'); }),'with Affordable Choice the $50-a-day blocks show');
   /* prescriptions are never in the premium; they sit under the total with the Rx benefit taken off (Jesse, 19 Oct) */
