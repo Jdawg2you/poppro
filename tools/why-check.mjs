@@ -88,8 +88,8 @@ var keepW=S.intake.whyMatters; S.intake.whyMatters='Wants less expensive with be
  S.intake.glp1.s.for='Both'; ok(drxWho().length===2,'"Both" counts as weight loss');
  var nm=tierNonMh; tierNonMh=function(){ return {name:'LifeX'}; }; S.chosen={tier:'good'}; ok(drxWho().length===0&&!/Direction Rx/.test(enrollEmail().body),'a LifeX / Cigna plan gets no Direction Rx'); tierNonMh=nm; S.chosen={tier:'better'};
  S.intake.glp1={p:{on:'Yes',for:'Diabetes'},s:{}}; ok(!drxWho().length&&!/Direction Rx/.test(enrollEmail().body)&&drxParts().drug==='','no weight-loss GLP-1: no block, no email paragraph');
- ok(reviewTicks().length===7&&reviewTicks().some(function(x){ return x.k==='drx'&&/hormone/.test(x.t); }),'Direction Rx is offered to every ManhattanLife member - weight loss and hormone therapy (Jesse, 23 Oct)');
- S.intake.glp1={p:{on:'Yes',for:'Weight loss',drug:'Zepbound'},s:{}}; ok(reviewTicks().length===7&&reviewTicks()[5].k==='drx','with it, one more Benefits Review step');
+ ok(reviewTicks().some(function(x){ return x.k==='drx'&&/hormone/.test(x.t); })&&reviewTicks().some(function(x){ return x.k==='cg'; })===!!reviewProducts(chosenTier()).afc,'Direction Rx is offered to every ManhattanLife member - weight loss and hormone therapy (Jesse, 23 Oct)');
+ S.intake.glp1={p:{on:'Yes',for:'Weight loss',drug:'Zepbound'},s:{}}; ok(reviewTicks().filter(function(x){ return x.k==='drx'; }).length===1&&/GLP-1/.test(reviewTicks().filter(function(x){ return x.k==='drx'; })[0].t),'with a weight-loss GLP-1, the Direction Rx row is the GLP-1 one (never two)');
  S.present={drx:false}; ok(drxParts().drug===''&&presentScriptTokens('better')['drx.drug']==='','switched off on Present: drx.drug empty, the block drops out'); S.present={};
  /* the agent's bio (Jesse, 17 Oct): Setup box, default button, handed to the call */
  openSetup(); document.getElementById('in_abio').value='I help people in Dallas sort out health cover.'; document.getElementById('in_abio').dispatchEvent(new Event('input',{bubbles:true}));
