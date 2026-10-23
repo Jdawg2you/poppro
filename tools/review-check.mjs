@@ -207,11 +207,14 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  ok(!/RxEDO/i.test(spoken)&&/EasyCare2go/.test(spoken),'no RxEDO in anything spoken on the Benefits Review; the prescriptions screen names EasyCare2go');
  ok(reviewTokens('better')['plan.has_afc']==='1','plan.has_afc is set when the plan includes Affordable Choice');
  ok(!AFC_PARTNERS.some(function(p){ return /rxedo/i.test(p.name+p.desc+(p.bullets||[]).join(' ')); })&&!/prescription/i.test(afcPartnerLines())&&RXVALET_URL.indexOf('myrxvalet.com')>=0,'partner benefits: no RxEDO, and no prescription claim on EasyCare2go — prescriptions are Rx Valet (22 Oct)');
-  /* a client without Affordable Choice is never told about EasyCare2go pharmacy savings (Health ZONE gates on plan.has_afc) */
+  /* Rx Valet is for every client (22 Oct): no Affordable Choice still hears it; the $50-a-day blocks still follow the AFC figure */
  S.chosen={tier:'better'}; actualSeed('better'); (S.packages.actual.dropped=S.packages.actual.dropped||[]).push('afc'); priceTier('actual');
- var rvA=document.getElementById('rvFrame').contentDocument; reviewWire(rvA,'better'); var gA=rvA.querySelector('[data-needs="plan.has_afc"]');
- ok(reviewTokens('better')['plan.has_afc']===''&&gA&&gA.classList.contains('pp-off'),'no Affordable Choice: the EasyCare2go pharmacy-savings sentence is hidden');
- actualSeed('better'); reviewWire(rvA,'better'); ok(!gA.classList.contains('pp-off'),'with Affordable Choice it shows');
+ var rvA=document.getElementById('rvFrame').contentDocument; reviewWire(rvA,'better');
+ var rxv=[].filter.call(rvA.querySelectorAll('.say,.warn,.tip,p,div'),function(e){ return /Rx Valet/.test(e.textContent)&&!e.closest('.pp-off')&&!e.querySelector('div'); });
+ var perDay=[].slice.call(rvA.querySelectorAll('[data-needs="plan.rx_per_day"]'));
+ ok(rxv.length>0&&!rvA.querySelector('[data-needs="plan.has_afc"]'),'no Affordable Choice: Rx Valet still shows, ungated');
+ ok(!reviewTokens('better')['plan.rx_per_day']&&perDay.length===3&&perDay.every(function(e){ return e.classList.contains('pp-off'); }),'…while the three $50-a-day blocks are hidden (rx_per_day='+JSON.stringify(reviewTokens('better')['plan.rx_per_day'])+', blocks='+perDay.length+', off='+perDay.filter(function(e){ return e.classList.contains('pp-off'); }).length+', has_afc='+JSON.stringify(reviewTokens('better')['plan.has_afc'])+')');
+ actualSeed('better'); reviewWire(rvA,'better'); ok(perDay.every(function(e){ return !e.classList.contains('pp-off'); }),'with Affordable Choice the $50-a-day blocks show');
   /* prescriptions are never in the premium; they sit under the total with the Rx benefit taken off (Jesse, 19 Oct) */
  await benLoadSafe('afc'); var keepM=S.intake.medList; var m0=tierTotals('better').mo;
  S.intake.medList=[{name:'Eliquis',disc:300,forP:true}]; compute(); await w(200);
@@ -386,7 +389,7 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  S=JSON.parse(JSON.stringify(rfBase)); S.intake.pregNowP=true; goStep('quote'); compute(); await w(200); var rfe=document.getElementById('rightFit');
  ok(rfe&&rfe.textContent.indexOf('ACA + optional HI Select')>=0&&rfe.textContent.indexOf('p.23')>=0&&/Amerus VL/.test(rfe.textContent)&&/not an underwriting decision/.test(rfe.textContent),'right-fit panel renders on Quote with the path, the guide cite, GI names and the disclaimer: '+(rfe?'':'none'));
  S=JSON.parse(JSON.stringify(rfBase));
- return {n:206, fails:fails}; })()`;
+ return {n:207, fails:fails}; })()`;
 try {
   let l; for (let i = 0; i < 60 && !l; i++) { await sleep(150); l = await fetch(`http://127.0.0.1:${DBG}/json/list`).then(r => r.json()).catch(() => null); }
   ws = new WebSocket(l.find(t => t.type === 'page').webSocketDebuggerUrl);
