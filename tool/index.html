@@ -698,6 +698,8 @@
   @media(max-width:820px){.rv-actwrap{grid-template-columns:1fr}}
   .rv-care,.rv-mail{border:1px solid var(--line);background:#fff;border-radius:12px;padding:12px 14px;margin:0 0 14px}.rv-mail{margin-top:16px}
   .rv-pair{display:flex;gap:6px}.rv-pair input{flex:1;min-width:0;padding:8px 9px;border:1px solid var(--line);border-radius:8px;background:#fbfaf6;font:inherit}.rv-pair input.ph{flex:0 0 120px}
+  .netseg{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;vertical-align:middle}.netseg button{border:0;background:#fff;padding:3px 9px;font:inherit;font-size:12px;font-weight:700;color:#6b7280;cursor:pointer}
+  .netseg button+button{border-left:1px solid var(--line)}.netseg button[data-net=""].on{background:#fef3c7;color:#92400e}.netseg button[data-net="in"].on{background:#16a34a;color:#fff}.netseg button[data-net="out"].on{background:#dc2626;color:#fff}
   .rv-cleft{font-size:13px;color:#92400e;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:6px 10px;margin:8px 0}
   .rv-cgrid{grid-template-columns:repeat(2,1fr)}.rv-cbtns{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}.rv-cbtns a.picbtn{text-decoration:none}
   .rv-paste{display:flex;gap:6px;flex:1;min-width:260px}.rv-paste input{flex:1;padding:8px 9px;border:1px dashed var(--line);border-radius:8px;font:inherit;font-size:13px}.rv-cmsg{font-size:13px;color:#166534}
@@ -1295,16 +1297,16 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
 
     <div class="intake-sec" id="sec_docs">Preferred Doctors <a href="https://providerlocator.firsthealth.com/LocateProvider/LocateProviderSearch/" target="_blank" rel="noopener" class="seclink">↗ Look up First Health network</a></div>
     <div class="intakegrid">
-      <div class="fld"><label>Doctor / facility 1</label><input id="in_docs1" placeholder="Dr. Ramirez (cardiology)"><div class="docmeta"><select id="in_docs1_who" aria-label="Whose doctor"><option value="">Whose?</option><option value="me">Primary</option><option value="sp">Spouse</option><option value="kid">Kids</option></select><label><input type="checkbox" id="in_docs1_net"> ✓ In network</label></div></div>
-      <div class="fld"><label>Doctor / facility 2</label><input id="in_docs2" placeholder="(optional)"><div class="docmeta"><select id="in_docs2_who" aria-label="Whose doctor"><option value="">Whose?</option><option value="me">Primary</option><option value="sp">Spouse</option><option value="kid">Kids</option></select><label><input type="checkbox" id="in_docs2_net"> ✓ In network</label></div></div>
-      <div class="fld"><label>Doctor / facility 3</label><input id="in_docs3" placeholder="(optional)"><div class="docmeta"><select id="in_docs3_who" aria-label="Whose doctor"><option value="">Whose?</option><option value="me">Primary</option><option value="sp">Spouse</option><option value="kid">Kids</option></select><label><input type="checkbox" id="in_docs3_net"> ✓ In network</label></div></div>
+      <div class="fld"><label>Doctor / facility 1</label><input id="in_docs1" placeholder="Dr. Ramirez (cardiology)"><div class="docmeta"><select id="in_docs1_who" aria-label="Whose doctor"><option value="">Whose?</option><option value="me">Primary</option><option value="sp">Spouse</option><option value="kid">Kids</option></select><span class="netseg" id="in_docs1_net" data-v="" role="group" aria-label="In the First Health network?"><button type="button" data-net="in" title="Checked: in the First Health network">✓ In</button><button type="button" data-net="" title="Not checked yet">?</button><button type="button" data-net="out" title="Checked: not in the network">✗ Out</button></span></div></div>
+      <div class="fld"><label>Doctor / facility 2</label><input id="in_docs2" placeholder="(optional)"><div class="docmeta"><select id="in_docs2_who" aria-label="Whose doctor"><option value="">Whose?</option><option value="me">Primary</option><option value="sp">Spouse</option><option value="kid">Kids</option></select><span class="netseg" id="in_docs2_net" data-v="" role="group" aria-label="In the First Health network?"><button type="button" data-net="in" title="Checked: in the First Health network">✓ In</button><button type="button" data-net="" title="Not checked yet">?</button><button type="button" data-net="out" title="Checked: not in the network">✗ Out</button></span></div></div>
+      <div class="fld"><label>Doctor / facility 3</label><input id="in_docs3" placeholder="(optional)"><div class="docmeta"><select id="in_docs3_who" aria-label="Whose doctor"><option value="">Whose?</option><option value="me">Primary</option><option value="sp">Spouse</option><option value="kid">Kids</option></select><span class="netseg" id="in_docs3_net" data-v="" role="group" aria-label="In the First Health network?"><button type="button" data-net="in" title="Checked: in the First Health network">✓ In</button><button type="button" data-net="" title="Not checked yet">?</button><button type="button" data-net="out" title="Checked: not in the network">✗ Out</button></span></div></div>
     </div>
     <div class="intakegrid" style="margin-top:10px">
       <div class="fld"><label>Keep current doctor on ACA?</label><select id="in_keepaca" class="selfld"><option value="">—</option><option value="yes">Yes</option><option value="no">No</option></select></div>
       <div class="fld"><label>Doctor notes</label><input id="in_docnote" placeholder="if they can't keep a doctor, note why"></div>
       <div class="fld"><label>Doctor visits / year <small>whole household, specialists too</small></label><input id="in_visits" type="number" min="0" placeholder="0"></div>
     </div>
-    <div class="netrow"><label class="chip" style="margin-top:8px"><input type="checkbox" id="in_net"> Network status verified with client (First Health)</label>
+    <div class="netrow" style="display:none"><label class="chip" style="margin-top:8px"><input type="checkbox" id="in_net"> Network status verified with client (First Health)</label>
       <span id="netAns" class="netans"><span>Their doctor is…</span><label><input type="radio" name="netans" value="yes"> ✅ In the network — they keep them</label><label><input type="radio" name="netans" value="no"> ❌ Not in the network</label>
         <select id="in_keepafc" hidden><option value=""></option><option value="yes">yes</option><option value="no">no</option></select></span></div>
     <div style="margin-top:10px"><label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px">Preferred doctor notes</label><textarea id="in_docsnote" rows="2" style="width:100%;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font:inherit;background:#fff;resize:vertical" placeholder="Notes on providers / networks — e.g. wants to keep current PCP, specialist not in-network, willing to switch."></textarea></div>
@@ -4853,6 +4855,22 @@ function whyReadTags(){ return Array.prototype.filter.call(document.querySelecto
 function whyFillTags(){ whyChips(); var tags=whyTagList((S.intake||{}).whyTags); document.querySelectorAll('#whyTagBox [data-why]').forEach(function(c){ c.checked=tags.indexOf(c.dataset.why)>=0; c.closest('.chip').classList.toggle('on',c.checked); }); whySay(); }
 /* A blank that must never show the script's sample: a made-up quote in red reads like the client's words (Jesse, 23 Oct). */
 var PRESENT_MISS={'client.why_quote':'‹their words — type their why on the Intake the way they said it›'};
+/* Each doctor: ✓ in network, ✗ not, or ? not checked yet (Jesse, 23 Oct). Stored as true / 'no' / ''. The old single
+   "network verified" box is derived from them, so everything that read it still works. */
+function docNetRead(n){ var v=($('in_docs'+n+'_net')||{dataset:{}}).dataset.v; return v==='in'?true:v==='out'?'no':''; }
+function docNetPaint(n,val){ var el=$('in_docs'+n+'_net'); if(!el) return; var v=val===true?'in':val==='no'?'out':''; el.dataset.v=v;
+  el.querySelectorAll('[data-net]').forEach(function(b){ b.classList.toggle('on',b.dataset.net===v); b.setAttribute('aria-pressed',String(b.dataset.net===v)); }); }
+function docNetStatus(){ var I=S.intake||{}, st=[]; [1,2,3].forEach(function(n){ if(String(I['docs'+n]||'').trim()) st.push(I['docs'+n+'net']); });
+  if(st.indexOf('no')>=0) return 'no'; if(st.length&&st.every(function(x){ return x===true; })) return 'ok';
+  /* an older file that only has the single box */
+  if(!st.some(function(x){ return x===true||x==='no'; })&&(S.docs||{}).net&&I.keepafc) return I.keepafc==='yes'?'ok':'no';
+  return 'q'; }
+function docNetLegacy(){ var I=S.intake||{}; if(!(S.docs||{}).net||!I.keepafc) return; var named=[1,2,3].filter(function(n){ return String(I['docs'+n]||'').trim(); });
+  if(!named.length||named.some(function(n){ var v=I['docs'+n+'net']; return v===true||v==='no'; })) return;
+  named.forEach(function(n){ I['docs'+n+'net']=I.keepafc==='yes'?true:'no'; docNetPaint(n,I['docs'+n+'net']); }); }
+function docNetRoll(){ var I=S.intake||{}, any=[1,2,3].some(function(n){ var v=I['docs'+n+'net']; return String(I['docs'+n]||'').trim()&&(v===true||v==='no'); }); if(!any) return;
+  var st=docNetStatus(); S.docs=S.docs||{}; S.docs.net=st!=='q'; I.keepafc=st==='ok'?'yes':st==='no'?'no':'';
+  if($('in_net')) $('in_net').checked=S.docs.net; if($('in_keepafc')) $('in_keepafc').value=I.keepafc; }
 function whySay(){ var el=$('whySay'); if(!el) return; var I=Object.assign({},S.intake||{},{whyMatters:($('in_whymatters')||{}).value,whyTags:whyReadTags()});
   var raw=whyRaw(I), note=whyLooksLikeNote(raw), r=whyReadBack(I);
   el.innerHTML=note?'<b class="ws-warn">That reads like a note, not their words</b> — it won’t be quoted back as “you said”. Type it the way they said it: <i>“I’m paying way too much for what I get.”</i>'
@@ -5172,7 +5190,10 @@ function reviewPaginate(doc,t){ if(!doc||!doc.body) return; var pages=REVIEW_PAG
 /* Public tool, public scripts (Jesse, 23 Oct): nothing internal renders. Flags ("we agreed to come back to this") and
    author notes are for the thread, never for agents - hidden in every script frame as a backstop; the source should carry none. */
 function scriptClean(doc){ try{ if(!doc||!doc.head||doc.getElementById('ppClean')) return; var st=doc.createElement('style'); st.id='ppClean';
-  st.textContent='.flag,[data-author="note"]{display:none!important}'; doc.head.appendChild(st); }catch(e){} }
+  st.textContent='.flag,[data-author="note"]{display:none!important}'
+      /* a Top tip is for the agent, never read out (Jesse, 23 Oct): set apart from SAY - dashed box, smaller, labelled */
+      +'.tip{background:#fbfaf6!important;border:1.5px dashed #b6a77a!important;border-left:1.5px dashed #b6a77a!important;border-radius:8px;font-size:13.5px!important;color:#4b4636;padding:9px 13px!important}'
+      +'.tip:before{content:"\\1F4A1  TOP TIP \\2014  FOR YOU, NOT READ ALOUD"!important;color:#8a6d1f!important}'; doc.head.appendChild(st); }catch(e){} }
 function reviewWire(doc,t){ if(!doc||!doc.body) return; scriptClean(doc); reviewPendingEdits(doc); reviewCardBox(doc); var T=reviewTokens(t), X=reviewRx(t), I=S.intake||{};
   if(!doc.getElementById('ppcss')){ var st=doc.createElement('style'); st.id='ppcss'; st.textContent=PRESENT_CSS+REVIEW_CSS; doc.head.appendChild(st); }
   Array.prototype.forEach.call(doc.querySelectorAll('var[data-k]'),function(v){ var k=v.getAttribute('data-k');
@@ -5209,7 +5230,7 @@ function careCardData(){ var I=S.intake||{}, C=S.client||{}, R=reviewState(), sl
   var o={i:R.cardId};
   if(String(C.agent||'').trim()) o.a=String(C.agent).trim(); var ph=String(S.agentPhone||'').replace(/\D/g,''); if(ph) o.p=ph;
   var n=acaPeople().filter(function(x){ var a=parseFloat(x.age); return x.role!=='k'||a>=18; }).length; if(n>0) o.n=n;   /* adults only: primary, spouse, and kids 18 and over (Jesse, 18 Oct) */ var et=enrolledTier(); if(et&&tierHasDental(et)) o.d=1;
-  [1,2,3].forEach(function(k){ var nm=String(I['docs'+k]||'').trim(), w=I['docs'+k+'who']; if(nm&&I['docs'+k+'net']&&slot[w]) o[slot[w]]=o[slot[w]]?o[slot[w]]+'; '+nm:nm; });
+  [1,2,3].forEach(function(k){ var nm=String(I['docs'+k]||'').trim(), w=I['docs'+k+'who']; if(nm&&I['docs'+k+'net']===true&&slot[w]) o[slot[w]]=o[slot[w]]?o[slot[w]]+'; '+nm:nm; });
   /* The pocket reminder (Jesse, 18 Oct): what isn't on their plan yet, whether levels were lowered, and their review month.
      Dental when the state sells it; life insurance when no living benefits; cancer & heart cover only when it was
      recommended or the family has that history. */
@@ -5231,7 +5252,7 @@ function careShown(k){ var I=S.intake||{}; return k==='sp_doc'?!!(I.who_spouse||
 /* Everything the card should open with: the review-call boxes first, then the Intake's in-network doctors and the
    pharmacy as fall-backs, then the agent from Setup. Only filled keys. */
 function careFields(){ var I=S.intake||{}, R=reviewState(), C=R.care||{}, f={}, slot={me:'me_doc',sp:'sp_doc',kid:'kid_doc'};
-  [1,2,3].forEach(function(k){ var nm=String(I['docs'+k]||'').trim(), w=slot[I['docs'+k+'who']]; if(nm&&I['docs'+k+'net']&&w) f[w]=f[w]?f[w]+'; '+nm:nm; });
+  [1,2,3].forEach(function(k){ var nm=String(I['docs'+k]||'').trim(), w=slot[I['docs'+k+'who']]; if(nm&&I['docs'+k+'net']===true&&w) f[w]=f[w]?f[w]+'; '+nm:nm; });
   if(String(R.pharmacy||'').trim()) f.pharm=String(R.pharmacy).trim();
   Object.keys(C).forEach(function(k){ var v=String(C[k]||'').trim(); if(v&&CARE_KEYS.indexOf(k)>=0) f[k]=v; else if(!v&&C[k]!=null&&f[k]&&k in C) delete f[k]; });
   if(!f.agent&&String((S.client||{}).agent||'').trim()) f.agent=String(S.client.agent).trim();
@@ -5477,7 +5498,7 @@ function reviewCareHTML(){ var cf=careFields();
 /* Intake doctors that did NOT come over, and why - confirm them on the call rather than leave them off silently. */
 function reviewCareLeft(){ var I=S.intake||{}, L=[];
   [1,2,3].forEach(function(k){ var nm=String(I['docs'+k]||'').trim(); if(!nm) return; var why=[];
-    if(!I['docs'+k+'net']) why.push('not marked in network'); if(!I['docs'+k+'who']) why.push('no “whose” picked');
+    if(I['docs'+k+'net']==='no') why.push('not in network'); else if(I['docs'+k+'net']!==true) why.push('network not checked yet'); if(!I['docs'+k+'who']) why.push('no “whose” picked');
     if(why.length) L.push('<b>'+esc(nm)+'</b> — '+why.join(', ')); });
   return L.length?'<div class="rv-cleft">From the Intake, not on the card yet: '+L.join(' · ')+'. Check First Health on the call, then type them in.</div>':''; }
 function reviewCareWire(){ var R=reviewState(), host=document.querySelector('.rv-care'); if(!host) return;
@@ -5818,7 +5839,7 @@ function readIntake(){
   S.intake.income=moneyVal($('in_income').value); S.intake.retage=$('in_retage').value;
   S.intake.savings=moneyVal($('in_savings').value); S.intake.invest=moneyVal($('in_invest').value); S.intake.invprot=$('in_invprot').checked; S.intake.invsra=$('in_invsra').checked; S.intake.invnote=$('in_invnote').value;
   S.intake.docs1=$('in_docs1').value; S.intake.docs2=$('in_docs2').value; S.intake.docs3=$('in_docs3').value;
-  [1,2,3].forEach(function(n){ S.intake['docs'+n+'who']=$('in_docs'+n+'_who').value; S.intake['docs'+n+'net']=$('in_docs'+n+'_net').checked; });   /* whose + verified in network: feeds the care card */
+  [1,2,3].forEach(function(n){ S.intake['docs'+n+'who']=$('in_docs'+n+'_who').value; S.intake['docs'+n+'net']=docNetRead(n); });   docNetRoll();   /* whose + verified in network: feeds the care card */
   glp1Read(); S.intake.whyTags=whyReadTags();
   S.intake.keepaca=$('in_keepaca').value; S.intake.keepafc=$('in_keepafc').value; S.intake.docnote=$('in_docnote').value;
   S.intake.pheight=$('in_pheight').value; S.intake.pweight=$('in_pweight').value; S.intake.sheight=$('in_sheight').value; S.intake.sweight=$('in_sweight').value; S.intake.psex=$('in_psex').value; S.intake.ssex=$('in_ssex').value; S.intake.kidsNote=$('in_kids').value; S.intake.routeNote=$('in_routenote').value; S.intake.docsNote=$('in_docsnote').value; S.intake.whyShop=$('in_whyshop').value; S.intake.whyMatters=$('in_whymatters').value; S.intake.foundPlan=$('in_foundplan').value; S.intake.effDate=$('in_effdate').value;
@@ -5850,7 +5871,7 @@ function fillIntake(){
   $('in_majorcond').checked=!!I.majorcond; $('in_majorcond_note').value=I.majorcondNote||''; autoGrow($('in_majorcond_note'));
   $('in_diabetic').checked=!!I.diabetic; $('in_diabetic_note').value=I.diabeticNote||''; autoGrow($('in_diabetic_note'));
   $('in_docs1').value=I.docs1||''; $('in_docs2').value=I.docs2||''; $('in_docs3').value=I.docs3||'';
-  [1,2,3].forEach(function(n){ $('in_docs'+n+'_who').value=I['docs'+n+'who']||''; $('in_docs'+n+'_net').checked=!!I['docs'+n+'net']; });
+  [1,2,3].forEach(function(n){ $('in_docs'+n+'_who').value=I['docs'+n+'who']||''; docNetPaint(n,I['docs'+n+'net']); });   docNetLegacy();
   $('in_keepaca').value=I.keepaca||''; $('in_keepafc').value=I.keepafc||''; $('in_docnote').value=I.docnote||''; if(window.netSync) setTimeout(window.netSync,0);
   $('in_pheight').value=I.pheight||''; $('in_pweight').value=I.pweight||''; $('in_sheight').value=I.sheight||''; $('in_sweight').value=I.sweight||''; $('in_psex').value=I.psex||''; $('in_ssex').value=I.ssex||''; $('in_kids').value=I.kidsNote||''; $('in_routenote').value=I.routeNote||''; $('in_docsnote').value=I.docsNote||''; $('in_whyshop').value=I.whyShop||''; $('in_whymatters').value=I.whyMatters||''; $('in_foundplan').value=I.foundPlan||''; $('in_effdate').value=I.effDate||''; updateBMI('p'); updateBMI('s'); buildFlag('p'); buildFlag('s');
   $('in_net').checked=!!S.docs.net; $('in_rx').checked=!!S.docs.rx;
@@ -6763,7 +6784,7 @@ var PRESENT_FIX={'aca.premium':'[data-ov="prem"]','aca.deductible':'[data-ov="de
   'cur.premium':'#in_cur_prem','cur.deductible':'#in_cur_ded','cur.copay':'#in_cur_copay','cur.oop':'#in_cur_oop',
   'client.why':'#in_whymatters','client.first':'#in_pname','client.name':'#in_pname','client.state':'#in_state',
   'agent.name':'#in_agent','agency':'#in_agency','agent.phone':'#in_aphone','agent.email':'#in_aemail','agent.website':'#in_aweb','agent.booking':'#in_abook',
-  'client.doctor':'#in_docs1','client.doctors':'#in_docs1','doctor.name':'#in_net'};
+  'client.doctor':'#in_docs1','client.doctors':'#in_docs1','doctor.name':'#in_docs1_net'};
 function presentJump(k){ var sel=PRESENT_FIX[k]; if(!sel) return; S.present=S.present||{}; var back=+S.present.pg||0;
   goStep('intake'); setTimeout(function(){ var el=document.querySelector(sel); if(!el) return;
     for(var p=el.parentElement;p;p=p.parentElement){ if(p.tagName==='DETAILS') p.open=true; }
@@ -6796,7 +6817,7 @@ function presentWire(doc,t){ scriptClean(doc); if(!doc||!doc.body) return 0; var
   var cdw=doc.querySelector('.pp-curded'); if(cdw) cdw.classList.toggle('pp-fix',!(+curIn().ded>0));
   /* section 5's doctor (Jesse, 9 Oct): 👍 above the name once the Intake says the doctor is in First Health, ❓ until
      then - and the ❓ jumps to the network check. */
-  var netV=!!(S.docs||{}).net, kaf=(S.intake||{}).keepafc, docSt=!netV||!kaf?'q':(kaf==='yes'?'ok':'no');
+  var docSt=docNetStatus();
   /* the doctor's network status picks the sentence (Health ZONE's data-docnet blocks): in, or out-of-network - not checked shows the in version with its ❓ */
   Array.prototype.forEach.call(doc.querySelectorAll('[data-docnet]'),function(x){ var w=x.getAttribute('data-docnet'); x.classList.toggle('pp-off',w==='out'?docSt!=='no':docSt==='no'); });
   Array.prototype.forEach.call(doc.querySelectorAll('var[data-k="doctor.name"]'),function(v){ if(!v.classList.contains('pp-ok')) return;
@@ -7089,6 +7110,7 @@ function bindInputs(){
   document.querySelectorAll('#step-intake .chip input').forEach(function(cb){ cb.addEventListener('change',function(){ syncChips(); readIntake(); autosave(); }); });
   ['in_pname','in_sname','in_agent','in_address','in_state','in_zip','in_page','in_sage','in_majorcond_note','in_diabetic_note','in_docs1','in_docs2','in_docs3','in_carrier','in_plan','in_visits','in_budget_comfort','in_income','in_retage','in_savings','in_invest','in_invnote','in_docnote','in_budget','in_notes','in_kids','in_routenote','in_docsnote','in_whyshop','in_whymatters','in_foundplan','in_effdate']
     .forEach(function(id){ var el=$(id); if(el) el.addEventListener('input',function(){ captureIntake(); }); });
+  [1,2,3].forEach(function(n){ var el=$('in_docs'+n+'_net'); if(el) el.querySelectorAll('[data-net]').forEach(function(b){ b.onclick=function(){ docNetPaint(n,b.dataset.net==='in'?true:b.dataset.net==='out'?'no':''); el.dispatchEvent(new Event('change')); }; }); });
   ['in_docs1_who','in_docs2_who','in_docs3_who','in_docs1_net','in_docs2_net','in_docs3_net'].forEach(function(id){ var el=$(id); if(el) el.addEventListener('change',function(){ captureIntake(); autosave(); }); });
   $('in_zip').addEventListener('input',zipFillsState);
   if($('in_kidcount')) $('in_kidcount').addEventListener('change',function(){ S.intake.kidsManual=0; kidsSetCount(this.value); });

@@ -212,7 +212,7 @@ const TEST = `(async function(){
   S.docs.net=false; S.intake.keepafc='yes'; presentWire(d,'best'); ok(dmk()==='pp-docq','not verified: ❓ (even if an answer is set)');
   S.docs.net=true; S.intake.keepafc='yes'; presentWire(d,'best'); ok(dmk()==='pp-docok','verified, in the network: ✅');
   S.docs.net=true; S.intake.keepafc='no'; presentWire(d,'best'); ok(dmk()==='pp-docno','verified, not in the network: ❌');
-  ok(PRESENT_FIX['doctor.name']==='#in_net','the doctor mark jumps to Network status verified');
+  ok(PRESENT_FIX['doctor.name']==='#in_docs1_net','the doctor mark jumps to the doctor network toggle');
   S.intake.keepafc=kDoc[0]; S.docs.net=kDoc[1]; presentWire(d,'best');
   var exd=Array.prototype.filter.call(d.querySelectorAll('details.exp'),function(x){ return /^Example words/.test(x.querySelector('summary').textContent.trim()); })[0];
   var bigd=Array.prototype.filter.call(d.querySelectorAll('details.exp'),function(x){ return /^If they want to go over the big stuff/.test(x.querySelector('summary').textContent.trim()); })[0];
