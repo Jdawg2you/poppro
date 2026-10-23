@@ -54,7 +54,12 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  ok(whyLooksLikeNote('Weants less expensive with better coverage')===false||true,'(typo case is not a pattern)');
  ok(whyLooksLikeNote('Wants less expensive with better coverage')&&whyLooksLikeNote('Needs dental')&&whyLooksLikeNote('Looking for lower premiums')&&whyLooksLikeNote('He wants cheaper'),'notes are recognised');
  ok(!whyLooksLikeNote('I want something cheaper')&&!whyLooksLikeNote('healthcare has just gotten so flippin expensive')&&!whyLooksLikeNote('my premium doubled')&&!whyLooksLikeNote('We need the kids covered')&&!whyLooksLikeNote('need to find more affordable coverage')&&!whyLooksLikeNote('want something I can actually use'),'their own words are kept');
- var keepW=S.intake.whyMatters; S.intake.whyMatters='Wants less expensive with better coverage'; ok(whyQuote(S.intake)===''&&presentScriptTokens('better')['client.why_quote']==='','a note is not quoted - the blank stays red for the agent'); S.intake.whyMatters=keepW;
+  var keepSh=JSON.stringify(S.intake); goStep('present'); await w(1800); var pdoc=document.getElementById('prFrame').contentDocument;
+ Object.assign(S.intake,{whyTags:['Too expensive','Other'],whyShop:'rate went up twice',foundPlan:'Ambetter Silver, $612/mo',notes:'Why — other: husband retiring'}); presentShared(pdoc); var shb=pdoc.querySelector('.pp-shared');
+ ok(shb&&shb.classList.contains('do')&&/Too expensive · Other: husband retiring/.test(shb.textContent)&&/rate went up twice/.test(shb.textContent)&&/Ambetter Silver/.test(shb.textContent),'Present screen 3 shows what they shared, agent-only');
+ Object.assign(S.intake,{whyTags:[],whyShop:'',foundPlan:'',notes:''}); presentShared(pdoc); ok(shb.classList.contains('pp-off')&&pdoc.querySelectorAll('.pp-shared').length===1,'nothing shared - no box, never two');
+ S.intake=JSON.parse(keepSh); goStep('intake'); await w(300);
+var keepW=S.intake.whyMatters; S.intake.whyMatters='Wants less expensive with better coverage'; ok(whyQuote(S.intake)===''&&presentScriptTokens('better')['client.why_quote']==='','a note is not quoted - the blank stays red for the agent'); S.intake.whyMatters=keepW;
  /* intake: chips read and fill, preview shows */
  goStep('intake'); await w(400); var chip=document.querySelector('#whyTagBox [data-why="Losing coverage"]'); chip.click(); await w(50);
  ok(S.intake.whyTags.indexOf('Losing coverage')>=0&&document.getElementById('whySay').textContent.indexOf('your coverage ends 10/31/2026')>0,'a tag clicked on the Intake updates the preview with their facts');

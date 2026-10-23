@@ -6807,7 +6807,23 @@ function presentJump(k){ var sel=PRESENT_FIX[k]; if(!sel) return; S.present=S.pr
     b.innerHTML='↩ Back to the script'; b.style.display='';
     setTimeout(function(){ var r=el.getBoundingClientRect(); b.style.top=Math.max(70,Math.min(innerHeight-60,r.top+r.height/2-20))+'px'; },650);
     b.onclick=function(){ el.classList.remove('fixme'); el.blur(); b.style.display='none'; S.present.pg=back; goStep('present'); }; },60); }
-function presentWire(doc,t){ scriptClean(doc); if(!doc||!doc.body) return 0; var T=presentScriptTokens(t), n=0;
+/* What they shared on the discovery call (Jesse, 23 Oct): the chips behind their why, their story and the plan they
+   already found sit under screen 3's "Pause" note, agent-only - the why is quoted, these are for you to have in front
+   of you. Only lines with something in them; no box at all when there's nothing. */
+function presentShared(doc){ if(!doc||!doc.body) return; var I=S.intake||{}, tags=whyTagList(I.whyTags).filter(function(x){ return x!=='Other'; });
+  var oth=(String(I.notes||'').match(/Why\s*[—-]\s*other:\s*([^\n]+)/i)||[])[1]||'';
+  if(whyTagList(I.whyTags).indexOf('Other')>=0) tags.push(oth?'Other: '+oth.trim():'Other');
+  var story=String(I.whyShop||'').trim(), found=String(I.foundPlan||'').trim(), L=[];
+  if(tags.length) L.push('<div><b>What’s behind their reason:</b> '+tags.map(esc).join(' · ')+'</div>');
+  if(story) L.push('<div><b>Their story — more about what matters to them:</b> '+esc(story)+'</div>');
+  if(found) L.push('<div><b>Plan they already found:</b> '+esc(found)+' <i>— what you’re showing has to answer this.</i></div>');
+  var box=doc.querySelector('.pp-shared');
+  if(!box){ var h=doc.querySelector('[data-screen="reason"]'); if(!h) return; var el=h.closest('body > *')||h, at=null;
+    for(var x=el.nextElementSibling;x;x=x.nextElementSibling){ if(x.querySelector&&x.querySelector('[data-screen]')||x.hasAttribute('data-screen')) break; if(x.classList.contains('do')){ at=x; break; } }
+    if(!at) return; box=doc.createElement('div'); box.className='do pp-shared'; if(at.dataset.pg!=null) box.dataset.pg=at.dataset.pg; at.parentNode.insertBefore(box,at.nextSibling); }
+  box.innerHTML='<span class="lab">NOT SPOKEN · WHAT THEY SHARED ON THE DISCOVERY CALL</span>'+L.join('');
+  box.classList.toggle('pp-off',!L.length); }
+function presentWire(doc,t){ scriptClean(doc); if(!doc||!doc.body) return 0; var T=presentScriptTokens(t), n=0; presentShared(doc);
   if(!doc.getElementById('ppcss')){ var st=doc.createElement('style'); st.id='ppcss'; st.textContent=PRESENT_CSS; doc.head.appendChild(st); }
   var copy=function(x){ try{ navigator.clipboard.writeText(x); }catch(e){} };
   /* blanks */
