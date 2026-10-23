@@ -62,11 +62,11 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  /* the four ticks */
  var pg=pages.indexOf('Portal — do it live'); reviewGo(pg); await w(100); var tk=d.querySelector('.rv-tick[data-tick="portal"]'); ok(tk&&tk.style.display!=='none','the portal tick sits on the portal screen');
  tk.querySelector('input').click(); await w(50); ok(!!(JSON.parse(localStorage.getItem('hf_pop_last')).review.ticks||{}).portal,'a tick is saved with the client');
- ok(/1 of 5/.test(document.getElementById('rvTicks').textContent),'the rail counts it');
+ ok(/1 of 6/.test(document.getElementById('rvTicks').textContent),'the rail counts it (six: Rx Valet joined, 23 Oct)');
  ok(['ecg','upload','cg'].every(function(k){ return !!d.querySelector('.rv-tick[data-tick="'+k+'"]'); }),'all four registration screens carry a tick');
  /* each registration: open / text / copy, and the one the script is on is boxed (Jesse, 16 Oct) */
  S.intake.phone='(555) 010-2030'; reviewRail(); var rows=document.querySelectorAll('#rvTicks .rv-row');
- ok(rows.length===5&&Array.prototype.every.call(rows,function(r){ return r.querySelectorAll('.rv-acts a').length===3&&r.querySelector('a[href^="sms:+15550102030?&body="]')&&r.querySelector('[data-copy]'); }),'every registration has open, text (to +1 number) and copy');
+ ok(rows.length===6&&Array.prototype.every.call(rows,function(r){ return r.querySelectorAll('.rv-acts a').length===3&&r.querySelector('a[href^="sms:+15550102030?&body="]')&&r.querySelector('[data-copy]'); }),'every registration has open, text (to +1 number) and copy');
  ok(decodeURIComponent(document.querySelector('#rvTicks [data-row="cg"] a[href^="sms:"]').getAttribute('href')).indexOf('mypoppro.com/tool/careguide.vcf')>0,'CareGuide text carries the contact-card link');
  var cur=function(t){ reviewGo(pages.indexOf(t)); var c=document.querySelector('#rvTicks .rv-row.cur'); return c?c.dataset.row:''; };
  ok(cur('Telehealth — do it live')==='ecg'&&cur('CareGuide')==='cg'&&cur('The money line')==='','the row being talked about is boxed, and only then');
@@ -206,7 +206,7 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  var rvR=document.getElementById('rvFrame').contentDocument; reviewWire(rvR,'better'); var spoken=Array.prototype.map.call(rvR.querySelectorAll('.say'),function(x){ return x.textContent; }).join(' ');
  ok(!/RxEDO/i.test(spoken)&&/EasyCare2go/.test(spoken),'no RxEDO in anything spoken on the Benefits Review; the prescriptions screen names EasyCare2go');
  ok(reviewTokens('better')['plan.has_afc']==='1','plan.has_afc is set when the plan includes Affordable Choice');
- ok(!AFC_PARTNERS.some(function(p){ return /rxedo/i.test(p.name+p.desc+(p.bullets||[]).join(' ')); })&&!/prescription/i.test(afcPartnerLines())&&RXVALET_URL.indexOf('myrxvalet.com')>=0,'partner benefits: no RxEDO, and no prescription claim on EasyCare2go — prescriptions are Rx Valet (22 Oct)');
+ ok(!AFC_PARTNERS.some(function(p){ return /rxedo/i.test(p.name+p.desc+(p.bullets||[]).join(' ')); })&&!/EasyCare2go[^•]*prescription/i.test(afcPartnerLines())&&/Rx Valet — prescription discount card/.test(afcPartnerLines())&&RXVALET_URL.indexOf('myrxvalet.com')>=0,'partner benefits: no RxEDO, and no prescription claim on EasyCare2go — prescriptions are Rx Valet (22 Oct)');
   /* Rx Valet is for every client (22 Oct): no Affordable Choice still hears it; the $50-a-day blocks still follow the AFC figure */
  S.chosen={tier:'better'}; actualSeed('better'); (S.packages.actual.dropped=S.packages.actual.dropped||[]).push('afc'); priceTier('actual');
  var rvA=document.getElementById('rvFrame').contentDocument; reviewWire(rvA,'better');
@@ -307,6 +307,9 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
    ok(paras.length>=5&&paras.every(function(x){ return x.trim().length; }),'paragraphs are separated by a blank line ('+paras.length+')');
    goStep('enroll'); await w(400); var bs=document.querySelectorAll('[data-entext]'); ok(bs.length===2&&/Text client recap/.test(bs[0].textContent)&&/Copy client recap to text/.test(bs[1].textContent),'Enroll has the two recap buttons ('+bs.length+')');
    var ee=enrollEmail(); ok(ee.body.indexOf('Rx Valet')>=0&&ee.body.indexOf('myrxvalet.com')>=0&&ee.body.indexOf('EasyCare2go — 24/7 telemedicine doctors, mental health')>=0,'the enrollment email names Rx Valet for prescriptions; EasyCare2go no longer claims Rx');
+   ok(tx.indexOf('💊 Plus Rx Valet for prescription discounts: https://www.myrxvalet.com')>=0,'the recap text lists Rx Valet');
+   ok(AFC_PARTNERS.some(function(p){ return p.name==='Rx Valet'; })&&/Rx Valet/.test(renderAfcPartnersHTML(false)||'Rx Valet'),'Rx Valet is a card in the partner benefits panel');
+   ok(REVIEW_TICKS.some(function(x){ return x.k==='rxv'&&/myrxvalet/.test(x.sms('Joel')); }),'the Benefits Review checklist can text Rx Valet');
    var wrap=textFromHTML(postTextHTML('better')); ok(wrap.split(String.fromCharCode(10,10)).length>=4,'the wrap-up text copies with its blank lines too');
  }catch(e){ fails.push('enrollment text block threw: '+e.message); } S=keep; fill(); })();
  /* Triad flow (sandbox, Jesse 22 Oct): a Cigna PPO package gets its own Present, Enroll and Benefits Review */
@@ -389,7 +392,7 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  S=JSON.parse(JSON.stringify(rfBase)); S.intake.pregNowP=true; goStep('quote'); compute(); await w(200); var rfe=document.getElementById('rightFit');
  ok(rfe&&rfe.textContent.indexOf('ACA + optional HI Select')>=0&&rfe.textContent.indexOf('p.23')>=0&&/Amerus VL/.test(rfe.textContent)&&/not an underwriting decision/.test(rfe.textContent),'right-fit panel renders on Quote with the path, the guide cite, GI names and the disclaimer: '+(rfe?'':'none'));
  S=JSON.parse(JSON.stringify(rfBase));
- return {n:207, fails:fails}; })()`;
+ return {n:210, fails:fails}; })()`;
 try {
   let l; for (let i = 0; i < 60 && !l; i++) { await sleep(150); l = await fetch(`http://127.0.0.1:${DBG}/json/list`).then(r => r.json()).catch(() => null); }
   ws = new WebSocket(l.find(t => t.type === 'page').webSocketDebuggerUrl);
