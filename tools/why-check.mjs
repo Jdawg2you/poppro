@@ -53,7 +53,7 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  /* an agent's note is never quoted as "you said" (Health ZONE, 17 Oct) */
  ok(whyLooksLikeNote('Weants less expensive with better coverage')===false||true,'(typo case is not a pattern)');
  ok(whyLooksLikeNote('Wants less expensive with better coverage')&&whyLooksLikeNote('Needs dental')&&whyLooksLikeNote('Looking for lower premiums')&&whyLooksLikeNote('He wants cheaper'),'notes are recognised');
- ok(!whyLooksLikeNote('I want something cheaper')&&!whyLooksLikeNote('healthcare has just gotten so flippin expensive')&&!whyLooksLikeNote('my premium doubled')&&!whyLooksLikeNote('We need the kids covered'),'their own words are kept');
+ ok(!whyLooksLikeNote('I want something cheaper')&&!whyLooksLikeNote('healthcare has just gotten so flippin expensive')&&!whyLooksLikeNote('my premium doubled')&&!whyLooksLikeNote('We need the kids covered')&&!whyLooksLikeNote('need to find more affordable coverage')&&!whyLooksLikeNote('want something I can actually use'),'their own words are kept');
  var keepW=S.intake.whyMatters; S.intake.whyMatters='Wants less expensive with better coverage'; ok(whyQuote(S.intake)===''&&presentScriptTokens('better')['client.why_quote']==='','a note is not quoted - the blank stays red for the agent'); S.intake.whyMatters=keepW;
  /* intake: chips read and fill, preview shows */
  goStep('intake'); await w(400); var chip=document.querySelector('#whyTagBox [data-why="Losing coverage"]'); chip.click(); await w(50);

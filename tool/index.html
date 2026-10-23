@@ -4794,7 +4794,9 @@ function whyRaw(I){ return String((I&&I.whyMatters)||'').trim().replace(/^["“�
    mouth (Health ZONE, 17 Oct). No I / my / we AND it opens like a note = not quoted; the agent asks instead. */
 function whyLooksLikeNote(q){ q=String(q||'').trim(); if(!q) return false;
   if(/\b(i|i'm|i’m|im|i've|i’ve|i'd|i’d|my|me|mine|we|we're|we’re|our|us)\b/i.test(q)) return false;
-  return /^(wants?|needs?|looking|seeking|interested|prefers?|client|clt|he|she|they|husband|wife|spouse|family)\b/i.test(q); }
+  /* "need to find more affordable coverage" is how people talk - an unspoken "I" - so the bare verb counts as theirs;
+     "Needs dental" / "Wants cheaper" (the third person) stays a note (Jesse, 23 Oct) */
+  return /^(wants|needs|looking|seeking|interested|prefers|client|clt|he|she|they|husband|wife|spouse|family)\b/i.test(q); }
 function whyHouse(){ var k=householdKey(); return k==='f'||k==='c'?'you and your family':k==='s'?'you and your spouse':'you'; }
 function whyDocs(){ var I=S.intake||{}, out=[]; [I.docs1,I.docs2,I.docs3].forEach(function(x){ String(x||'').split(/[;,]|\s+and\s+/i).forEach(function(d){
     d=d.replace(/\s*\(.*?\)\s*/g,' ').replace(/\s+[-–—]\s+.*$/,'').replace(/^\s*(dr\.?|doctor)\s+/i,'').trim(); if(d&&out.indexOf(d)<0) out.push(d); }); });
@@ -6794,7 +6796,7 @@ function m0y(n){ return '$'+Math.round(+n||0).toLocaleString('en-US'); }
 var PRESENT_EST={'aca.premium':'prem','aca.deductible':'ded','aca.oop':'oop'};
 var PRESENT_FIX={'aca.premium':'[data-ov="prem"]','aca.deductible':'[data-ov="ded"]','aca.oop':'[data-ov="oop"]',
   'cur.premium':'#in_cur_prem','cur.deductible':'#in_cur_ded','cur.copay':'#in_cur_copay','cur.oop':'#in_cur_oop',
-  'client.why':'#in_whymatters','client.first':'#in_pname','client.name':'#in_pname','client.state':'#in_state',
+  'client.why':'#in_whymatters','client.why_quote':'#in_whymatters','client.first':'#in_pname','client.name':'#in_pname','client.state':'#in_state',
   'agent.name':'#in_agent','agency':'#in_agency','agent.phone':'#in_aphone','agent.email':'#in_aemail','agent.website':'#in_aweb','agent.booking':'#in_abook',
   'client.doctor':'#in_docs1','client.doctors':'#in_docs1','doctor.name':'#in_docs1_net'};
 function presentJump(k){ var sel=PRESENT_FIX[k]; if(!sel) return; S.present=S.present||{}; var back=+S.present.pg||0;
