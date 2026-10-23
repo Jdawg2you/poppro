@@ -5304,6 +5304,14 @@ function careImport(url){ var m=/[#&]c=([A-Za-z0-9_-]+)/.exec(String(url||'')); 
 function careCardLink(){ var j=JSON.stringify(careCardData()), b=btoa(unescape(encodeURIComponent(j))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''); return CARE_CARD_URL+'#c='+b; }
 /* The recap email the script promises ("You'll get a recap email from me within the hour", Jesse 23 Oct): only what
    the call covered and what's known - no doctor line that wasn't filled, no figure the script doesn't say. */
+/* DirectLabs and Green Imaging by product, from ManhattanLife's "Ancillary Services by Product" chart (Jesse, 23 Oct):
+   DirectLabs - Affordable Choice, Cancer Care Plus / Critical Illness, Home Health Care, Hospital Indemnity Select (and Short-Term Care);
+   Green Imaging - all of those plus Accident. Not DVH, not Out-of-Pocket. CareGuide is Affordable Choice only. */
+function labsHas(t){ var P=reviewProducts(t), dl=!!(P.afc||P.chas||P.his||P.hhc); return {dl:dl, gi:dl||!!P.acc}; }
+function labsLine(t){ var L=labsHas(t);
+  if(L.dl&&L.gi) return 'Labs or imaging? Before your doctor sends you to the hospital for bloodwork or an MRI, check DirectLabs (https://www.directlabs.com/) and Green Imaging (https://www.greenimaging.net) first — they come with your plan and are usually far cheaper.';
+  if(L.gi) return 'Imaging? Before your doctor sends you to the hospital for an MRI, CT or X-ray, check Green Imaging (https://www.greenimaging.net) first — it comes with your plan and is usually far cheaper.';
+  return ''; }
 function carePh(v){ var d=String(v||'').replace(/\D/g,''); if(d.length===11&&d[0]==='1') d=d.slice(1); return d.length===10?d.slice(0,3)+'-'+d.slice(3,6)+'-'+d.slice(6):String(v||'').trim(); }
 function reviewEmail(){ var t=reviewT()||chosenTier(), R=reviewState(), C=S.client||{}, first=((C.pname||'').trim().split(/\s+/)[0])||'there';
   var c=effCfg(t)||{}, pk=S.packages[t]||{}, prods=[];
@@ -5330,7 +5338,7 @@ function reviewEmail(){ var t=reviewT()||chosenTier(), R=reviewState(), C=S.clie
   sec('STILL TO DO — a few minutes each',ks.filter(function(k){ return !R.ticks[k]; }).map(function(k){ return LINE[k]; }));
   /* Dawn's training, Jesse's rulings (23 Oct): the ManhattanLife cards are not the care card; labs and imaging are Affordable Choice perks */
   sec('GOOD TO KNOW',['Your temporary ID card is in the member portal from day one — use that. Your physical ManhattanLife ID cards come in the mail about 10 days after your start date.',
-    afcInPk(S.packages[t]||{})?'Labs or imaging? Before your doctor sends you to the hospital for bloodwork or an MRI, check DirectLabs (https://www.directlabs.com/) and Green Imaging (https://www.greenimaging.net) first — they come with your plan and are usually far cheaper.':'']);
+    labsLine(t)]);
   var rm=R.month||(R.eff?MONTHS[+String(R.eff).slice(5,7)-1]:''); if(rm) sec('YOUR ANNUAL REVIEW',['It’s on my calendar for '+rm+'. I’ll reach out — nothing for you to do.']);
   L.push(''); L.push('If anyone you know is paying too much for coverage, or has none, I’d be grateful for the introduction.');
   var agent=String(C.agent||'').trim(), agency=(S.agency&&S.agency!=='HealthFirst')?S.agency:'', card=reviewUrl(S.agentCard);
