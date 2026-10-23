@@ -5189,7 +5189,7 @@ function reviewTokens(t){ t=reviewT()||t; var C=S.client||{}, R=reviewState(), T
   T['agent.first']=((C.agent||'').trim().split(/\s+/)[0])||''; T['agent.agency']=(S.agency&&S.agency!=='HealthFirst')?S.agency:'';
   T['policy.carrier']='ManhattanLife';
   T['policy.effective_date']=reviewDate(R.eff); T['policy.draft_date']=reviewDate(R.draft); if(reviewPrem()>0) T['policy.premium']=m2(reviewPrem());
-  T['client.pharmacy']=R.pharmacy||'';
+  T['client.pharmacy']=R.pharmacy||'pharmacy';   /* no pharmacy picked: "the receipt from the pharmacy", never a sample name */
   var A=(evTierPack(t)||{}).afc||{}; if(A.visitN) T['plan.visits']=String(A.visitN);
   var X=reviewRx(t); if(X.day) T['plan.rx_per_day']=X.day; if(X.cap) T['plan.rx_annual_max']=X.cap;
   var names=X.meds.map(function(m){ return medBase(m.name); });
@@ -5291,14 +5291,14 @@ function careCardData(){ var I=S.intake||{}, C=S.client||{}, R=reviewState(), sl
      leaves the client's own additions alone (the card page's rule). */
   var cf=careFields(); if(Object.keys(cf).length){ o.f=cf; if(R.careT) o.t=R.careT; }
   return o; }
-var CARE_F=[['me_doc','My doctor'],['sp_doc','Spouse’s doctor'],['kid_doc','Kids’ doctor'],['urgent','Urgent care'],['hosp','Hospital / ER'],['pharm','Pharmacy'],['dent','Dentist']];
+var CARE_F=[['me_doc','My doctor'],['sp_doc','Spouse’s doctor'],['kid_doc','Kids’ doctor'],['urgent','Urgent care'],['hosp','Hospital / ER'],['dent','Dentist']];   /* no pharmacy: it depends on the medication, they choose (Jesse, 23 Oct) */
 var CARE_KEYS=['people','agent','agent_ph'].concat([].concat.apply([],CARE_F.map(function(x){ return [x[0],x[0]+'_ph']; })));
-function careShown(k){ var I=S.intake||{}; return k==='sp_doc'?!!(I.who_spouse||acaPeople().some(function(x){ return x.role==='s'; })):k==='kid_doc'?acaPeople().some(function(x){ return x.role==='k'; }):k==='dent'?reviewDental():true; }
+function careShown(k){ var I=S.intake||{}, w=I.who||{}, C=S.client||{};   /* a spouse or kids on the file get their own doctor slot (Jesse, 23 Oct) */
+  return k==='sp_doc'?!!(w.spouse||String(C.sname||'').trim()):k==='kid_doc'?!!(w.kids||(typeof kidsList==='function'&&kidsList().length)):true; }
 /* Everything the card should open with: the review-call boxes first, then the Intake's in-network doctors and the
    pharmacy as fall-backs, then the agent from Setup. Only filled keys. */
 function careFields(){ var I=S.intake||{}, R=reviewState(), C=R.care||{}, f={}, slot={me:'me_doc',sp:'sp_doc',kid:'kid_doc'};
   [1,2,3].forEach(function(k){ var nm=String(I['docs'+k]||'').trim(), w=slot[I['docs'+k+'who']]; if(nm&&I['docs'+k+'net']===true&&w) f[w]=f[w]?f[w]+'; '+nm:nm; });
-  if(String(R.pharmacy||'').trim()) f.pharm=String(R.pharmacy).trim();
   Object.keys(C).forEach(function(k){ var v=String(C[k]||'').trim(); if(v&&CARE_KEYS.indexOf(k)>=0) f[k]=v; else if(!v&&C[k]!=null&&f[k]&&k in C) delete f[k]; });
   if(!f.agent&&String((S.client||{}).agent||'').trim()) f.agent=String(S.client.agent).trim();
   var ph=String(S.agentPhone||'').replace(/\D/g,''); if(!f.agent_ph&&ph) f.agent_ph=ph;

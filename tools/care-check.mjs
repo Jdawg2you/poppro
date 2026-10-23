@@ -51,7 +51,7 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  var url='https://optimumprotects.com/card/#c='+btoa(unescape(encodeURIComponent(JSON.stringify(back)))).replace(/\\+/g,'-').replace(/\\//g,'_').replace(/=+$/,'');
  document.getElementById('rvCarePaste').value=url; document.getElementById('rvCareImport').click(); await w(300);
  ok(/Brought in 3 box/.test(document.getElementById('rvCareMsg').textContent)||(document.querySelector('[data-care="hosp"]')||{}).value==='St. David’s','paste-back reports what came in');
- ok((document.querySelector('[data-care="hosp"]')||{}).value==='St. David’s'&&S.review.pharmacy==='HEB Pharmacy','pasted boxes land in the form and the pharmacy');
+ ok((document.querySelector('[data-care="hosp"]')||{}).value==='St. David’s','pasted boxes land in the form');
  ok(/Hospital \\/ ER: St\\. David’s/.test(document.getElementById('rvEmailTxt').value),'email picks up the pasted hospital');
  ok(careImport('https://example.com/nothing')===0,'a non-card link is refused');
  ta=document.getElementById('rvEmailTxt'); ta.value+='\\nP.S. hand edit'; ta.dispatchEvent(new Event('input')); reviewTick('cg',true); await w(50);
