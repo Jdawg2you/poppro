@@ -5092,7 +5092,11 @@ function reviewPaginate(doc,t){ if(!doc||!doc.body) return; var pages=REVIEW_PAG
     if(before) doc.body.insertBefore(d,before); else doc.body.appendChild(d);
     d.querySelector('input').onchange=function(){ reviewTick(p.tick,this.checked); }; });
   doc.body.dataset.rvp='1'; }
-function reviewWire(doc,t){ if(!doc||!doc.body) return; reviewPendingEdits(doc); reviewCardBox(doc); var T=reviewTokens(t), X=reviewRx(t), I=S.intake||{};
+/* Public tool, public scripts (Jesse, 23 Oct): nothing internal renders. Flags ("we agreed to come back to this") and
+   author notes are for the thread, never for agents - hidden in every script frame as a backstop; the source should carry none. */
+function scriptClean(doc){ try{ if(!doc||!doc.head||doc.getElementById('ppClean')) return; var st=doc.createElement('style'); st.id='ppClean';
+  st.textContent='.flag,[data-author="note"]{display:none!important}'; doc.head.appendChild(st); }catch(e){} }
+function reviewWire(doc,t){ if(!doc||!doc.body) return; scriptClean(doc); reviewPendingEdits(doc); reviewCardBox(doc); var T=reviewTokens(t), X=reviewRx(t), I=S.intake||{};
   if(!doc.getElementById('ppcss')){ var st=doc.createElement('style'); st.id='ppcss'; st.textContent=PRESENT_CSS+REVIEW_CSS; doc.head.appendChild(st); }
   Array.prototype.forEach.call(doc.querySelectorAll('var[data-k]'),function(v){ var k=v.getAttribute('data-k');
     if(v.dataset.ex==null) v.dataset.ex=v.textContent; var val=T[k]; v.classList.remove('pp-ok','pp-miss');
@@ -5206,7 +5210,7 @@ function renderReview(){ var host=$('reviewHost'); if(!host) return; var t=chose
     var fr=$('rvFrame'); if(fr&&fr.contentDocument&&fr.contentDocument.body&&fr.contentDocument.body.dataset.rvp) reviewWire(fr.contentDocument,t); };
   ['rv_appr','rv_eff','rv_prem','rv_draft','rv_pharm','rv_month','rv_link'].forEach(function(id){ $(id).addEventListener('change',save); $(id).addEventListener('input',function(){ if(id!=='rv_prem') save(); }); });
   renderActual(); reviewRail(); reviewCheck();
-  var fr=$('rvFrame'); fr.onload=function(){ try{ reviewPaginate(fr.contentDocument,t); reviewGo(+R.pg||0); }catch(e){} }; }
+  var fr=$('rvFrame'); fr.onload=function(){ try{ scriptClean(fr.contentDocument); reviewPaginate(fr.contentDocument,t); reviewGo(+R.pg||0); }catch(e){} }; }
 function reviewCheck(){ var R=reviewState(), w=[], el=$('rv_warn'); if(!el) return;
   if(R.appr==='chg') w.push('<b>Approved with a change:</b> open with it — say what moved, what it costs and what it means — before “approved as applied for”.');
   if(R.eff&&!R.draft) w.push('<b>Draft date is empty.</b> Read it off the carrier’s confirmation. A custom date (a benefit week, a payday) is not done until the carrier confirms it back.');
@@ -5779,7 +5783,7 @@ function enrollScript(){ var t=enrolledTier()||S.activeTab, fr=$('enFrame2'); if
       EN_TIP=EN_TIP.replace(/Type it in the box beside this question[\s\S]*$/,'Type it in the box beside this question — it saves with the quote, so it’s still there if the health application goes in on another day.');
       var sy=document.querySelector('#enPeople .en-say'); if(sy){ sy.textContent=''; if(EN_SAY) sy.appendChild(document.createTextNode('Say: “'+EN_SAY+'”')); if(EN_TIP){ var tp=document.createElement('div'); tp.className='en-tip'; tp.textContent=EN_TIP; sy.appendChild(tp); } }
       fr.style.height='60px'; fr.style.height=(doc.documentElement.scrollHeight+8)+'px'; }); };
-  if(fr.dataset.loaded) show(); else { fr.onload=function(){ fr.dataset.loaded='1'; show(); }; fr.src='presentation.html'; } }
+  if(fr.dataset.loaded) show(); else { fr.onload=function(){ fr.dataset.loaded='1'; scriptClean(fr.contentDocument); show(); }; fr.src='presentation.html'; } }
 /* 2. The application, one open block per person (Jesse, 2026-10-08). Every field is a box: filled from the profile
    when we have it (with a copy button), typed here when we don't - and whatever is typed writes back to the profile (S),
    so Save / Print carry it and the navigator gets it on the next file load. Medications and conditions are a row each.
@@ -6173,7 +6177,7 @@ function renderPresent(){ var host=$('presentHost'); if(!host) return; var t=pre
   host.querySelectorAll('[data-pe]').forEach(function(b){ b.onclick=function(){ if(b.dataset.pe==='cancel'){ var pt=presentTier(); S.chosen={tier:pt}; actualSeed(pt); S.actual.how='presented'; S.elected=actualSnap(); S.elected.locked=1; autosave(); celebrate('confetti',enrollCheer()); goStep('enroll'); return; }
     S.chosen={tier:S.actual.from}; S.actual.how='edited'; S.elected=actualSnap(); S.elected.locked=1; autosave(); celebrate('confetti',enrollCheer()); goStep('enroll'); }; });
   var fr=$('prFrame');
-  fr.onload=function(){ try{ var doc=fr.contentDocument; presentPaginate(doc);
+  fr.onload=function(){ try{ var doc=fr.contentDocument; scriptClean(doc); presentPaginate(doc);
       benLoadSafe('afc').then(function(){ presentWire(doc,t); presentGo(+S.present.pg||0); });
       var R=presentRailFromScript(doc);
       $('prQA').innerHTML='<b>Quick answers — objections</b>'+R.qa.map(function(q){ return '<details><summary>'+esc(q[0])+'</summary><p>'+esc(q[1])+'</p></details>'; }).join('');
@@ -6441,7 +6445,7 @@ function presentJump(k){ var sel=PRESENT_FIX[k]; if(!sel) return; S.present=S.pr
     b.innerHTML='↩ Back to the script'; b.style.display='';
     setTimeout(function(){ var r=el.getBoundingClientRect(); b.style.top=Math.max(70,Math.min(innerHeight-60,r.top+r.height/2-20))+'px'; },650);
     b.onclick=function(){ el.classList.remove('fixme'); el.blur(); b.style.display='none'; S.present.pg=back; goStep('present'); }; },60); }
-function presentWire(doc,t){ if(!doc||!doc.body) return 0; var T=presentScriptTokens(t), n=0;
+function presentWire(doc,t){ scriptClean(doc); if(!doc||!doc.body) return 0; var T=presentScriptTokens(t), n=0;
   if(!doc.getElementById('ppcss')){ var st=doc.createElement('style'); st.id='ppcss'; st.textContent=PRESENT_CSS; doc.head.appendChild(st); }
   var copy=function(x){ try{ navigator.clipboard.writeText(x); }catch(e){} };
   /* blanks */
