@@ -5149,7 +5149,24 @@ function reviewCardBox(doc){ var say=Array.prototype.filter.call(doc.querySelect
   var su=box.querySelector('.pp-setup'); if(su) su.onclick=function(e){ e.preventDefault(); openSetup(); }; }
 function reviewDental(t){ t=reviewT()||t; return ((S.packages[t]||{}).products||[]).some(function(p){ return p.k==='dvh'&&(+p.monthly||0)>0; }); }
 function reviewBelow(t){ if(actualOn()&&S.rec) return gapOf(S.rec,actualSnap()).length>0; var r=(S.rec&&S.rec.tier)||S.recommended; return !!(t&&r&&TIER_ORDER[t]!=null&&TIER_ORDER[r]!=null&&TIER_ORDER[t]<TIER_ORDER[r]); }
-function reviewPages(t){ return REVIEW_PAGES.filter(function(p){ return !p.when||(p.when==='dental'?reviewDental(t):reviewBelow(t)); }); }
+/* Review only what they bought (Jesse, 23 Oct). The script tags product-specific blocks and clauses with
+   data-product="afc his …" (space-separated, OR: shown when the plan holds ANY of them; untagged = everyone). The tokens are
+   MyPopPro's own product keys; lbp/lbs → lb, and the core plan "base" → its carrier (triad / lifex). A screen whose
+   blocks all drop is skipped. New carriers and products layer in as new tagged blocks, not new scripts. */
+function reviewProducts(t){ t=reviewT()||t; var pk=S.packages[t]||{}, c=effCfg(t)||{}, P={};
+  (pk.products||[]).forEach(function(p){ if(!((+p.monthly||0)>0)) return; var k=p.k; if(k==='lbp'||k==='lbs') k='lb'; if(k==='base') k=c.base||'base'; P[k]=1; });
+  return P; }
+function reviewProdFilter(doc,t){ if(!doc||!doc.body) return; var P=reviewProducts(t);
+  Array.prototype.forEach.call(doc.querySelectorAll('[data-product]'),function(el){ var toks=String(el.getAttribute('data-product')||'').trim().split(/\s+/).filter(Boolean);
+    el.classList.toggle('pp-prodoff',!toks.some(function(x){ return !!P[x]; })); }); }
+function reviewPageEmpty(doc,i){ var any=false; Array.prototype.forEach.call(doc.body.children,function(el){ if(any||+el.dataset.rv!==i) return;
+    if(/^H[1-6]$/.test(el.tagName)||el.classList.contains('rv-tick')||el.classList.contains('pp-off')||el.classList.contains('pp-prodoff')) return;
+    if(el.matches('.flag,[data-author="note"],style,script')) return; if(!String(el.textContent||'').trim()) return; any=true; });
+  return !any; }
+function reviewPages(t){ var fr=$('rvFrame'), doc=fr&&fr.contentDocument, ready=doc&&doc.body&&doc.body.dataset.rvp;
+  if(ready) reviewProdFilter(doc,t);
+  return REVIEW_PAGES.filter(function(p,i){ if(p.when&&!(p.when==='dental'?reviewDental(t):reviewBelow(t))) return false;
+    return !(ready&&p.sc&&reviewPageEmpty(doc,i)); }); }
 /* Prescriptions: the day's fills against the per-day benefit. "You made $X" only when the fills really come to less
    (Health ZONE's gate); a med with no price means no priced list, and then neither sentence is served. */
 function reviewRx(t){ t=reviewT()||t; var I=S.intake||{}, meds=(I.medList||[]).filter(function(m){ return m&&String(m.name||'').trim(); });
@@ -5184,7 +5201,7 @@ function reviewTokens(t){ t=reviewT()||t; var C=S.client||{}, R=reviewState(), T
   var DQ=drxParts(); T['drx.drug']=drxWho().length?DQ.drug||drxWho()[0].drug:''; T['drx.pct']=DRX_PCT; T['drx.link']=drxLink(); T['drx.code']=drxCode(); T['drx.howto']=drxWho().length?'1':'';   /* the block's switch; its words are Health ZONE's */
   T['review.month']=R.month||(R.eff?MONTHS[+String(R.eff).slice(5,7)-1]:'');
   return T; }
-var REVIEW_CSS='.pp-cardbox{margin:8px 0 14px;padding:10px 14px;border:2px dashed #2f7d4a;border-radius:10px;background:#f2fbf5;font-size:14px}.pp-cardbox b{display:block;color:#17824a;margin-bottom:4px}'
+var REVIEW_CSS='.pp-prodoff{display:none!important}.pp-cardbox{margin:8px 0 14px;padding:10px 14px;border:2px dashed #2f7d4a;border-radius:10px;background:#f2fbf5;font-size:14px}.pp-cardbox b{display:block;color:#17824a;margin-bottom:4px}'
  +'.pp-cardtxt{background:#fff;border:1px solid #cfe7d8;border-radius:8px;padding:7px 10px;margin:0 0 8px;font-size:13.5px}.pp-copy,.pp-sms{font:inherit;font-size:13px;font-weight:700;border:1px solid #2f7d4a;color:#17824a;background:#fff;border-radius:7px;padding:5px 12px;cursor:pointer;text-decoration:none}'
  +'.rv-tick{margin:10px 0 4px;padding:10px 14px;border:2px dashed #2f7d4a;border-radius:10px;background:#f2fbf5;font:inherit;font-size:14px;display:flex;align-items:center;gap:10px;cursor:pointer}'
  +'.rv-tick input{width:20px;height:20px}.rv-tick.on{border-style:solid;background:#e3f4e8}.rv-tick b{color:#17824a}'
@@ -5345,7 +5362,7 @@ function reviewEmailPaint(){ var ta=$('rvEmailTxt'); if(!ta||ta.dataset.edited) 
 /* Direction Rx is open to every ManhattanLife member - weight loss and hormone therapy (Jesse, 23 Oct); the GLP-1 wording stays for GLP-1 clients */
 function drxForAll(){ var ct=chosenTier(); return !(ct&&tierNonMh(ct)); }
 function drxGeneral(){ return 'As a ManhattanLife member you also get Direction Rx member pricing, for weight loss and hormone therapy. Your member code: '+drxCode()+' — start here: '+drxLink(); }
-function reviewTicks(){ var L=REVIEW_TICKS.slice(); if(!drxWho().length&&drxForAll()) L.push({k:'drx',t:'Direction Rx offered (weight loss, hormone therapy)',open:'Open Direction Rx',url:drxLink()||'#',copy:drxCode()||drxLink(),copyLabel:drxCode()?'Copy code':'Copy link',sms:function(f){ return 'Hi '+f+'! '+drxGeneral(); }});
+function reviewTicks(){ var L=REVIEW_TICKS.filter(function(x){ return x.k!=='cg'||reviewProducts(chosenTier()).afc; }); if(!drxWho().length&&drxForAll()) L.push({k:'drx',t:'Direction Rx offered (weight loss, hormone therapy)',open:'Open Direction Rx',url:drxLink()||'#',copy:drxCode()||drxLink(),copyLabel:drxCode()?'Copy code':'Copy link',sms:function(f){ return 'Hi '+f+'! '+drxGeneral(); }});
   if(drxWho().length) L.push({k:'drx',t:'Direction Rx code sent (GLP-1)',open:'Open Direction Rx',url:drxLink()||'#',copy:drxCode()||drxLink(),copyLabel:drxCode()?'Copy code':'Copy link',sms:function(f){ return 'Hi '+f+'! '+drxHowTo(); }});
   L.push({k:'card',t:'Care card sent',open:'Open their care card',url:careCardLink(),copy:careCardLink(),copyLabel:'Copy link',
     sms:function(f){ return 'Hi '+f+'! Here’s your care card — your doctors and the numbers you need, ready to print a card for each adult on the plan or save to your phone: '+careCardLink(); }});

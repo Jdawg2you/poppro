@@ -202,6 +202,14 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  var kL=S.agentDrxLink, kC=S.agentDrxCode; S.agentDrxLink=''; S.agentDrxCode=''; ok(drxLink()==='https:'+'//bit.ly/4wf5B7V'&&drxCode()==='4-MEM-26-6','blank Setup: the tracking link and the member code are used');
  S.agentDrxCode='OPT35'; ok(drxCode()==='OPT35','an agent’s own code still wins'); S.agentDrxLink=kL; S.agentDrxCode=kC;
  ok(/30% off/.test(document.getElementById('setupModal').textContent)&&!/35% off/.test(document.getElementById('setupModal').textContent),'Setup says 30%, not 35%');
+  /* Review only what they bought (Jesse, 23 Oct): data-product filter on three plan shapes */
+ (function(){ var tt=reviewT(), pk=S.packages[tt], orig=JSON.parse(JSON.stringify(pk.products)), fr=document.getElementById('rvFrame');
+  var shape=function(keys){ pk.products=orig.map(function(p){ return Object.assign({},p,{monthly:keys.indexOf(p.k)>=0?(+p.monthly||10):0}); }); if(keys.indexOf('dvh')>=0&&!pk.products.some(function(p){ return p.k==='dvh'; })) pk.products.push({k:'dvh',monthly:30,name:'DVH'}); };
+  var sc=function(){ return reviewPages(tt).map(function(p){ return p.sc||''; }); }, off=function(sel){ var e=fr.contentDocument.querySelector(sel); return !e||e.classList.contains('pp-prodoff'); };
+  shape(['afc','dvh']); var a=sc(); ok(a.indexOf('careguide')>=0&&a.indexOf('dental')>=0&&!off('span[data-product="afc"]')&&reviewTicks().some(function(x){ return x.k==='cg'; }),'products: Affordable Choice + Dental review everything they hold');
+  shape(['his']); var b=sc(); ok(b.indexOf('careguide')<0&&b.indexOf('dental')<0&&b.indexOf('telehealth')>=0&&b.indexOf('rx')>=0&&off('span[data-product="afc"]')&&!off('[data-product="afc his acc gap"]')&&!reviewTicks().some(function(x){ return x.k==='cg'; }),'products: Hospital Indemnity only - CareGuide and dental screens skipped, visit counts gone, out-of-network warning kept, telehealth and Rx stay ('+b.join(',')+')');
+  shape(['dvh']); var c=sc(); ok(c.indexOf('dental')>=0&&c.indexOf('careguide')<0&&off('[data-product="afc his acc gap"]'),'products: Dental only - dental kept, CareGuide skipped, the fixed-dollar warning dropped');
+  pk.products=orig; reviewPages(tt); })();
   /* RxEDO is gone from everything the agent says and the client sees (Jesse, 18 Oct) */
  var rvR=document.getElementById('rvFrame').contentDocument; reviewWire(rvR,'better'); var spoken=Array.prototype.map.call(rvR.querySelectorAll('.say'),function(x){ return x.textContent; }).join(' ');
  ok(!/RxEDO/i.test(spoken)&&/EasyCare2go/.test(spoken),'no RxEDO in anything spoken on the Benefits Review; the prescriptions screen names EasyCare2go');
