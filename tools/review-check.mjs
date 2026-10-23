@@ -33,7 +33,7 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  set('rv_eff','2026-11-01'); set('rv_prem','$412.50'); await w(100);
  var T=reviewTokens('better'); ok(T['policy.draft_date']==='','draft date is never defaulted to the effective date: '+T['policy.draft_date']);
  ok(/Draft date is empty/.test(document.getElementById('rv_warn').textContent),'an empty draft date is flagged');
- set('rv_draft','2026-11-03'); set('rv_pharm','Walgreens'); await w(100); T=reviewTokens('better');
+ set('rv_draft','2026-11-03'); (function(){ var e=document.querySelector('[data-care="pharm"]'); e.value='Walgreens'; e.dispatchEvent(new Event('input')); })(); await w(100); T=reviewTokens('better');
  ok(T['policy.effective_date']==='November 1, 2026'&&T['policy.draft_date']==='November 3, 2026'&&T['policy.premium']==='$412.50','policy figures fill: '+[T['policy.effective_date'],T['policy.draft_date'],T['policy.premium']].join(' / '));
  ok(/Custom draft date/.test(document.getElementById('rv_warn').textContent),'a custom draft date says so');
  ok(T['review.month']==='November','review month defaults to the effective month: '+T['review.month']);

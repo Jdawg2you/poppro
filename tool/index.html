@@ -696,6 +696,12 @@
   .rv-actwrap{grid-template-columns:minmax(300px,400px) 1fr}.rv-actnote li.rv-hist{background:#fff6dc;border-left:3px solid var(--gold);padding:3px 8px;margin:3px 0;list-style-position:inside}
   .rg-hist{display:block;margin-top:4px;padding:3px 8px;background:#fff6dc;border-left:3px solid var(--gold);color:#7a5a12;font-size:12.5px;font-weight:600}.pbcol.actual{border:2px solid var(--navy)}.pbcol.actual select[data-act=actname]{font:inherit;font-family:var(--serif);font-size:20px;color:var(--navy);border:1px solid #d6cdb4;border-radius:7px;padding:2px 6px;background:#fff}
   @media(max-width:820px){.rv-actwrap{grid-template-columns:1fr}}
+  .rv-care,.rv-mail{border:1px solid var(--line);background:#fff;border-radius:12px;padding:12px 14px;margin:0 0 14px}.rv-mail{margin-top:16px}
+  .rv-pair{display:flex;gap:6px}.rv-pair input{flex:1;min-width:0;padding:8px 9px;border:1px solid var(--line);border-radius:8px;background:#fbfaf6;font:inherit}.rv-pair input.ph{flex:0 0 120px}
+  .rv-cgrid{grid-template-columns:repeat(2,1fr)}.rv-cbtns{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}.rv-cbtns a.picbtn{text-decoration:none}
+  .rv-paste{display:flex;gap:6px;flex:1;min-width:260px}.rv-paste input{flex:1;padding:8px 9px;border:1px dashed var(--line);border-radius:8px;font:inherit;font-size:13px}.rv-cmsg{font-size:13px;color:#166534}
+  #rvEmailTxt{width:100%;font:inherit;font-size:13px;line-height:1.45;padding:10px;border:1px solid var(--line);border-radius:8px;margin-top:6px}
+  @media(max-width:620px){.rv-cgrid{grid-template-columns:1fr}.rv-pair input.ph{flex-basis:100px}}
   .rv-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.rv-grid .rv-wide{grid-column:1/-1}
   .rv-grid select,.rv-grid input[type=date]{width:100%;padding:8px 9px;border:1px solid var(--line);border-radius:8px;background:#fbfaf6;font:inherit}
   @media(max-width:1000px){.rv-grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:620px){.rv-grid{grid-template-columns:1fr}}
@@ -5188,7 +5194,7 @@ function reviewWire(doc,t){ if(!doc||!doc.body) return; scriptClean(doc); review
     if(u){ a.href=u; a.target='_blank'; a.rel='noopener'; a.removeAttribute('data-rv-off'); a.removeAttribute('title'); }
     else { a.setAttribute('data-rv-off','1'); a.title='Add your benefits page in ⚙ Setup'; } });
   var R=reviewState(); Array.prototype.forEach.call(doc.querySelectorAll('.rv-tick'),function(l){ var on=!!R.ticks[l.dataset.tick]; l.querySelector('input').checked=on; l.classList.toggle('on',on); }); }
-function reviewTick(k,on){ var R=reviewState(); if(on) R.ticks[k]=new Date().toISOString(); else delete R.ticks[k]; autosave(); reviewRail(); var fr=$('rvFrame'); if(fr&&fr.contentDocument) reviewWire(fr.contentDocument,chosenTier()); }
+function reviewTick(k,on){ var R=reviewState(); if(on) R.ticks[k]=new Date().toISOString(); else delete R.ticks[k]; autosave(); reviewRail(); reviewEmailPaint(); var fr=$('rvFrame'); if(fr&&fr.contentDocument) reviewWire(fr.contentDocument,chosenTier()); }
 /* the registration the script is on right now - its row is boxed in green, so the agent sends one thing at a time */
 function reviewCurTick(){ var t=chosenTier(), R=reviewState(), p=reviewPages(t)[+R.pg||0]; if(p&&p.sc==='rx'&&drxWho().length) return 'drx'; if(p&&p.sc==='doctor') return 'card'; return (p&&p.tick)||''; }
 /* The client's care card (optimumprotects.com/card): MyPopPro sends a personal link that fills the agent's name and
@@ -5211,8 +5217,66 @@ function careCardData(){ var I=S.intake||{}, C=S.client||{}, R=reviewState(), sl
     if(RB&&actualOn()&&gapSpoken(RB,actualSnap()).lowered) o.lw=1; }
   if(g.length) o.g=g;
   var rm=R.month||(R.eff?MONTHS[+String(R.eff).slice(5,7)-1]:''); if(rm) o.rm=rm;
+  /* The care card's own fields (Jesse, 23 Oct): whatever was filled on the review call rides in the link, so the card
+     the client opens is THEIR card. t = when the agent last changed one, so a re-sent link updates those boxes and
+     leaves the client's own additions alone (the card page's rule). */
+  var cf=careFields(); if(Object.keys(cf).length){ o.f=cf; if(R.careT) o.t=R.careT; }
   return o; }
+var CARE_F=[['me_doc','My doctor'],['sp_doc','Spouse’s doctor'],['kid_doc','Kids’ doctor'],['urgent','Urgent care'],['hosp','Hospital / ER'],['pharm','Pharmacy'],['dent','Dentist']];
+var CARE_KEYS=['people','agent','agent_ph'].concat([].concat.apply([],CARE_F.map(function(x){ return [x[0],x[0]+'_ph']; })));
+function careShown(k){ var I=S.intake||{}; return k==='sp_doc'?!!(I.who_spouse||acaPeople().some(function(x){ return x.role==='s'; })):k==='kid_doc'?acaPeople().some(function(x){ return x.role==='k'; }):k==='dent'?reviewDental():true; }
+/* Everything the card should open with: the review-call boxes first, then the Intake's in-network doctors and the
+   pharmacy as fall-backs, then the agent from Setup. Only filled keys. */
+function careFields(){ var I=S.intake||{}, R=reviewState(), C=R.care||{}, f={}, slot={me:'me_doc',sp:'sp_doc',kid:'kid_doc'};
+  [1,2,3].forEach(function(k){ var nm=String(I['docs'+k]||'').trim(), w=slot[I['docs'+k+'who']]; if(nm&&I['docs'+k+'net']&&w) f[w]=f[w]?f[w]+'; '+nm:nm; });
+  if(String(R.pharmacy||'').trim()) f.pharm=String(R.pharmacy).trim();
+  Object.keys(C).forEach(function(k){ var v=String(C[k]||'').trim(); if(v&&CARE_KEYS.indexOf(k)>=0) f[k]=v; else if(!v&&C[k]!=null&&f[k]&&k in C) delete f[k]; });
+  if(!f.agent&&String((S.client||{}).agent||'').trim()) f.agent=String(S.client.agent).trim();
+  var ph=String(S.agentPhone||'').replace(/\D/g,''); if(!f.agent_ph&&ph) f.agent_ph=ph;
+  var n=acaPeople().filter(function(x){ var a=parseFloat(x.age); return x.role!=='k'||a>=18; }).length; if(!f.people&&n>0) f.people=String(n);
+  return f; }
+/* A link copied off the card page (its own "Copy this page's link") pasted back here: whatever the agent or the
+   client typed on the card comes into this client's file, so the email and every re-send carry it. */
+function careImport(url){ var m=/[#&]c=([A-Za-z0-9_-]+)/.exec(String(url||'')); if(!m) return 0; var J;
+  try{ var b=m[1].replace(/-/g,'+').replace(/_/g,'/'); while(b.length%4) b+='='; J=JSON.parse(decodeURIComponent(escape(atob(b)))); }catch(e){ return 0; }
+  var R=reviewState(), C=R.care=R.care||{}, n=0, f=J.f||{};
+  if(J.md&&!f.me_doc) f.me_doc=J.md; if(J.sd&&!f.sp_doc) f.sp_doc=J.sd; if(J.kd&&!f.kid_doc) f.kid_doc=J.kd;
+  CARE_F.forEach(function(x){ [x[0],x[0]+'_ph'].forEach(function(k){ var v=String(f[k]||'').trim(); if(v&&v!==C[k]){ C[k]=v; n++; } }); });
+  if(f.pharm) R.pharmacy=String(f.pharm).trim();
+  if(J.i) R.cardId=String(J.i).replace(/[^A-Za-z0-9]/g,'').slice(0,24);
+  if(n) R.careT=Date.now(); autosave(); return n||-1; }
 function careCardLink(){ var j=JSON.stringify(careCardData()), b=btoa(unescape(encodeURIComponent(j))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''); return CARE_CARD_URL+'#c='+b; }
+/* The recap email the script promises ("You'll get a recap email from me within the hour", Jesse 23 Oct): only what
+   the call covered and what's known - no doctor line that wasn't filled, no figure the script doesn't say. */
+function reviewEmail(){ var t=reviewT()||chosenTier(), R=reviewState(), C=S.client||{}, first=((C.pname||'').trim().split(/\s+/)[0])||'there';
+  var c=effCfg(t)||{}, pk=S.packages[t]||{}, prods=[];
+  (pk.products||[]).forEach(function(p){ if(!((+p.monthly||0)>0)||p.k==='lbp'||p.k==='lbs') return; var sl=PB_SLOTS.filter(function(x){ return x.k===p.k; })[0];
+    prods.push(p.k==='afc'?'Affordable Choice':sl?sl.name:String(p.name||'').split(' — ')[0]); });
+  var L=[], sec=function(h,a){ a=a.filter(Boolean); if(!a.length) return; L.push(''); L.push(h); a.forEach(function(x){ L.push(x); }); };
+  L.push('Hi '+first+',',''); L.push('Thanks for your time today. Here’s everything we went over in one place, so you don’t have to remember any of it.');
+  var prem=reviewPrem();
+  sec('YOUR PLAN',['ManhattanLife'+(prods.length?' · '+prods.join(' · '):''),
+    prem>0?fmt2(prem)+' a month'+(R.draft?', drafted on '+reviewDate(R.draft):''):'',
+    R.eff?'Coverage starts '+reviewDate(R.eff):'']);
+  var cf=careFields(), got=CARE_F.filter(function(x){ return cf[x[0]]; }).map(function(x){ return x[1]+': '+cf[x[0]]+(cf[x[0]+'_ph']?' · '+cf[x[0]+'_ph']:''); });
+  sec('YOUR CARE CARD',['Your doctors and the numbers you need, ready to save to your phone or print a card for your wallet:',careCardLink()]
+    .concat(got.length?['','Already on it:'].concat(got).concat(['Add anything else right on the page — it saves on your phone.']):['Add your doctor, urgent care and hospital right on the page — it saves on your phone.']));
+  var link=reviewLink(); if(link) sec('BOOKMARK THIS PAGE',['How to use your plan, who to call and the apps, all on one page:',link]);
+  var LINE={portal:'Member portal (ID card and claims): https://clients.manhattanlife.com',
+    ecg:'EasyCare2go, your 24/7 telehealth: https://manhattanlife.myeasycare2go.com/login · Group ID mlins2023',
+    rxv:'Rx Valet, your prescription discounts — inside your EasyCare2go login · '+RXVALET_PHONE,
+    upload:'Easy Upload app, for sending in receipts: https://easyupload.manhattanlife.com/',
+    cg:'CareGuide — call before you pay any medical bill over $2,500: 469-902-2267',
+    drx:drxWho().length?'Direction Rx: '+(drxCode()?'code '+drxCode()+' · ':'')+drxLink():''};
+  var ks=reviewTicks().map(function(x){ return x.k; }).filter(function(k){ return LINE[k]; });
+  sec('SET UP ON OUR CALL ✓',ks.filter(function(k){ return R.ticks[k]; }).map(function(k){ return LINE[k]; }));
+  sec('STILL TO DO — a few minutes each',ks.filter(function(k){ return !R.ticks[k]; }).map(function(k){ return LINE[k]; }));
+  var rm=R.month||(R.eff?MONTHS[+String(R.eff).slice(5,7)-1]:''); if(rm) sec('YOUR ANNUAL REVIEW',['It’s on my calendar for '+rm+'. I’ll reach out — nothing for you to do.']);
+  L.push(''); L.push('If anyone you know is paying too much for coverage, or has none, I’d be grateful for the introduction.');
+  var agent=String(C.agent||'').trim(), agency=(S.agency&&S.agency!=='HealthFirst')?S.agency:'', card=reviewUrl(S.agentCard);
+  L.push('','Best,'); [agent||agency, agent&&agency?agency:'', S.agentPhone||'', S.agentEmail||'', card].forEach(function(x){ if(String(x||'').trim()) L.push(String(x).trim()); });
+  return {to:(S.intake&&S.intake.email)||'',subject:'Your ManhattanLife plan — everything from today in one place',body:L.join('\n')}; }
+function reviewEmailPaint(){ var ta=$('rvEmailTxt'); if(!ta||ta.dataset.edited) return; var m=reviewEmail(); ta.value='Subject: '+m.subject+'\n\n'+m.body; }
 function reviewTicks(){ var L=REVIEW_TICKS.slice(); if(drxWho().length) L.push({k:'drx',t:'Direction Rx code sent (GLP-1)',open:'Open Direction Rx',url:drxLink()||'#',copy:drxCode()||drxLink(),copyLabel:drxCode()?'Copy code':'Copy link',sms:function(f){ return 'Hi '+f+'! '+drxHowTo(); }});
   L.push({k:'card',t:'Care card sent',open:'Open their care card',url:careCardLink(),copy:careCardLink(),copyLabel:'Copy link',
     sms:function(f){ return 'Hi '+f+'! Here’s your care card — your doctors and the numbers you need, ready to print a card for each adult on the plan or save to your phone: '+careCardLink(); }});
@@ -5398,6 +5462,27 @@ function triadEmail(t){ var first=triadFirst(), plan=triadPlanOf(t), st=triadSta
    +(bus.length?'\nYOUR DEDUCTIBLE BUSTERS (ManhattanLife — these pay you directly)\n'+bus.map(function(x){ return '• '+x.name+': '+x.b.replace(/<[^>]+>/g,''); }).join('\n')+'\nWhen one of these happens, send me the bill or discharge papers and I’ll help you file.\n':'')
    +'\nAny question, any time — call or text me.\n\n'+(agent||agency)+(agent&&agency?'\n'+agency:'')+(S.agentPhone?'\n'+S.agentPhone:'')+(S.agentEmail?'\n'+S.agentEmail:'');
   return {to:(S.intake&&S.intake.email)||'',su:'Your Cigna PPO plan — what to know'+(st.eff?' before '+st.eff:''),body:body}; }
+function reviewCareHTML(){ var cf=careFields();
+  var row=function(x){ if(!careShown(x[0])) return ''; var k=x[0];
+    return '<div class="fld"><label>'+esc(x[1])+'</label><div class="rv-pair"><input data-care="'+k+'" placeholder="name — optional" value="'+esc(cf[k]||'')+'"><input data-care="'+k+'_ph" class="ph" inputmode="tel" placeholder="phone" value="'+esc(cf[k+'_ph']||'')+'"></div></div>'; };
+  return '<div class="rv-care"><div class="rv-ch">Their care card <small>— fill what you get to on the call; every box is optional. What’s here goes into their card link and the recap email. Doctors marked in network on the Intake start here.</small></div>'
+   +'<div class="rv-grid rv-cgrid">'+CARE_F.map(row).join('')+'</div>'
+   +'<div class="rv-cbtns"><a class="picbtn" id="rvCareOpen" href="'+esc(careCardLink())+'" target="_blank" rel="noopener">Open their care card ↗</a><button type="button" class="picbtn" id="rvCareCopy">🔗 Copy their card link</button>'
+   +'<span class="rv-paste"><input id="rvCarePaste" placeholder="Filled it in on the card page? Paste that page’s link here"><button type="button" class="picbtn" id="rvCareImport">Bring it in</button></span><span id="rvCareMsg" class="rv-cmsg"></span></div></div>'; }
+function reviewCareWire(){ var R=reviewState(), host=document.querySelector('.rv-care'); if(!host) return;
+  var relink=function(){ var a=$('rvCareOpen'); if(a) a.href=careCardLink(); reviewRail(); reviewEmailPaint(); };
+  host.querySelectorAll('[data-care]').forEach(function(el){ el.addEventListener('input',function(){ var C=R.care=R.care||{}, k=el.dataset.care; C[k]=el.value.trim(); if(k==='pharm') R.pharmacy=C[k]; R.careT=Date.now(); autosave(); relink(); }); });
+  $('rvCareCopy').onclick=function(){ var b=this; try{ navigator.clipboard.writeText(careCardLink()); b.textContent='✓ Copied'; setTimeout(function(){ b.textContent='🔗 Copy their card link'; },1600); }catch(e){} };
+  $('rvCareImport').onclick=function(){ var n=careImport($('rvCarePaste').value), msg=$('rvCareMsg');
+    if(!n){ msg.textContent='That isn’t a care card link — copy it with “Copy this page’s link” on the card.'; return; }
+    msg.textContent=n>0?'✓ Brought in '+n+' box'+(n===1?'':'es')+' from the card.':'✓ Nothing new on that card.'; renderReview(); }; }
+function reviewMailWire(){ var ta=$('rvEmailTxt'); if(!ta) return; var rs=$('rvMailReset');
+  ta.addEventListener('input',function(){ ta.dataset.edited='1'; rs.hidden=false; });
+  rs.onclick=function(){ delete ta.dataset.edited; rs.hidden=true; reviewEmailPaint(); };
+  var parts=function(){ var v=ta.value, m=/^Subject: (.*)\n\n?/.exec(v); return {to:(S.intake&&S.intake.email)||'', subject:m?m[1]:reviewEmail().subject, body:m?v.slice(m[0].length):v}; };
+  $('rvMailCopy').onclick=function(){ var b=this; try{ navigator.clipboard.writeText(ta.value); b.textContent='✓ Copied'; setTimeout(function(){ b.textContent='📋 Copy the email'; },1600); }catch(e){} };
+  $('rvMailOpen').onclick=function(){ var m=parts(); window.location.href='mailto:'+m.to+'?subject='+encodeURIComponent(m.subject)+'&body='+encodeURIComponent(m.body); };
+  $('rvMailGmail').onclick=function(){ var m=parts(); window.open('https://mail.google.com/mail/?view=cm&fs=1&to='+encodeURIComponent(m.to)+'&su='+encodeURIComponent(m.subject)+'&body='+encodeURIComponent(m.body),'_blank','noopener'); }; }
 function renderReview(){ var host=$('reviewHost'); if(!host) return; var t=chosenTier(), R=reviewState(), C=S.client||{};
   if(t&&!tierNonMh(t)&&(!actualOn()||S.actual.from!==t)) actualSeed(t);
   var head='<div class="sectitle"><span class="dot">●</span> Benefits Review <small style="font-family:inherit;font-weight:600;color:var(--muted);font-size:13px">— after approval, before the effective date · about fifteen minutes</small></div>';
@@ -5413,10 +5498,10 @@ function renderReview(){ var host=$('reviewHost'); if(!host) return; var t=chose
    +'<div class="fld"><label>Effective date</label><input type="date" id="rv_eff" value="'+esc(R.eff||'')+'"></div>'
    +'<div class="fld"><label>Monthly premium <small>'+(+R.prem>0?'typed in — the plan below adds up to '+fmt2(reviewPremTool()):'from the plan below — type over it if the carrier’s differs')+'</small></label><input id="rv_prem" class="money2" inputmode="decimal" placeholder="from the confirmation" value="'+(reviewPrem()>0?fmtMoney2(reviewPrem()):'')+'"></div>'
    +'<div class="fld"><label>Draft date <small>from the carrier — never assumed</small></label><input type="date" id="rv_draft" value="'+esc(R.draft||'')+'"></div>'
-   +'<div class="fld"><label>Pharmacy they use</label><input id="rv_pharm" placeholder="e.g. Walgreens" value="'+esc(R.pharmacy||'')+'"></div>'
    +'<div class="fld"><label>Annual review month</label><select id="rv_month"><option value="">'+(R.eff?'— '+MONTHS[+String(R.eff).slice(5,7)-1]+' (effective month)':'—')+'</option>'+mo+'</select></div>'
    +'<div class="fld rv-wide"><label>Their resource page <small>'+(ownLink?'your Setup link, unless this client has their own':'add yours in ⚙ Setup')+'</small></label><input id="rv_link" placeholder="'+esc(ownLink||'yoursite.com/manhattanlife')+'" value="'+esc(R.link||'')+'"></div>'
    +'</div><div id="rv_warn" class="rv-warn"></div><div id="rvActual" class="rv-actual"></div></div>'
+   +reviewCareHTML()
    +'<div class="pr-prog" id="rvChips"></div><div class="pr-grid"><div>'
    +'<iframe id="rvFrame" src="benefits-review.html" title="Benefits Review script" style="width:100%;border:1px solid var(--line);border-radius:12px;background:#fff;min-height:200px"></iframe>'
    +'<div class="pr-nav" id="rvNav"></div></div>'
@@ -5424,12 +5509,15 @@ function renderReview(){ var host=$('reviewHost'); if(!host) return; var t=chose
    +'<div class="box"><b>Open before you dial</b>'
    +(reviewLink()?'<a class="rv-a" href="'+esc(reviewLink())+'" target="_blank" rel="noopener">Their resource page ↗</a>':'<span class="rv-miss">No resource page yet — add yours in ⚙ Setup</span>')
    +'<a class="rv-a" href="https://clients.manhattanlife.com" target="_blank" rel="noopener">ManhattanLife portal ↗</a><a class="rv-a" href="https://providerlocator.firsthealth.com/home/index" target="_blank" rel="noopener">First Health locator ↗</a><a class="rv-a" href="https://www.singlecare.com" target="_blank" rel="noopener">SingleCare — Rx pricing ↗</a><a class="rv-a" href="'+RXVALET_URL+'" target="_blank" rel="noopener">Rx Valet — via EasyCare2go ↗</a></div>'
-   +'</div></div>';
+   +'</div></div>'
+   +'<div class="rv-mail"><div class="rv-ch">Recap email <small>— send within the hour; the script promises it. Builds itself from this page: the plan, their care card link, what was set up and what’s still to do.</small></div>'
+   +'<textarea id="rvEmailTxt" rows="22"></textarea><div class="rv-cbtns"><button type="button" class="picbtn" id="rvMailCopy">📋 Copy the email</button><button type="button" class="picbtn" id="rvMailOpen">✉️ Open in my email</button><button type="button" class="picbtn" id="rvMailGmail">Gmail</button><button type="button" class="picbtn" id="rvMailReset" hidden>↺ Rebuild from the page</button>'+((S.intake||{}).email?'':'<span class="rv-miss">No email on the Intake — the To line will be blank.</span>')+'</div></div>';
   var save=function(){ R.appr=$('rv_appr').value; R.eff=$('rv_eff').value; var pv=moneyNum($('rv_prem').value)||0; R.prem=(Math.abs(pv-reviewPremTool())<0.005)?0:pv; R.draft=$('rv_draft').value;
-    R.pharmacy=$('rv_pharm').value.trim(); R.month=$('rv_month').value; R.link=$('rv_link').value.trim(); autosave(); reviewCheck(); renderActual();
+    R.month=$('rv_month').value; R.link=$('rv_link').value.trim(); autosave(); reviewCheck(); renderActual();
     var fr=$('rvFrame'); if(fr&&fr.contentDocument&&fr.contentDocument.body&&fr.contentDocument.body.dataset.rvp) reviewWire(fr.contentDocument,t); };
-  ['rv_appr','rv_eff','rv_prem','rv_draft','rv_pharm','rv_month','rv_link'].forEach(function(id){ $(id).addEventListener('change',save); $(id).addEventListener('input',function(){ if(id!=='rv_prem') save(); }); });
-  renderActual(); reviewRail(); reviewCheck();
+  ['rv_appr','rv_eff','rv_prem','rv_draft','rv_month','rv_link'].forEach(function(id){ $(id).addEventListener('change',save); $(id).addEventListener('input',function(){ if(id!=='rv_prem') save(); }); $(id).addEventListener('change',reviewEmailPaint); });
+  reviewCareWire(); reviewMailWire();
+  renderActual(); reviewRail(); reviewCheck(); reviewEmailPaint();
   var fr=$('rvFrame'); fr.onload=function(){ try{ scriptClean(fr.contentDocument); reviewPaginate(fr.contentDocument,t); reviewGo(+R.pg||0); }catch(e){} }; }
 function reviewCheck(){ var R=reviewState(), w=[], el=$('rv_warn'); if(!el) return;
   if(R.appr==='chg') w.push('<b>Approved with a change:</b> open with it — say what moved, what it costs and what it means — before “approved as applied for”.');
