@@ -7,7 +7,8 @@
 // The two sandboxes share a host (127.0.0.1), so the frame runs in-process and is reached by its execution context.
 import { spawn } from 'node:child_process'; import fs from 'node:fs'; import os from 'node:os'; import path from 'node:path';
 const MODE = process.argv[2] || 'embed', PP = process.argv[3] || '8767', NP = process.argv[4] || '8777';
-const NAV_ORIGIN = 'http://127.0.0.1:' + NP;
+const NAV_ORIGIN = 'http://127.0.0.1:' + NP;   /* the stand-alone navigator (save mode only) */
+const FRAME_ORIGIN = 'http://127.0.0.1:' + PP;   /* the Discovery frame is MyPopPro's own tool/discovery.html now (23 Oct) */
 const CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', DBG = 9100 + Math.floor(Math.random() * 90);
 const prof = fs.mkdtempSync(path.join(os.tmpdir(), 'disc-'));
 const chrome = spawn(CHROME, ['--headless=new', '--disable-gpu', '--no-first-run', '--remote-debugging-port=' + DBG, '--user-data-dir=' + prof, 'about:blank'], { stdio: 'ignore' });
@@ -24,7 +25,7 @@ async function page(url, wsUrl) {
   const run = async (e, contextId) => { const r = await send('Runtime.evaluate', Object.assign({ expression: e, awaitPromise: true, returnByValue: true }, contextId ? { contextId } : {}));
     if (r.error) throw new Error(JSON.stringify(r.error)); if (r.result && r.result.exceptionDetails) throw new Error(JSON.stringify(r.result.exceptionDetails).slice(0, 400)); return r.result.result.value; };
   /* the navigator nests its own blank frame of the same origin, so test each candidate for the navigator itself */
-  const frameSession = async () => { for (const c of kids.filter(x => x.origin === NAV_ORIGIN).reverse()) { try { const r = await send('Runtime.evaluate', { expression: 'typeof pStore', returnByValue: true, contextId: c.id }); if (r.result && r.result.result && r.result.result.value === 'function') return c.id; } catch (e) {} } return null; };
+  const frameSession = async () => { for (const c of kids.filter(x => x.origin === FRAME_ORIGIN).reverse()) { try { const r = await send('Runtime.evaluate', { expression: 'typeof pStore', returnByValue: true, contextId: c.id }); if (r.result && r.result.result && r.result.result.value === 'function') return c.id; } catch (e) {} } return null; };
   return { run, send, frameSession, errs, close: () => ws.close() };
 }
 const fails = [], ok = (c, m) => { if (!c) fails.push(m); };

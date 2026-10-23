@@ -3660,7 +3660,7 @@ function popSkipCond(med,cond){
    Acknowledging is not optional: without it the sender keeps firing and would
    overwrite whatever the agent typed in the meantime.
    ============================================================================ */
-var SUITE_ALLOWED=["https://script.ffloptimum.com"];
+var SUITE_ALLOWED=["https://script.ffloptimum.com",location.origin];   /* + MyPopPro's own Discovery page */
 /* Loosened only when this page is itself being served locally for testing. */
 var SUITE_DEV=location.protocol==="file:"||/^(localhost|127\.0\.0\.1)$/.test(location.hostname);
 
@@ -5679,6 +5679,15 @@ function glp1FromSuite(h){ var one=function(pre){ var k=function(f){ return h[pr
    items the agent hasn't opened yet (localStorage pp_news_seen = newest date they've seen). */
 var NEWS_DAYS=30;
 var NEWS=[
+ {d:'2026-10-23',t:'Benefits Review, care card, approval message and a cleaner Present',h:[
+  ['Discovery lives in MyPopPro','The Discovery call now runs from MyPopPro itself — same call, same answers flowing into the Intake, nothing to open anywhere else.'],
+  ['Approved? Let them know','Mark Approved on the Benefits Review and a text and an email are ready: the good news, their start date, the temporary ID card, and a link to book the review call. Text it and email it — copy, Gmail or Outlook.'],
+  ['Client care card + recap email','Fill their doctor, urgent care, hospital and pharmacy on the review call (in-network Intake doctors fill in for you). It all rides in their care card link, and the recap email builds itself — plan, care card, the page to bookmark, what was set up and what’s still to do.'],
+  ['Reviews only what they bought','The Benefits Review follows ManhattanLife’s services chart: CareGuide for Affordable Choice, DirectLabs and Green Imaging by product, First Health only where it applies — screens that don’t fit their plan are skipped.'],
+  ['Doctors: ✓ in · ? · ✗ out','Each Intake doctor has a three-way network toggle. Present shows ✅, ❓ or ❌ from it, and only ✓ doctors go on the care card.'],
+  ['Present reads better','Top tips are boxed as not spoken; what the client shared on the call sits under their reason; the living-benefits line shows what it would add before you add it; a typed $0 deductible reads $0; and a why like “need to find more affordable coverage” is quoted back.'],
+  ['Approval timing and pricing','“Typically 3–5 business days, but it can take up to 14 depending on where you are.” And never “the price won’t go up”: the rate hasn’t risen since 2023, so a big jump is unlikely — the premium steps up a little each year with age.'],
+  ['Direction Rx for every member','Weight loss and hormone therapy, offered to every ManhattanLife client on the review and in the recap email.']]},
  {d:'2026-10-22',t:'Prescription discounts are Rx Valet',h:[
   ['Rx Valet for every client','The prescription discount is Rx Valet now, opened from the client’s EasyCare2go login (Group ID mlins2023) — every ManhattanLife client has it — in the enrollment email for every client, on the Benefits Review links, on the client page and the care card. EasyCare2go stays as the telehealth.'],
   ['Client recap text','Two buttons beside Copy partner benefits on Enroll: text the client a recap of what they applied for, with your digital business card — or copy it. The wrap-up text keeps its spacing now too.']]},
@@ -7096,9 +7105,9 @@ function clientStripSum(){ var el=$('csSum'), cs=$('clientStrip'); if(!el||!cs) 
    The Script Navigator's own Health Discovery, framed - one script, so every navigator edit shows here. POP Pro hands in
    the client's saved call (S.nav, via the portable file loader) and the agent's details, because a framed site cannot
    read its stand-alone storage; every answer comes straight back and fills the Intake live. */
-var NAV_BASE=location.port==='8767'?'http://127.0.0.1:8777/':'https://script.ffloptimum.com/';
+var NAV_BASE=new URL('discovery.html',location.href).href.split('?')[0]   /* the Discovery call is MyPopPro's own page now (Jesse, 23 Oct) - same origin, no second site to ship */;
 function callAgent(){ var C=S.client||{}; return {a_name:C.agent||'',a_agency:(S.agency&&S.agency!=='HealthFirst')?S.agency:'',a_npn:S.agentNPN||'',a_phone:S.agentPhone||'',a_email:S.agentEmail||'',a_web:S.agentWebsite||'',a_book:S.agentBooking||'',a_bio:S.agentBio||''}; }
-function callInit(){ var f=$('callFrame'); if(!f||!f.contentWindow) return; try{ f.contentWindow.postMessage({source:'optimum-poppro',type:'call-init',v:1,pop:currentQuote(),agent:callAgent()},NAV_BASE.replace(/\/$/,'')); }catch(e){} }
+function callInit(){ var f=$('callFrame'); if(!f||!f.contentWindow) return; try{ f.contentWindow.postMessage({source:'optimum-poppro',type:'call-init',v:1,pop:currentQuote(),agent:callAgent()},location.origin); }catch(e){} }
 function callOpen(){ var f=$('callFrame'); if(!f) return; if(!f.getAttribute('src')) f.src=NAV_BASE+'?embed=1&script=health&host=poppro'+(location.port==='8767'?'&v='+Date.now():''); else callInit(); }   /* the sandbox's navigator server caches; always fetch the newest there */
 window.addEventListener('message',function(e){ var f=$('callFrame'); if(!f||e.source!==f.contentWindow) return; var d=e.data||{};
   if(d.source==='insurance-script-navigator'&&d.type==='call-ready') callInit();
