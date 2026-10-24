@@ -5354,7 +5354,10 @@ function reviewEmail(){ var t=reviewT()||chosenTier(), R=reviewState(), C=S.clie
   sec('STILL TO DO — a few minutes each',ks.filter(function(k){ return !R.ticks[k]; }).map(function(k){ return LINE[k]; }));
   /* Dawn's training, Jesse's rulings (23 Oct): the ManhattanLife cards are not the care card; labs and imaging are Affordable Choice perks */
   sec('GOOD TO KNOW',['Your temporary ID card is in the member portal from day one — use that. Your physical ManhattanLife ID cards come in the mail about 10 days after your start date.',
-    labsLine(t)]);
+    labsLine(t),
+    /* every link from the call is in the recap (Jesse, 24 Oct): finding a doctor and a dentist, by the services chart */
+    (function(){ var P=reviewProducts(t); return (P.afc||P.his)?'Find a doctor in your network (First Health): https://providerlocator.firsthealth.com/home/index — at the front desk, say you’re on the First Health network.':''; })(),
+    (function(){ var P=reviewProducts(t); return P.dvh?'Find a dentist (Careington network): https://manhattanlife.solutionssimplified.com/':''; })()]);
   var rm=R.month||(R.eff?MONTHS[+String(R.eff).slice(5,7)-1]:''); if(rm) sec('YOUR ANNUAL REVIEW',['It’s on my calendar for '+rm+'. I’ll reach out — nothing for you to do.']);
   L.push(''); L.push('If anyone you know is paying too much for coverage, or has none, I’d be grateful for the introduction.');
   var agent=String(C.agent||'').trim(), agency=(S.agency&&S.agency!=='HealthFirst')?S.agency:'', card=reviewUrl(S.agentCard);
