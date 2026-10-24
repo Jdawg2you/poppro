@@ -27,8 +27,14 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); for
  for(var p=0;p<pages.length;p++){ presentGo(pages[p]); await w(120); seen+=vis(document.getElementById('prFrame').contentDocument).length; }
  ok(total>0,'control: the presentation script contains '+total+' flags/notes'); ok(seen===0,'Present, every page: '+seen+' visible across '+pages.length+' pages');
  goStep('review'); for(var k=0;k<40;k++){ await w(150); var r=document.getElementById('rvFrame'); if(r&&r.contentDocument&&r.contentDocument.body&&r.contentDocument.body.dataset.rvp) break; }
- await w(400); var rseen=0, rp=reviewPages(chosenTier()).length; for(var q=0;q<rp;q++){ reviewGo(q,true); await w(120); rseen+=vis(document.getElementById('rvFrame').contentDocument).length; }
+ await w(400); var rseen=0, rp=reviewPages(chosenTier()).length; for(var q=0;q<rp;q++){ reviewGo(q); await w(120); rseen+=vis(document.getElementById('rvFrame').contentDocument).length; }
  ok(rseen===0,'Benefits Review, every page: '+rseen+' visible across '+rp+' pages');
+ /* Widened (Jesse, 23 Oct): working notes styled as warnings still rendered - check the TEXT an agent sees, every page */
+ var BAD=[['file path',/_reference[/]|[A-Za-z_-]+[.]md(?![a-z])/],['code key',/(^|[^a-z])(plan|client|policy|drx|lb|aca|cur)[.][a-z_]{3,}/],['instruction to the tool',/tell MyPopPro/i],['open question',/unsettled|open question|still being confirmed|come back to/i],['a person name',/(^|[^A-Za-z])(Jesse|Kyle|Mike|Dawn|Trey|Gaylan)([^A-Za-z]|$)/]];
+ var hits=[], shown=function(doc){ var w=doc.createTreeWalker(doc.body,4), n, parts=[]; while((n=w.nextNode())){ var x=n.parentElement, ok2=true; while(x&&x!==doc.body){ var cs=doc.defaultView.getComputedStyle(x); if(cs.display==='none'||cs.visibility==='hidden'){ ok2=false; break; } x=x.parentElement; } if(ok2) parts.push(n.nodeValue); } return parts.join(' '); }, scan=function(where,doc){ var tx=shown(doc); BAD.forEach(function(b){ var m=tx.match(b[1]); if(m) hits.push(where+': '+b[0]+' “'+tx.slice(Math.max(0,m.index-50),m.index+60).split(String.fromCharCode(10)).join(' ')+'”'); }); };
+ for(var p2=0;p2<pages.length;p2++){ presentGo(pages[p2]); await w(120); scan('Present p'+(p2+1),document.getElementById('prFrame').contentDocument); }
+ for(var q2=0;q2<rp;q2++){ reviewGo(q2); await w(120); scan('Review p'+q2,document.getElementById('rvFrame').contentDocument); }
+ ok(hits.length===0,'no working notes in what agents see ('+hits.length+'): '+hits.slice(0,25).join(' || '));
  return {n:3, fails:fails}; })()`;
 try {
   let l; for (let i = 0; i < 60 && !l; i++) { await sleep(150); l = await fetch(`http://127.0.0.1:${DBG}/json/list`).then(r => r.json()).catch(() => null); }
