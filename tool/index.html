@@ -5373,6 +5373,12 @@ function approvedMsgs(){ var R=reviewState(), C=S.client||{}, first=((C.pname||'
   if(eff) L.push('Your coverage starts: '+eff); if(prem>0) L.push('Your monthly premium: '+fmt2(prem)+(R.draft?', drafted on '+reviewDate(R.draft):''));
   var res=reviewLink(); if(res) L.push('','How to use your new health plan: '+res,'That’s your home base for everything — what to do now, how to find a doctor, who to call. Bookmark it; we’ll open it together on our call.');   /* the link the Benefits Review's screen 3 asks them to click (Jesse, 23 Oct) */
   L.push('','Your temporary ID card is in the member portal from day one: https://clients.manhattanlife.com — your physical ManhattanLife ID cards come in the mail about 10 days after your start date.');
+  /* every registration link is in the approval email, so the review call can say so (Jesse, 24 Oct) */
+  var RP=reviewProducts(chosenTier()), reg=['Member portal (your ID card and claims): https://clients.manhattanlife.com',
+    'EasyCare2go — 24/7 telehealth, and your Rx Valet prescription savings inside the same login: https://manhattanlife.myeasycare2go.com/login · Group ID mlins2023',
+    'Easy Upload app, for sending in receipts: https://easyupload.manhattanlife.com/'];
+  if(RP.afc) reg.push('CareGuide — call before you pay any medical bill over $2,500: 469-902-2267');
+  L.push('','The links we’ll set up together on our call (no need to do them before):'); reg.forEach(function(x){ L.push('• '+x); });
   L.push('','Next step: a quick 15-minute call before your start date, so you know how to use everything — your portal, telehealth, prescription savings and who to call for what.'+(book?' Book a time that suits you here: '+book:' Reply with a day and time that works for you.'));
   var agent=String(C.agent||'').trim(), agency=(S.agency&&S.agency!=='HealthFirst')?S.agency:'';
   L.push('','Talk soon,'); [agent||agency, agent&&agency?agency:'', S.agentPhone||'', S.agentEmail||'', reviewUrl(S.agentCard)].forEach(function(x){ if(String(x||'').trim()) L.push(String(x).trim()); });
