@@ -5118,6 +5118,11 @@ function gapSpoken(R,A){ var join=function(a){ a=a.filter(Boolean); return a.len
 /* Until Health ZONE's source carries it, section 11 is rewritten on screen (pending item in benefits-review/PENDING_FROM_MYPOPPRO.txt) */
 /* Screen 9 (Jesse, 18 Oct): write the doctor, urgent care and hospital down on the care card while on the phone */
 function reviewCardScreen(doc){ var d=Array.prototype.filter.call(doc.querySelectorAll('.do'),function(x){ return /Four things before they need them/.test(x.textContent); })[0];
+  /* that note is gone (Jesse, 24 Oct): hide it while the source still has it, and anchor on the screen itself -
+     the care card line goes at the end of the finding-a-doctor screen, for every client */
+  if(d){ d.style.display='none'; d.classList.add('pp-gone'); }
+  var h=doc.querySelector('h2[data-screen="doctor"]'), last=null; if(h){ for(var x=h.nextElementSibling;x&&!(x.matches&&x.matches('h2[data-screen]'));x=x.nextElementSibling) if(!x.classList.contains('pp-carecard')&&!x.classList.contains('rv-tick')) last=x; }
+  d=last||d;
   if(!d||doc.querySelector('.pp-carecard')) return; var v=function(k,ex){ return '<var data-k="'+k+'">&lt;'+ex+'&gt;</var>'; };
   var a=doc.createElement('div'); a.className='say pp-carecard'; a.innerHTML='Let&rsquo;s get your providers nailed down while we&rsquo;re on the phone. I&rsquo;ll add them to your Client Care Card, and you&rsquo;ll get a link to it &mdash; you can print it, or save it to your phone, with all of your providers in one place. I don&rsquo;t want you trying to figure this out at two in the morning on your way somewhere.';   /* Jesse, 24 Oct */
   var b=doc.createElement('div'); b.className='do pp-carecard'; b.innerHTML='<span class="lab">NOT SPOKEN</span>Type what you find into <b>Client care card</b> at the top of this page as you go &mdash; it fills their card link and the recap email. Then send it from the checklist: <b>Care card sent &rarr; Text them</b>.';
