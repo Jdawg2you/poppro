@@ -60,7 +60,7 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  var a=d.querySelectorAll('.btnrow a'); ok(a.length===5&&a[0].href.indexOf('clients.manhattanlife.com')>0&&a[4].href==='https://optimumprotects.com/manhattanlife','buttons are real links; the resource page is the Setup link: '+(a[4]&&a[4].href));
  set('rv_link','client-own.example/page'); await w(50); reviewWire(d,'better'); ok(d.querySelectorAll('.btnrow a')[4].href==='https://client-own.example/page','a client-specific page overrides the Setup link'); set('rv_link','');
  /* the four ticks */
- var pg=pages.indexOf('Portal — do it live'); reviewGo(pg); await w(100); var tk=d.querySelector('.rv-tick[data-tick="portal"]'); ok(tk&&tk.style.display!=='none','the portal tick sits on the portal screen');
+ var pg=pages.indexOf('ManhattanLife portal — do this live'); reviewGo(pg); await w(100); var tk=d.querySelector('.rv-tick[data-tick="portal"]'); ok(tk&&tk.style.display!=='none','the portal tick sits on the portal screen');
  tk.querySelector('input').click(); await w(50); ok(!!(JSON.parse(localStorage.getItem('hf_pop_last')).review.ticks||{}).portal,'a tick is saved with the client');
  ok(/1 of 7/.test(document.getElementById('rvTicks').textContent),'the rail counts it (seven: Rx Valet, then Direction Rx for every member, 23 Oct)');
  ok(['ecg','upload','cg'].every(function(k){ return !!d.querySelector('.rv-tick[data-tick="'+k+'"]'); }),'all four registration screens carry a tick');
@@ -69,7 +69,7 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  ok(rows.length===7&&Array.prototype.every.call(rows,function(r){ return r.querySelectorAll('.rv-acts a').length===3&&r.querySelector('a[href^="sms:+15550102030?&body="]')&&r.querySelector('[data-copy]'); }),'every registration has open, text (to +1 number) and copy');
  ok(decodeURIComponent(document.querySelector('#rvTicks [data-row="cg"] a[href^="sms:"]').getAttribute('href')).indexOf('mypoppro.com/tool/careguide.vcf')>0,'CareGuide text carries the contact-card link');
  var cur=function(t){ reviewGo(pages.indexOf(t)); var c=document.querySelector('#rvTicks .rv-row.cur'); return c?c.dataset.row:''; };
- ok(cur('Telehealth — do it live')==='ecg'&&cur('CareGuide')==='cg'&&cur('The money line')==='','the row being talked about is boxed, and only then');
+ ok(cur('Telehealth — do this live')==='ecg'&&cur('CareGuide — bills over $2,500')==='cg'&&cur('Dates and draft')==='','the row being talked about is boxed, and only then');
  /* recommended vs elected: locked when they happen (Jesse, 16 Oct) */
  S.rec=null; S.elected=null; S.decl={}; S.chosen={tier:'best'}; presentOpen(); await w(300);
  ok(S.rec&&S.rec.tier==='best'&&S.rec.products.length>2,'Present locks the recommendation with its products');
