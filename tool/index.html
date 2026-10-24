@@ -1672,15 +1672,15 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
     <div class="wl-arrow">→</div>
     <div class="wl-step" data-tour="1"><span class="wl-n">1</span><b>Discovery call</b><span>Follow the script. Fill in the blanks as the client talks. The Intake fills itself.</span></div>
     <div class="wl-arrow">→</div>
-    <div class="wl-step" data-tour="2"><span class="wl-n">2</span><b>Intake</b><span>Check what the call filled in. Add anything missing.</span></div>
+    <div class="wl-step" data-tour="2"><span class="wl-n">2</span><b>Intake</b><span>Check and fill in their details: doctors in network, medications, health, current plan.</span></div>
     <div class="wl-arrow">→</div>
-    <div class="wl-step" data-tour="3"><span class="wl-n">3</span><b>Quote</b><span>Build the packages. Set the follow-up time.</span></div>
+    <div class="wl-step" data-tour="3"><span class="wl-n">3</span><b>Quote</b><span>Build and customize the packages: ManhattanLife, LifeX and Cigna. Set the follow-up time.</span></div>
     <div class="wl-arrow">→</div>
-    <div class="wl-step" data-tour="4"><span class="wl-n">4</span><b>Present</b><span>Walk the client through it on screen.</span></div>
+    <div class="wl-step" data-tour="4"><span class="wl-n">4</span><b>Present</b><span>Walk the client through it on screen. MyPopPro remembers what you presented.</span></div>
     <div class="wl-arrow">→</div>
-    <div class="wl-step" data-tour="5"><span class="wl-n">5</span><b>Enroll</b><span>Take the application, then send the thank-you.</span></div>
+    <div class="wl-step" data-tour="5"><span class="wl-n">5</span><b>Enroll</b><span>Take the application, check it against what you presented, then send the enrollment email and text.</span></div>
     <div class="wl-arrow">→</div>
-    <div class="wl-step" data-tour="6"><span class="wl-n">6</span><b>Benefits Review</b><span>After approval: the premium and draft date, then their registrations, on the call.</span></div>
+    <div class="wl-step" data-tour="6"><span class="wl-n">6</span><b>Benefits Review</b><span>Approved? Send the approval text and email and book the call. Walk them through it, then send the recap.</span></div>
   </div>
   </details>
   <div class="wl-tip" id="wlTip"></div>
@@ -5843,19 +5843,26 @@ var TOUR=[null,
    'At the <b>Book</b> stage, pick the follow-up date and time. It fills the follow-up on the Quote. Then click <b>Review the Intake →</b>.']},
  {t:'Intake',d:['Check what the call filled in: who is covered, doctors, medications, current plan, income and budget.',
    'Fill in anything the call missed. Shortcuts: a date of birth typed as 63078 becomes 06/30/1978 and works out the age.',
+   '<b>Doctors:</b> look each one up on First Health and set it to ✓ in network, ✗ out, or leave ? until you&rsquo;ve checked &mdash; the in-network ones go on their care card. <b>Medications and conditions</b> are checked against ManhattanLife&rsquo;s underwriting list as you type, with the guide page linked.',
    'Click <b>Build Quote</b>.']},
  {t:'Quote',d:['MyPopPro builds three packages. You see Good / Better / Best; the client sees Essential / Complete / Comprehensive.',
    'Open a row to change a level or add a product; <b>ⓘ</b> shows that product&rsquo;s benefits for their state. Click <b>Choose this plan</b> on the one they lean toward.',
-   'Pick an example (a hospital stay, a broken arm) to show what each plan pays. Not today? <b>Send the quote</b> is at the bottom.']},
+   'Pick an example (a hospital stay, a broken arm) to show what each plan pays. Not today? <b>Send the quote</b> is at the bottom.',
+   'Customize any package with ManhattanLife, LifeX or Cigna plans. Coming soon: a decision tree linked to the Intake that points you to the right plans across carriers.']},
  {t:'Present',d:['Click <b>▶ Present</b>. The script plays screen by screen with their name, numbers, doctors and medications filled in.',
    '<b>Back</b> / <b>Next</b> move through it; objections and stories sit at the side.',
-   'It ends at <b>Pick your close</b>. Enrolling → Enroll. Not today → Send the quote.']},
+   'It ends at <b>Pick your close</b>. Enrolling → Enroll. Not today → Send the quote.',
+   'MyPopPro <b>remembers what you presented</b> &mdash; the package, every product and its level &mdash; so it can be checked against what they actually buy.']},
  {t:'Enroll',d:['Life application first: the carrier links, then each person&rsquo;s details to copy in.',
    'Then the health carriers: ManhattanLife, Cigna and LifeX.',
+   '<b>Presented vs. enrolling:</b> MyPopPro compares what you presented with what they&rsquo;re actually taking. Same thing? Great. Different &mdash; a lower package, a product left off, a level lowered? It shows you the difference, so you can walk them through what they&rsquo;re giving up before they choose. It keeps everyone honest, and it&rsquo;s recorded for the declination page.',
+   'Send the <b>enrollment email</b> (with their brochures) and the <b>enrollment text</b> &mdash; both written for the plans they chose and their details.',
    'Never type a Social Security or bank number into the tool. Save with the 💾 tab when you&rsquo;re done; one file holds the call and the quote.']},
  {t:'Benefits Review',d:['Once the carrier approves it, before the effective date. Type the effective date, premium and draft date off the carrier&rsquo;s confirmation &mdash; never from the quote, never assumed.',
-   'Walk the script: the money line, their resource page, then portal, telehealth, the Easy Upload app and CareGuide, each registered <b>while you&rsquo;re on the phone</b>. Tick each one as it&rsquo;s done.',
-   'Their prescriptions are priced against the daily benefit for you, and the call ends with the referral ask and their annual review month. Your benefits page link lives in <b>⚙ Setup</b>.']}];
+   'Set <b>Approved</b> to Yes and the <b>approval text and email</b> are ready: the good news, their start date and your booking link to set up the review call. Send both.',
+   'Walk the script: the money line, their resource page, then portal, telehealth and Rx Valet, the Easy Upload app and CareGuide (Affordable Choice), each set up <b>while you&rsquo;re on the phone</b>. Tick each one as it&rsquo;s done.',
+   'The review covers <b>only what they bought</b>, and you fill their care card (doctors, urgent care, hospital) as you go. The call ends with the referral ask and their annual review month.',
+   'The last step is the <b>recap email</b> and a <b>&ldquo;recap sent&rdquo; text</b>: every link they need and their care card, built from the call. Every message along the way is written for their plan and their details. Your benefits page link lives in <b>⚙ Setup</b>.']}];
 var tourAt=0;
 function showTour(i){ tourAt=i; var fb=$('wlFlowBox'); if(fb&&i>0) fb.open=true; var card=document.querySelector('#setupModal .wl-card'); card.classList.toggle('touring',i>0);
   document.querySelectorAll('#setupModal .wl-step').forEach(function(el){ el.classList.toggle('cur',+el.dataset.tour===i); });
