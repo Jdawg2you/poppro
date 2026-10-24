@@ -1136,16 +1136,17 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
     <!-- The suite's agent offer, same link as the navigator, wizard and planning tools. Agent screens only. -->
     <a class="goatpill noprint" href="https://goatleads.com/registration/new?affiliate_id=66c4aa379e0123651ad2f0e6" target="_blank" rel="noopener"><span class="gstar">&#9733;</span><span class="glong">FREE Agent Website, Digital Business Card &amp; Booking Calendar</span><span class="gshort">FREE Website, Card &amp; Calendar</span></a>
     <div class="toolbar noprint">
+      <!-- order (Jesse, 23 Oct): Setup / How to use, What's new, New client, Load / Save / Print, then the view toggle last -->
+      <button type="button" class="btn-ghost setupbtn hidein-client" id="setupBtn" title="Your details, and how MyPopPro works step by step">⚙ Setup / How to use<em id="setupNeed"></em></button>
+      <button type="button" class="btn-ghost newsbtn hidein-client" id="newsBtn" title="What’s new in MyPopPro">✨ What’s new<em id="newsCount"></em></button>
+      <button class="btn-ghost" id="newBtn">New client</button>
+      <button class="btn-ghost" id="loadBtn">Load Quote</button>
+      <button class="btn-gold" id="saveBtn">Save Quote</button>
+      <button class="btn-gold" id="printBtn">Print Quote</button>
       <div class="seg" id="viewseg">
         <button data-view="agent" class="on">Agent Setup</button>
         <button data-view="client">Client View</button>
       </div>
-      <button type="button" class="btn-ghost newsbtn hidein-client" id="newsBtn" title="What’s new in MyPopPro">✨ What’s new<em id="newsCount"></em></button>
-      <button type="button" class="btn-ghost setupbtn hidein-client" id="setupBtn" title="Your agency, name, phone, email, NPN and links">⚙ Setup<em id="setupNeed"></em></button>
-      <button class="btn-ghost" id="newBtn">New</button>
-      <button class="btn-ghost" id="loadBtn">Load Quote</button>
-      <button class="btn-gold" id="saveBtn">Save Quote</button>
-      <button class="btn-gold" id="printBtn">Print Quote</button>
       <input type="file" id="fileInput" accept="application/json" style="display:none">
     </div>
   </div>
