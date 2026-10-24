@@ -42,6 +42,7 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  ${LIVE ? `ok(!RIGHT_FIT_ON&&!TRIAD_FLOW_ON,'live: decision tree and Triad flow are off');
  ok(getComputedStyle(document.getElementById('verBanner')).display==='none','live: no sandbox banner');` : ''}
  ok(NEWS[0].d==='2026-10-23','What’s new has the 23 Oct release (top: '+NEWS[0].d+')');
+ var nerr=null; try{ document.getElementById('newsBtn').click(); }catch(e){ nerr=e.message; } await w(400); ok(!nerr&&document.getElementById('newsPanel').classList.contains('open')&&/Benefits Review/.test(document.getElementById('newsBody').textContent),'What’s new opens and lists the release'+(nerr?' ('+nerr+')':'')); try{ document.getElementById('newsClose').click(); }catch(e){}
  var src=document.documentElement.outerHTML;
  ok(/hasn’t raised the rate on it since 2023/.test(src)&&src.indexOf('This renews at the same price')<0,'pricing: no “same price”, the 2023 line is in');
  S=blankState(); applySuiteClient({first:'Audit',last:'Client',state:'TX',age:'45',dob:'01/01/1981',kids:[],health:{}});

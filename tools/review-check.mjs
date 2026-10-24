@@ -84,8 +84,9 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  S.chosen={tier:'better'}; S.recommended='best';
  /* Direction Rx block inside screen 7: only for a weight-loss GLP-1, with the agent's code */
  S.agentDrxCode='OPT35'; S.agentDrxLink='bit.ly/x'; S.intake.glp1={p:{on:'Yes',for:'Weight loss',drug:'Zepbound'},s:{}}; reviewWire(d,'better');
- var db=d.querySelector('[data-needs="drx.howto"]'); ok(db&&!db.classList.contains('pp-off')&&/OPT35/.test(db.textContent)&&/30%/.test(db.textContent),'Benefits Review: the Direction Rx block shows with the code and 30%');
- S.intake.glp1={}; reviewWire(d,'better'); ok(db&&db.classList.contains('pp-off'),'no weight-loss GLP-1: the block is gone');
+ var dsay=[].filter.call(d.querySelectorAll('.say'),function(e){ return /Direction Rx/.test(e.textContent)&&!e.closest('.pp-off,.pp-prodoff')&&!e.closest('[data-author="note"]'); }); ok(dsay.length===1&&/remember you telling me/.test(dsay[0].textContent)&&!/[0-9]+%/.test(dsay[0].textContent),'Benefits Review: one Direction Rx offer - the GLP-1 version for a GLP-1 client, no percentage, code in the recap email (23 Oct)');
+ var oneOf=function(){ var T=reviewTokens('better'); return (T['client.on_glp1']==='1')!==(T['client.no_glp1']==='1'); }; ok(oneOf(),'exactly one Direction Rx version is switched on (GLP-1)');
+ S.intake.glp1={}; reviewWire(d,'better'); ok(oneOf()&&reviewTokens('better')['client.no_glp1']==='1','exactly one Direction Rx version is switched on (no GLP-1)'); var dsay2=[].filter.call(d.querySelectorAll('.say'),function(e){ return /Direction Rx/.test(e.textContent)&&!e.closest('.pp-off,.pp-prodoff')&&!e.closest('[data-author="note"]'); }); ok(dsay2.length===1&&/weight loss/.test(dsay2[0].textContent),'no GLP-1: the Direction Rx offer still shows - it is for every member (23 Oct)');
  /* setup asks for the benefits page */
  S.agentBenefits=''; ok(agentSetupMissing().indexOf('benefits page')>=0,'Setup counts the benefits page until it is filled');
   /* What they actually have (Jesse, 17 Oct): a copy of their plan, edited off the approval; quote and recommendation untouched */
