@@ -4953,18 +4953,18 @@ function renderRecGap(){ var host=$('enDiff'); if(!host) return; var R=S.rec, E=
 var REVIEW_PAGES=[
  {t:'Before you dial'},
  {t:'Open',sc:'open'},
- {t:'The money line',sc:'money'},
- {t:'The page',sc:'page'},
- {t:'Portal — do it live',sc:'portal',tick:'portal'},
- {t:'Telehealth — do it live',sc:'telehealth',tick:'ecg'},
- {t:'The app',sc:'app',tick:'upload'},
- {t:'Prescriptions',sc:'rx'},
- {t:'CareGuide',sc:'careguide',tick:'cg'},
+ {t:'Dates and draft',sc:'money'},   /* step names (Jesse, 24 Oct) - the script's headings follow these */
+ {t:'Benefits page',sc:'page'},
+ {t:'ManhattanLife portal — do this live',sc:'portal',tick:'portal'},
+ {t:'Telehealth — do this live',sc:'telehealth',tick:'ecg'},
+ {t:'The app — have them download it',sc:'app',tick:'upload'},
+ {t:'Prescriptions — their own numbers',sc:'rx'},
+ {t:'CareGuide — bills over $2,500',sc:'careguide',tick:'cg'},
  {t:'Finding a doctor',sc:'doctor'},
  {t:'Labs & imaging',sc:'labs'},   /* its own screen (Health ZONE, 23 Oct): skipped when the plan has neither vendor */
  {t:'Dental',sc:'dental',when:'dental'},
  {t:'If they elected below',sc:'tierdown',when:'below'},
- {t:'Close',sc:'close'},
+ {t:'Closing the call',sc:'close'},
  {t:'Recap email',sc:'recap',virtual:true}];   /* Jesse, 23 Oct: the coaching notes open the call (page 1); the last step is sending the recap */
 /* The four on-call registrations; links are the ones on the client resource page. Each row: open it, text it to the
    client (Messages opens with a short note and the link written), or copy the link (Jesse, 2026-10-16). A text can't
@@ -5431,7 +5431,8 @@ function reviewGo(pg,stay){ var t=chosenTier(), pages=reviewPages(t), R=reviewSt
   reviewWire(doc,t); reviewRail(); fr.style.height='60px'; fr.style.height=(doc.documentElement.scrollHeight+8)+'px';
   /* Before you dial is unnumbered; Open is 1 - and the script's own screen numbers are rewritten to match, so a skipped
      screen never leaves a gap between the step buttons and the headings (Jesse, 23 Oct) */
-  pages.forEach(function(p,i){ if(!p.sc) return; var h=doc.querySelector('h2[data-screen="'+p.sc+'"] .n'); if(h) h.textContent=String(i); });
+  pages.forEach(function(p,i){ if(!p.sc) return; var h2=doc.querySelector('h2[data-screen="'+p.sc+'"]'); if(!h2) return; var h=h2.querySelector('.n'); if(h) h.textContent=String(i);
+    if(h&&!h2.dataset.named&&/^(money|page|portal|telehealth|app|rx|careguide|close)$/.test(p.sc)){ h2.dataset.named='1'; while(h.nextSibling) h2.removeChild(h.nextSibling); h2.appendChild(doc.createTextNode(p.t)); } });
   $('rvChips').innerHTML=pages.map(function(p,i){ var lab=i===0?esc(p.t):(i+(i===pg?'. '+esc(p.t):'')); return '<button type="button" data-pg="'+i+'" title="'+esc(p.t)+'" class="'+(i===pg?'on':(i<pg?'done':''))+'">'+lab+(p.tick&&R.ticks[p.tick]?' ✓':'')+'</button>'; }).join('');
   $('rvChips').querySelectorAll('[data-pg]').forEach(function(b){ b.onclick=function(){ reviewGo(+b.dataset.pg); }; });
   var nx=pages[pg+1];
