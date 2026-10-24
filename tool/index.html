@@ -1575,7 +1575,7 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
       <div class="sqsteps">
         <div class="sqstep"><span class="sqn">1</span><div class="sqbody"><b>When is your follow-up?</b> <small>Optional — book it in <b>your</b> time zone (<span id="sqTz"></span>) and it converts to the client’s automatically; the email gives them their own time (“tomorrow, Thursday, at 5:00 pm your time”). Leave it blank and the email says you’ll follow up in the next day or two.</small>
           <div class="sqwhen"><input type="date" id="sqDate"><input type="time" id="sqTime" step="900"><button type="button" class="sqclr" id="sqClr" title="Clear the follow-up">Clear</button><label class="sqzl">Client’s time zone <select id="sqZone"></select></label></div><div class="sqsay" id="sqSay"></div></div></div>
-        <div class="sqstep"><span class="sqn">2</span><div class="sqbody"><b>Print / save the PDF quote.</b> <small>Save it, then tick the box — the email says “attached” only once you have.</small>
+        <div class="sqstep"><span class="sqn">2</span><div class="sqbody"><b>Print / save the PDF quote.</b> <small>Save it, then check the box — the email says “attached” only once you have.</small>
           <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:6px"><button class="picbtn sendbtn" id="printBtn2">&#128424; Print / Save PDF Quote</button><label class="sqchk"><input type="checkbox" id="sqPdf"> PDF saved — I’ll attach it to the email below</label></div></div></div>
         <div class="sqstep"><span class="sqn">3</span><div class="sqbody"><b>Send it from your email.</b>
           <div style="margin-top:6px;display:flex;flex-wrap:wrap;align-items:center;gap:8px 0">
@@ -2571,9 +2571,9 @@ function renderAca(){
   if(e.ok&&e.flags.indexOf('gap')>=0) fl.push('<div class="warn">⚠ Under 100% of the poverty level in a state that did not expand Medicaid — no subsidy and no Medicaid (the coverage gap).</div>');
   if(e.ok&&e.flags.indexOf('cliff')>=0) fl.push('<div>No subsidy — income is over 400% of the poverty level (the 2026 cliff). The full bronze price is the anchor.</div>');
   if(e.ok&&e.subsidy>0&&r.subsidy.src!=='typed') fl.push('<div>Possible subsidy of about '+fmt(e.subsidy)+'/mo at this income (benchmark silver '+fmt(e.silver)+' − expected contribution '+fmt(e.contrib)+') — <b>not applied</b>. Check next year’s income, look it up on HealthSherpa, and type it in to use it.</div>');
-  if(A.status==='outside') fl.push('<div class="warn">Outside enrollment — still calculated, left off the presentation unless you tick it back on.</div>');
+  if(A.status==='outside') fl.push('<div class="warn">Outside enrollment — still calculated, left off the presentation unless you check it back on.</div>');
   if(/offered through work/.test((S.intake||{}).notes||'')) fl.push('<div class="warn">Health coverage is offered through work — if it is affordable, the marketplace subsidy may not apply.</div>');
-  if(A.status==='onaca'&&!curIn().isAca) fl.push('<div class="warn">Marked “already on ACA” — tick “This is an ACA plan” under Current Insurance so its deductible and copay are used.</div>');
+  if(A.status==='onaca'&&!curIn().isAca) fl.push('<div class="warn">Marked “already on ACA” — check “This is an ACA plan” under Current Insurance so its deductible and copay are used.</div>');
   $('acaFlags').innerHTML=fl.join('');
   var t=acaTrueParts();
   $('acaTrueMo').textContent=fmt2(t.mo); $('acaTrueYr').textContent=fmt2(t.yr);
@@ -4937,7 +4937,7 @@ function renderRecGap(){ var host=$('enDiff'); if(!host) return; var R=S.rec, E=
     return; }
   var gap=recGap(), head='<div class="rg-head"><span><b>Recommended</b> '+esc(R.name)+' · '+fmt2(R.monthly)+'/mo <small>'+esc(R.by||'presented')+' '+esc(R.at||'')+'</small></span><span><b>Elected</b> '+esc(E.name)+' · '+fmt2(E.monthly)+'/mo</span></div>';
   if(!gap.length){ host.innerHTML='<div class="rg-box rg-ok">'+head+'<div class="rg-match">✓ They took what you recommended.</div></div>'; return; }
-  host.innerHTML='<div class="rg-box">'+head+'<div class="rg-sub">Where it falls short of the recommendation — tick each one the client knowingly declined. This is the record the declination page and the Benefits Review will use.</div>'
+  host.innerHTML='<div class="rg-box">'+head+'<div class="rg-sub">Where it falls short of the recommendation — check each one the client knowingly declined. This is the record the declination page and the Benefits Review will use.</div>'
     +gap.map(function(g){ var a=A[g.key]||{}; return '<div class="rg-row rg-'+g.kind+(g.hist?' rg-hasHist':'')+'"><label><input type="checkbox" data-gk="'+esc(g.key)+'"'+(a.ack?' checked':'')+'> <span>'+esc(g.text)+(g.hist?'<span class="rg-hist">⚑ '+esc(g.hist)+' — this is the coverage that speaks to it. Make sure they heard that.</span>':'')+'</span></label>'
       +'<input class="rg-why" data-gw="'+esc(g.key)+'" placeholder="why (optional) — budget, has it through work…" value="'+esc(a.why||'')+'"></div>'; }).join('')
     +'</div>';
@@ -5722,14 +5722,14 @@ var NEWS=[
   ['Client recap text','Two buttons beside Copy partner benefits on Enroll: text the client a recap of what they applied for, with your digital business card — or copy it. The wrap-up text keeps its spacing now too.']]},
  {d:'2026-10-21',t:'ManhattanLife check — medications, conditions and recommended care',h:[
   ['Medications ask what they’re for','A drug on ManhattanLife’s decline list (71, from the agent guide) asks what it’s for — in the Discovery call, right under the medication, and on the Intake. The listed condition turns it red; something else is amber, worth checking with underwriting. Insulin asks diabetes or gestational.'],
-  ['Conditions ask ManhattanLife’s question','Each condition asks the guide’s own rule — five years back, heart attack (more than one, or before 45), pacemaker, epilepsy, and the rules for diabetes, blood pressure, cancer, asthma and arthritis. The follow-up dates colour themselves, and every CARRIER RULE badge links to the guide page.'],
+  ['Conditions ask ManhattanLife’s question','Each condition asks the guide’s own rule — five years back, heart attack (more than one, or before 45), pacemaker, epilepsy, and the rules for diabetes, blood pressure, cancer, asthma and arthritis. The follow-up dates color themselves, and every CARRIER RULE badge links to the guide page.'],
   ['Asked in the call, answered on the Intake','Answer it in Discovery and the Intake already has it. Discovery has a condition search like the medication one, asks surgeries over five years, and asks about care a doctor recommended that isn’t done yet — red or amber, with a note to talk it through with your mentor.'],
   ['ⓘ ManhattanLife list','Beside Medications: every drug, condition, procedure and rule, searchable.'],
   ['Over the build chart','A red box under “Anything else I should know” when someone is over ManhattanLife’s build chart or the diabetic maximum.'],
   ['Take it off, it’s gone','Delete something in Discovery and it leaves the Intake, its notes and its boxes too. Delete it on the Intake and Discovery keeps the record of the call. Add a medication again and it asks again.'],
   ['Stays current','When a new version is out, MyPopPro updates itself at the next step — no reload, no signing in again.']]},
  {d:'2026-10-21',t:'Mental health and ManhattanLife',h:[
-  ['A short note when it’s ticked','Tick Mental health coverage needed and one line appears: serious mental-health conditions may decline; general depression is typically okay.']]},
+  ['A short note when it’s checked','Tick Mental health coverage needed and one line appears: serious mental-health conditions may decline; general depression is typically okay.']]},
  {d:'2026-10-20',t:'Pregnancy and ManhattanLife',h:[
   ['Needs maternity now warns','Tick Needs maternity — by hand or from the call’s pregnancy answers — and ManhattanLife’s own rule appears under it: anyone in the household pregnant or adopting declines every household applicant. Consider a different plan.']]},
  {d:'2026-10-19',t:'Prescription discounts move to EasyCare2go',h:[
@@ -5747,9 +5747,9 @@ var NEWS=[
   ['Benefits Review','A sixth step for the call after approval: confirm the plan off the carrier’s approval, walk the script while they register the portal, telehealth, the Easy Upload app and CareGuide, and send their care card.'],
   ['Your bio on the call','Set the tone opens with who you are, from your bio in ⚙ Setup — or a default if you leave it empty.'],
   ['Enroll as presented, or with edits','The last screen of Present asks how they’re enrolling. With edits, their plan opens right there beside your recommendation: benefit by benefit, green for more, red for less, and what each pays on real events.'],
-  ['Every gap on the record','Enroll lists every way their plan falls short of your recommendation, with a box to tick that the client chose it. It will feed the declination page, coming soon.'],
+  ['Every gap on the record','Enroll lists every way their plan falls short of your recommendation, with a box to check that the client chose it. It will feed the declination page, coming soon.'],
   ['The care card','A wallet card for the client: their doctors, urgent care, hospital and the numbers they need, already filled with your name and number. Prints one per adult plus a spare.'],
-  ['Family history, front and centre','Mark Mom or Dad under each family history. Cover that speaks to it — cancer, heart and stroke, living benefits — is outlined in gold, and flagged if they leave it out.'],
+  ['Family history, front and center','Mark Mom or Dad under each family history. Cover that speaks to it — cancer, heart and stroke, living benefits — is outlined in gold, and flagged if they leave it out.'],
   ['⚙ Setup and a walk-through','Your details live in ⚙ Setup at the top, with a six-step walk-through of the tool.']],
  i:[
   ['Discovery call, built in','The Script Navigator’s Health Discovery is now step 1. Type answers into the blanks as the client talks, and the Intake fills itself.'],
@@ -5761,13 +5761,13 @@ var NEWS=[
   ['Their why, in their words','One Why on the call and the Intake: type exactly what they said, click what’s behind it, and see what you’ll say back. On Present it’s quoted back — “you said, …” — with their own numbers, and the close offers only the answers the quote actually supports, each one yours to switch on or off.'],
   ['Enrolling as presented, or with plan edits','The last screen of Present asks how they’re enrolling. With plan edits, their plan opens right there: ✕ what they’re not taking, change a level, or switch to another package exactly as you built it on the Quote. The price updates as you go, and Enroll, the emails and the Benefits Review all follow the plan they actually chose.'],
   ['Recommended vs what they chose, side by side','Your recommendation on the left, their plan on the right, benefit by benefit: green where it’s more, red where it’s less, gold where it touches their family history. Below it, what each plan pays on a doctor visit, urgent care, a broken arm, a hospital stay, a heart attack and a year of cancer treatment, and what they still net.'],
-  ['Every gap on the record','Enroll lists every way their plan falls short of your recommendation, with a box to tick that the client chose it. Cancer cover or living benefits left out with a family history of it are flagged in gold.'],
+  ['Every gap on the record','Enroll lists every way their plan falls short of your recommendation, with a box to check that the client chose it. Cancer cover or living benefits left out with a family history of it are flagged in gold.'],
   ['The care card','A wallet card for the client: their doctors, urgent care, hospital, pharmacy and dentist, plus the numbers they need (First Health, CareGuide, telehealth, Rx discounts). Send it from the Benefits Review. It arrives already filled with your name and number and the doctors you confirmed in network, and prints one card per adult plus a spare. You can fill it in for them and text it, or they can finish it themselves.'],
-  ['Whose doctor, and in network?','Each doctor on the Intake has Primary / Spouse / Kids and ✓ In network. Only the ones you tick go onto their care card.'],
+  ['Whose doctor, and in network?','Each doctor on the Intake has Primary / Spouse / Kids and ✓ In network. Only the ones marked ✓ In network go onto their care card.'],
   ['Family history, named','Click Mom or Dad under each family history on the Intake, and the presentation says “your dad” or “on both sides of the family”. Their own history is flagged separately.'],
   ['Benefits Review, tidied','The carrier’s confirmation and their plan sit on page 1 and fold away once the call starts. The premium fills itself from their plan. The close re-sends your digital business card, and “If they elected below your recommendation” now says what they actually did, softly, with the door left open.'],
   ['Your benefits page in Setup','Add the link to your own client resource page (your ManhattanLife benefits page, flipbook or similar) in ⚙ Setup. The Benefits Review opens it for every client.'],
-  ['A real story for big bills','In Present, “What if I have a major health issue?” now opens Kyle’s daughter’s story: a $211,000 ICU bill, eleven months of negotiation, and a $33,000 cheque, with what to say and what never to promise.'],
+  ['A real story for big bills','In Present, “What if I have a major health issue?” now opens the $211,000 ICU story: eleven months of negotiation and a $33,000 check, with what to say and what never to promise.'],
   ['⚙ Setup and a walk-through','Your agent details moved to ⚙ Setup at the top, with a six-step walk-through of the tool. The button glows until everything is filled in.'],
   ['Now called MyPopPro','One name everywhere: buttons, emails, files and the Script Navigator.'],
   ['What’s new','This panel. New features show here first, and every past update stays under All updates.']]},
@@ -5866,7 +5866,7 @@ var TOUR=[null,
    'Never type a Social Security or bank number into the tool. Save with the 💾 tab when you&rsquo;re done; one file holds the call and the quote.']},
  {t:'Benefits Review',d:['Once the carrier approves it, before the effective date. Type the effective date, premium and draft date off the carrier&rsquo;s confirmation &mdash; never from the quote, never assumed.',
    'Set <b>Approved</b> to Yes and the <b>approval text and email</b> are ready: the good news, their start date and your booking link to set up the review call. Send both.',
-   'Walk the script: the money line, their resource page, then portal, telehealth and Rx Valet, the Easy Upload app and CareGuide (Affordable Choice), each set up <b>while you&rsquo;re on the phone</b>. Tick each one as it&rsquo;s done.',
+   'Walk the script: the money line, their resource page, then portal, telehealth and Rx Valet, the Easy Upload app and CareGuide (Affordable Choice), each set up <b>while you&rsquo;re on the phone</b>. Check each one off as it&rsquo;s done.',
    'The review covers <b>only what they bought</b>, and you fill their care card (doctors, urgent care, hospital) as you go. The call ends with the referral ask and their annual review month.',
    'The last step is the <b>recap email</b> and a <b>&ldquo;recap sent&rdquo; text</b>: every link they need and their care card, built from the call. Every message along the way is written for their plan and their details. Your benefits page link lives in <b>⚙ Setup</b>.']}];
 var tourAt=0;
@@ -6612,7 +6612,7 @@ function presentRailFromScript(doc){ presentObjEdits(doc); var qa=[], st=[];
   var atOf=function(re){ var m=st.filter(function(x){ return re.test(x.story); })[0]; return m?m.at:''; };
   st=[{story:'Living benefit story',at:atOf(/rehab/i)||'Step 9, living benefits'},
       {story:'If they think they don’t need HI / accident / OOP',at:atOf(/trip to the ER/i)||'Objection: “I can’t afford that”'},
-      {story:'What if I have a major health issue?',at:atOf(/daughter/i)||'Step 7, catastrophic',title:'Kyle’s daughter: $211,000 in intensive care, and a $33,000 cheque',html:STORY_KYLE},
+      {story:'What if I have a major health issue?',at:atOf(/daughter/i)||'Step 7, catastrophic',title:'$211,000 in intensive care, and a $33,000 check',html:STORY_KYLE},
       {story:'Why not just pay cash if this doesn’t cover everything anyway?',at:'Objection: “Why not just pay cash?”'}];
   return {qa:qa,stories:st,flag:''}; }
 /* Kyle's daughter (Health ZONE, 14 Oct; Kyle at the Bundle Bootcamp, 13 Oct 2026; source: Health Insurance/_training/
@@ -6623,12 +6623,12 @@ var STORY_KYLE='<p class="st-act"><b>1 · Why the big number is never the real n
  +'<div class="st-say">The price on a hospital bill is not the price. The network has already agreed what that hospital gets paid &mdash; agreed before you ever walk in. The hospital bills whatever it bills, the plan pays the agreed rate, and the hospital writes off the difference. It has to. That&rsquo;s the deal it signed to get network patients at all.</div>'
  +'<p class="st-act"><b>2 · The grind</b> <small>~50 sec · do not skip the eleven months</small></p>'
  +'<div class="st-say">The man who runs our health division had this happen to his own daughter. Six nights in intensive care. The bill was <b>two hundred and eleven thousand dollars</b>.<br><br>He called the bill advocates and signed one form &mdash; a release. Then they went to work. And it took <b>eleven months</b>. A call every week, an email every week.<br><br>It went from $211,000 to $198,000. Then $184,000. Then $124,000. Then ninety thousand. It finished at <b>forty-two thousand</b>.<br><br>Along the way they found the hospital was charging <b>forty-seven dollars for a Tylenol</b>. Once that came to light, the hospital got a lot more willing to talk.</div>'
- +'<p class="st-act"><b>3 · The cheque</b> <small>~35 sec · the payoff</small></p>'
- +'<div class="st-say">Then a cheque arrived in the mail. <b>Thirty-three thousand dollars</b>, from the insurance company, made out to him.<br><br>He thought it was a mistake. He said, &ldquo;I don&rsquo;t think I should cash this &mdash; this is too good to be true.&rdquo; He got the carrier and the advocates on a three-way call to check.<br><br>It wasn&rsquo;t a mistake. The final bill was forty-two thousand. His plan paid seventy-five. The benefit is a fixed amount &mdash; it pays what it says it pays, whatever the bill turns out to be. So once the bill came down, the difference belonged to him.<br><br>He didn&rsquo;t just avoid a two-hundred-thousand-dollar bill. He came out thirty-three thousand ahead.</div>'
+ +'<p class="st-act"><b>3 · The check</b> <small>~35 sec · the payoff</small></p>'
+ +'<div class="st-say">Then a check arrived in the mail. <b>Thirty-three thousand dollars</b>, from the insurance company, made out to him.<br><br>He thought it was a mistake. He said, &ldquo;I don&rsquo;t think I should cash this &mdash; this is too good to be true.&rdquo; He got the carrier and the advocates on a three-way call to check.<br><br>It wasn&rsquo;t a mistake. The final bill was forty-two thousand. His plan paid seventy-five. The benefit is a fixed amount &mdash; it pays what it says it pays, whatever the bill turns out to be. So once the bill came down, the difference belonged to him.<br><br>He didn&rsquo;t just avoid a two-hundred-thousand-dollar bill. He came out thirty-three thousand ahead.</div>'
  +'<table class="st-sum"><tr><td>Hospital charged</td><td>$211,000</td></tr><tr><td>Final bill, after 11 months</td><td>$42,000</td></tr><tr><td>The plan paid (fixed benefit)</td><td>$75,000</td></tr><tr><td><b>Paid to him</b></td><td><b>$33,000</b></td></tr></table>'
  +'<div class="st-warn"><b>Tell it honestly</b><ul>'
  +'<li><b>Say &ldquo;eleven months.&rdquo;</b> It was a campaign with weekly contact, not a phone call. A client who expects it sorted in two weeks will be angry in month three.</li>'
- +'<li><b>Never promise the cheque.</b> It happened because a fixed benefit was bigger than a reduced bill &mdash; the amount depends entirely on the bill. And it wasn&rsquo;t a windfall: she came out with a blood-clot diagnosis and a medication for life. It was a serious illness the plan covered well.</li>'
+ +'<li><b>Never promise the check.</b> It happened because a fixed benefit was bigger than a reduced bill &mdash; the amount depends entirely on the bill. And it wasn&rsquo;t a windfall: she came out with a blood-clot diagnosis and a medication for life. It was a serious illness the plan covered well.</li>'
  +'<li><b>CareGuide</b> is &ldquo;a medical bill advocacy service, not insurance. It does not pay medical bills. Results vary by case.&rdquo; Promise that somebody will look &mdash; never an outcome. Best results when they call <b>before</b> paying anything: 469-902-2267 &middot; cgasaves.com/manhattanlifemembers</li>'
  +'</ul></div>';
 var PR_STORY_HEAD='<b>Story repository (who to tell)</b>';
@@ -7435,7 +7435,7 @@ function pbMoney(v){ return '$'+(+v).toFixed(2); }
 function pbOpts(list,cur){ return list.map(function(o){ return '<option value="'+o[0]+'"'+(String(o[0])===String(cur)?' selected':'')+'>'+o[1]+'</option>'; }).join(''); }
 function pbAmt(a){ return a.map(function(v){ return [v, v? '$'+Number(v).toLocaleString('en-US') : 'None']; }); }
 function pbControls(k,c){
-  if(k==='base'&&c.base==='lifex') return '<div class="f">LifeX plan<select data-f="lifexPlan">'+pbOpts([['$500 PPO','$500 copay PPO']],'$500 PPO')+'</select></div><div style="font-size:11.5px;color:var(--muted)">Kyle: the $500 copay PPO is the only LifeX plan we show — the others just create confusion.</div>'
+  if(k==='base'&&c.base==='lifex') return '<div class="f">LifeX plan<select data-f="lifexPlan">'+pbOpts([['$500 PPO','$500 copay PPO']],'$500 PPO')+'</select></div><div style="font-size:11.5px;color:var(--muted)">The $500 copay PPO is the only LifeX plan we show — the others just create confusion.</div>'
     +'<div style="font-size:11.5px;color:var(--maroon)">Screen with the LifeX questionnaire first — pregnancy is a decline. The client becomes a W-2 employee of LifeX.</div>';
   if(k==='base'&&c.base==='triad') return '<div class="f">Deductible<select data-f="triadPlan">'+pbOpts(Object.keys((TRI&&TRI.plans)||{}).filter(function(n){ return !/HSA/.test(n)||(S.intake&&S.intake.hasHSA); }).map(function(n){ var d=n.replace('Triad Cigna ',''); return [d,'$'+d.replace(/(\d+)/,function(x){return Number(x).toLocaleString('en-US');})]; }),c.triadPlan||'3500')+'</select></div>'
     +'<label style="display:flex;gap:6px;align-items:center;font-size:12.5px;font-weight:600"><input type="checkbox" data-act="hsa"'+(S.intake&&S.intake.hasHSA?' checked':'')+'> Client already has an HSA (shows the HSA plans)</label>'
