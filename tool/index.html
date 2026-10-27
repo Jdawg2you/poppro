@@ -1841,10 +1841,10 @@ var ML_OFFERED={
  chas:'AK AL AR AZ CA CO CT DC FL GA HI IA ID IL IN KS KY LA MD ME MI MN MO MS MT NC ND NE NH NV OH OK OR PA RI SC SD TN TX UT VT WA WI WV',
  afc:'AK AL AR AZ CA DE FL GA HI IA IL IN KY LA MD ME MI MN MO MS MT NC ND NE NM NV OH OK OR PA RI SC SD TN TX UT VA WI WV WY',
  /* Home Health Care Enhanced: states with a brochure in the carrier library or rates in the portal pull (2026-09-29). */
- hhc:'AK AL AR AZ CO DC DE GA HI IA ID IL IN LA MD ME MI MO MS MT NC ND NE NH NV OH OK OR PA RI SC SD TN TX UT VA WI WV WY',   /* Enhanced, plus Select in ID IN MD PA VA */
- /* DVH Select: the portal pull's states plus MS NV NJ NC PA from their own brochures (rates/dvh-brochure-rates.json). */
+ hhc:'AK AL AR AZ CO DC DE GA HI IA ID IL IN LA MD ME MI MO MS MT NC ND NE NH NV OH OK OR PA RI SC SD TN TX UT VA WI WV WY',   /* Enhanced (PA since 19 Oct 2026), plus Select in ID IN MD VA */
+ /* DVH Select: the portal pull's states plus MS NV NJ NC PA AK from their own brochures (rates/dvh-brochure-rates.json). */
  dvh7016:'MD MT VA',   /* the older Dental, Vision and Hearing plan, served only where DVH Select is not sold */
- dvh:'AL AR AZ CA CO CT DC DE FL GA IA ID IL IN KS KY LA ME MI MN MO MS NC ND NE NJ NM NV OH OK OR PA SC SD TN TX UT WI WV WY'
+ dvh:'AK AL AR AZ CA CO CT DC DE FL GA IA ID IL IN KS KY LA ME MI MN MO MS NC ND NE NJ NM NV OH OK OR PA SC SD TN TX UT WI WV WY'
 };
 /* ===== PORTAL RATES — rates/portal-rates.json =====
    Every age / household / option, pulled from the ManhattanLife agent portal and grouped by
@@ -1998,8 +1998,14 @@ function dentalCo(st){ st=(st||(S.client||{}).state||'').toUpperCase(); var ch=S
   return mlDentalSold(st)?'ml':(sparkleSold(st)?'sparkle':'ml'); }
 function pSPARKLE(hh,st){ if(!sparkleSold(st)) return {price:null,note:'Sparkle Care Dental is not sold in '+st};
   var v=SPARKLE.rates[hh||'i']; return v==null?{price:null,note:'Sparkle Care Dental: no rate for this household'}:{price:v,note:'',sparkle:true,parts:{dental:v,vision:0,hearing:0}}; }
-/* Home Health Care Select is what's sold where Enhanced isn't (ID IN MD PA VA). */
-function hhcIsSelect(st){ st=(st||(S.client||{}).state||'').toUpperCase(); return !!(st&&PR&&!prGroup(306,st)&&(prGroup(304,st)||prGroup(305,st))); }
+/* Enhanced launched after the 28 Sep portal pull, by ManhattanLife producer bulletin. PA: 19 Oct 2026, replaces Select,
+   "Rates are generic" (= the generic 306 group, the one TX and RI price from); PA has its own brochure and application,
+   and no Routine Annual Physical rider (MyPopPro doesn't price that rider). Drop a state from here once a fresh portal
+   pull carries it. */
+var HHC_ENH_LAUNCHED={PA:'TX'};
+function hhcEnhGroup(st){ var g=prGroup(306,st); if(g||!HHC_ENH_LAUNCHED[st]) return g; return prGroup(306,HHC_ENH_LAUNCHED[st]); }
+/* Home Health Care Select is what's sold where Enhanced isn't (ID IN MD VA). */
+function hhcIsSelect(st){ st=(st||(S.client||{}).state||'').toUpperCase(); return !!(st&&PR&&!hhcEnhGroup(st)&&(prGroup(304,st)||prGroup(305,st))); }
 /* The 7016 plan is the dental offer where DVH Select is not sold (MD, MT, VA). */
 function dvhIs7016(st){ st=(st||(S.client||{}).state||'').toUpperCase(); return !!(st&&dentalCo(st)==='ml'&&PR&&!prGroup(301,st)&&prGroup(150,st)); }
 function dvh7016Maxes(st){ var g=PR&&prGroup(150,(st||(S.client||{}).state||'').toUpperCase()); return g?Object.keys(g.plans).map(function(k){ return k.match(/\$([\d,]+)/)[1].replace(/,/g,''); }):[]; }
@@ -2076,8 +2082,8 @@ function pCHAS(st,age,hh,cfg){
 function pHHC(R,st,age,col){
   if(st&&(ML_OFFERED.hhc||'').split(' ').indexOf(st)<0) return {price:null,note:notLoaded('hhc','Home Health Care',st)};
   if(!col) return {price:null,note:''};
-  /* Enhanced where it is sold; the older Home Health Care Select where it is not (ID IN MD PA VA - portal 304/305). */
-  var pg=prGroup(306,st), prod='Enhanced'; if(!pg){ pg=prGroup(304,st)||prGroup(305,st); prod='Select'; }
+  /* Enhanced where it is sold; the older Home Health Care Select where it is not (ID IN MD VA - portal 304/305). */
+  var pg=hhcEnhGroup(st), prod='Enhanced'; if(!pg){ pg=prGroup(304,st)||prGroup(305,st); prod='Select'; }
   if(pg){ var v=prVal(pg.plans,col+' | UNITS','i',age);
     return v==null?{price:null,note:'HHC '+prod+' '+col+' not available at age '+age+' in '+st+(prod==='Select'?' (issue ages 45-89)':'')}:{price:v,note:'',prod:prod}; }
   var g=rGrp(R.hhc.g,st); if(!g) return {price:null,note:'HHC not available in '+st};

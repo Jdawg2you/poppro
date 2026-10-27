@@ -10,7 +10,7 @@ Never borrows: a state is added only from its own brochure. Needs macOS `swift` 
 import json, os, re, subprocess, sys, datetime
 
 LIB = os.path.expanduser('~/Library/CloudStorage/GoogleDrive-jessestamm@gmail.com/My Drive/Optimum Carrier Library/ManhattanLife/States')
-STATES = ['MS', 'NV', 'NJ', 'NC', 'PA']          # sold (brochure on file) but not in the portal pull
+STATES = ['MS', 'NV', 'NJ', 'NC', 'PA', 'AK']          # sold (brochure on file) but not in the portal pull
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, '..', 'tool', 'rates', 'dvh-brochure-rates.json')
 BANDS = [(18, 39), (40, 54), (55, 64), (65, 74), (75, 99)]

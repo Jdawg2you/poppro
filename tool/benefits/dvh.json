@@ -929,6 +929,212 @@
         "Guaranteed issue; guaranteed renewable for life (premiums subject to change). Family rates include up to 3 children.",
         "Brochure: 'This is not a complete disclosure of plan qualifications and limitations' — full list at disclosure.manhattanlife.com."
       ]
+    },
+    {
+      "code": "DVHS-AKBR_1026",
+      "file": "DVHS-AKBR_1026 (AK Dental Vision Hearing Select - Dental, Vision and Hearing Select Brochure).pdf",
+      "states": [
+        "AK"
+      ],
+      "page": "2-3",
+      "sections": [
+        {
+          "title": "Plan basics",
+          "rows": [
+            {
+              "label": "Policy year maximum benefit",
+              "values": {
+                "1000": "$1,000 per policy year",
+                "1500": "$1,500 per policy year",
+                "3000": "$3,000 per policy year",
+                "5000": "$5,000 per policy year"
+              },
+              "key": true
+            },
+            {
+              "label": "Policy year deductible",
+              "values": {
+                "*": "{dvh.ded} per person (does not apply to Preventive Services)"
+              },
+              "key": true
+            },
+            {
+              "label": "Issue age",
+              "values": {
+                "*": "Ages 18 - 99"
+              }
+            },
+            {
+              "label": "Dentist choice",
+              "values": {
+                "*": "In-network (Careington Maximum Care PPO Dental Network) or out-of-network; use of the network is optional"
+              },
+              "note": "Out-of-network is paid on Usual, Customary and Reasonable (UCR) charges; network discounts may help extend the policy year maximum."
+            }
+          ]
+        },
+        {
+          "title": "Waiting periods",
+          "rows": [
+            {
+              "label": "Waiting periods",
+              "values": {
+                "*": "None for preventive, basic, major or other dental services; 6 months for eyeglass frames (Vision Rider); 12 months for hearing aids and repairs/supplies (Hearing Rider)"
+              },
+              "note": "AK brochure pp.3-4. Alaska has no orthodontia benefit.",
+              "key": true
+            }
+          ]
+        },
+        {
+          "title": "Preventive services",
+          "rows": [
+            {
+              "label": "Exams, X-rays, cleanings, fluoride",
+              "values": {
+                "*": "In-network: 100% of contracted rate. Out-of-network: 80% of UCR"
+              },
+              "note": "Dental exams, 2 per year; bitewing X-rays, 2 per year; cleanings, 2 per year; fluoride treatment for age 16 and under, 2 visits per year",
+              "key": true
+            },
+            {
+              "label": "Waiting period",
+              "values": {
+                "*": "None"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Basic services",
+          "rows": [
+            {
+              "label": "Fillings, simple extractions, basic oral surgery and other basic services",
+              "values": {
+                "*": "In-network: 65% of contracted rate 1st yr., 80% thereafter. Out-of-network: 65% of UCR 1st yr., 80% thereafter"
+              },
+              "note": "Limited oral evaluation, diagnostic consultation, emergency palliative treatment, panoramic X-ray, periapical X-ray, periodontal non-surgical service, basic restorative service, filling, basic oral surgery, periodontal service, non-surgical extraction",
+              "key": true
+            },
+            {
+              "label": "Waiting period",
+              "values": {
+                "*": "None"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Major services",
+          "rows": [
+            {
+              "label": "Crowns, root canals, dentures/bridges, implants and other major services",
+              "values": {
+                "*": "In-network: 20% of contracted rate 1st yr., 50% thereafter. Out-of-network: 20% of UCR 1st yr., 50% thereafter"
+              },
+              "note": "Major restorative service, inlay/onlay/crown, endodontic service, periodontal service, prosthodontic service, implants",
+              "key": true
+            },
+            {
+              "label": "Implants lifetime maximum",
+              "values": {
+                "*": "$1,500"
+              }
+            },
+            {
+              "label": "Waiting period",
+              "values": {
+                "*": "None"
+              }
+            }
+          ]
+        },
+        {
+          "title": "All other medically necessary services",
+          "rows": [
+            {
+              "label": "Services not listed above",
+              "values": {
+                "*": "In-network: 20% of contracted rate 1st yr., 50% thereafter. Out-of-network: 20% of UCR 1st yr., 50% thereafter"
+              }
+            },
+            {
+              "label": "Waiting period",
+              "values": {
+                "*": "None"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Vision Rider (optional, added cost)",
+          "rows": [
+            {
+              "label": "Eye exam, refraction and lenses (single, bifocal, trifocal, progressive)",
+              "values": {
+                "*": "1st year: 60% of UCR; 2nd year: 70% of UCR; thereafter: 80% of UCR; 1 per year"
+              },
+              "key": true
+            },
+            {
+              "label": "Eyeglass frame or contact lenses",
+              "values": {
+                "*": "$200 maximum per year"
+              }
+            },
+            {
+              "label": "Anti-reflective lenses",
+              "values": {
+                "*": "$45; 1 per year"
+              }
+            },
+            {
+              "label": "Polycarbonate lenses",
+              "values": {
+                "*": "$40; 1 per year"
+              }
+            },
+            {
+              "label": "Contact lens fitting fee",
+              "values": {
+                "*": "$15; 1 per year"
+              }
+            },
+            {
+              "label": "Waiting period",
+              "values": {
+                "*": "6 months on eyeglass frames"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Hearing Rider (optional, added cost)",
+          "rows": [
+            {
+              "label": "Hearing exam, hearing aid and necessary repairs or supplies",
+              "values": {
+                "*": "$750 maximum (per ear, per year)"
+              },
+              "key": true
+            },
+            {
+              "label": "Waiting period",
+              "values": {
+                "*": "12 months for hearing aid and necessary repairs or supplies"
+              }
+            }
+          ]
+        }
+      ],
+      "notes": [
+        "Limited benefit insurance policy for dental, vision and hearing expenses; guaranteed issue; guaranteed renewable for life (premiums subject to change).",
+        "Sold as Dental only, Dental + Vision, Dental + Hearing, or Dental + Vision + Hearing: vision and hearing are riders with their own premium. POP Pro prices each rider only when it is ticked in the dental add-on.",
+        "Family rates include up to 3 children.",
+        "Brochure: 'This is not a complete disclosure of plan qualifications and limitations' — full list at disclosure.manhattanlife.com.",
+        "Brochure highlight: 'No waiting periods for Dental Services'.",
+        "Alaska: DVH Select launched Oct 2026 (ManhattanLife producer bulletin); state-specific brochure, application and rates (policy form AK7034-AK). No orthodontia benefit in Alaska."
+      ]
     }
   ]
 }
