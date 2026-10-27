@@ -670,6 +670,9 @@
   .trd-blk{border-top:1px solid var(--line);padding:12px 0}.trd-blk h5{margin:0 0 8px;font-size:14px;color:var(--navy)}
   .trd-f{display:flex;gap:10px;align-items:center;margin:0 0 8px;flex-wrap:wrap}.trd-f span{min-width:230px;font-weight:600;font-size:13px}.trd-f input,.trd-f select{border:1px solid var(--line);border-radius:7px;padding:6px 8px;font:inherit;font-size:13.5px;min-width:200px}
   .trd-tick{display:flex;gap:8px;align-items:center;margin:4px 0 8px;font-weight:600;font-size:13.5px}.trd-tick.on{color:#1c6b38}
+  .trd-uw{list-style:none;margin:0 0 10px;padding:0;font-size:13.5px;line-height:1.45}.trd-uw li{padding:6px 10px;border-radius:7px;margin:0 0 5px;border:1px solid var(--line)}
+  .trd-uw li.bad{background:#fdecea;border-color:#e6aaa2;color:#8f1d12}.trd-uw li.warn{background:#fff8ec;border-color:#e8c98a;color:#6b4a07}.trd-uw li.ok{background:#eef7f0;border-color:#b9dcc2;color:#1f5a2e}
+  .trd-uw small{display:block;font-weight:400;opacity:.85}.trd-ask{font-size:13px;margin:0 0 10px;padding-left:18px;color:#3a4358}
   .trd-stop{background:#fdecea;border:1px solid #e6aaa2;color:#8f1d12;border-radius:8px;padding:8px 12px;margin:0 0 10px;font-weight:700;font-size:13px}.trd-note{font-size:13px;margin:-2px 0 10px;color:#3a4358}
   .trd-pre{white-space:pre-wrap;background:#f7f7f4;border:1px solid var(--line);border-radius:8px;padding:12px;font-size:12.5px;line-height:1.5;max-height:340px;overflow:auto;margin-top:10px}
   .matnote .matq{display:block;margin-top:3px;font-weight:500;font-size:11.5px;color:#7a2a20;line-height:1.4}
@@ -1722,6 +1725,7 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
 
 
 <script src="afc-rules.js"></script>
+<script src="triad-rules.js"></script>
 <script>
 "use strict";
 var $=function(id){return document.getElementById(id);};
@@ -1844,7 +1848,7 @@ function prVal(tbl,key,hh,age){
 }
 function prMoney(n){ return '$'+Number(n).toLocaleString('en-US'); }
 /* ===== BASE-PLAN ALTERNATIVES: LifeX and Cigna (Triad) — flat rate books by age band and tier =====
-   rates/lifex-rates.json  (LifeX Rate Book V4 6.15.26)   rates/triad-rates.json (USA Health Plans, 2026) */
+   rates/lifex-rates.json  (LifeX Rate Book V4 6.15.26)   rates/triad-rates.json (USA Health Plans, Classic Triad 2027 Rate & Benefit Guide) */
 var LX=null, TRI=null;
 var BASE_TIER={i:'EE',s:'ES',c:'EC',f:'FAM'};
 function bandOf(bands,age){ for(var i=0;i<bands.length;i++){ var p=bands[i].split('-'); if(age>=+p[0]&&age<=+p[1]) return bands[i]; } return null; }
@@ -1854,9 +1858,25 @@ function pLIFEX(age,hh,plan){
   var b=bandOf(LX.bands,age); if(!b) return {price:null,note:'LifeX is ages 18–64'};
   return {price:pl.rates[b][BASE_TIER[hh]],note:'Screen with the LifeX questionnaire first — pregnancy is a decline, and the client becomes a W-2 LifeX employee.'};
 }
+/* Which Cigna (Triad) rate book (Jesse, 27 Oct): the 2027 sheet applies to effective dates 12/1/26 and after; an
+   earlier effective date on the Intake keeps the 2026 rates. No date = the current book (apps after the 15th start the 1st after next). */
+function triadBook(){ if(!TRI) return {plans:{},y:''}; var iso=triadEffISO();
+  if(iso&&TRI.plans_2026&&TRI.effective_from&&iso<TRI.effective_from) return {plans:TRI.plans_2026,y:'2026'};
+  return {plans:TRI.plans,y:'2027'}; }
+/* Intake's effective date is free text ("12/01/2026", "12/1/26", "Nov 1", "December 1st 2026") -> YYYY-MM-DD, or '' when unreadable.
+   A month with no year means its next occurrence. */
+function triadEffISO(){ var e=String((S.intake&&S.intake.effDate)||'').trim(), p=function(x){ return ('0'+x).slice(-2); }, m, now=new Date();
+  if((m=e.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/))) return m[1]+'-'+p(m[2])+'-'+p(m[3]);
+  if((m=e.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})$/))) return (m[3].length===2?'20'+m[3]:m[3])+'-'+p(m[1])+'-'+p(m[2]);
+  var mo=['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'], k=-1;
+  mo.forEach(function(x,n){ if(k<0&&new RegExp('\\b'+x,'i').test(e)) k=n; });
+  if(k<0) return '';
+  var d=(e.match(/\b(\d{1,2})(st|nd|rd|th)?\b/)||[0,1])[1], y=(e.match(/\b(20\d{2})\b/)||[])[1];
+  if(!y){ y=now.getFullYear(); if(k<now.getMonth()) y++; }
+  return y+'-'+p(k+1)+'-'+p(d); }
 function pTRIAD(age,hh,plan){
   if(!TRI) return {price:null,note:'Cigna rates loading'};
-  var pl=TRI.plans['Triad Cigna '+plan]; if(!pl) return {price:null,note:'Cigna plan '+plan+' not found'};
+  var bk=triadBook(), pl=bk.plans['Triad Cigna '+plan]; if(!pl) return {price:null,note:'Cigna plan '+plan+' not found'};
   var b=bandOf(TRI.bands,age); if(!b) return {price:null,note:'Cigna (Triad) is ages 18–64'};
   return {price:pl.rates[b][BASE_TIER[hh]],note:'Pre-underwritten estimate — the approved rate can land higher after underwriting.'};
 }
@@ -3073,7 +3093,7 @@ function tierTrue(t){ var pm=tierTotals(t).mo, med=+((S.packages[t]||{}).med)||0
     r.extra=med+ly/12; r.mo=pm+r.extra;
     r.note='True cost includes its $'+ld.toLocaleString('en-US')+' deductible'+(lv?' and $50 visit copays':'')+'. Preventive care and generic drugs are $0.';
     return r; }
-  var plan=(TRI&&TRI.plans&&TRI.plans['Triad Cigna '+(c.triadPlan||'3500')])||{}, ded=(+plan.deductible||0)*(fam?2:1);
+  var plan=triadBook().plans['Triad Cigna '+(c.triadPlan||'3500')]||{}, ded=(parseFloat(plan.deductible)||0)*(fam?2:1);
   var x=popInputsFor(c,(S.packages[t]||{}).products), cop=(x.major&&x.major.visit)||0, vis=(+((S.intake||{}).visits)||0)*cop;
   var yr=(acaIn().fullded!==false?ded:0)+vis; if(x.major&&x.major.oop) yr=Math.min(yr,x.major.oop);
   r.extra=med+yr/12; r.mo=pm+r.extra; r.note='True cost includes its $'+ded.toLocaleString('en-US')+' deductible'+(vis?' and visit copays':'')+'.'; return r; }
@@ -5460,7 +5480,7 @@ function reviewConfFold(pg){ approvedFold(pg); var cf=document.querySelector('#r
 /* ===== TRIAD FLOW (sandbox only, Jesse 22 Oct) =====================================================================
    When the plan they chose is the Cigna PPO through Triad (USA Health Plans, enrolled on 1Enrollment), Present, Enroll
    and Benefits Review run a Triad flow instead of the "present it in your own words" note. ManhattanLife add-ons in the
-   same package are framed as the deductible busters. Everything here comes from the 2026 SBCs (benefits/triad.json), the
+   same package are framed as the deductible busters. Everything here comes from the 2027 rate & benefit guide + 2026 SBCs (benefits/triad.json), the
    USA Health product page and rate sheet (data/triad/TRIAD-Cigna-PPO.md) and the EBA Cigna underwriting guide.
    Shown only in the sandbox (port 8767 or ?triad=1) until Jesse ships it. */
 var TRIAD_FLOW_ON=location.port==='8767'||/[?&]triad=1\b/.test(location.search);
@@ -5552,14 +5572,48 @@ function triadPresentHTML(t){ var first=triadFirst(), plan=triadPlanOf(t), ded=t
       +'<ul class="trd-bus">'+bus.map(function(x){ return '<li><b>'+esc(x.name)+'</b> <small>'+x.m+'</small><br>'+x.b+'</li>'; }).join('')+'</ul>'
       +triadDo('These are ManhattanLife plans — they pay the client directly, on top of the Cigna plan, and they’re a separate application with their own underwriting.'):triadSay('“The one thing this plan doesn’t do is the deductible — that’s on you.”')
       +triadDo('<b>No deductible buster in this package.</b> HI Select sized to the '+esc(ded)+' deductible is the usual pairing — add it on the Quote.'))},
-   {t:'The price, honestly',h:triadSay('“The plan is <b>'+fmt2(prem)+' a month</b>'+(tot>prem?' — <b>'+fmt2(tot)+'</b> with everything in your package':'')+'. That’s the pre-underwriting rate: after they look at your health it can come back '+(triadWideRange(t)?'<b>at least '+fmt(r)+' a month either way — on this plan it can be more</b>':'up to <b>'+fmt(r)+' a month either way</b>')+'. I’ll tell you the real number before you sign anything.”')
+   {t:'The price, honestly',h:triadSay('“The plan is <b>'+fmt2(prem)+' a month</b>'+(tot>prem?' — <b>'+fmt2(tot)+'</b> with everything in your package':'')+'. That’s the pre-underwriting rate: after they look at your health it can come back '+(triadWideRange(t)?'<b>at least '+fmt(r)+' a month either way — on this plan it can be more</b>':'up to <b>'+fmt(r)+' a month either way</b>')+'. I’ll tell you the real number before you sign anything. Once you’re approved, that rate is locked for 12 months from your start date.”')
       +triadDo('<b>Quote the range, never the point.</b> '+(triadWideRange(t)?'<b>On this '+esc(triadPlanOf(t))+' plan, say “at least”</b> — the rate sheet says the ranges hold best for the $3,500–$7,350 deductibles, so the low-deductible plans can move further.':'The ranges hold best on the $3,500–$7,350 deductibles, like this one.')+' There’s a one-time <b>$35</b> underwriting fee at checkout.')},
    {t:'Next steps',h:(function(){ var d=triadDates(); return triadSay('“Here’s how it goes: we apply by <b>'+d.submit+'</b>, they review your health, and if you’re approved you’ll get a final offer that has to be signed by <b>'+d.sign+'</b> — miss that and there’s no coverage. Your start date is usually the 1st of the next month — <b>'+d.start+'</b> — and the offer confirms it.”')
       +triadDo('Before you apply: <b>they must be self-employed with their own EIN</b> — no EIN, no Cigna plan. If they don’t have one, it’s free and instant on the <a href="'+TRIAD_EIN_URL+'" target="_blank" rel="noopener">IRS site ↗</a>.')
       +'<button type="button" class="btn-gold" onclick="goStep(\'enroll\')">Go to Enroll →</button>'; })()}];
-  return '<div class="pr-top"><div><h3>Presenting the <em class="pr-plan">Cigna PPO '+esc(plan)+'</em> to '+esc(first)+'</h3><small>Agent-only — Triad flow (sandbox). Figures come from the 2026 plan summary for the '+esc(plan)+' plan.</small></div>'
+  return '<div class="pr-top"><div><h3>Presenting the <em class="pr-plan">Cigna PPO '+esc(plan)+'</em> to '+esc(first)+'</h3><small>Agent-only — Triad flow (sandbox). Figures come from the 2027 rate and benefit guide for the '+esc(plan)+' plan.</small></div>'
     +'<button type="button" data-pr="quote" style="font:inherit;font-weight:700;border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 13px;cursor:pointer">← Back to the Quote</button></div>'
     +'<div class="trd">'+triadSteps(pages,'prpg')+'</div>'; }
+
+/* Cigna underwriting screen (Jesse, 27 Oct: incorporate the EBA underwriting guide). Reads what Intake already holds -
+   height/weight, the medication list, conditions, the diabetic tick - against triad-rules.js. Keyword matching: it
+   points at what to ask about, it doesn't decide. */
+function triadMedHit(name){ var n=String(name||'').toLowerCase().replace(/\s*-\s*(?=[a-z]{4})/g,'/'), best=null; if(!n||typeof TRIAD_MEDS==='undefined') return null;
+  var wd=function(x){ return new RegExp('(^|[^a-z0-9])'+x.toLowerCase().replace(/[.*+?^${}()|[\]\\\/-]/g,'\\$&')+'(?![a-z0-9])','i'); };
+  TRIAD_MEDS.forEach(function(r){ var g=r[0].toLowerCase(), hit=new RegExp('(^|[^a-z])'+g.replace(/[.*+?^${}()|[\]\\\/-]/g,'\\$&'),'i').test(n)||r[1].some(function(b){ return wd(b).test(n); });
+    if(hit&&(!best||r[0].length>best[0].length)) best=r; });
+  return best; }
+function triadScreen(){ var I=S.intake||{}, C=S.client||{}, out=[], yr=new Date().getFullYear(), sp=!!(I.who&&I.who.spouse);
+  var nm=function(w){ return String((w==='s'?C.sname:C.pname)||'').trim().split(/\s+/)[0]||(w==='s'?'Spouse':'Applicant'); };
+  var whoOf=function(x){ var w=[]; if(x.forP!==false) w.push(nm('p')); if(x.forS&&sp) w.push(nm('s')); return w.join(' & ')||nm('p'); };
+  if(typeof TRIAD_BUILD==='undefined') return out;
+  ['p'].concat(sp?['s']:[]).forEach(function(w){ var h=+I[w+'height']||0, lb=+I[w+'weight']||0, r=TRIAD_BUILD[h]; if(!h||!lb) return;
+    if(!r) out.push({l:'warn',t:nm(w)+': no row on the build chart for '+Math.floor(h/12)+'′'+(h%12)+'″ — check with underwriting.'});
+    else if(lb<r[0]||lb>r[3]) out.push({l:'bad',t:nm(w)+': '+lb+' lb is '+(lb>r[3]?'over':'under')+' the build chart ('+r[0]+'–'+r[3]+' lb at this height) — auto decline.'});
+    else if(lb<r[1]||lb>r[2]) out.push({l:'warn',t:nm(w)+': '+lb+' lb — insurable, but outside the preferred band ('+r[1]+'–'+r[2]+' lb), so a standard or sub-standard premium. Expect the approved rate toward the top of the range.'});
+    else out.push({l:'ok',t:nm(w)+': '+lb+' lb — preferred band on the build chart ('+r[1]+'–'+r[2]+' lb).'}); });
+  (I.medList||[]).forEach(function(m){ var r=triadMedHit(m.name); if(!r) return; var o=typeof TRIAD_MED_OFTEN!=='undefined'&&TRIAD_MED_OFTEN[r[0]];
+    if(o){ out.push({l:'warn',t:whoOf(m)+': '+m.name+' — on the auto-decline drug list for '+r[2]+', but usually prescribed for '+o+'.',s:'Ask what it’s for. If it isn’t '+r[2]+', attach that to the application.'}); return; }
+    out.push({l:'bad',t:whoOf(m)+': '+m.name+' is on the auto-decline drug list ('+r[0]+(r[2]?', used for '+r[2]:'')+').',s:'Prescribed for something else, or off-label? The guide says it may or may not be insurable — attach what it’s for.'}); });
+  (I.conds||[]).forEach(function(c){ var n=String(c.name||''), y=+c.yr||0, e=TRIAD_EVER.filter(function(r){ return r[1].test(n); })[0];
+    if(e){ out.push({l:'bad',t:whoOf(c)+': '+n+' — '+e[0]+' at any time is not insurable.'}); return; }
+    var k=TRIAD_2YR.filter(function(r){ return r[1].test(n); })[0]; if(!k) return;
+    if(y&&yr-y>=3) out.push({l:'warn',t:whoOf(c)+': '+n+' ('+y+') — '+k[0]+'. Only a problem if treated, or advised to be, in the last two years.'});
+    else out.push({l:'bad',t:whoOf(c)+': '+n+(y?' ('+y+')':'')+' — '+k[0]+': treated in the last two years is typically not insurable.',
+      s:k[2]?'No exception for this one.':'Exception: long-standing, no change in treatment or medication for 2+ years. Answer “Yes” and attach how long, how it’s controlled, and every prescription with its dose.'}); });
+  if(I.diabetic) out.push({l:'warn',t:'Diabetic: insulin alone isn’t a decline. Any one of these is — '+TRIAD_DIABETIC.join(' · ')+'.',s:'Unless it was more than a year ago and not in the past year. Controlled = A1C 7 or under and blood pressure 150/90 or below.'});
+  return out; }
+function triadScreenHTML(){ var L=triadScreen(), bad=L.filter(function(x){ return x.l==='bad'; }).length, warn=L.filter(function(x){ return x.l==='warn'; }).length;
+  var head=bad?'<div class="trd-stop">✕ '+bad+' thing'+(bad>1?'s':'')+' on Cigna’s decline lists — sort '+(bad>1?'them':'it')+' out before the $35 application.</div>'
+    :(warn?'':'<div class="trd-note">✓ Nothing from the Intake is on Cigna’s decline lists'+(L.length?'':' (no height/weight, medications or conditions entered yet)')+'.</div>');
+  return head+(L.length?'<ul class="trd-uw">'+L.map(function(x){ return '<li class="'+x.l+'">'+(x.l==='bad'?'✕ ':x.l==='warn'?'⚠ ':'✓ ')+esc(x.t)+(x.s?'<small>'+esc(x.s)+'</small>':'')+'</li>'; }).join('')+'</ul>':'')
+    +'<div class="trd-note"><b>Also ask</b> — any of these is a decline:</div><ul class="trd-ask">'+TRIAD_SITUATIONS.map(function(x){ return '<li>'+esc(x)+'</li>'; }).join('')+'</ul>'; }
 
 /* ---------- ENROLL ---------- */
 function triadEnrollHTML(t){ var d=triadDates(), first=triadFirst(), plan=triadPlanOf(t), bus=triadBusters(t), ml=bus.some(function(x){ return /^(his|gap|acc|chas|hhc|dvh)$/.test(x.k); });
@@ -5567,10 +5621,12 @@ function triadEnrollHTML(t){ var d=triadDates(), first=triadFirst(), plan=triadP
    +'<div class="trd-blk"><h5>1 · Can they have it?</h5>'+triadPick('ein','Self-employed with their own EIN?',['Yes — has an EIN','Self-employed, getting an EIN now','No — not self-employed'])
      +(triadState().ein==='No — not self-employed'?'<div class="trd-stop">✕ Not eligible for this plan — it’s for the self-employed only. Back to the Quote.</div>':'')
      +triadDo('No EIN yet? Free and instant on the <a href="'+TRIAD_EIN_URL+'" target="_blank" rel="noopener">IRS site ↗</a> — five minutes on the phone with them.')
+     +triadDo('Employer-paid isn’t allowed for a one-person household. A business with <b>2 or more W-2 employees</b> goes to USA Health’s group plan instead.')
      +triadPick('survey','Willing to answer short health surveys during the year? (a condition of the plan)',['Yes','No — not eligible'])
-     +triadTick('hq','Screened against the health questions and the auto-decline drug list')+triadDocs(t,1)+'</div>'
+     +'<h5 style="margin-top:12px">Underwriting screen</h5>'+triadScreenHTML()
+     +triadTick('hq','Asked the health questions — nothing above stops it')+triadDocs(t,1)+'</div>'
    +'<div class="trd-blk"><h5>2 · Apply on 1Enrollment — by '+d.submit+'</h5><a class="portalbtn cigna" href="'+esc(CIGNA_URL)+'" target="_blank" rel="noopener">Cigna PPO (USA Health / Triad) — 1Enrollment ↗</a>'
-     +triadDo('Pick the <b>'+esc(plan)+'</b> plan. A <b>$35</b> underwriting fee is charged at checkout. Full medical underwriting — approval isn’t guaranteed.')
+     +triadDo('Pick the <b>'+esc(plan)+'</b> plan. A <b>$35</b> underwriting fee is charged at checkout. Full medical underwriting — approval isn’t guaranteed. Enter the client’s own bank account for the premium — never an employer’s.')
      +triadField('submitted','Submitted on','MM/DD/YYYY')+'</div>'
    +'<div class="trd-blk"><h5>3 · The final offer — signed by '+d.sign+'</h5>'+triadField('rate','Approved monthly rate','$0.00')+'<div class="trd-note" id="trdRateNote">'+triadRateNote()+'</div>'
      +triadField('signed','Final offer signed on','MM/DD/YYYY')+'<div class="trd-stop" style="background:#fff8ec;border-color:#e8c98a;color:#6b4a07">Not signed by the 25th = no coverage. Not a delay — none.</div>'
@@ -5578,7 +5634,7 @@ function triadEnrollHTML(t){ var d=triadDates(), first=triadFirst(), plan=triadP
    +(ml?'<div class="trd-blk"><h5>4 · The ManhattanLife add-ons</h5><a class="portalbtn" href="'+esc(MANHATTAN_URL)+'" target="_blank" rel="noopener">Manhattan Life Producer Portal ↗</a>'
      +triadDo('One ManhattanLife application for '+bus.filter(function(x){ return /^(his|gap|acc|chas|hhc|dvh)$/.test(x.k); }).map(function(x){ return esc(x.name.split(' — ')[0]); }).join(', ')+'. Match the effective date to the Cigna plan so nothing starts before the main coverage.')
      +triadTick('ml','ManhattanLife application submitted')+'</div>':'')
-   +'<div class="trd-blk"><h5>'+(ml?'5':'4')+' · Next</h5>'+triadDo('Once it’s signed: book the Benefits Review before the start date — it walks them through the card, doctors, prescriptions and precertification.')
+   +'<div class="trd-blk"><h5>'+(ml?'5':'4')+' · Next</h5>'+triadDo('Once it’s signed: book the Benefits Review before the start date — it walks them through the card, doctors, prescriptions and precertification.')+triadDo('Adding a spouse or child later in the year needs a qualifying life event (a special enrollment period). Questions for USA Health: <b>Support@USAHealthPlans.com</b>.')
      +'<button type="button" class="btn-gold" onclick="goStep(\'review\')">Benefits Review →</button></div></div>'; }
 
 /* ---------- BENEFITS REVIEW ---------- */
@@ -7449,7 +7505,7 @@ function pbAmt(a){ return a.map(function(v){ return [v, v? '$'+Number(v).toLocal
 function pbControls(k,c){
   if(k==='base'&&c.base==='lifex') return '<div class="f">LifeX plan<select data-f="lifexPlan">'+pbOpts([['$500 PPO','$500 copay PPO']],'$500 PPO')+'</select></div><div style="font-size:11.5px;color:var(--muted)">The $500 copay PPO is the only LifeX plan we show — the others just create confusion.</div>'
     +'<div style="font-size:11.5px;color:var(--maroon)">Screen with the LifeX questionnaire first — pregnancy is a decline. The client becomes a W-2 employee of LifeX.</div>';
-  if(k==='base'&&c.base==='triad') return '<div class="f">Deductible<select data-f="triadPlan">'+pbOpts(Object.keys((TRI&&TRI.plans)||{}).filter(function(n){ return !/HSA/.test(n)||(S.intake&&S.intake.hasHSA); }).map(function(n){ var d=n.replace('Triad Cigna ',''); return [d,'$'+d.replace(/(\d+)/,function(x){return Number(x).toLocaleString('en-US');})]; }),c.triadPlan||'3500')+'</select></div>'
+  if(k==='base'&&c.base==='triad') return '<div class="f">Deductible<select data-f="triadPlan">'+pbOpts(Object.keys(triadBook().plans).filter(function(n){ return !/HSA/.test(n)||(S.intake&&S.intake.hasHSA); }).map(function(n){ var d=n.replace('Triad Cigna ',''); return [d,'$'+d.replace(/(\d+)/,function(x){return Number(x).toLocaleString('en-US');})]; }),c.triadPlan||'3500')+'</select></div>'
     +'<label style="display:flex;gap:6px;align-items:center;font-size:12.5px;font-weight:600"><input type="checkbox" data-act="hsa"'+(S.intake&&S.intake.hasHSA?' checked':'')+'> Client already has an HSA (shows the HSA plans)</label>'
     +'<div style="font-size:11.5px;color:var(--muted)">Pre-underwritten rate — the approved rate can come in higher. HI Select is sized to this deductible.</div>'
     +'<div style="font-size:12px;color:#8a6a1f;font-weight:600">Ask: “How comfortable are you paying a $'+Number(c.triadPlan||3500).toLocaleString('en-US')+' deductible tomorrow?” If they don’t have it saved, add Out-of-Pocket (it pays on outpatient surgery, which HI Select doesn’t).</div>';

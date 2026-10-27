@@ -1,5 +1,5 @@
 {
- "source": "TRIAD-Cigna-PPO.md (USA Health Plans, pulled 2026-09-24, cross-checked with Rate Sheet - Triad 2026.pdf)",
+ "source": "Classic_Triad_2027_Rate_Guide.pdf (2027 Member Rate & Benefit Guide, read 2026-10-27). Supersedes Rate Sheet - Triad 2026.pdf. The 2027 book is a flat +$14.00/month on every age band, tier and plan — 128 of 128 cells.",
  "bands": [
   "18-39",
   "40-49",
@@ -13,6 +13,248 @@
   "FAM"
  ],
  "plans": {
+  "Triad Cigna 1000": {
+   "deductible": "1000",
+   "rates": {
+    "18-39": {
+     "EE": 908.55,
+     "ES": 1690.32,
+     "EC": 1538.57,
+     "FAM": 2467.11
+    },
+    "40-49": {
+     "EE": 973.76,
+     "ES": 1820.74,
+     "EC": 1655.94,
+     "FAM": 2662.74
+    },
+    "50-59": {
+     "EE": 1047.92,
+     "ES": 1969.06,
+     "EC": 1789.43,
+     "FAM": 2885.21
+    },
+    "60-64": {
+     "EE": 1171.8,
+     "ES": 2216.82,
+     "EC": 2012.42,
+     "FAM": 3256.86
+    }
+   }
+  },
+  "Triad Cigna 1500": {
+   "deductible": "1500",
+   "rates": {
+    "18-39": {
+     "EE": 857.42,
+     "ES": 1589.55,
+     "EC": 1447.73,
+     "FAM": 2316.7
+    },
+    "40-49": {
+     "EE": 918.36,
+     "ES": 1711.44,
+     "EC": 1557.43,
+     "FAM": 2499.53
+    },
+    "50-59": {
+     "EE": 987.67,
+     "ES": 1850.05,
+     "EC": 1682.18,
+     "FAM": 2707.45
+    },
+    "60-64": {
+     "EE": 1103.45,
+     "ES": 2081.61,
+     "EC": 1890.58,
+     "FAM": 3054.79
+    }
+   }
+  },
+  "Triad Cigna 2500": {
+   "deductible": "2500",
+   "rates": {
+    "18-39": {
+     "EE": 809.63,
+     "ES": 1495.38,
+     "EC": 1362.83,
+     "FAM": 2176.13
+    },
+    "40-49": {
+     "EE": 866.59,
+     "ES": 1609.29,
+     "EC": 1465.35,
+     "FAM": 2347.0
+    },
+    "50-59": {
+     "EE": 931.36,
+     "ES": 1738.83,
+     "EC": 1581.94,
+     "FAM": 2541.32
+    },
+    "60-64": {
+     "EE": 1039.57,
+     "ES": 1955.24,
+     "EC": 1776.71,
+     "FAM": 2865.93
+    }
+   }
+  },
+  "Triad Cigna 3500": {
+   "deductible": "3500",
+   "rates": {
+    "18-39": {
+     "EE": 764.98,
+     "ES": 1407.36,
+     "EC": 1283.48,
+     "FAM": 2044.76
+    },
+    "40-49": {
+     "EE": 818.21,
+     "ES": 1513.82,
+     "EC": 1379.3,
+     "FAM": 2204.45
+    },
+    "50-59": {
+     "EE": 878.74,
+     "ES": 1634.89,
+     "EC": 1488.26,
+     "FAM": 2386.05
+    },
+    "60-64": {
+     "EE": 979.87,
+     "ES": 1837.14,
+     "EC": 1670.29,
+     "FAM": 2689.43
+    }
+   }
+  },
+  "Triad Cigna 5000": {
+   "deductible": "5000",
+   "rates": {
+    "18-39": {
+     "EE": 723.24,
+     "ES": 1325.1,
+     "EC": 1209.33,
+     "FAM": 1921.98
+    },
+    "40-49": {
+     "EE": 772.99,
+     "ES": 1424.6,
+     "EC": 1298.88,
+     "FAM": 2071.22
+    },
+    "50-59": {
+     "EE": 829.56,
+     "ES": 1537.75,
+     "EC": 1400.71,
+     "FAM": 2240.95
+    },
+    "60-64": {
+     "EE": 924.07,
+     "ES": 1726.77,
+     "EC": 1570.83,
+     "FAM": 2524.48
+    }
+   }
+  },
+  "Triad Cigna 3500 HSA": {
+   "deductible": "3500 HSA",
+   "rates": {
+    "18-39": {
+     "EE": 694.85,
+     "ES": 1269.15,
+     "EC": 1158.89,
+     "FAM": 1838.46
+    },
+    "40-49": {
+     "EE": 742.23,
+     "ES": 1363.91,
+     "EC": 1244.17,
+     "FAM": 1980.6
+    },
+    "50-59": {
+     "EE": 796.11,
+     "ES": 1471.67,
+     "EC": 1341.15,
+     "FAM": 2142.24
+    },
+    "60-64": {
+     "EE": 886.12,
+     "ES": 1651.68,
+     "EC": 1503.17,
+     "FAM": 2412.26
+    }
+   }
+  },
+  "Triad Cigna 5000 HSA": {
+   "deductible": "5000 HSA",
+   "rates": {
+    "18-39": {
+     "EE": 667.81,
+     "ES": 1215.85,
+     "EC": 1110.84,
+     "FAM": 1758.91
+    },
+    "40-49": {
+     "EE": 712.93,
+     "ES": 1306.1,
+     "EC": 1192.07,
+     "FAM": 1894.28
+    },
+    "50-59": {
+     "EE": 764.25,
+     "ES": 1408.73,
+     "EC": 1284.43,
+     "FAM": 2048.23
+    },
+    "60-64": {
+     "EE": 849.97,
+     "ES": 1580.17,
+     "EC": 1438.73,
+     "FAM": 2305.39
+    }
+   }
+  },
+  "Triad Cigna 7350": {
+   "deductible": "7350",
+   "rates": {
+    "18-39": {
+     "EE": 642.05,
+     "ES": 1165.1,
+     "EC": 1065.09,
+     "FAM": 1683.15
+    },
+    "40-49": {
+     "EE": 685.03,
+     "ES": 1251.05,
+     "EC": 1142.44,
+     "FAM": 1812.08
+    },
+    "50-59": {
+     "EE": 733.9,
+     "ES": 1348.79,
+     "EC": 1230.41,
+     "FAM": 1958.69
+    },
+    "60-64": {
+     "EE": 815.54,
+     "ES": 1512.07,
+     "EC": 1377.37,
+     "FAM": 2203.61
+    }
+   }
+  }
+ },
+ "notes": [
+  "Pre-underwritten rates — 2027 guide states the underwriting adjustment band (higher or lower) as EE $100/mo, ES $200/mo, EC $200/mo, FAM $300/mo",
+  "Deductible and out-of-pocket run calendar year, 1 January to 31 December whatever the effective date",
+  "Rate and benefits locked 12 months from the effective date",
+  "2027 benefit changes vs 2026: specialty drug coinsurance is 50% on every plan (USA Health lists it as a change from 20%); HSA plans' max out of pocket $6,550 -> $7,350 / $14,700"
+ ],
+ "effective_from": "2026-12-01",
+ "effective_note": "USA Health Plans product page: the 2027 rate sheet \"applies to effective dates 12-1-26 and after\". Earlier effective dates use plans_2026.",
+ "plans_2026": {
   "Triad Cigna 1000": {
    "deductible": "1000",
    "rates": {
@@ -245,10 +487,5 @@
     }
    }
   }
- },
- "notes": [
-  "Pre-underwritten rates \u2014 final approved rate lands within a spread (see TRIAD-Cigna-PPO.md)",
-  "Deductible and out-of-pocket run calendar year",
-  "Rate locked one year from effective date"
- ]
+ }
 }

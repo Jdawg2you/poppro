@@ -17,12 +17,12 @@
  },
  "brochures": [
   {
-   "code": "Triad-Cigna-SBC-2026",
-   "file": "Triad CIGNA 1000/1500/2500/3500/5000/7350 Plan SBC 2026.pdf + Rate Sheet - Triad 2026.pdf (~/Downloads; summary in data/triad/TRIAD-Cigna-PPO.md)",
+   "code": "Triad-Cigna-2027",
+   "file": "Classic_Triad_2027_Rate_Guide.pdf (2027 Member Rate & Benefit Guide) + Triad CIGNA 1000/1500/2500/3500/5000/7350 Plan SBC 2026.pdf (summary in data/triad/TRIAD-Cigna-PPO.md)",
    "states": [
     "*"
    ],
-   "page": "SBC pp. 1-5 (coverage period 01/01/2026-12/31/2026); rate sheet p. 1",
+   "page": "2027 guide pp. 2-5 (benefits p. 2, rates pp. 3-4, plan information p. 5); SBC pp. 1-5 still carry the 2026 coverage period",
    "sections": [
     {
      "title": "Deductible & out-of-pocket",
@@ -35,8 +35,8 @@
         "Triad Cigna 2500": "$2,500/individual or $5,000/family in network; $5,000/individual or $10,000/family out of network",
         "Triad Cigna 3500": "$3,500/individual or $7,000/family in network; $7,000/individual or $14,000/family out of network",
         "Triad Cigna 5000": "$5,000/individual or $10,000/family in network; $10,000/individual or $20,000/family out of network",
-        "Triad Cigna 3500 HSA": "$3,500 (rate sheet; family and out-of-network amounts not listed)",
-        "Triad Cigna 5000 HSA": "$5,000 (rate sheet; family and out-of-network amounts not listed)",
+        "Triad Cigna 3500 HSA": "$3,500/individual or $7,000/family in network (2027 guide)",
+        "Triad Cigna 5000 HSA": "$5,000/individual or $10,000/family in network (2027 guide)",
         "Triad Cigna 7350": "$7,350/individual or $14,700/family in network; $14,700/individual or $29,400/family out of network"
        },
        "key": true,
@@ -50,8 +50,8 @@
         "Triad Cigna 2500": "$7,350/individual or $14,700/family in network; $14,700/individual or $29,400/family out of network",
         "Triad Cigna 3500": "$7,350/individual or $14,700/family in network; $14,700/individual or $29,400/family out of network",
         "Triad Cigna 5000": "$7,350/individual or $14,700/family in network; $14,700/individual or $29,400/family out of network",
-        "Triad Cigna 3500 HSA": "$6,550 (rate sheet; family and out-of-network amounts not listed)",
-        "Triad Cigna 5000 HSA": "$6,550 (rate sheet; family and out-of-network amounts not listed)",
+        "Triad Cigna 3500 HSA": "$7,350/individual or $14,700/family in network (2027 guide; was $6,550 in 2026)",
+        "Triad Cigna 5000 HSA": "$7,350/individual or $14,700/family in network (2027 guide; was $6,550 in 2026)",
         "Triad Cigna 7350": "$7,350/individual or $14,700/family in network; $14,700/individual or $29,400/family out of network"
        },
        "key": true,
@@ -334,8 +334,8 @@
         "Triad Cigna 2500": "Generic $15 · Preferred brand $45 · Non-preferred brand $85 (1-30 day supply); 31-90 day supply: $45 / $90 / $150",
         "Triad Cigna 3500": "Generic $15 · Preferred brand $65 · Non-preferred brand $100 (1-30 day supply); 31-90 day supply: $45 / $90 / $150",
         "Triad Cigna 5000": "Generic $15 · Preferred brand $65 · Non-preferred brand $100 (1-30 day supply); 31-90 day supply: $45 / $90 / $150",
-        "Triad Cigna 3500 HSA": "$15 / $65 / $100 / 20% after Ded (rate sheet)",
-        "Triad Cigna 5000 HSA": "$15 / $65 / $100 / 20% after Ded (rate sheet)",
+        "Triad Cigna 3500 HSA": "$15 / $65 / $100 / 50%, after the deductible (2027 guide)",
+        "Triad Cigna 5000 HSA": "$15 / $65 / $100 / 50%, after the deductible (2027 guide)",
         "Triad Cigna 7350": "Generic $15 · Preferred brand $65 · Non-preferred brand $100 (1-30 day supply); 31-90 day supply: $45 / $90 / $150"
        },
        "key": true,
@@ -349,11 +349,11 @@
         "Triad Cigna 2500": "50% copayment (1-30 day supply); prior authorization required",
         "Triad Cigna 3500": "50% copayment (1-30 day supply); prior authorization required",
         "Triad Cigna 5000": "50% copayment (1-30 day supply); prior authorization required",
-        "Triad Cigna 3500 HSA": "Not listed on the rate sheet (no SBC for the HSA plans on file)",
-        "Triad Cigna 5000 HSA": "Not listed on the rate sheet (no SBC for the HSA plans on file)",
+        "Triad Cigna 3500 HSA": "50% after the deductible (2027 guide)",
+        "Triad Cigna 5000 HSA": "50% after the deductible (2027 guide)",
         "Triad Cigna 7350": "50% copayment (1-30 day supply); prior authorization required"
        },
-       "note": "The rate sheet shows 20% for the fourth tier; the SBCs show 50%. The SBC governs — confirm before quoting a specialty drug."
+       "note": "2027: specialty drugs are 50% on every plan (USA Health lists this as a change from 20%; the 2026 rate sheet showed 20%, the 2026 copay-plan SBCs already showed 50%). Prior authorization required."
       }
      ]
     },

@@ -1,6 +1,6 @@
 # TRIAD with Cigna PPO — product reference
 Pulled 2026-09-24 from `1enrollment.com/information/product.cfm?page=45437&id=994524`
-(public page, no login). Rates cross-checked against `Rate Sheet - Triad 2026.pdf` — they match.
+(public page, no login). Rates replaced 2026-10-27 from `Classic_Triad_2027_Rate_Guide.pdf` — see the 2027 section below.
 
 **Positioning: this is the Cadillac.** A real PPO network with a real out-of-pocket maximum and
 an unlimited lifetime benefit — the thing a ManhattanLife fixed-benefit package structurally
@@ -64,8 +64,8 @@ The published rates are **pre-underwritten averages**. Final approved rates land
 for plan deductibles $3,500 – $7,350."** On the 1000, 1500 and 2500 plans the spread can be
 wider than the table suggests. Quote those with more room, not less.
 
-**Quote the range, never the point.** A member-only 60-64 plan quoted at $1,157.80 can come back
-anywhere from roughly $1,058 to $1,258. Promising the table number is how you lose a case at
+**Quote the range, never the point.** A member-only 60-64 plan quoted at $1,171.80 can come back
+anywhere from roughly $1,072 to $1,272. Promising the table number is how you lose a case at
 the signing stage.
 
 ## The eight plans
@@ -73,50 +73,96 @@ the signing stage.
 Copay plans: **1000 · 1500 · 2500 · 3500 · 5000 · 7350**
 HSA-compatible: **3500 HSA · 5000 HSA**
 
-## Monthly rates — pre-underwritten, 2026
+## Monthly rates — pre-underwritten, 2027
 
 **Age 18–39**
 
 | Tier | 1000 | 1500 | 2500 | 3500 | 5000 | 3500 HSA | 5000 HSA | 7350 |
 |---|---|---|---|---|---|---|---|---|
-| EE | 894.55 | 843.42 | 795.63 | 750.98 | 709.24 | 680.85 | 653.81 | 628.05 |
-| ES | 1676.32 | 1575.55 | 1481.38 | 1393.36 | 1311.10 | 1255.15 | 1201.85 | 1151.10 |
-| EC | 1524.57 | 1433.73 | 1348.83 | 1269.48 | 1195.33 | 1144.89 | 1096.84 | 1051.09 |
-| FAM | 2453.11 | 2302.70 | 2162.13 | 2030.76 | 1907.98 | 1824.46 | 1744.91 | 1669.15 |
+| EE | 908.55 | 857.42 | 809.63 | 764.98 | 723.24 | 694.85 | 667.81 | 642.05 |
+| ES | 1690.32 | 1589.55 | 1495.38 | 1407.36 | 1325.10 | 1269.15 | 1215.85 | 1165.10 |
+| EC | 1538.57 | 1447.73 | 1362.83 | 1283.48 | 1209.33 | 1158.89 | 1110.84 | 1065.09 |
+| FAM | 2467.11 | 2316.70 | 2176.13 | 2044.76 | 1921.98 | 1838.46 | 1758.91 | 1683.15 |
 
 **Age 40–49**
 
 | Tier | 1000 | 1500 | 2500 | 3500 | 5000 | 3500 HSA | 5000 HSA | 7350 |
 |---|---|---|---|---|---|---|---|---|
-| EE | 959.76 | 904.36 | 852.59 | 804.21 | 758.99 | 728.23 | 698.93 | 671.03 |
-| ES | 1806.74 | 1697.44 | 1595.29 | 1499.82 | 1410.60 | 1349.91 | 1292.10 | 1237.05 |
-| EC | 1641.94 | 1543.43 | 1451.35 | 1365.30 | 1284.88 | 1230.17 | 1178.07 | 1128.44 |
-| FAM | 2648.74 | 2485.53 | 2333.00 | 2190.45 | 2057.22 | 1966.60 | 1880.28 | 1798.08 |
+| EE | 973.76 | 918.36 | 866.59 | 818.21 | 772.99 | 742.23 | 712.93 | 685.03 |
+| ES | 1820.74 | 1711.44 | 1609.29 | 1513.82 | 1424.60 | 1363.91 | 1306.10 | 1251.05 |
+| EC | 1655.94 | 1557.43 | 1465.35 | 1379.30 | 1298.88 | 1244.17 | 1192.07 | 1142.44 |
+| FAM | 2662.74 | 2499.53 | 2347.00 | 2204.45 | 2071.22 | 1980.60 | 1894.28 | 1812.08 |
 
 **Age 50–59**
 
 | Tier | 1000 | 1500 | 2500 | 3500 | 5000 | 3500 HSA | 5000 HSA | 7350 |
 |---|---|---|---|---|---|---|---|---|
-| EE | 1033.92 | 973.67 | 917.36 | 864.74 | 815.56 | 782.11 | 750.25 | 719.90 |
-| ES | 1955.06 | 1836.05 | 1724.83 | 1620.89 | 1523.75 | 1457.67 | 1394.73 | 1334.79 |
-| EC | 1775.43 | 1668.18 | 1567.94 | 1474.26 | 1386.71 | 1327.15 | 1270.43 | 1216.41 |
-| FAM | 2871.21 | 2693.45 | 2527.32 | 2372.05 | 2226.95 | 2128.24 | 2034.23 | 1944.69 |
+| EE | 1047.92 | 987.67 | 931.36 | 878.74 | 829.56 | 796.11 | 764.25 | 733.90 |
+| ES | 1969.06 | 1850.05 | 1738.83 | 1634.89 | 1537.75 | 1471.67 | 1408.73 | 1348.79 |
+| EC | 1789.43 | 1682.18 | 1581.94 | 1488.26 | 1400.71 | 1341.15 | 1284.43 | 1230.41 |
+| FAM | 2885.21 | 2707.45 | 2541.32 | 2386.05 | 2240.95 | 2142.24 | 2048.23 | 1958.69 |
 
 **Age 60–64**
 
 | Tier | 1000 | 1500 | 2500 | 3500 | 5000 | 3500 HSA | 5000 HSA | 7350 |
 |---|---|---|---|---|---|---|---|---|
-| EE | 1157.80 | 1089.45 | 1025.57 | 965.87 | 910.07 | 872.12 | 835.97 | 801.54 |
-| ES | 2202.82 | 2067.61 | 1941.24 | 1823.14 | 1712.77 | 1637.68 | 1566.17 | 1498.07 |
-| EC | 1998.42 | 1876.58 | 1762.71 | 1656.29 | 1556.83 | 1489.17 | 1424.73 | 1363.37 |
-| FAM | 3242.86 | 3040.79 | 2851.93 | 2675.43 | 2510.48 | 2398.26 | 2291.39 | 2189.61 |
+| EE | 1171.80 | 1103.45 | 1039.57 | 979.87 | 924.07 | 886.12 | 849.97 | 815.54 |
+| ES | 2216.82 | 2081.61 | 1955.24 | 1837.14 | 1726.77 | 1651.68 | 1580.17 | 1512.07 |
+| EC | 2012.42 | 1890.58 | 1776.71 | 1670.29 | 1570.83 | 1503.17 | 1438.73 | 1377.37 |
+| FAM | 3256.86 | 3054.79 | 2865.93 | 2689.43 | 2524.48 | 2412.26 | 2305.39 | 2203.61 |
 
-## Benefits — verified against `Rate Sheet - Triad 2026.pdf`
+
+## 🔴 2027 rates — what changed, measured
+
+`Classic_Triad_2027_Rate_Guide.pdf` (read 2026-10-27) replaces `Rate Sheet - Triad 2026.pdf`.
+
+**The 2027 book is a flat +$14.00 per month on every single cell — all 128 of them**, across all
+four age bands, all four tiers and all eight plans. It is not an age-rated or plan-rated increase.
+A uniform dollar amount on every cell is the signature of a fee folded into the premium rather
+than a rating change; **USAHP has not said which it is, so do not explain it to a client as a fee.**
+In percentage terms it ranges from **+0.43%** (60-64 family on the 1000 plan) to **+2.23%**
+(18-39 member-only on the 7350).
+
+Two things changed besides price:
+
+- 🔴 **HSA plans' max out-of-pocket went $6,550 → $7,350** on both 3500 HSA and 5000 HSA — $800
+  more exposure. The deductibles did not move. One of two real benefit changes, and both land
+  on the two plans an HSA-eligible client would be steered to.
+- 🔴 **Specialty drugs are 50% on every plan in 2027.** USA Health's product page lists it as a change
+  from 20%. The 2026 rate sheet said 20%; the 2026 copay-plan SBCs already said 50%. On the **HSA
+  plans** the 2027 guide prints the whole drug line as "$15 / $65 / $100 / 50% after Deductible"
+  (the 2026 sheet said 20%), so the HSA specialty tier is a real change. Quote 50% everywhere.
+
+Also new: the 2027 guide publishes **family** deductible and out-of-pocket amounts for the HSA
+plans, which the 2026 sheet left blank.
+
+**Which book prices a quote:** the product page says the new rate sheet *"applies to effective dates
+12-1-26 and after"*. MyPopPro keeps both books (`rates/triad-rates.json` → `plans` = 2027,
+`plans_2026` = 2026) and picks by the Intake's desired effective date: before 2026-12-01 → 2026
+rates; 12/1/26 or later, or no date → 2027.
+
+⚠️ **The product page says the HSA max out-of-pocket is "$7,350/$14,000"; the 2027 guide says
+$7,350 / $14,700.** We use the guide ($14,700 = 2 × $7,350, the same family figure as every other
+plan). Confirm with USAHP if a client asks.
+
+**2027 SBCs ("SOBs") are expected by 11-1** per the product page. Until they arrive, the plan-summary
+links are the 2026 documents. Support: **Support@USAHealthPlans.com**.
+
+**Underwriting screen (27 Oct):** the Triad Enroll step now screens the Intake against the EBA
+guide (`tool/triad-rules.js`): build chart, auto-decline drug list, "ever had" and "last two years"
+conditions, the diabetic rules, plus the four uninsurable situations to ask. Keyword matching:
+it points at what to ask, it doesn't decide.
+
+⚠️ The SBCs on file still carry the **2026** coverage period. The 2027 guide is a marketing
+summary, not a Schedule of Benefits — for a coverage question the SBC still governs, and a 2027
+SBC has not arrived.
+
+## Benefits — verified against `Classic_Triad_2027_Rate_Guide.pdf` (p. 2)
 
 | | 1000 | 1500 | 2500 | 3500 | 5000 | 3500 HSA | 5000 HSA | 7350 |
 |---|---|---|---|---|---|---|---|---|
 | **Deductible** | $1,000 | $1,500 | $2,500 | $3,500 | $5,000 | $3,500 | $5,000 | $7,350 |
-| **Max out-of-pocket** | **$5,000** | $7,350 | $7,350 | $7,350 | $7,350 | $6,550 | $6,550 | $7,350 |
+| **Max out-of-pocket** | **$5,000** | $7,350 | $7,350 | $7,350 | $7,350 | $7,350 | $7,350 | $7,350 |
 | Preventive | 100% | 100% | 100% | 100% | 100% | 100% | 100% | 100% |
 | Primary care | $20 | $30 | $30 | $45 | $45 | Ded+20% | Ded+20% | $50 |
 | Specialist | $40 | $60 | $60 | $90 | $90 | Ded+20% | Ded+20% | $100 |

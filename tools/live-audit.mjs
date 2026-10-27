@@ -12,7 +12,7 @@ import crypto from 'node:crypto';
 const MODE = process.argv[2] || 'features';
 const BASE = (process.argv[3] || 'https://mypoppro.com').replace(/\/$/, '');
 const ROOT = new URL('..', import.meta.url).pathname;
-const FILES = ['tool/index.html', 'tool/discovery.html', 'tool/presentation.html', 'tool/benefits-review.html', 'tool/afc-rules.js', 'tool/meds/fda-meds.json'];
+const FILES = ['tool/index.html', 'tool/discovery.html', 'tool/presentation.html', 'tool/benefits-review.html', 'tool/afc-rules.js', 'tool/triad-rules.js', 'tool/rates/triad-rates.json', 'tool/meds/fda-meds.json'];
 const sha = b => crypto.createHash('sha1').update(b).digest('hex');
 
 if (MODE === 'files') {
