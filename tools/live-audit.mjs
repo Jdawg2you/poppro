@@ -41,7 +41,8 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  var sm=document.getElementById('setupModal'); if(sm) sm.classList.remove('open');
  ${LIVE ? `ok(!RIGHT_FIT_ON&&!TRIAD_FLOW_ON,'live: decision tree and Triad flow are off');
  ok(getComputedStyle(document.getElementById('verBanner')).display==='none','live: no sandbox banner');` : ''}
- ok(NEWS[0].d==='2026-10-23','What’s new has the 23 Oct release (top: '+NEWS[0].d+')');
+ ok(NEWS[0].d==='2026-10-27','What’s new has the 27 Oct release (top: '+NEWS[0].d+')');
+ok(typeof triadBook==='function'&&TRI&&TRI.plans_2026&&TRI.effective_from==='2026-12-01','Cigna: 2027 book with 2026 kept for starts before 12/1/26');
  var nerr=null; try{ document.getElementById('newsBtn').click(); }catch(e){ nerr=e.message; } await w(400); ok(!nerr&&document.getElementById('newsPanel').classList.contains('open')&&/Benefits Review/.test(document.getElementById('newsBody').textContent),'What’s new opens and lists the release'+(nerr?' ('+nerr+')':'')); try{ document.getElementById('newsClose').click(); }catch(e){}
  var src=document.documentElement.outerHTML;
  ok(/hasn’t raised the rate on it since 2023/.test(src)&&src.indexOf('This renews at the same price')<0,'pricing: no “same price”, the 2023 line is in');
