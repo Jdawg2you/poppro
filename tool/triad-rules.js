@@ -41,3 +41,5 @@ var TRIAD_DIABETIC=['More than 50 units of insulin a day','Three or more medicat
    not red, with the everyday reason to ask about. */
 var TRIAD_MED_OFTEN={'ethinyl estradiol':'birth control (combined with a progestin)','medroxyprogesterone':'birth control (Depo-Provera) or menopause',
   'ondansetron':'nausea','prochlorperazine':'nausea','heparin':'a short hospital course'};
+/* States USA Health does not offer the Triad plan in (data/triad/TRIAD-Cigna-PPO.md, "Not available (11)") */
+var TRIAD_NO_STATES=['AK','HI','MT','NM','NY','ND','RI','SD','VT','MD','MN'];

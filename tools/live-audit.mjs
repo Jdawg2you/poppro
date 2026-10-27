@@ -39,7 +39,7 @@ const LIVE = /^https:/.test(BASE);
 const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); await w(1500); window.confirm=()=>true; var fails=[], n=0, ok=function(c,m){ n++; if(!c) fails.push(m); };
  var has=function(name){ return typeof window[name]==='function'; };
  var sm=document.getElementById('setupModal'); if(sm) sm.classList.remove('open');
- ${LIVE ? `ok(!RIGHT_FIT_ON&&!TRIAD_FLOW_ON,'live: decision tree and Triad flow are off');
+ ${LIVE ? `ok(!RIGHT_FIT_ON&&!TRIAD_FLOW_ON&&!CARRIER_STRIP_ON,'live: decision tree, Triad flow and carrier strip are off');
  ok(getComputedStyle(document.getElementById('verBanner')).display==='none','live: no sandbox banner');` : ''}
  ok(NEWS[0].d==='2026-10-27','What’s new has the 27 Oct release (top: '+NEWS[0].d+')');
 ok(typeof triadBook==='function'&&TRI&&TRI.plans_2026&&TRI.effective_from==='2026-12-01','Cigna: 2027 book with 2026 kept for starts before 12/1/26');

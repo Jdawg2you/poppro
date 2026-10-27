@@ -680,6 +680,19 @@
   .pendsel{font-size:11.5px;padding:2px 4px;margin-left:4px;max-width:210px}
   .ps-ctrl.pendwrap.bad{background:#fbe0dd;border-color:#e6aaa2;color:#8a271a}.ps-ctrl.pendwrap.warn{background:#fff3df;border-color:#e8c98a;color:#7a5200}
   .matnote{display:block;flex-basis:100%;margin-top:3px;font-size:12.5px;font-weight:800;color:#a12525}
+  .cstrip{margin:4px 0 12px;border:1px solid var(--line);border-radius:12px;background:#fffdf7;padding:10px 12px}
+  .cs-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.cs-lbl{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-right:2px}
+  .cs-pill{display:inline-flex;align-items:center;gap:7px;font:inherit;font-size:13.5px;border-radius:999px;padding:6px 13px 6px 10px;cursor:pointer;border:1.5px solid #cfc6ad;background:#fff;color:var(--ink)}
+  .cs-pill i{width:11px;height:11px;border-radius:50%;background:#b9b2a0;flex:none}.cs-pill small{font-size:12px;color:var(--muted);font-weight:600}
+  .cs-pill.green{border-color:#2e8b57;background:#eef8f1}.cs-pill.green i{background:#2e8b57}
+  .cs-pill.amber{border-color:#d49a1f;background:#fff6e2}.cs-pill.amber i{background:#d49a1f}
+  .cs-pill.red{border-color:#c0392b;background:#fdecea}.cs-pill.red i{background:#c0392b}.cs-pill.open{box-shadow:0 0 0 3px rgba(20,40,80,.12)}
+  .cs-gap{font-size:12.5px;color:#6b4a07;background:#fff6e2;border:1px solid #e8c98a;border-radius:8px;padding:4px 9px}
+  .cs-route{margin-top:8px;font-size:13.5px;color:var(--navy);line-height:1.45}
+  .cs-panel{margin-top:8px;border-top:1px solid var(--line);padding-top:8px;font-size:13.5px;line-height:1.45}
+  .cs-ul{margin:4px 0 6px;padding-left:4px;list-style:none}.cs-ul li{margin:3px 0}.cs-ul li.bad{color:#8f1d12}.cs-ul li.warn{color:#6b4a07}.cs-ul small{display:block;color:var(--muted);margin-left:16px}
+  .cs-sub{font-weight:800;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-top:6px}.cs-also{font-size:12.5px;color:var(--muted);margin:6px 0}
+  .cs-ok{color:#1f6b40;margin:4px 0}.cs-src{font-size:11.5px;color:var(--muted);margin-top:6px}
   .uwwatch{margin-top:8px;border:1.5px solid #c0392b;background:#fdecea;border-radius:10px;padding:10px 14px;color:#8f1d12;font-size:13.5px;line-height:1.45}.uwwatch .uwhd{font-weight:800;margin-bottom:4px}.uwwatch ul{margin:0;padding-left:18px}.uwwatch li{margin:3px 0}.uwwatch b{color:#a12525}
   .rv-actmin{font-size:13.5px;padding:8px 2px}.rv-actmin i{color:var(--muted)}.rv-actmin a{margin-left:8px}.rv-actmin small{display:block;color:var(--muted);margin-top:3px}
   .pr-edit{margin-top:16px;border:2px solid var(--navy);border-radius:12px;padding:12px 14px;background:#fffaf0}.pr-editgo{display:flex;gap:10px;justify-content:flex-end;margin:12px 0}
@@ -1190,6 +1203,7 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
     <div class="sectitle"><span class="dot">●</span> Client Intake</div>
     <!-- the call fills this (step 1); the walk-through in ⚙ Setup explains the flow - no How-to or outside-navigator buttons (Jesse, 17 Oct) -->
     <div class="note intro1" style="padding-top:2px">Check what the call filled in, add anything missing, then hit <b>Build Quote</b> — it recommends Good / Better / Best from these answers. <a href="#" class="backcall" onclick="goStep('call');return false;">← Back to the call</a></div>
+    <div id="carrierStrip" class="cstrip" style="display:none"></div>
 
     <div class="intake-sec" id="sec_who">Who needs coverage</div>
     <div class="chips">
@@ -1408,6 +1422,7 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
   <div id="step-quote" class="step on">
 
   <div id="recFlags" class="hidein-client"></div>
+  <div id="carrierStripQ" class="cstrip hidein-client" style="display:none"></div>
   <details id="rightFit" class="rfit hidein-client"></details>
 
   <div class="estcard hidein-client" id="sec_est">
@@ -5594,26 +5609,122 @@ function triadScreen(){ var I=S.intake||{}, C=S.client||{}, out=[], yr=new Date(
   var whoOf=function(x){ var w=[]; if(x.forP!==false) w.push(nm('p')); if(x.forS&&sp) w.push(nm('s')); return w.join(' & ')||nm('p'); };
   if(typeof TRIAD_BUILD==='undefined') return out;
   ['p'].concat(sp?['s']:[]).forEach(function(w){ var h=+I[w+'height']||0, lb=+I[w+'weight']||0, r=TRIAD_BUILD[h]; if(!h||!lb) return;
-    if(!r) out.push({l:'warn',t:nm(w)+': no row on the build chart for '+Math.floor(h/12)+'′'+(h%12)+'″ — check with underwriting.'});
-    else if(lb<r[0]||lb>r[3]) out.push({l:'bad',t:nm(w)+': '+lb+' lb is '+(lb>r[3]?'over':'under')+' the build chart ('+r[0]+'–'+r[3]+' lb at this height) — auto decline.'});
-    else if(lb<r[1]||lb>r[2]) out.push({l:'warn',t:nm(w)+': '+lb+' lb — insurable, but outside the preferred band ('+r[1]+'–'+r[2]+' lb), so a standard or sub-standard premium. Expect the approved rate toward the top of the range.'});
-    else out.push({l:'ok',t:nm(w)+': '+lb+' lb — preferred band on the build chart ('+r[1]+'–'+r[2]+' lb).'}); });
+    if(!r) out.push({src:'build:'+w,l:'warn',t:nm(w)+': no row on the build chart for '+Math.floor(h/12)+'′'+(h%12)+'″ — check with underwriting.'});
+    else if(lb<r[0]||lb>r[3]) out.push({src:'build:'+w,l:'bad',t:nm(w)+': '+lb+' lb is '+(lb>r[3]?'over':'under')+' the build chart ('+r[0]+'–'+r[3]+' lb at this height) — auto decline.'});
+    else if(lb<r[1]||lb>r[2]) out.push({src:'build:'+w,l:'warn',t:nm(w)+': '+lb+' lb — insurable, but outside the preferred band ('+r[1]+'–'+r[2]+' lb), so a standard or sub-standard premium. Expect the approved rate toward the top of the range.'});
+    else out.push({src:'build:'+w,l:'ok',t:nm(w)+': '+lb+' lb — preferred band on the build chart ('+r[1]+'–'+r[2]+' lb).'}); });
   (I.medList||[]).forEach(function(m){ var r=triadMedHit(m.name); if(!r) return; var o=typeof TRIAD_MED_OFTEN!=='undefined'&&TRIAD_MED_OFTEN[r[0]];
-    if(o){ out.push({l:'warn',t:whoOf(m)+': '+m.name+' — on the auto-decline drug list for '+r[2]+', but usually prescribed for '+o+'.',s:'Ask what it’s for. If it isn’t '+r[2]+', attach that to the application.'}); return; }
-    out.push({l:'bad',t:whoOf(m)+': '+m.name+' is on the auto-decline drug list ('+r[0]+(r[2]?', used for '+r[2]:'')+').',s:'Prescribed for something else, or off-label? The guide says it may or may not be insurable — attach what it’s for.'}); });
+    if(o){ out.push({src:'med:'+String(m.name).toLowerCase(),l:'warn',t:whoOf(m)+': '+m.name+' — on the auto-decline drug list for '+r[2]+', but usually prescribed for '+o+'.',s:'Ask what it’s for. If it isn’t '+r[2]+', attach that to the application.'}); return; }
+    out.push({src:'med:'+String(m.name).toLowerCase(),l:'bad',t:whoOf(m)+': '+m.name+' is on the auto-decline drug list ('+r[0]+(r[2]?', used for '+r[2]:'')+').',s:'Prescribed for something else, or off-label? The guide says it may or may not be insurable — attach what it’s for.'}); });
   (I.conds||[]).forEach(function(c){ var n=String(c.name||''), y=+c.yr||0, e=TRIAD_EVER.filter(function(r){ return r[1].test(n); })[0];
-    if(e){ out.push({l:'bad',t:whoOf(c)+': '+n+' — '+e[0]+' at any time is not insurable.'}); return; }
+    if(e){ out.push({src:'cond:'+n.toLowerCase(),l:'bad',t:whoOf(c)+': '+n+' — '+e[0]+' at any time is not insurable.'}); return; }
     var k=TRIAD_2YR.filter(function(r){ return r[1].test(n); })[0]; if(!k) return;
-    if(y&&yr-y>=3) out.push({l:'warn',t:whoOf(c)+': '+n+' ('+y+') — '+k[0]+'. Only a problem if treated, or advised to be, in the last two years.'});
-    else out.push({l:'bad',t:whoOf(c)+': '+n+(y?' ('+y+')':'')+' — '+k[0]+': treated in the last two years is typically not insurable.',
+    if(y&&yr-y>=3) out.push({src:'cond:'+n.toLowerCase(),l:'warn',t:whoOf(c)+': '+n+' ('+y+') — '+k[0]+'. Only a problem if treated, or advised to be, in the last two years.'});
+    else out.push({src:'cond:'+n.toLowerCase(),l:'bad',t:whoOf(c)+': '+n+(y?' ('+y+')':'')+' — '+k[0]+': treated in the last two years is typically not insurable.',
       s:k[2]?'No exception for this one.':'Exception: long-standing, no change in treatment or medication for 2+ years. Answer “Yes” and attach how long, how it’s controlled, and every prescription with its dose.'}); });
-  if(I.diabetic) out.push({l:'warn',t:'Diabetic: insulin alone isn’t a decline. Any one of these is — '+TRIAD_DIABETIC.join(' · ')+'.',s:'Unless it was more than a year ago and not in the past year. Controlled = A1C 7 or under and blood pressure 150/90 or below.'});
+  if(I.diabetic) out.push({src:'diab',l:'warn',t:'Diabetic: insulin alone isn’t a decline. Any one of these is — '+TRIAD_DIABETIC.join(' · ')+'.',s:'Unless it was more than a year ago and not in the past year. Controlled = A1C 7 or under and blood pressure 150/90 or below.'});
   return out; }
 function triadScreenHTML(){ var L=triadScreen(), bad=L.filter(function(x){ return x.l==='bad'; }).length, warn=L.filter(function(x){ return x.l==='warn'; }).length;
   var head=bad?'<div class="trd-stop">✕ '+bad+' thing'+(bad>1?'s':'')+' on Cigna’s decline lists — sort '+(bad>1?'them':'it')+' out before the $35 application.</div>'
     :(warn?'':'<div class="trd-note">✓ Nothing from the Intake is on Cigna’s decline lists'+(L.length?'':' (no height/weight, medications or conditions entered yet)')+'.</div>');
   return head+(L.length?'<ul class="trd-uw">'+L.map(function(x){ return '<li class="'+x.l+'">'+(x.l==='bad'?'✕ ':x.l==='warn'?'⚠ ':'✓ ')+esc(x.t)+(x.s?'<small>'+esc(x.s)+'</small>':'')+'</li>'; }).join('')+'</ul>':'')
     +'<div class="trd-note"><b>Also ask</b> — any of these is a decline:</div><ul class="trd-ask">'+TRIAD_SITUATIONS.map(function(x){ return '<li>'+esc(x)+'</li>'; }).join('')+'</ul>'; }
+
+/* ===== CARRIER STRIP (sandbox only, Jesse 27 Oct) ====================================================================
+   Decision tree v1: "would they take it?" per carrier, at the top of the Intake and the Quote. Green = nothing on file
+   stops it, amber = a question to ask first, red = a decline on file. Reads only what the Intake holds, against
+   afc-rules.js (ManhattanLife Affordable Choice) and triad-rules.js (Cigna / EBA guide). ManhattanLife first: a Cigna
+   item ManhattanLife already flags at least as hard is listed once, under ManhattanLife; Cigna lists in full only what
+   is Cigna-only or what Cigna would take when ManhattanLife won't. Build Quote follows it: ManhattanLife red and Cigna
+   not red starts every package on the Cigna PPO. Shown only on port 8767 or with ?cs=1 until Jesse ships it. */
+var CARRIER_STRIP_ON=location.port==='8767'||/[?&]cs=1\b/.test(location.search);
+var CS_OPEN='';
+function csCfg(){ var c=cfgClone(TIERCFG.best); c.sdr=cfgClone(PB_DEFAULT.sdr); c.hhc=PB_DEFAULT.hhc; c.chas=cfgClone(PB_DEFAULT.chas); return c; }
+function csStateGaps(st,age){ if(typeof HF_RATES==='undefined'||!HF_RATES||!st) return []; var c=csCfg(), out=[];
+  [['afc','Affordable Choice'],['sdr','Specified Disease Rider'],['his','Hospital Indemnity Select'],['acc','24-Hour Accident'],['gap','Out-of-Pocket Protection'],['chas','Cancer / Heart Attack & Stroke'],['hhc','Home Health Care']]
+    .forEach(function(x){ var why=''; try{ why=pbWhyNot(x[0],c,st,age); }catch(e){} if(/not sold in|not available in/.test(why)) out.push(x[1]); });
+  return out; }
+function csVerdicts(){ var I=S.intake||{}, C=S.client||{}, st=String(C.state||'').toUpperCase().trim(), sp=!!(I.who&&I.who.spouse), age=+C.page||0, ml=[], cg=[], gaps=[];
+  var nm=function(w){ return String((w==='s'?C.sname:C.pname)||'').trim().split(/\s+/)[0]||(w==='s'?'Spouse':'Applicant'); };
+  var add=function(L,src,l,t,s){ L.push({src:src,l:l,t:t,s:s||''}); };
+  if(st){ gaps=csStateGaps(st,age||40); if(gaps.indexOf('Affordable Choice')>=0) add(ml,'state','bad','Affordable Choice isn’t sold in '+st+'.');
+    if(typeof TRIAD_NO_STATES!=='undefined'&&TRIAD_NO_STATES.indexOf(st)>=0) add(cg,'state','bad','USA Health doesn’t offer the Cigna plan in '+st+'.'); }
+  if(age>=65){ add(ml,'age','bad','65 or older — Affordable Choice is built for under 65. Look at Medicare.'); add(cg,'age','bad','65 or older — the Cigna rate book stops at 64. Look at Medicare.'); }
+  var preg=[I.pregNowP&&nm('p'),sp&&I.pregNowS&&nm('s')].filter(Boolean), mat=[I.maternityP&&nm('p'),sp&&I.maternityS&&nm('s')].filter(Boolean);
+  if(preg.length){ add(ml,'preg','bad',preg.join(' & ')+' pregnant now — ManhattanLife declines every applicant in the household.');
+    add(cg,'preg','warn','Pregnant now — the Cigna underwriting guide doesn’t mention pregnancy.','Ask USA Health before applying.'); }
+  else if(mat.length){ add(ml,'preg','warn','Maternity needed ('+mat.join(' & ')+') — ManhattanLife doesn’t cover it, and declines the household during a pregnancy.');
+    add(cg,'preg','warn','Maternity needed — the Cigna underwriting guide doesn’t mention pregnancy.','Ask USA Health before applying.'); }
+  ['p'].concat(sp?['s']:[]).forEach(function(w){ var sx=I[w+'sex'], h=+I[w+'height']||0, lb=+I[w+'weight']||0; if(!h||!lb) return;
+    var dm=DIABETES_MAX[h]; if(I.diabetic&&dm&&lb>dm){ add(ml,'build:'+w,'bad',nm(w)+': '+lb+' lb is over ManhattanLife’s diabetic maximum ('+dm+' lb at this height).'); return; }
+    if(!sx){ add(ml,'build:'+w,'warn',nm(w)+': pick a sex — ManhattanLife’s build chart is different for men and women.'); return; }
+    var r=BUILD_CHART[sx]&&BUILD_CHART[sx][h]; if(!r){ add(ml,'build:'+w,'warn',nm(w)+': no row on ManhattanLife’s build chart at this height — check with underwriting.'); return; }
+    if(lb>r[1]) add(ml,'build:'+w,'bad',nm(w)+': '+lb+' lb is over ManhattanLife’s build chart ('+r[0]+'–'+r[1]+' lb).');
+    else if(lb<r[0]) add(ml,'build:'+w,'warn',nm(w)+': '+lb+' lb is under ManhattanLife’s build chart (min '+r[0]+' lb) — verify.'); });
+  if(typeof AFC_PENDING!=='undefined') [['p','pendP'],['s','pendS']].forEach(function(x){ if(x[0]==='s'&&!sp) return; var v=I[x[1]], r=AFC_PENDING[v]; if(!r) return;
+    add(ml,'pend:'+x[0],r.res==='bad'?'bad':'warn',nm(x[0])+': '+v+' — '+r.m);
+    add(cg,'pend:'+x[0],v==='Surgery or procedure recommended'?'bad':'warn',nm(x[0])+': '+v+' — Cigna declines while recommended surgery, tests or treatment haven’t been done.'); });
+  if(typeof afcHits==='function') afcHits().forEach(function(h){ var ins=h.r.b==='Insulin', src=ins?'diab':'med:'+String(h.m.name).toLowerCase(), who=afcWho(h.m), lbl=(who?who+': ':'')+h.m.name;
+    if(h.st==='y') add(ml,src,'bad',lbl+' for '+(ins?'diabetes':h.r.q)+' — on ManhattanLife’s decline list.');
+    else if(h.st==='g') add(ml,src,'warn',lbl+' for gestational diabetes — ManhattanLife postpones until 6 months symptom- and treatment-free.');
+    else if(h.st==='n') add(ml,src,'warn',lbl+' — on ManhattanLife’s list for '+h.r.q+', but not taken for that here. Check with underwriting.');
+    else add(ml,src,'warn',lbl+' — on ManhattanLife’s list if it’s for '+(ins?'diabetes':h.r.q)+'.','Ask what it’s for — the answer on the Intake sets the colour.'); });
+  if(typeof afcCondHits==='function') afcCondHits().forEach(function(h){ var src='cond:'+String(h.c.name).toLowerCase(), who=afcCondWho(h.c), lbl=(who?who+': ':'')+h.c.name;
+    if(h.res==='bad') add(ml,src,'bad',lbl+' — on ManhattanLife’s uninsurable list.');
+    else if(!h.st&&h.kind!=='chk') add(ml,src,'warn',lbl+' — ManhattanLife asks: '+AFC_CQ[h.kind].q);
+    else if(h.res==='warn') add(ml,src,'warn',lbl+' — check with ManhattanLife underwriting.'); });
+  if(I.diabetic&&!ml.some(function(x){ return x.src==='diab'; })) add(ml,'diab','warn','Diabetic — ManhattanLife declines insulin in the last 5 years, juvenile onset, or any complication.');
+  if(typeof triadScreen==='function') triadScreen().forEach(function(x){ if(x.l!=='ok') add(cg,x.src||'',x.l==='bad'?'bad':'warn',x.t,x.s); });
+  var any=!!(st||age||(I.medList||[]).length||(I.conds||[]).length||I.pheight||I.diabetic||preg.length||mat.length);
+  var lvl=function(L){ return L.some(function(x){ return x.l==='bad'; })?'red':(L.some(function(x){ return x.l==='warn'; })?'amber':(any?'green':'none')); };
+  return {ml:{lvl:lvl(ml),L:ml},cg:{lvl:lvl(cg),L:cg},gaps:gaps,st:st}; }
+/* ManhattanLife first: rank each Cigna item against ManhattanLife's item on the same thing (same medication, condition,
+   person's build, pregnancy, pending care). Cigna only = full; Cigna kinder than ManhattanLife = full ("routing");
+   ManhattanLife already as hard = one line under "also". */
+function csSplit(v){ var rk={bad:2,warn:1}, mine=[], easier=[], also=[];
+  v.cg.L.forEach(function(x){ var m=x.src&&v.ml.L.filter(function(y){ return y.src===x.src; })[0];
+    if(!m) mine.push(x); else if(rk[m.l]>rk[x.l]) easier.push(x); else also.push(x); });
+  return {mine:mine,easier:easier,also:also}; }
+function csWord(c){ var b=c.L.filter(function(x){ return x.l==='bad'; }).length, w=c.L.filter(function(x){ return x.l==='warn'; }).length;
+  return c.lvl==='red'?b+' decline'+(b>1?'s':'')+(w?' · '+w+' to ask':''):c.lvl==='amber'?w+' to ask':c.lvl==='green'?'nothing stops it':'waiting on the Intake'; }
+function csRoute(v){ var a=v.ml.lvl, b=v.cg.lvl;
+  if(a==='red'&&b==='red') return 'Neither carrier would take them on what’s on file. Look at the ACA and the guaranteed-issue options before quoting.';
+  if(a==='red') return 'ManhattanLife is out. Build on the Cigna PPO, with ManhattanLife add-ons only where their own underwriting allows'+(b==='amber'?' — and clear Cigna’s questions first':'')+'.';
+  if(a==='amber'&&b==='green') return 'Ask ManhattanLife’s questions before quoting it. If the answers go the wrong way, Cigna would take them.';
+  if(a==='amber') return 'Ask the questions before quoting.';
+  if(a==='green'&&b==='red') return 'ManhattanLife leads. Don’t offer the Cigna PPO as the step-up for this household.';
+  return ''; }
+function csLi(x){ return '<li class="'+x.l+'">'+(x.l==='bad'?'✕ ':'⚠ ')+esc(x.t)+(x.s?'<small>'+esc(x.s)+'</small>':'')+'</li>'; }
+function csPanel(k,v){
+  if(k==='ml') return (v.ml.L.length?'<ul class="cs-ul">'+v.ml.L.map(csLi).join('')+'</ul>':'<div class="cs-ok">✓ Nothing on the Intake is on ManhattanLife’s decline lists.</div>')
+    +'<div class="cs-src">Affordable Choice rules (agent guide AGT-AFC7010). HI Select, Out-of-Pocket and Cancer / Heart Attack &amp; Stroke have their own, shorter lists.</div>';
+  var p=csSplit(v), h='';
+  if(p.mine.length) h+='<div class="cs-sub">Cigna only — ManhattanLife wouldn’t stop on these</div><ul class="cs-ul">'+p.mine.map(csLi).join('')+'</ul>';
+  if(p.easier.length) h+='<div class="cs-sub">Where Cigna may take them and ManhattanLife won’t</div><ul class="cs-ul">'+p.easier.map(csLi).join('')+'</ul>';
+  if(p.also.length) h+='<div class="cs-also">Also a Cigna '+(p.also.some(function(x){ return x.l==='bad'; })?'decline':'question')+', already flagged under ManhattanLife: '+p.also.map(function(x){ return esc(String(x.t).split(' — ')[0].replace(/ is on the auto-decline.*$/,'')); }).join(' · ')+'</div>';
+  if(!v.cg.L.length) h+='<div class="cs-ok">✓ Nothing on the Intake is on Cigna’s decline lists.</div>';
+  return h+'<div class="cs-src">Cigna also needs self-employment with an EIN. Ask: '+(typeof TRIAD_SITUATIONS!=='undefined'?TRIAD_SITUATIONS.map(esc).join(' · '):'')+'. EBA underwriting guide.</div>'; }
+function renderCarrierStrip(){ var hosts=['carrierStrip','carrierStripQ'].map($).filter(Boolean); if(!hosts.length) return;
+  if(!CARRIER_STRIP_ON){ hosts.forEach(function(h){ h.style.display='none'; h.innerHTML=''; }); return; }
+  var v; try{ v=csVerdicts(); }catch(e){ console.error('carrier strip',e); return; }
+  var pill=function(k,name,c){ return '<button type="button" class="cs-pill '+c.lvl+(CS_OPEN===k?' open':'')+'" data-cs="'+k+'"><i></i><b>'+name+'</b><small>'+csWord(c)+'</small></button>'; };
+  var route=csRoute(v), rt=route?'<div class="cs-route">→ '+esc(route)+(S.csRouted?' <b>The packages start on the Cigna PPO</b> — Lineup “Manhattan only” puts them back.':'')+'</div>':'';
+  var html='<div class="cs-row"><span class="cs-lbl">Would they take them?</span>'+pill('ml','ManhattanLife',v.ml)+pill('cg','Cigna PPO',v.cg)
+    +(v.gaps.length?'<span class="cs-gap">'+esc(v.st)+': ManhattanLife doesn’t sell '+esc(v.gaps.join(', '))+'</span>':'')+'</div>'+rt
+    +(CS_OPEN?'<div class="cs-panel">'+csPanel(CS_OPEN,v)+'</div>':'');
+  hosts.forEach(function(h){ h.style.display=''; h.innerHTML=html;
+    h.querySelectorAll('[data-cs]').forEach(function(b){ b.onclick=function(e){ e.stopPropagation(); CS_OPEN=CS_OPEN===b.dataset.cs?'':b.dataset.cs; renderCarrierStrip(); }; }); }); }
+/* Build Quote follows the strip: ManhattanLife red, Cigna not red -> every package on the Cigna base (Kyle's Cigna
+   lineup: HI Select sized to the deductible, cancer only with a family history). Anything else leaves the lineup alone,
+   except undoing a Cigna start the strip made on an earlier build. */
+function csRouteQuote(){ var was=S.csRouted; S.csRouted=false; if(!CARRIER_STRIP_ON) return; var v=csVerdicts();
+  if(v.ml.lvl==='red'&&v.cg.lvl!=='red'&&v.cg.lvl!=='none'){ S.lineup='cg'; ['good','better','best'].forEach(pbResetTier); S.csRouted=true; }
+  else if(was&&S.lineup==='cg'){ S.lineup='mh'; ['good','better','best'].forEach(pbResetTier); } }
+(function(){ var host=$('step-intake'), tmr=null; if(!host||!CARRIER_STRIP_ON) return;
+  var go=function(){ clearTimeout(tmr); tmr=setTimeout(function(){ try{ readIntake(); ['state','page','pname','sname'].forEach(function(k){ var el=$('in_'+k); if(el) S.client[k]=el.value; }); }catch(e){} renderCarrierStrip(); },250); };
+  ['input','change','click'].forEach(function(ev){ host.addEventListener(ev,go,true); }); })();
+(function(){ var _u=uwWatch; uwWatch=function(){ var r=_u.apply(this,arguments); try{ renderCarrierStrip(); }catch(e){} return r; }; })();
+(function(){ var _c=compute; compute=function(){ var out=_c.apply(this,arguments); try{ renderCarrierStrip(); }catch(e){} return out; }; })();
 
 /* ---------- ENROLL ---------- */
 function triadEnrollHTML(t){ var d=triadDates(), first=triadFirst(), plan=triadPlanOf(t), bus=triadBusters(t), ml=bus.some(function(x){ return /^(his|gap|acc|chas|hhc|dvh)$/.test(x.k); });
@@ -6218,6 +6329,7 @@ function buildQuote(){ if(PR_STATE==='loading'){ BUILD_PENDING=true; var bq=$('b
   syncRateBasis();
   acaSync();
   recommendBundles();
+  csRouteQuote();
   autoPriceTiers();
   S.activeTab=S.recommended;
   goStep('quote');
@@ -7914,6 +8026,7 @@ function renderBuilder(){
       :(ak==='cur'?'Anchor is the current plan, but there is no current premium — add it under Current Insurance.':(ak==='aca'?'Anchor is the ACA bronze, but it has no premium yet — add the state and ages on the Intake.':'No anchor — the packages are only compared with each other.')))
     +' <a href="#" class="jump" data-jumpto="in_anchor">change</a></div>';
   var LINEUPS=[['mh','Manhattan only'],['lx-mh-cg','LifeX · Manhattan · Cigna'],['custom','Custom — you choose each']];
+  if(CARRIER_STRIP_ON||S.lineup==='cg') LINEUPS.splice(2,0,['cg','Cigna base · Manhattan add-ons']);
   var presentBtn='<button type="button" data-act="present" class="presentbtn" style="margin-left:auto">'+presentBtnLabel()+'</button>';
   var pb2=$('presentBtn2'); if(pb2) pb2.innerHTML=presentBtnLabel();
   var lineupBar='<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 12px"><span style="font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--muted);text-transform:uppercase">Lineup</span>'
@@ -7968,12 +8081,13 @@ function renderBuilder(){
 /* Kyle, 2026-09-29: lead with Manhattan; LifeX (down) and Cigna (up) are the pivots.
    LifeX: $500 copay PPO, no Manhattan add-ons. Cigna: HI Select sized to its deductible, no accident;
    Out-of-Pocket, living benefits and cancer optional (cancer on only with a family history). */
-var LINEUP_BASES={'mh':['afc','afc','afc'],'lx-mh-cg':['lifex','afc','triad']};
+var LINEUP_BASES={'mh':['afc','afc','afc'],'lx-mh-cg':['lifex','afc','triad'],'cg':['triad','triad','triad']};   /* cg: the carrier strip's Cigna start (sandbox) */
 function cignaHIS(ded){ return Math.min(10000,Math.ceil((+ded||3500)/1000)*1000); }
 function pbTierDefaults(t,lu,baseOverride){
   var i=['good','better','best'].indexOf(t), c=cfgClone(TIERCFG[t]), drop=[];
   c.base=baseOverride||(LINEUP_BASES[lu]||LINEUP_BASES.mh)[i];
   if(c.base==='lifex'){ c.lifexPlan='$500 PPO'; drop=['his','acc','gap','chas','lbp','lbs','hhc','sdr']; }
+  if(c.base==='triad'&&lu==='cg') c.triadPlan={good:'7350',better:'3500',best:'1500'}[t];   /* the strip's Cigna start: a deductible ladder, not three copies */
   if(c.base==='triad'){ c.triadPlan=c.triadPlan||'3500'; c.his={ben:cignaHIS(c.triadPlan),amb:1,outp:0}; drop=['acc','gap','lbp','lbs','hhc','sdr'];
     var I=S.intake||{}; if(!(I.famcancer||I.famheart)) drop.push('chas'); }
   return {c:c,drop:drop};
