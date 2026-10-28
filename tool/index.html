@@ -696,6 +696,7 @@
   .cg-ask button{font:inherit;font-size:12.5px;font-weight:600;border:1px solid #cfc6ad;background:#fff;border-radius:999px;padding:3px 10px;cursor:pointer;color:var(--ink)}
   .cg-ask button.on{background:var(--navy);border-color:var(--navy);color:#fff}.cg-ask button.neg.on{background:#c0392b;border-color:#c0392b}
   .afcflag .cg-ask{margin-left:0;flex-basis:100%}.cs-ul li.ok{color:#1f6b40}
+  .wizpush{margin-top:10px;display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center}.wiznote{font-size:12px;color:var(--muted);flex:1 1 320px;line-height:1.4}
   .cs-ok{color:#1f6b40;margin:4px 0}.cs-src{font-size:11.5px;color:var(--muted);margin-top:6px}
   .uwwatch{margin-top:8px;border:1.5px solid #c0392b;background:#fdecea;border-radius:10px;padding:10px 14px;color:#8f1d12;font-size:13.5px;line-height:1.45}.uwwatch .uwhd{font-weight:800;margin-bottom:4px}.uwwatch ul{margin:0;padding-left:18px}.uwwatch li{margin:3px 0}.uwwatch b{color:#a12525}
   .rv-actmin{font-size:13.5px;padding:8px 2px}.rv-actmin i{color:var(--muted)}.rv-actmin a{margin-left:8px}.rv-actmin small{display:block;color:var(--muted);margin-top:3px}
@@ -1644,6 +1645,8 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
         <a class="portalbtn" id="lnkNLG" href="https://www.nationallife.com/agent/auth/login" target="_blank" rel="noopener">Living Benefits — National Life Group &#8599;</a>
         <a class="portalbtn maroon" id="lnkAmerico" href="#" target="_blank" rel="noopener">Living Benefits — Americo &#8599;</a>
       </div>
+      <div class="wizpush hidein-client"><button type="button" class="portalbtn" id="popWizBtn" onclick="popWizOpen()">Gut-check life carriers in the Product Wizard &#8599;</button>
+        <span class="wiznote" id="popWizNote">Sends the <b>primary applicant only</b> — age, date of birth, sex, height, weight, conditions and medications. The spouse and children aren’t sent; add them in the Wizard by hand. Shows which carriers would take them for term, whole life or an IUL — useful when their health may rule out a living-benefits term policy.</span></div>
     </div>
     <div class="enroll-card hidein-client" id="enPeople"></div>
     <div class="enroll-card hidein-client" id="enScriptEnd"><div class="en-step"><span>3</span> Wrapping things up</div><iframe id="enFrame2" title="Finish script" style="width:100%;border:0;min-height:120px"></iframe></div>
@@ -3285,6 +3288,39 @@ var CIGNA_URL='https://www.1enrollment.com/index.cfm?id=994524';
 /* LifeX enrolls on the recruiter's own E123 enrollment website (LifeX recruiter FAQ). Blank hides the button. */
 /* LifeX client enrollment (1Enrollment 'MVP' page: Copay PPO $500 + Humana dental), via HealthFirst Financial Services. */
 var LIFEX_URL='https://www.1enrollment.com/index.cfm?id=944574';
+/* Product Wizard push (Jesse, 28 Oct): the primary applicant only, same contract the Script Navigator uses
+   (product-wizard CLAUDE.md: {source:"optimum-suite",type:"client",v:1,client:{age,dob,sex,hin,wt,lb,conds,meds,medSkip}}).
+   Opens the wizard in its own window and re-sends every 300ms until it answers {type:"applied"}. Locally it opens the
+   wizard's preview server, whose DEV mode accepts any origin; live it needs mypoppro.com in the wizard's ALLOWED list. */
+var POPWIZ_URL=/^(localhost|127\.0\.0\.1)$/.test(location.hostname)?'http://localhost:8799/':'https://wizard.ffloptimum.com/';
+var POPWIZ={win:null,timer:null,done:false};
+function popWizClient(){ var I=S.intake||{}, C=S.client||{}, c={};
+  var a=parseInt(C.page,10); if(a) c.age=a;
+  var db=String(C.date||'').match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/); if(db) c.dob=db[3]+'-'+('0'+db[1]).slice(-2)+'-'+('0'+db[2]).slice(-2);
+  var h=+I.pheight; if(h) c.hin=h; var w=parseInt(String(I.pweight||'').replace(/[^0-9]/g,''),10); if(w) c.wt=w;
+  if(I.psex==='M') c.sex='m'; else if(I.psex==='F') c.sex='f';
+  c.lb='lb';
+  c.conds=(I.conds||[]).filter(function(x){ return x&&x.forP!==false; }).map(function(x){ var o={name:String(x.name)};
+    var yr=parseInt(x.yr,10), mo=parseInt(x.mo,10); if(yr) o.yr=yr; if(yr&&mo) o.mo=mo;
+    if(o.name==='Diabetes'){ var a1=parseFloat(String(I.a1c||'').replace(/[^0-9.]/g,'')); if(a1>=3&&a1<=20) o.a1c=a1; }
+    return o; });
+  c.meds=(I.medList||[]).filter(function(m){ return m&&m.forP!==false&&String(m.name||'').trim(); }).map(function(m){ return (typeof popMedResolve==='function'&&popMedResolve(m.name))||String(m.name).trim(); });
+  c.medSkip=(I.medSkip||[]).slice();
+  return c; }
+function popWizSend(){ try{ if(POPWIZ.win&&!POPWIZ.win.closed) POPWIZ.win.postMessage({source:'optimum-suite',type:'client',v:1,client:popWizClient()},'*'); }catch(e){} }
+function popWizBtn(t){ var b=$('popWizBtn'); if(b) b.innerHTML=t; }
+function popWizOpen(){ /* only re-read the Intake when it's the open screen - Enroll writes height/weight/sex straight to S.intake */
+  try{ if(S.step==='intake'&&typeof captureIntake==='function') captureIntake(); }catch(e){}
+  POPWIZ.done=false; POPWIZ.win=window.open(POPWIZ_URL,'optimumWizard');
+  if(!POPWIZ.win){ popWizBtn('Allow pop-ups to open the Product Wizard'); return; }
+  try{ POPWIZ.win.focus(); }catch(e){}
+  popWizBtn('Sending to the Product Wizard…'); var n=0; clearInterval(POPWIZ.timer);
+  POPWIZ.timer=setInterval(function(){ if(POPWIZ.done||++n>16||!POPWIZ.win||POPWIZ.win.closed){ clearInterval(POPWIZ.timer);
+      popWizBtn(POPWIZ.done?'Sent to the Product Wizard ✓ &#8599;':'Product Wizard opened — the client didn’t transfer; type them in there &#8599;'); return; }
+    popWizSend(); },300); }
+window.addEventListener('message',function(e){ var d=e.data; if(!d||d.source!=='optimum-wizard') return;
+  if(d.type==='ready'&&POPWIZ.win&&!POPWIZ.done){ popWizSend(); return; }
+  if(d.type==='applied'){ POPWIZ.done=true; } });
 /* Bright Life (sandbox): the client applies on the Optimum-branded landing page; an agent contracts on the generic link
    (it carries nobody's slug - BRIGHTLIFE.md). Whose links other agents should use is still Jesse's question. */
 var BL_URL='https://www.brightlifehw.com/optimum', BL_AGENT_URL='https://contract.mvpbackoffice.com/home/landing';
