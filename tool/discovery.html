@@ -3106,6 +3106,10 @@ hs_conds:{s:"5",pf:"health",t:"Recent history",l:[
 {t:"ask",x:"Has a doctor recommended any surgery, procedure or tests you haven't had yet &mdash; or are you still being followed up after one? {{pending_care}}"},
 {t:"ask",when:["pending_care",["Surgery or procedure recommended","Tests or results pending","Still being followed up after surgery"]],x:"What is it, and where are you with it? ___(pending what)"},
 {t:"pendflag"},
+{t:"ask",x:"In the last 12 months, has any test come back abnormal for you &mdash; a biopsy, mammogram, Pap smear, PSA or CEA &mdash; or are you waiting on results, or told to get a test you haven't had yet? Any positive BRCA gene test, or weight loss you can't explain? {{abn12}}"},
+{t:"r12flag"},
+{t:"ask",x:"Are you working right now &mdash; or on disability or unable to work? {{disabled}}"},
+{t:"disflag"},
 {t:"note",x:"<b>Standing rule on every yes:</b> when was it, what was it for, and what are they taking for it now."}
 ],b:[{k:"Next",to:"hs_famhist",c:"go"}]},
 
@@ -3160,6 +3164,10 @@ hs_sp_conds:{s:"5",pf:"sphealth",t:"Spouse recent history",l:[
 {t:"ask",x:"Has a doctor recommended any surgery, procedure or tests ___(spouse first name) hasn't had yet &mdash; or are they still being followed up after one? {{sp_pending_care}}"},
 {t:"ask",when:["sp_pending_care",["Surgery or procedure recommended","Tests or results pending","Still being followed up after surgery"]],x:"What is it, and where are they with it? ___(spouse pending what)"},
 {t:"pendflag",who:"sp"},
+{t:"ask",x:"In the last 12 months, has any test come back abnormal for ___(spouse first name) &mdash; a biopsy, mammogram, Pap smear, PSA or CEA &mdash; or are they waiting on results, or told to get a test they haven't had yet? Any positive BRCA gene test, or weight loss they can't explain? {{sp_abn12}}"},
+{t:"r12flag",who:"sp"},
+{t:"ask",x:"Is ___(spouse first name) working right now &mdash; or on disability or unable to work? {{sp_disabled}}"},
+{t:"disflag",who:"sp"},
 {t:"note",x:"<b>Standing rule on every yes:</b> when was it, what was it for, and what are they taking for it now."},
 {t:"train",x:"<b>Doctors, dental, vision and hearing were asked once, for the household.</b> If the spouse has a doctor they want to keep that you have not recorded, go back to 5.3 and add them &mdash; that list is shared."}
 ],b:[{k:"Move to income",to:"hs_income",c:"go"}]},
@@ -4549,6 +4557,10 @@ function render(){
   });
   $("script").innerHTML=n.l.map(function(L){
     if(L.t==="cfollow") return cfollowHTML(L.meds ? medCondsOn(L.who) : cardConds, L.all, L.who);
+    if(L.t==="r12flag"||L.t==="disflag"){ if(!(typeof navAfcOn==="function"&&navAfcOn()&&typeof AFC_R12_OPTS!=="undefined")) return "";
+      var rv=String(pVal((L.who?"sp_":"")+(L.t==="r12flag"?"abn12":"disabled"))||""); if(!rv||/^No/.test(rv)) return "";
+      var rm=L.t==="disflag"?AFC_DIS_M:(AFC_R12_Q+(AFC_R12_PEND[rv]?" Pending results are also postponed until they’re back (p.23).":"")+(/Weight loss/.test(rv)?" On a GLP-1? Weight loss from it isn’t unexplained — confirm before you count it.":""));
+      return '<div class="line navafc"><div class="afcflag bad"><span class="afct">✕ <b>ManhattanLife Affordable Choice is unlikely for now.</b> '+esc(rv)+' — '+esc(rm)+'<span class="afcq">'+afcGuideLink(L.t==="disflag"?22:20)+'</span></span></div></div>'; }
     if(L.t==="pendflag"){ if(!(typeof navAfcOn==="function"&&navAfcOn()&&typeof AFC_PENDING!=="undefined")) return "";
       var pv=String(pVal(L.who?"sp_pending_care":"pending_care")||""), pr=AFC_PENDING[pv]; if(!pr) return "";
       return '<div class="line navafc"><div class="afcflag '+(pr.res==="bad"?"bad":"chk")+'"><span class="afct">'+(pr.res==="bad"?"✕ <b>ManhattanLife Affordable Choice is unlikely for now.</b> ":"⚠ ")+esc(pr.m)+'<span class="afcq">'+afcGuideLink(pr.pg)+'</span>'+
@@ -4920,6 +4932,8 @@ PF_SPEC_HEALTH=[
  {k:"sp_recent_stay",l:"Surgery, last 5 yrs",w:1,opt:["","No","Yes"]},
  {k:"sp_pending_care",drives:true,l:"Care a doctor recommended, not done yet",w:3,opt:["","No","Surgery or procedure recommended","Tests or results pending","Still being followed up after surgery"]},
  {k:"sp_pending_what",l:"What it is",w:3},
+ {k:"sp_abn12",drives:true,l:"Abnormal test, BRCA+ or weight loss — last 12 months",w:3,opt:["", "No", "Abnormal biopsy", "Abnormal mammogram", "Abnormal Pap smear", "A test recommended, not done yet", "Results not normal, or still pending", "Rising PSA", "Rising CEA", "Treated for an abnormal test result", "Positive BRCA 1 or 2 gene test", "Weight loss they can’t explain"]},
+ {k:"sp_disabled",drives:true,l:"Able to work?",w:2,opt:["", "No — working / able to work", "Yes — on disability or unable to work"]},
  {k:"sp_recent_what",l:"What for",w:2},
  {k:"sp_hosp_stay",l:"Hospital stay, last 2 yrs",w:1,opt:["","No","Yes"]},
  {k:"sp_stay_what",l:"What for",w:2},
@@ -4946,6 +4960,8 @@ PF_SPEC_HEALTH=[
  {k:"recent_what",l:"What for",w:2,showIf:["recent_stay","Yes"]},
  {k:"pending_care",drives:true,l:"Care a doctor recommended, not done yet",w:3,opt:["","No","Surgery or procedure recommended","Tests or results pending","Still being followed up after surgery"]},
  {k:"pending_what",l:"What it is",w:3},
+ {k:"abn12",drives:true,l:"Abnormal test, BRCA+ or weight loss — last 12 months",w:3,opt:["", "No", "Abnormal biopsy", "Abnormal mammogram", "Abnormal Pap smear", "A test recommended, not done yet", "Results not normal, or still pending", "Rising PSA", "Rising CEA", "Treated for an abnormal test result", "Positive BRCA 1 or 2 gene test", "Weight loss they can’t explain"]},
+ {k:"disabled",drives:true,l:"Able to work?",w:2,opt:["", "No — working / able to work", "Yes — on disability or unable to work"]},
  {k:"hosp_stay",drives:true,l:"Hospital stay, last 2 yrs",w:1,opt:["","No","Yes"]},
  {k:"stay_what",l:"What for",w:2,showIf:["hosp_stay","Yes"]},
  {k:"keep_docs",drives:true,l:"Doctors they want to keep?",w:1,opt:["","No","Yes"]},
@@ -6563,6 +6579,7 @@ function popClient(){
       spMhNeeds:P.sp_mh_needs||"", spMatNeeds:P.sp_mat_needs||"",
       spSurgery:P.sp_recent_stay||"", spSurgeryWhat:P.sp_recent_what||"",
       pendingCare:P.pending_care||"", pendingWhat:P.pending_what||"", spPendingCare:P.sp_pending_care||"", spPendingWhat:P.sp_pending_what||"",
+      abn12:P.abn12||"", spAbn12:P.sp_abn12||"", disabled:P.disabled||"", spDisabled:P.sp_disabled||"",
       spHospStay:P.sp_hosp_stay||"", spHealthNotes:P.sp_health_notes||"",
       incomeNext:P.income_next||"", spIncomeNext:P.sp_income_next||"", hhIncomeNext:P.hh_income_next||"",
       assetWhere:P.asset_where||"", assetEmployer:P.asset_employer||"",

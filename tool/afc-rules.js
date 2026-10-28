@@ -130,5 +130,15 @@ var AFC_PENDING={
   'Still being followed up after surgery':{res:'bad',pg:19,m:'A surgery completed but not yet released from the doctor’s care is on ManhattanLife’s uninsurable list — until they’re released.'},
   'Tests or results pending':{res:'warn',pg:23,m:'Pending tests, biopsies or exams — ManhattanLife postpones until the results are back and there’s a diagnosis.'}};
 var AFC_PENDING_OPTS=['','No','Surgery or procedure recommended','Tests or results pending','Still being followed up after surgery'];
+/* The 12-month list (AGT-AFC7010 p.20): "Application should not be submitted if an applicant has had any of the following
+   within the last 12 months" - no diagnosis needed. Jesse, 28 Oct: one question in Discovery, the answer names which.
+   Pending results and a recommended test not done are also p.23's "postponed until results are received". */
+var AFC_R12_OPTS=["", "No", "Abnormal biopsy", "Abnormal mammogram", "Abnormal Pap smear", "A test recommended, not done yet", "Results not normal, or still pending", "Rising PSA", "Rising CEA", "Treated for an abnormal test result", "Positive BRCA 1 or 2 gene test", "Weight loss they can’t explain"];
+var AFC_R12_PEND={'A test recommended, not done yet':1,'Results not normal, or still pending':1};
+var AFC_R12_Q='“Application should not be submitted if an applicant has had any of the following within the last 12 months.”';
+/* Disability (p.22): "Applicants who are disabled will not be offered coverage." A status, not a diagnosis - asked as
+   "are you able to work?" (Jesse, 28 Oct). Someone who can't work often qualifies for a good ACA subsidy. */
+var AFC_DIS_OPTS=["", "No — working / able to work", "Yes — on disability or unable to work"];
+var AFC_DIS_M='“Applicants who are disabled will not be offered coverage.” Look at the ACA first — someone who can’t work often qualifies for a good subsidy.';
 /* Jesse, 21 Oct: under each of the three "not done yet" answers - it can look worse than it is, or be exactly that bad. */
 var AFC_MENTOR='Note: if you’re a newer agent, connect with your mentor to discuss the best way to navigate this.';
