@@ -58,6 +58,8 @@ var AFC_CQ={
         m:{old:'More than 5 years ago — outside ManhattanLife’s 5-year look-back.',y:'Stroke or TIA — more than one, with lasting effects, or before 45 — is on ManhattanLife’s uninsurable list.',n:'A single stroke or TIA after 45 with no lasting effects isn’t on the list by itself.'}},
   pacer:{q:'Stable for at least two years?',b:[['y','Yes — 2+ years'],['n','No']],r:{y:'warn',n:'bad'},
         m:{y:'“Can be considered if stable for two years.”',n:'A pacemaker is on ManhattanLife’s uninsurable list unless it has been stable for two years.'}},
+  hosp:{q:'In hospital or a care facility now, or in the last 3 months — or 3 or more stays in the last 12 months?',b:[['y','Yes'],['n','No']],r:{y:'bad',n:'ok'},
+        m:{y:'Hospitalized or confined — currently, within the past three months, or three or more times in the past 12 months — is on ManhattanLife’s uninsurable list.',n:'Not in hospital now, none in the last 3 months, fewer than 3 stays in 12 months — outside that rule.'}},
   epi:{q:'Grand mal, or any seizure in the last 2 years?',b:[['y','Yes'],['n','No']],r:{y:'bad',n:'ok'},
         m:{y:'Epilepsy — grand mal, or a seizure within the past two years — is on ManhattanLife’s uninsurable list.',n:'No grand mal and no seizure in two years — outside the epilepsy rule.'}},
   diab:{q:'Type 2, no insulin in the last 5 years, no more than 2 diabetic medications, and no complications (neuropathy, retinopathy, kidney disease, skin ulcers, amputation…)?',b:[['y','Yes — all of that'],['n','No'],['g','Gestational only']],r:{y:'ok',n:'bad',g:'warn'},
@@ -84,7 +86,7 @@ var AFC_ABBR={TIA:'Stroke / TIA',CVA:'Stroke / TIA',MI:'Heart attack',STEMI:'Hea
   CHF:'Congestive Heart Failure',CAD:'Coronary Artery Disease',CHD:'Heart disease / disorder',AAA:'Aneurysm',PAD:'Peripheral Arterial Disease',PVD:'Peripheral Vascular Disease',
   DVT:'Blood clots / DVT',PE:'Pulmonary Embolism or Infarction',SBE:'Endocarditis',HTN:'High blood pressure',HBP:'High blood pressure',
   T1D:'Diabetes',T2D:'Diabetes',IDDM:'Diabetes',NIDDM:'Diabetes',DM:'Diabetes',CKD:'Kidney disease / failure',ESRD:'Kidney disease / failure',PKD:'Kidney disease / failure',
-  NASH:'Liver disease',NAFLD:'Liver disease',PBC:'Liver disease',PSC:'Liver disease',HCV:'Hepatitis C',HBV:'Hepatitis B',
+  NASH:'Liver disease',PBC:'Liver disease',PSC:'Liver disease',HCV:'Hepatitis C',HBV:'Hepatitis B',
   HIV:'AIDS / HIV / ARC',ALS:'ALS/Amyotrophic Lateral Sclerosis',MS:'Multiple Sclerosis',MND:'Motor Neuron Disease',DMD:'Muscular Dystrophy',NF:'Neurofibromatosis',
   RA:'Rheumatoid arthritis',OA:'Osteoarthritis',SLE:'Lupus',PMR:'Polymyalgia Rheumatica',CF:'Cystic Fibrosis',IPF:'Pulmonary Fibrosis',
   IBD:'Colitis in Any Form',UC:'Ulcerative Colitis',TB:'Tuberculosis',PDA:'Patent Ductus Arteriosus – Uncorrected',VSD:'Ventricular Septal Defect – Still open',
@@ -101,6 +103,9 @@ function afcCondMatch(name){ if(AFC_ARRHY.test(String(name||''))) return ['5y','
   if(/\bstrokes?\b|transient ischemic/i.test(raw)) return AFC_CK['Stroke / TIA'];
   if(/seizure|epilep/i.test(raw)) return AFC_CK['Epilepsy / seizures'];
   if(/pacemaker|defibrillator/i.test(raw)) return AFC_CK['Defibrillator / pacemaker'];
+  /* p.23 names the kidney and liver declines */
+  if(/glomerulonephritis|goodpasture|iga nephropathy|lupus nephritis|nephrotic|polycystic kidney|chronic kidney/i.test(raw)) return AFC_CK['Kidney disease / failure'];
+  if(/alcoholic fatty liver|alcoholic hepatitis|hemochromatosis|wilson.?s disease|hepatitis [de]\b|biliary cholangitis|sclerosing cholangitis|steatohepatitis|reye/i.test(raw)) return AFC_CK['Liver disease'];
   var t=afcNorm(name); if(t.length<4) return null;
   var pick=null; AFC_CONDS.concat(AFC_PROCS).some(function(c){ var k=afcNorm(String(c.n).split(/[–(]/)[0]);
     if(k.length>=4&&(t===k||t.indexOf(k)>=0||k.indexOf(t)>=0)){ pick=c; return true; } return false; });
@@ -110,6 +115,9 @@ function afcCondMatch(name){ if(AFC_ARRHY.test(String(name||''))) return ['5y','
      released, build chart, hospital stays (recent or repeated), paraplegia/quadriplegia. Read at face value they would
      decline a sellable client - a repaired septal defect, Lyme once - so they ask the agent to check the condition (amber)
      instead of running the plain 5-year question. "All Types", "Any kind" and "in Any Form" widen, so they stay 5-year. */
+  if(/^Height\/Weight/i.test(pick.n)) return null;   /* the build chart on the Intake settles this */
+  if(/^Hospitalized/i.test(pick.n)) return ['hosp','Hospitalized or confined',pick.pg];
+  if(/^Surgery Pending/i.test(pick.n)) return ['chk','Pending surgery or tests — p.23: a minor pending surgery may be issued with an exclusion for that surgery; pending tests, biopsies or exams are postponed until the results are in. Use the “recommended care not done yet” answer',23];
   if(!pick.sg&&(pick.q||/uncorrected|still open|[–-]\s*present|chronic|due to disease|not released|not within guidelines/i.test(pick.n))) return ['chk','Only a decline when: '+pick.n+(pick.q?' ('+pick.q.replace(/ \| /g,' · ')+')':''),pick.pg];
   var g=pick.sg?{diabetes:'diab','high blood pressure':'bp',cancer:'cancer',asthma:'asthma','rheumatoid arthritis':'ra',arthritis:'ra',osteoarthritis:'ra',arrhythmia:'5y','atrial fibrillation':'5y',hepatitis:'5y','kidney diseases or disorders':'5y','liver disease or disorders':'5y'}[afcNorm(pick.n)]:null;
   return [g||(pick.sg?'chk':'5y'),pick.n+(pick.q?' ('+pick.q.replace(/ \| /g,' · ')+')':''),pick.pg]; }
