@@ -1325,6 +1325,16 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
         <div class="qnote"><label class="chip tone-orange"><input type="checkbox" id="in_diabetic"> Yes</label><textarea id="in_diabetic_note" class="autogrow" rows="1" placeholder="type · insulin? · # oral meds · who"></textarea></div>
         <div class="note" style="padding:4px 0 0;font-size:10.5px">Decline: insulin (last 5 yrs) or juvenile-onset · &gt;2 oral meds · diabetic complications</div>
       </div>
+      <!-- Numbers (Jesse, 28 Oct): A1c only for a diabetic; blood pressure for a diabetic OR anyone with high blood pressure -
+           ManhattanLife has its own numeric BP rule for non-diabetics; Cigna's BP numbers sit only in its diabetic block. -->
+      <div class="fld" id="hnumWrap" style="display:none"><label>Health numbers <small>for the person with the condition</small></label>
+        <div class="qnote" style="flex-wrap:wrap;gap:6px">
+          <span id="a1cWrap" style="display:none">A1c <input id="in_a1c" placeholder="e.g. 6.8" style="width:64px"></span>
+          <span id="bpWrap" style="display:none">Typical BP, last 6 months <input id="in_bp" placeholder="e.g. 132/84" style="width:84px">
+            <select id="in_bpchg"><option value="">BP meds changed in 6 months?</option><option>No changes in 6 months</option><option>Changed in the last 6 months</option></select></span>
+        </div>
+        <div class="note" id="hnumNote" style="padding:4px 0 0;font-size:10.5px"></div>
+      </div>
     </div>
     <div style="margin-top:10px"><label style="font-family:var(--serif);font-size:15px;font-weight:700;color:var(--navy);display:block;margin-bottom:4px">Anything else I should know about?</label><textarea id="in_routenote" rows="6" style="width:100%;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font:inherit;background:#fff;resize:vertical" placeholder="Anything about their health, conditions, timing or situation that should shape the placement. Conditions from the script navigator land here."></textarea><div id="uwWatch" class="uwwatch" style="display:none"></div></div>
 
@@ -5666,6 +5676,7 @@ function triadScreen(){ var I=S.intake||{}, C=S.client||{}, out=[], yr=new Date(
   if(I.diabetic){ var dask={k:'diab',i:0,v:I.cgDiab||'',q:'Any of these within the past year?',o:[['n','None in the past year'],['y','Yes — within the past year',1]]};   /* EBA p.1: "If these factors existed more than one year ago but not within the past year the risk can be insurable." */
     if(I.cgDiab==='n') out.push({src:'diab',l:'ok',t:'Diabetic, with none of Cigna’s diabetic declines in the past year (older ones don’t count). Insulin alone isn’t one.',ask:dask});
     else if(I.cgDiab==='y') out.push({src:'diab',l:'bad',t:'Diabetic, with one of Cigna’s diabetic declines within the past year.',s:'If it clears and a year passes with none of them, the guide says the risk can be insurable again.',ask:dask});
+    else if((function(){ var v=hnumVals(); return (v.a1c!=null&&v.a1c>7)||(v.sys!=null&&(v.sys>150||v.dia>90)); })()) out.push({src:'diab',l:'warn',t:'Diabetic, not “controlled” by Cigna’s definition ('+(function(){ var v=hnumVals(), a=[]; if(v.a1c!=null) a.push('A1c '+v.a1c+' vs 7.0'); if(v.sys!=null) a.push('BP '+v.sys+'/'+v.dia+' vs 150/90'); return a.join(', '); })()+'). Expect underwriting to ask for records.',s:'Still check the six declines: '+TRIAD_DIABETIC.join(' · ')+' — within the past year.',ask:dask});
     else out.push({src:'diab',l:'warn',t:'Diabetic: insulin alone isn’t a decline on Cigna. Any one of these is — '+TRIAD_DIABETIC.join(' · ')+'.',s:'Only the past year counts — any of these more than a year ago and not since can be insurable. Cigna’s “controlled”: A1C 7 or under and blood pressure 150/90 or below (ManhattanLife’s numbers differ).',ask:dask}); }
   return out; }
 function triadScreenHTML(){ var L=triadScreen(), bad=L.filter(function(x){ return x.l==='bad'; }).length, warn=L.filter(function(x){ return x.l==='warn'; }).length;
@@ -5715,6 +5726,8 @@ function csVerdicts(){ var I=S.intake||{}, C=S.client||{}, st=String(C.state||''
     else add(ml,src,'warn',lbl+' — on ManhattanLife’s list if it’s for '+(ins?'diabetes':h.r.q)+'.','Ask what it’s for — the answer on the Intake sets the colour.'); });
   if(typeof afcCondHits==='function') afcCondHits().forEach(function(h){ var src='cond:'+String(h.c.name).toLowerCase(), who=afcCondWho(h.c), lbl=(who?who+': ':'')+h.c.name;
     if(h.onMed&&h.onMed.length) add(ml,src,'bad',lbl+' — still on '+h.onMed.join(', ')+' for it: ManhattanLife counts that as ongoing treatment, so the 5-year window hasn’t started.');
+    else if(h.why&&h.res==='bad') add(ml,src,'bad',lbl+' — '+h.why);
+    else if(h.why&&!h.res) add(ml,src,'warn',lbl+' — '+h.why);
     else if(h.res==='bad') add(ml,src,'bad',lbl+' — on ManhattanLife’s uninsurable list.');
     else if(!h.st&&h.kind!=='chk') add(ml,src,'warn',lbl+' — ManhattanLife asks: '+AFC_CQ[h.kind].q);
     else if(h.res==='warn') add(ml,src,'warn',lbl+' — check with ManhattanLife underwriting.'); });
@@ -5723,7 +5736,9 @@ function csVerdicts(){ var I=S.intake||{}, C=S.client||{}, st=String(C.state||''
        That's a test not yet DONE - not one done with results pending, and not an abnormal result (no Cigna rule for those). */
     if(/^r12:/.test(x.src)&&I['abn12'+(x.w==='s'?'S':'P')]==='A test recommended, not done yet') add(cg,x.src,'bad',nm(x.w)+': a test recommended and not yet done — Cigna: “surgery, medical tests, treatment, or therapy that has not been performed” is uninsurable until it’s done.');
     if(/^dis:/.test(x.src)) add(cg,x.src,'warn',nm(x.w)+': unable to work — Cigna’s plan needs self-employment with an EIN.'); });
-  if(I.diabetic&&!ml.some(function(x){ return x.src==='diab'; })) add(ml,'diab','warn','Diabetic — ManhattanLife declines insulin in the last 5 years, juvenile onset, or any complication.');
+  if(I.diabetic&&!ml.some(function(x){ return x.src==='diab'; })){ var hv=typeof hnumVals==='function'?hnumVals():{};
+    if(hv.a1c!=null&&hv.a1c>7.9) add(ml,'diab','bad','Diabetic, A1c '+hv.a1c+' — over ManhattanLife’s 7.9.');
+    else add(ml,'diab','warn','Diabetic — ManhattanLife declines insulin in the last 5 years, juvenile onset, or any complication.'); }
   if(typeof triadScreen==='function') triadScreen().forEach(function(x){ if(x.l!=='ok'||x.ask) cg.push({src:x.src||'',l:x.l,t:x.t,s:x.s||'',ask:x.ask}); });
   var any=!!(st||age||(I.medList||[]).length||(I.conds||[]).length||I.pheight||I.diabetic||preg.length||mat.length);
   var lvl=function(L){ return L.some(function(x){ return x.l==='bad'; })?'red':(L.some(function(x){ return x.l==='warn'; })?'amber':(any?'green':'none')); };
@@ -6207,6 +6222,7 @@ function readIntake(){
   S.intake.dv=$('in_dv').checked;
   S.intake.majorcond=$('in_majorcond').checked; S.intake.majorcondNote=$('in_majorcond_note').value;
   S.intake.diabetic=$('in_diabetic').checked; S.intake.diabeticNote=$('in_diabetic_note').value;
+  if($('in_a1c')){ S.intake.a1c=$('in_a1c').value.trim(); S.intake.bp=$('in_bp').value.trim(); S.intake.bpChg=$('in_bpchg').value; }
   S.intake.budget=moneyNum($('in_budget').value)||0; S.intake.budgetComfort=moneyNum($('in_budget_comfort').value)||0; S.intake.anchor=$('in_anchor').value||'aca';
   S.intake.visits=+$('in_visits').value||0;
   var C=curIn(); ['prem','emp','ded','oop','copay'].forEach(function(k){ C[k]=moneyVal($('in_cur_'+k).value); });
@@ -6250,6 +6266,7 @@ function fillIntake(){
   fillPS('famcancer', I.famcancer||S.docs.famcancer); fillPS('famheart', I.famheart); famRelRender(); fillPS('maternity', I.maternity); fillPS('mental', I.mental); fillPS('surg2yr', I.surg2yr);
   $('in_majorcond').checked=!!I.majorcond; $('in_majorcond_note').value=I.majorcondNote||''; autoGrow($('in_majorcond_note'));
   $('in_diabetic').checked=!!I.diabetic; $('in_diabetic_note').value=I.diabeticNote||''; autoGrow($('in_diabetic_note'));
+  if($('in_a1c')){ $('in_a1c').value=I.a1c||''; $('in_bp').value=I.bp||''; $('in_bpchg').value=I.bpChg||''; setTimeout(hnumShow,0); }
   $('in_docs1').value=I.docs1||''; $('in_docs2').value=I.docs2||''; $('in_docs3').value=I.docs3||'';
   [1,2,3].forEach(function(n){ $('in_docs'+n+'_who').value=I['docs'+n+'who']||''; docNetPaint(n,I['docs'+n+'net']); });   docNetLegacy();
   $('in_keepaca').value=I.keepaca||''; $('in_keepafc').value=I.keepafc||''; $('in_docnote').value=I.docnote||''; if(window.netSync) setTimeout(window.netSync,0);
@@ -7525,6 +7542,9 @@ function bindInputs(){
   $('in_psex').addEventListener('change',function(){ buildFlag('p'); captureIntake(); });
   $('in_ssex').addEventListener('change',function(){ buildFlag('s'); captureIntake(); });
   $('in_diabetic').addEventListener('change',function(){ buildFlag('p'); buildFlag('s'); });
+  ['in_diabetic','in_a1c','in_bp','in_bpchg'].forEach(function(id){ var el=$(id); if(!el) return; ['input','change'].forEach(function(ev){ el.addEventListener(ev,function(){
+    S.intake.diabetic=$('in_diabetic').checked; S.intake.a1c=$('in_a1c').value.trim(); S.intake.bp=$('in_bp').value.trim(); S.intake.bpChg=$('in_bpchg').value; autosave(); hnumShow();
+    if(typeof afcRender==='function') afcRender(); if(typeof uwWatch==='function') uwWatch(); }); }); });
   ['in_pend_p','in_pend_s'].forEach(function(id){ var el=$(id); if(el) el.addEventListener('change',function(){ S.intake[id==='in_pend_s'?'pendS':'pendP']=el.value; autosave(); pendWatch(); uwWatch(); }); });
   [['in_abn12_p','abn12P'],['in_abn12_s','abn12S'],['in_dis_p','disP'],['in_dis_s','disS']].forEach(function(x){ var el=$(x[0]); if(el) el.addEventListener('change',function(){ S.intake[x[1]]=el.value; autosave(); r12Watch(); uwWatch(); }); });
   ['in_maternity_p','in_maternity_s','in_mental_p','in_mental_s'].forEach(function(id){ $(id).addEventListener('change',function(){ setTimeout(uwWatch,0); }); });
@@ -8318,6 +8338,18 @@ function medCondPrune(){ var I=S.intake||{}, L=I.medList||[], n0=(I.conds||[]).l
    timeframe from the last episode with no need for medication to control, it would be a different situation.") So a
    5-year-look-back condition with a medication on the Intake that treats it (MED_FOR, same person, not answered "No,
    that's not why") is treated NOW - the window hasn't started, whatever year it was diagnosed. */
+/* Health numbers (Jesse, 28 Oct). hnumHBP: told it's high (a condition) or on a medication the map files under high blood
+   pressure, or diabetic (Cigna's BP numbers live in its diabetic block). */
+function hnumHBP(){ var I=S.intake||{}; if(I.diabetic) return true;
+  if((I.conds||[]).some(function(c){ return /blood pressure|hypertension|\bhtn\b|\bhbp\b/i.test(String(c.name||'')); })) return true;
+  return (I.medList||[]).some(function(m){ var lab=popMedResolve(m.name); return lab&&(MED_FOR[lab]||[]).indexOf('High blood pressure')>=0; }); }
+function hnumVals(){ var I=S.intake||{}, a=parseFloat(String(I.a1c||'').replace(/[^\d.]/g,'')), m=String(I.bp||'').match(/(\d{2,3})\s*[\/\\ -]\s*(\d{2,3})/);
+  return {a1c:isNaN(a)?null:a, sys:m?+m[1]:null, dia:m?+m[2]:null, chg:I.bpChg||''}; }
+function hnumShow(){ var w=$('hnumWrap'); if(!w) return; var I=S.intake||{}, d=!!I.diabetic, h=hnumHBP();
+  w.style.display=(d||h)?'':'none'; $('a1cWrap').style.display=d?'':'none'; $('bpWrap').style.display=h?'':'none';
+  var v=hnumVals(), L=[]; if(d&&v.a1c!=null) L.push('A1c '+v.a1c+': ManhattanLife ≤ 7.9 '+(v.a1c<=7.9?'✓':'✕')+' · Cigna “controlled” ≤ 7.0 '+(v.a1c<=7?'✓':'✕'));
+  if(h&&v.sys!=null) L.push('BP '+v.sys+'/'+v.dia+': ManhattanLife ≤ 140/90 '+(v.sys<=140&&v.dia<=90?'✓':'✕')+(d?' · Cigna “controlled” ≤ 150/90 '+(v.sys<=150&&v.dia<=90?'✓':'✕'):''));
+  $('hnumNote').innerHTML=L.join('<br>'); }
 function afcCondMeds(c){ var I=S.intake||{}, skip=I.medSkip||[];
   /* any arrhythmia name (SVT, flutter, PVC...) is treated by the same drugs the map keys to "Arrhythmia / AFib" */
   var keys=[c.name].concat(typeof AFC_ARRHY!=='undefined'&&AFC_ARRHY.test(String(c.name||''))?['Arrhythmia / AFib']:[]), ab=typeof afcAbbr==='function'?afcAbbr(c.name):null;
@@ -8334,7 +8366,15 @@ function afcCondHits(){ var L=((S.intake||{}).conds)||[], out=[];
   L.forEach(function(c,i){ if(c.fromAfc) return; var k=AFC_CK[c.name]||afcCondMatch(c.name); if(!k) return;
     var kind=k[0], st=(c.afc&&AFC_CQ[kind]&&AFC_CQ[kind].r[c.afc])?c.afc:null, res=kind==='chk'?'warn':(st?AFC_CQ[kind].r[st]:null);
     var onMed=kind==='5y'?afcCondMeds(c):[]; if(onMed.length){ st='y'; res='bad'; }
-    out.push({c:c,i:i,kind:kind,lbl:k[1],pg:k[2],st:st,res:res,onMed:onMed}); });
+    var why=''; if(!c.afc&&(kind==='bp'||kind==='diab')){ var v=hnumVals(), age=+((S.client||{}).page)||0;
+      if(kind==='diab'&&v.a1c!=null&&v.a1c>7.9){ st='n'; res='bad'; why='A1c '+v.a1c+' is over ManhattanLife’s 7.9 for a diabetic.'; }
+      if(kind==='bp'&&v.sys!=null){
+        if(age&&age<=18){ st='n'; res='bad'; why='High blood pressure at 18 or under is declined.'; }
+        else if(v.sys>140||v.dia>90){ st='n'; res='bad'; why='Typical reading '+v.sys+'/'+v.dia+' is over ManhattanLife’s 140/90 average.'; }
+        else if(v.chg==='Changed in the last 6 months'){ st='n'; res='bad'; why='Blood-pressure medication changed in the last 6 months — ManhattanLife needs six months with no changes.'; }
+        else if(v.chg==='No changes in 6 months'&&age>25){ st='y'; res='ok'; why='Typical reading '+v.sys+'/'+v.dia+', no medication changes in 6 months, over 25 — meets the rule (2 or fewer BP medications assumed; check).'; }
+        else if(age&&age<=25){ why='Ages 18–25 with high blood pressure need a medical-records review.'; } } }
+    out.push({c:c,i:i,kind:kind,lbl:k[1],pg:k[2],st:st,res:res,onMed:onMed,why:why}); });
   return out; }
 function afcCondWho(c){ var C=S.client||{}, f=function(x){ return String(x||'').trim().split(/\s+/)[0]; }, w=[];
   if(c.forP!==false) w.push(f(C.pname)||'Applicant'); if(c.forS) w.push(f(C.sname)||'Spouse'); return w.join(' & '); }
@@ -8344,7 +8384,7 @@ function afcCondHTML(h){ var who=afcCondWho(h.c), nm=esc(h.c.name), lbl=(who?esc
   if(h.kind==='chk') return '<div class="afcflag chk"><span class="afct">'+lbl+' — '+esc(h.lbl)+'. You may want to check with underwriting before submitting (<a href="mailto:'+AFC_UW_EMAIL+'">'+AFC_UW_EMAIL+'</a>).'+cite+'</span></div>';
   if(!h.st) return '<div class="afcflag ask"><span class="afct">⚠ '+lbl+' — ManhattanLife: '+esc(Q.q)+cite+'</span>'+Q.b.map(function(b){ return '<button type="button"'+(Q.r[b[0]]==='bad'?' class="y"':'')+' data-afcc="'+h.i+'" data-v="'+b[0]+'">'+esc(b[1])+'</button>'; }).join('')+'</div>';
   if(h.onMed&&h.onMed.length) return '<div class="afcflag bad"><span class="afct">✕ '+lbl+' — <b>don’t submit to ManhattanLife Affordable Choice.</b> Still taking '+esc(h.onMed.join(', '))+' for it — ManhattanLife counts medication that controls the condition as ongoing treatment, so the 5-year window hasn’t started, however long ago it was diagnosed. It starts once they no longer need medication for it.'+cite+'</span></div>';
-  var msg=esc(Q.m[h.st]).replace(/&amp;/g,'&');
+  var msg=h.why?esc(h.why)+' <span style="opacity:.7">(from the health numbers)</span>':esc(Q.m[h.st]).replace(/&amp;/g,'&');
   if(h.res==='bad') return '<div class="afcflag bad"><span class="afct">✕ '+lbl+' — <b>don’t submit to ManhattanLife Affordable Choice.</b> '+msg+cite+'</span>'+chg+'</div>';
   if(h.res==='warn') return '<div class="afcflag chk"><span class="afct">'+lbl+' — '+msg+' You may want to check with underwriting before submitting (<a href="mailto:'+AFC_UW_EMAIL+'">'+AFC_UW_EMAIL+'</a>).'+cite+'</span>'+chg+'</div>';
   return '<div class="afcflag ok"><span class="afct">✓ '+lbl+' — '+msg+'</span>'+chg+'</div>'; }
