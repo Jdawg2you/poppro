@@ -5634,7 +5634,7 @@ function triadScreen(){ var I=S.intake||{}, C=S.client||{}, out=[], yr=new Date(
     if(e){ out.push({src:src,l:'bad',t:w+' — '+e[0]+' at any time is not insurable on Cigna.'}); return; }
     var k=TRIAD_2YR.filter(function(r){ return r[1].test(n); })[0]; if(!k) return;
     /* ManhattanLife's "More than 5 years ago" (5-year look-back) already answers Cigna's 2-year question */
-    var mk=typeof afcCondMatch==='function'?(AFC_CK[n]||afcCondMatch(n)):null, inf=!c.cg&&c.afc==='n'&&mk&&mk[0]==='5y', cv=c.cg||(inf?'n':'');
+    var mk=typeof afcCondMatch==='function'?(AFC_CK[n]||afcCondMatch(n)):null, inf=!c.cg&&c.afc==='n'&&mk&&mk[0]==='5y'&&!(typeof afcCondMeds==='function'&&afcCondMeds(c).length), cv=c.cg||(inf?'n':'');
     var ask={k:'cond',i:i,v:cv,q:'Treated, or advised to be, in the last two years?',o:[['n','No treatment in 2 years'],['y','Yes — treated or changed',1]].concat(k[2]?[]:[['x','Ongoing, unchanged for 2+ years']])};
     if(cv==='n') out.push({src:src,l:'ok',t:w+(inf?' — not treated in 5 years (from the ManhattanLife answer). Fine for Cigna.':' — no treatment in the last two years. Fine for Cigna.'),ask:ask});
     else if(c.cg==='y') out.push({src:src,l:'bad',t:w+' — '+k[0]+', treated in the last two years: typically not insurable on Cigna.',s:k[2]?'No exception for this one.':'',ask:ask});
@@ -5691,7 +5691,8 @@ function csVerdicts(){ var I=S.intake||{}, C=S.client||{}, st=String(C.state||''
     else if(h.st==='n') add(ml,src,'warn',lbl+' — on ManhattanLife’s list for '+h.r.q+', but not taken for that here. Check with underwriting.');
     else add(ml,src,'warn',lbl+' — on ManhattanLife’s list if it’s for '+(ins?'diabetes':h.r.q)+'.','Ask what it’s for — the answer on the Intake sets the colour.'); });
   if(typeof afcCondHits==='function') afcCondHits().forEach(function(h){ var src='cond:'+String(h.c.name).toLowerCase(), who=afcCondWho(h.c), lbl=(who?who+': ':'')+h.c.name;
-    if(h.res==='bad') add(ml,src,'bad',lbl+' — on ManhattanLife’s uninsurable list.');
+    if(h.onMed&&h.onMed.length) add(ml,src,'bad',lbl+' — still on '+h.onMed.join(', ')+' for it: ManhattanLife counts that as ongoing treatment, so the 5-year window hasn’t started.');
+    else if(h.res==='bad') add(ml,src,'bad',lbl+' — on ManhattanLife’s uninsurable list.');
     else if(!h.st&&h.kind!=='chk') add(ml,src,'warn',lbl+' — ManhattanLife asks: '+AFC_CQ[h.kind].q);
     else if(h.res==='warn') add(ml,src,'warn',lbl+' — check with ManhattanLife underwriting.'); });
   if(I.diabetic&&!ml.some(function(x){ return x.src==='diab'; })) add(ml,'diab','warn','Diabetic — ManhattanLife declines insulin in the last 5 years, juvenile onset, or any complication.');
@@ -8281,10 +8282,19 @@ function medCondPrune(){ var I=S.intake||{}, L=I.medList||[], n0=(I.conds||[]).l
   var onL={}, s0=(I.medSkip||[]).length; L.forEach(function(x){ onL[popMedResolve(x.name).toLowerCase()]=1; });
   I.medSkip=(I.medSkip||[]).filter(function(k){ var mm=String(k).split('|')[0]; return onL[popMedResolve(mm).toLowerCase()]; });
   if(I.conds.length!==n0||I.medSkip.length!==s0){ if(typeof renderConds==='function') renderConds(); autosave(); } }
+/* Medication is treatment (ManhattanLife underwriting, Oct 2026, on AFib with Eliquis diagnosed 7 years ago: "Ongoing
+   treatment with Eliquis is considered ongoing cardiac treatment to control the condition. If they had met the required
+   timeframe from the last episode with no need for medication to control, it would be a different situation.") So a
+   5-year-look-back condition with a medication on the Intake that treats it (MED_FOR, same person, not answered "No,
+   that's not why") is treated NOW - the window hasn't started, whatever year it was diagnosed. */
+function afcCondMeds(c){ var I=S.intake||{}, skip=I.medSkip||[];
+  return (I.medList||[]).filter(function(m){ var lab=popMedResolve(m.name); if(!lab||(MED_FOR[lab]||[]).indexOf(c.name)<0||skip.indexOf(lab+'|'+c.name)>-1) return false;
+    var mp=!!m.forP||!m.forS, ms=!!m.forS; return (c.forP!==false&&mp)||(!!c.forS&&ms); }).map(function(m){ return String(m.name); }); }
 function afcCondHits(){ var L=((S.intake||{}).conds)||[], out=[];
   L.forEach(function(c,i){ if(c.fromAfc) return; var k=AFC_CK[c.name]||afcCondMatch(c.name); if(!k) return;
     var kind=k[0], st=(c.afc&&AFC_CQ[kind]&&AFC_CQ[kind].r[c.afc])?c.afc:null, res=kind==='chk'?'warn':(st?AFC_CQ[kind].r[st]:null);
-    out.push({c:c,i:i,kind:kind,lbl:k[1],pg:k[2],st:st,res:res}); });
+    var onMed=kind==='5y'?afcCondMeds(c):[]; if(onMed.length){ st='y'; res='bad'; }
+    out.push({c:c,i:i,kind:kind,lbl:k[1],pg:k[2],st:st,res:res,onMed:onMed}); });
   return out; }
 function afcCondWho(c){ var C=S.client||{}, f=function(x){ return String(x||'').trim().split(/\s+/)[0]; }, w=[];
   if(c.forP!==false) w.push(f(C.pname)||'Applicant'); if(c.forS) w.push(f(C.sname)||'Spouse'); return w.join(' & '); }
@@ -8293,6 +8303,7 @@ function afcCondHTML(h){ var who=afcCondWho(h.c), nm=esc(h.c.name), lbl=(who?esc
   var chg=' <button type="button" class="lnk" data-afcc="'+h.i+'" data-v="">change</button>';
   if(h.kind==='chk') return '<div class="afcflag chk"><span class="afct">'+lbl+' — '+esc(h.lbl)+'. You may want to check with underwriting before submitting (<a href="mailto:'+AFC_UW_EMAIL+'">'+AFC_UW_EMAIL+'</a>).'+cite+'</span></div>';
   if(!h.st) return '<div class="afcflag ask"><span class="afct">⚠ '+lbl+' — ManhattanLife: '+esc(Q.q)+cite+'</span>'+Q.b.map(function(b){ return '<button type="button"'+(Q.r[b[0]]==='bad'?' class="y"':'')+' data-afcc="'+h.i+'" data-v="'+b[0]+'">'+esc(b[1])+'</button>'; }).join('')+'</div>';
+  if(h.onMed&&h.onMed.length) return '<div class="afcflag bad"><span class="afct">✕ '+lbl+' — <b>don’t submit to ManhattanLife Affordable Choice.</b> Still taking '+esc(h.onMed.join(', '))+' for it — ManhattanLife counts medication that controls the condition as ongoing treatment, so the 5-year window hasn’t started, however long ago it was diagnosed. It starts once they no longer need medication for it.'+cite+'</span></div>';
   var msg=esc(Q.m[h.st]).replace(/&amp;/g,'&');
   if(h.res==='bad') return '<div class="afcflag bad"><span class="afct">✕ '+lbl+' — <b>don’t submit to ManhattanLife Affordable Choice.</b> '+msg+cite+'</span>'+chg+'</div>';
   if(h.res==='warn') return '<div class="afcflag chk"><span class="afct">'+lbl+' — '+msg+' You may want to check with underwriting before submitting (<a href="mailto:'+AFC_UW_EMAIL+'">'+AFC_UW_EMAIL+'</a>).'+cite+'</span>'+chg+'</div>';
