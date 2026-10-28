@@ -15,8 +15,7 @@
  "notes": "Self-funded ERISA employee plans: \"Pricing of plans does not vary from state to state\" (Recruiter FAQ). ES = employee + spouse (ESP), EC = employee + children (ECH). HSA plans are offered only to a client who already has an HSA and wants to use it (Jesse, 28 Oct).",
  "lineup": [
   "VL 1500",
-  "PPO 1250",
-  "MM 8100"
+  "PPO 1250"
  ],
  "plans": {
   "VL 1500": {
@@ -348,6 +347,57 @@
      "FAM": 1169.0
     }
    }
+  }
+ },
+ "lineup_note": "Kyle: the Visit Limit 1500 and the Copay PPO 1250 (Jesse, 28 Oct). The other plans are kept for reference only.",
+ "humana": {
+  "source": "Humana_BrightLife_Overview_2026-10-01.pdf (V2.10126), Bright Life Docs/05_Humana Ancillary, read by eye",
+  "trp_states": [
+   "AK",
+   "GA",
+   "LA",
+   "SD",
+   "TX",
+   "WV"
+  ],
+  "dental": {
+   "Silver PPO": {
+    "EE": 53.33,
+    "ES": 106.66,
+    "EC": 119.99,
+    "FAM": 183.96
+   },
+   "Gold PPO with Ortho": {
+    "EE": 60.95,
+    "ES": 121.92,
+    "EC": 151.06,
+    "FAM": 227.72
+   },
+   "Silver TRP": {
+    "EE": 58.77,
+    "ES": 117.52,
+    "EC": 132.23,
+    "FAM": 202.73
+   },
+   "Gold TRP with Ortho": {
+    "EE": 68.14,
+    "ES": 136.27,
+    "EC": 164.24,
+    "FAM": 252.48
+   }
+  },
+  "vision": {
+   "EE": 12.22,
+   "ES": 24.45,
+   "EC": 23.22,
+   "FAM": 36.48
+  },
+  "life": {
+   "EE": 14.85,
+   "ES": 25.35,
+   "EC": 25.35,
+   "FAM": 35.85,
+   "what": "Basic Life with AD&D: $25k employee, $10k spouse, $5k child (6 months to 26)"
   }
  }
 }
