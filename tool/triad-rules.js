@@ -25,7 +25,7 @@ var TRIAD_EVER=[['Organ transplant',/transplant/i],['Amputation caused by diseas
 /* p.2 - treated, or advised to be treated, in the last two years = typically not insurable. Long-standing conditions with no
    change in treatment or medication for 2+ years can be considered: answer "Yes" and attach how long, how controlled, and
    every prescription with its dose. The first three (cancer, kidney, hepatitis) do not get that consideration. [label, pattern, no-exception] */
-var TRIAD_2YR=[['Internal cancer or melanoma',/cancer|melanoma|carcinoma|lymphoma|leukemia|tumou?r|sarcoma\b|myeloma/i,1],
+var TRIAD_2YR=[['Internal cancer or melanoma',/^(?!.*(basal|squamous cell skin|skin squamous))(?=.*(cancer|melanoma|carcinoma|lymphoma|leukemia|tumou?r|sarcoma\b|myeloma))/i,1],
   ['Chronic kidney disease, renal failure or cirrhosis',/kidney disease|\bckd\b|\besrd\b|\bpkd\b|renal|dialysis|cirrhosis/i,1],['Chronic hepatitis',/hepatitis/i,1],
   ['Alcoholism',/alcohol/i],['Drug abuse',/drug abuse|substance|addiction|opioid use/i],['Mental or nervous disorder needing psychiatric hospitalization',/psychiatric hosp|inpatient psych/i],
   ['Heart attack',/heart attack|myocardial|\bmi\b/i],['Coronary artery disease',/coronary|\bcad\b|stent|bypass/i],['Congestive heart failure or enlarged heart',/heart failure|\bchf\b|enlarged heart|cardiomyopathy/i],

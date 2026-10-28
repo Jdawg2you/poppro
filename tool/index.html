@@ -1757,6 +1757,7 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
 
 <script src="afc-rules.js"></script>
 <script src="triad-rules.js"></script>
+<script src="brightlife-rules.js"></script>
 <script>
 "use strict";
 var $=function(id){return document.getElementById(id);};
@@ -5742,7 +5743,34 @@ function csVerdicts(){ var I=S.intake||{}, C=S.client||{}, st=String(C.state||''
   if(typeof triadScreen==='function') triadScreen().forEach(function(x){ if(x.l!=='ok'||x.ask) cg.push({src:x.src||'',l:x.l,t:x.t,s:x.s||'',ask:x.ask}); });
   var any=!!(st||age||(I.medList||[]).length||(I.conds||[]).length||I.pheight||I.diabetic||preg.length||mat.length);
   var lvl=function(L){ return L.some(function(x){ return x.l==='bad'; })?'red':(L.some(function(x){ return x.l==='warn'; })?'amber':(any?'green':'none')); };
-  return {ml:{lvl:lvl(ml),L:ml},cg:{lvl:lvl(cg),L:cg},gaps:gaps,st:st}; }
+  var bl=typeof blScreen==='function'?blScreen():[];
+  var blLvl=bl.some(function(x){ return x.l==='bad'; })?'red':(any||bl.length?'amber':'none');   /* never green - see blScreen */
+  return {ml:{lvl:lvl(ml),L:ml},cg:{lvl:lvl(cg),L:cg},bl:{lvl:blLvl,L:bl},gaps:gaps,st:st}; }
+/* Bright Life screen (sandbox, Jesse 28 Oct): each Intake condition and medication against the Health History
+   Disclosure Form rows in brightlife-rules.js. A hit = "check Yes" on the form. Never green: with nothing hit it stays
+   amber, because the AI look-back and the ongoing-care standard (an annual specialist visit counts) can still decline. */
+function blScreen(){ var I=S.intake||{}, C=S.client||{}, sp=!!(I.who&&I.who.spouse), st=String(C.state||'').toUpperCase().trim(), out=[];
+  if(typeof BL_ROWS==='undefined') return out;
+  var nm=function(w){ return String((w==='s'?C.sname:C.pname)||'').trim().split(/\s+/)[0]||(w==='s'?'Spouse':'Applicant'); };
+  var whoC=function(x){ var w=[]; if(x.forP!==false) w.push(nm('p')); if(x.forS&&sp) w.push(nm('s')); return w.join(' & ')||nm('p'); };
+  var hit=function(r,who,why){ var t=r.t; if(!out.some(function(x){ return x.t===t&&x.who===who; })) out.push({l:'bad',p:r.p,t:t,who:who,why:why}); };
+  if(st&&BL_NO_HIRE.indexOf(st)>=0) out.push({l:'bad',p:'',t:'Bright Life can’t hire in '+st,who:'',why:'no-hire state (webinar 22 Oct)'});
+  var meds=(I.medList||[]).map(function(m){ var lab=(typeof popMedResolve==='function'&&popMedResolve(m.name))||''; return {m:m,txt:String(m.name||'')+' '+lab,lab:lab}; });
+  BL_ROWS.forEach(function(r){
+    (I.conds||[]).forEach(function(c){ if(r.c&&r.c.test(String(c.name||''))) hit(r,whoC(c),c.name+(c.yr?' ('+c.yr+')':'')); });
+    if(r.rx&&r.m) meds.forEach(function(x){ if(r.m.test(x.txt)) hit(r,whoC(x.m),x.m.name+' (the medicine alone counts)'); });
+    if(r.pend) [['p','pendP'],['s','pendS']].forEach(function(q){ if(q[0]==='s'&&!sp) return; if(I[q[1]]==='Surgery or procedure recommended'||I[q[1]]==='Still being followed up after surgery') hit(r,nm(q[0]),I[q[1]]); });
+    if(r.heart3) ['p','s'].forEach(function(w){ if(w==='s'&&!sp) return; var n=meds.filter(function(x){ var f=(MED_FOR[x.lab]||[]).join('|'); return (w==='s'?x.m.forS:x.m.forP!==false)&&/blood pressure|heart|arrhythm|angina|stent/i.test(f); });
+      if(n.length>=3) hit(r,nm(w),n.length+' heart / blood-pressure medicines together ('+n.map(function(x){ return x.m.name; }).join(', ')+')'); });
+    if(r.mh2) ['p','s'].forEach(function(w){ if(w==='s'&&!sp) return; var n=meds.filter(function(x){ return (w==='s'?x.m.forS:x.m.forP!==false)&&/depress|anxiety|bipolar|schizo|psychosis/i.test((MED_FOR[x.lab]||[]).join('|')); });
+      if(n.length>=2) hit(r,nm(w),n.length+' mental-health medicines ('+n.map(function(x){ return x.m.name; }).join(', ')+')'); });
+  });
+  ['p'].concat(sp?['s']:[]).forEach(function(w){ var W=w==='s'?'S':'P';
+    if(I['pregNow'+W]) out.push({l:'bad',p:'B',t:'Pregnant now',who:nm(w),why:'Part B'});
+    else if(I['maternity'+W]) out.push({l:'warn',p:'B',t:'Planning a pregnancy',who:nm(w),why:'Part B counts pregnancy, a partner’s pregnancy, surrogacy, adoption or fertility treatment underway within 12 months'}); });
+  if(I.mental) out.push({l:'warn',p:'C',t:'Mental-health care wanted',who:'',why:'a Yes only if it needs ongoing care or 2+ regular medicines — one antidepressant is fine'});
+  if(I.surg2yr) out.push({l:'warn',p:'C',t:'Surgery or hospital stay noted',who:'',why:'a Yes if there’s still ongoing care for it (any stay in 5 years)'});
+  return out; }
 /* ManhattanLife first: rank each Cigna item against ManhattanLife's item on the same thing (same medication, condition,
    person's build, pregnancy, pending care). Cigna only = full; Cigna kinder than ManhattanLife = full ("routing");
    ManhattanLife already as hard = one line under "also". */
@@ -5751,8 +5779,9 @@ function csSplit(v){ var rk={bad:2,warn:1,ok:0}, mine=[], easier=[], also=[];
     if(!m) mine.push(x); else if(rk[m.l]>rk[x.l]) easier.push(x); else also.push(x); });
   return {mine:mine,easier:easier,also:also}; }
 function csWord(c){ var b=c.L.filter(function(x){ return x.l==='bad'; }).length, w=c.L.filter(function(x){ return x.l==='warn'; }).length;
-  return c.lvl==='red'?b+' decline'+(b>1?'s':'')+(w?' · '+w+' to ask':''):c.lvl==='amber'?w+' to ask':c.lvl==='green'?'nothing stops it':'waiting on the Intake'; }
-function csRoute(v){ var a=v.ml.lvl, b=v.cg.lvl;
+  return c.lvl==='red'?b+' decline'+(b>1?'s':'')+(w?' · '+w+' to ask':''):c.lvl==='amber'?(w?w+' to ask':'ask its form'):c.lvl==='green'?'nothing stops it':'waiting on the Intake'; }
+function csRoute(v){ var a=v.ml.lvl, b=v.cg.lvl, c=v.bl?v.bl.lvl:'none';
+  if(a==='red'&&b==='red'&&c==='amber') return 'ManhattanLife and Cigna won’t take them on what’s on file. Bright Life might — nothing on the Intake checks Yes on its form — but ask its questions first; otherwise the ACA and the guaranteed-issue options.';
   if(a==='red'&&b==='red') return 'Neither carrier would take them on what’s on file. Look at the ACA and the guaranteed-issue options before quoting.';
   if(a==='red') return 'ManhattanLife is out. Build on the Cigna PPO, with ManhattanLife add-ons only where their own underwriting allows'+(b==='amber'?' — and clear Cigna’s questions first':'')+'.';
   if(a==='amber'&&b==='green') return 'Ask ManhattanLife’s questions before quoting it. If the answers go the wrong way, Cigna would take them.';
@@ -5774,6 +5803,10 @@ document.addEventListener('click',function(e){ var b=e.target&&e.target.closest&
 function csPanel(k,v){
   if(k==='ml') return (v.ml.L.length?'<ul class="cs-ul">'+v.ml.L.map(csLi).join('')+'</ul>':'<div class="cs-ok">✓ Nothing on the Intake is on ManhattanLife’s decline lists.</div>')
     +'<div class="cs-src">Affordable Choice rules (agent guide AGT-AFC7010). HI Select, Out-of-Pocket and Cancer / Heart Attack &amp; Stroke have their own, shorter lists.</div>';
+  if(k==='bl'){ var B=v.bl.L, bad=B.filter(function(x){ return x.l==='bad'; }), wn=B.filter(function(x){ return x.l!=='bad'; });
+    return (bad.length?'<div class="cs-sub">Checks “Yes” on Bright Life’s health form</div><ul class="cs-ul">'+bad.map(function(x){ return '<li class="bad">✕ '+(x.p?'Part '+x.p+' · ':'')+esc(x.t)+(x.who?' — '+esc(x.who):'')+'<small>'+esc(x.why)+'</small></li>'; }).join('')+'</ul>':'<div class="cs-ok" style="color:#6b4a07">Nothing on the Intake checks “Yes” on the form — but Bright Life is never a sure thing.</div>')
+      +(wn.length?'<ul class="cs-ul">'+wn.map(function(x){ return '<li class="warn">⚠ '+esc(x.t)+(x.who?' — '+esc(x.who):'')+'<small>'+esc(x.why)+'</small></li>'; }).join('')+'</ul>':'')
+      +'<div class="cs-src">An AI look-back screens first, and underwriting counts any ongoing care — even a yearly specialist visit for something years ago. Ask Parts A–C of the Health History Disclosure Form word for word. The client becomes a W-2 employee of Bright Life (a research company) — say so before they apply. No GLP-1 for weight loss, no specialty drugs.</div>'; }
   var p=csSplit(v), h='';
   if(p.mine.length) h+='<div class="cs-sub">Cigna only — ManhattanLife wouldn’t stop on these</div><ul class="cs-ul">'+p.mine.map(csLi).join('')+'</ul>';
   if(p.easier.length) h+='<div class="cs-sub">Where Cigna may take them and ManhattanLife won’t</div><ul class="cs-ul">'+p.easier.map(csLi).join('')+'</ul>';
@@ -5785,7 +5818,7 @@ function renderCarrierStrip(){ var hosts=['carrierStrip','carrierStripQ'].map($)
   var v; try{ v=csVerdicts(); }catch(e){ console.error('carrier strip',e); return; }
   var pill=function(k,name,c){ return '<button type="button" class="cs-pill '+c.lvl+(CS_OPEN===k?' open':'')+'" data-cs="'+k+'"><i></i><b>'+name+'</b><small>'+csWord(c)+'</small></button>'; };
   var route=csRoute(v), rt=route?'<div class="cs-route">→ '+esc(route)+(S.csRouted?' <b>The packages start on the Cigna PPO</b> — Lineup “Manhattan only” puts them back.':'')+'</div>':'';
-  var html='<div class="cs-row"><span class="cs-lbl">Would they take them?</span>'+pill('ml','ManhattanLife',v.ml)+pill('cg','Cigna PPO',v.cg)
+  var html='<div class="cs-row"><span class="cs-lbl">Would they take them?</span>'+pill('ml','ManhattanLife',v.ml)+pill('cg','Cigna PPO',v.cg)+pill('bl','Bright Life',v.bl)
     +'{GAP}</div>'+rt
     +(CS_OPEN?'<div class="cs-panel">'+csPanel(CS_OPEN,v)+'</div>':'');
   var gap=v.gaps.length?'<span class="cs-gap">'+esc(v.st)+': ManhattanLife doesn’t sell '+esc(v.gaps.join(', '))+'</span>':'';   /* Jesse, 27 Oct: state gaps belong on the Quote, not the Intake */
