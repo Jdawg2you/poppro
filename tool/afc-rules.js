@@ -72,7 +72,12 @@ var AFC_CQ={
         m:{y:'Meets the arthritis rule.',n:'Arthritis can’t be severe, disabling or psoriatic, have surgery pending, or need two or more medications, steroids or immunosuppressants.'}}};
 function afcNorm(x){ return String(x||'').toLowerCase().replace(/[’']/g,'').replace(/[^a-z0-9]+/g,' ').trim(); }
 /* A typed condition that isn't one of Discovery's names: match it to the guide's list by name. */
-function afcCondMatch(name){ var t=afcNorm(name); if(t.length<4) return null;
+/* AGT-AFC7010 p.21, "Arrhythmia – Common Types That Would be Declined": AFib, atrial flutter, atrial tachycardia, AV heart
+   block, bradycardia, long QT, PSVT, PVC, SVT, Wolff-Parkinson-White. Short names (SVT, PVC, WPW) are under the 4-letter
+   floor below, so they're matched here first. The 5-year clock runs from the last treatment - medication counts. */
+var AFC_ARRHY=/\b(a-?fib|svt|psvt|pvcs?|wpw)\b|atrial fibrillation|atrial flutter|atrial tachycardia|supraventricular|bradycardi|long ?qt|heart block|av block|atrioventricular|premature ventricular|wolff|arrhythmi|heart rhythm|irregular heart/i;
+function afcCondMatch(name){ if(AFC_ARRHY.test(String(name||''))) return ['5y','Arrhythmia — a declined type on ManhattanLife’s list',21];
+  var t=afcNorm(name); if(t.length<4) return null;
   var pick=null; AFC_CONDS.concat(AFC_PROCS).some(function(c){ var k=afcNorm(String(c.n).split(/[–(]/)[0]);
     if(k.length>=4&&(t===k||t.indexOf(k)>=0||k.indexOf(t)>=0)){ pick=c; return true; } return false; });
   if(!pick) return null;

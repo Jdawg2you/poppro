@@ -29,7 +29,7 @@ var TRIAD_2YR=[['Internal cancer or melanoma',/cancer|melanoma|carcinoma|lymphom
   ['Chronic kidney disease, renal failure or cirrhosis',/kidney disease|\bckd\b|renal|dialysis|cirrhosis/i,1],['Chronic hepatitis',/hepatitis/i,1],
   ['Alcoholism',/alcohol/i],['Drug abuse',/drug abuse|substance|addiction|opioid use/i],['Mental or nervous disorder needing psychiatric hospitalization',/psychiatric hosp|inpatient psych/i],
   ['Heart attack',/heart attack|myocardial|\bmi\b/i],['Coronary artery disease',/coronary|\bcad\b|stent|bypass/i],['Congestive heart failure or enlarged heart',/heart failure|\bchf\b|enlarged heart|cardiomyopathy/i],
-  ['Heart valve surgery or replacement',/valve/i],['Heart rhythm disorder',/a-?fib|atrial fib|arrhythmi|rhythm|tachycardia/i],['Pacemaker or defibrillator',/pacemaker|defibrillator|\bicd\b/i],
+  ['Heart valve surgery or replacement',/valve/i],['Heart rhythm disorder',/a-?fib|atrial fib|arrhythmi|rhythm|tachycardia|flutter|bradycardi|\b(svt|psvt|pvcs?|wpw)\b|supraventricular|premature ventricular|wolff|long ?qt|heart block|av block|atrioventricular|irregular heart/i],['Pacemaker or defibrillator',/pacemaker|defibrillator|\bicd\b/i],
   ['Stroke or TIA',/stroke|\btia\b|transient ischemic/i],['Carotid artery disease',/carotid/i],['Peripheral vascular disease',/peripheral (vascular|artery)|\bpvd\b|\bpad\b/i],
   ['Osteoporosis with a fracture',/osteoporo/i],['Rheumatoid arthritis',/rheumatoid|\bra\b/i],['Crippling or disabling arthritis',/disabling arthritis|crippling/i]];
 /* p.1 - diabetic applicants. Insulin alone is not a decline. Any one of these is, unless it was more than a year ago and

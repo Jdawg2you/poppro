@@ -8288,7 +8288,10 @@ function medCondPrune(){ var I=S.intake||{}, L=I.medList||[], n0=(I.conds||[]).l
    5-year-look-back condition with a medication on the Intake that treats it (MED_FOR, same person, not answered "No,
    that's not why") is treated NOW - the window hasn't started, whatever year it was diagnosed. */
 function afcCondMeds(c){ var I=S.intake||{}, skip=I.medSkip||[];
-  return (I.medList||[]).filter(function(m){ var lab=popMedResolve(m.name); if(!lab||(MED_FOR[lab]||[]).indexOf(c.name)<0||skip.indexOf(lab+'|'+c.name)>-1) return false;
+  /* any arrhythmia name (SVT, flutter, PVC...) is treated by the same drugs the map keys to "Arrhythmia / AFib" */
+  var keys=[c.name].concat(typeof AFC_ARRHY!=='undefined'&&AFC_ARRHY.test(String(c.name||''))?['Arrhythmia / AFib']:[]);
+  return (I.medList||[]).filter(function(m){ var lab=popMedResolve(m.name); if(!lab) return false;
+    var k=keys.filter(function(x){ return (MED_FOR[lab]||[]).indexOf(x)>=0&&skip.indexOf(lab+'|'+x)<0; })[0]; if(!k) return false;
     var mp=!!m.forP||!m.forS, ms=!!m.forS; return (c.forP!==false&&mp)||(!!c.forS&&ms); }).map(function(m){ return String(m.name); }); }
 function afcCondHits(){ var L=((S.intake||{}).conds)||[], out=[];
   L.forEach(function(c,i){ if(c.fromAfc) return; var k=AFC_CK[c.name]||afcCondMatch(c.name); if(!k) return;
