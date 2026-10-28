@@ -5719,7 +5719,9 @@ function csVerdicts(){ var I=S.intake||{}, C=S.client||{}, st=String(C.state||''
     else if(!h.st&&h.kind!=='chk') add(ml,src,'warn',lbl+' — ManhattanLife asks: '+AFC_CQ[h.kind].q);
     else if(h.res==='warn') add(ml,src,'warn',lbl+' — check with ManhattanLife underwriting.'); });
   if(typeof r12Hits==='function') r12Hits().forEach(function(x){ add(ml,x.src,'bad',x.t);
-    if(/^r12:/.test(x.src)&&AFC_R12_PEND[I['abn12'+(x.w==='s'?'S':'P')]]) add(cg,x.src,'bad',nm(x.w)+': tests recommended or results pending — Cigna declines until they’re done.');
+    /* EBA guide p.1, "situations are uninsurable": "surgery, medical tests, treatment, or therapy that has not been performed".
+       That's a test not yet DONE - not one done with results pending, and not an abnormal result (no Cigna rule for those). */
+    if(/^r12:/.test(x.src)&&I['abn12'+(x.w==='s'?'S':'P')]==='A test recommended, not done yet') add(cg,x.src,'bad',nm(x.w)+': a test recommended and not yet done — Cigna: “surgery, medical tests, treatment, or therapy that has not been performed” is uninsurable until it’s done.');
     if(/^dis:/.test(x.src)) add(cg,x.src,'warn',nm(x.w)+': unable to work — Cigna’s plan needs self-employment with an EIN.'); });
   if(I.diabetic&&!ml.some(function(x){ return x.src==='diab'; })) add(ml,'diab','warn','Diabetic — ManhattanLife declines insulin in the last 5 years, juvenile onset, or any complication.');
   if(typeof triadScreen==='function') triadScreen().forEach(function(x){ if(x.l!=='ok'||x.ask) cg.push({src:x.src||'',l:x.l,t:x.t,s:x.s||'',ask:x.ask}); });
