@@ -8289,7 +8289,13 @@ function medCondPrune(){ var I=S.intake||{}, L=I.medList||[], n0=(I.conds||[]).l
    that's not why") is treated NOW - the window hasn't started, whatever year it was diagnosed. */
 function afcCondMeds(c){ var I=S.intake||{}, skip=I.medSkip||[];
   /* any arrhythmia name (SVT, flutter, PVC...) is treated by the same drugs the map keys to "Arrhythmia / AFib" */
-  var keys=[c.name].concat(typeof AFC_ARRHY!=='undefined'&&AFC_ARRHY.test(String(c.name||''))?['Arrhythmia / AFib']:[]);
+  var keys=[c.name].concat(typeof AFC_ARRHY!=='undefined'&&AFC_ARRHY.test(String(c.name||''))?['Arrhythmia / AFib']:[]), ab=typeof afcAbbr==='function'?afcAbbr(c.name):null;
+  if(ab&&keys.indexOf(ab)<0) keys.push(ab);   /* a typed acronym (TIA, CHF...) is treated by the same drugs as its picker name */
+  /* heart conditions share their drugs: a CHF, CAD or cardiomyopathy client on a drug the map files under heart disease,
+     angina, heart attack or stent is on cardiac treatment (the ManhattanLife ruling was 'ongoing cardiac treatment') */
+  var kk=AFC_CK[c.name]||(typeof afcCondMatch==='function'?afcCondMatch(c.name):null);
+  if(kk&&/heart|cardi|coronary|angina|congestive|valve|aneurysm|bypass|stent|angioplasty/i.test(kk[1]+' '+c.name))
+    ['Heart disease / disorder','Angina (chest pain)','Heart attack','Stent','Angioplasty / bypass','Heart surgery'].forEach(function(x){ if(keys.indexOf(x)<0) keys.push(x); });
   return (I.medList||[]).filter(function(m){ var lab=popMedResolve(m.name); if(!lab) return false;
     var k=keys.filter(function(x){ return (MED_FOR[lab]||[]).indexOf(x)>=0&&skip.indexOf(lab+'|'+x)<0; })[0]; if(!k) return false;
     var mp=!!m.forP||!m.forS, ms=!!m.forS; return (c.forP!==false&&mp)||(!!c.forS&&ms); }).map(function(m){ return String(m.name); }); }

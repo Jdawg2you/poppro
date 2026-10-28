@@ -76,7 +76,25 @@ function afcNorm(x){ return String(x||'').toLowerCase().replace(/[’']/g,'').re
    block, bradycardia, long QT, PSVT, PVC, SVT, Wolff-Parkinson-White. Short names (SVT, PVC, WPW) are under the 4-letter
    floor below, so they're matched here first. The 5-year clock runs from the last treatment - medication counts. */
 var AFC_ARRHY=/\b(a-?fib|svt|psvt|pvcs?|wpw)\b|atrial fibrillation|atrial flutter|atrial tachycardia|supraventricular|bradycardi|long ?qt|heart block|av block|atrioventricular|premature ventricular|wolff|arrhythmi|heart rhythm|irregular heart/i;
+/* Acronyms (Health ZONE, 28 Oct): the 4-letter floor below silently dropped exactly the names people type as acronyms -
+   TIA, ALS, MS, CHF, CAD, CKD... Each points at the Intake picker name (AFC_CK) or the guide's own wording, so it gets that
+   entry's rule. A whole name that IS the acronym matches in any case; inside longer text it must be typed in capitals.
+   Left out on purpose: ASD (heart defect or autism), CP (cerebral palsy or chest pain), TEN (a word). */
+var AFC_ABBR={TIA:'Stroke / TIA',CVA:'Stroke / TIA',MI:'Heart attack',STEMI:'Heart attack',NSTEMI:'Heart attack',CABG:'Angioplasty / bypass',
+  CHF:'Congestive Heart Failure',CAD:'Coronary Artery Disease',CHD:'Heart disease / disorder',AAA:'Aneurysm',PAD:'Peripheral Arterial Disease',PVD:'Peripheral Vascular Disease',
+  DVT:'Blood clots / DVT',PE:'Pulmonary Embolism or Infarction',SBE:'Endocarditis',HTN:'High blood pressure',HBP:'High blood pressure',
+  T1D:'Diabetes',T2D:'Diabetes',IDDM:'Diabetes',NIDDM:'Diabetes',DM:'Diabetes',CKD:'Kidney disease / failure',ESRD:'Kidney disease / failure',PKD:'Kidney disease / failure',
+  NASH:'Liver disease',NAFLD:'Liver disease',PBC:'Liver disease',PSC:'Liver disease',HCV:'Hepatitis C',HBV:'Hepatitis B',
+  HIV:'AIDS / HIV / ARC',ALS:'ALS/Amyotrophic Lateral Sclerosis',MS:'Multiple Sclerosis',MND:'Motor Neuron Disease',DMD:'Muscular Dystrophy',NF:'Neurofibromatosis',
+  RA:'Rheumatoid arthritis',OA:'Osteoarthritis',SLE:'Lupus',PMR:'Polymyalgia Rheumatica',CF:'Cystic Fibrosis',IPF:'Pulmonary Fibrosis',
+  IBD:'Colitis in Any Form',UC:'Ulcerative Colitis',TB:'Tuberculosis',PDA:'Patent Ductus Arteriosus – Uncorrected',VSD:'Ventricular Septal Defect – Still open',
+  SCD:'Sickle Cell Anemia',TSS:'Toxic Shock Syndrome',OSA:'Sleep Apnea'};
+function afcAbbr(name){ var raw=String(name||'').trim(), whole=raw.toUpperCase().replace(/[^A-Z0-9]/g,'');
+  if(AFC_ABBR[whole]) return AFC_ABBR[whole];
+  var toks=raw.split(/[^A-Za-z0-9]+/); for(var i=0;i<toks.length;i++){ if(toks[i]&&toks[i]===toks[i].toUpperCase()&&AFC_ABBR[toks[i]]) return AFC_ABBR[toks[i]]; }
+  return null; }
 function afcCondMatch(name){ if(AFC_ARRHY.test(String(name||''))) return ['5y','Arrhythmia — a declined type on ManhattanLife’s list',21];
+  var ab=afcAbbr(name); if(ab&&ab!==name) return AFC_CK[ab]||afcCondMatch(ab);
   var t=afcNorm(name); if(t.length<4) return null;
   var pick=null; AFC_CONDS.concat(AFC_PROCS).some(function(c){ var k=afcNorm(String(c.n).split(/[–(]/)[0]);
     if(k.length>=4&&(t===k||t.indexOf(k)>=0||k.indexOf(t)>=0)){ pick=c; return true; } return false; });
