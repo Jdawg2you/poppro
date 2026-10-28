@@ -75,7 +75,7 @@ function afcNorm(x){ return String(x||'').toLowerCase().replace(/[’']/g,'').re
 /* AGT-AFC7010 p.21, "Arrhythmia – Common Types That Would be Declined": AFib, atrial flutter, atrial tachycardia, AV heart
    block, bradycardia, long QT, PSVT, PVC, SVT, Wolff-Parkinson-White. Short names (SVT, PVC, WPW) are under the 4-letter
    floor below, so they're matched here first. The 5-year clock runs from the last treatment - medication counts. */
-var AFC_ARRHY=/\b(a-?fib|svt|psvt|pvcs?|wpw)\b|atrial fibrillation|atrial flutter|atrial tachycardia|supraventricular|bradycardi|long ?qt|heart block|av block|atrioventricular|premature ventricular|wolff|arrhythmi|heart rhythm|irregular heart/i;
+var AFC_ARRHY=/\b(a-?fib|svt|psvt|pvcs?|wpw)\b|atrial fibrillation|atrial flutter|atrial tachycardia|supraventricular|bradycardi|long ?qt|heart block|av block|atrioventricular|premature ventricular|wolff|arrh?ythmi|heart rhythm|irregular heart/i;
 /* Acronyms (Health ZONE, 28 Oct): the 4-letter floor below silently dropped exactly the names people type as acronyms -
    TIA, ALS, MS, CHF, CAD, CKD... Each points at the Intake picker name (AFC_CK) or the guide's own wording, so it gets that
    entry's rule. A whole name that IS the acronym matches in any case; inside longer text it must be typed in capitals.
@@ -95,10 +95,22 @@ function afcAbbr(name){ var raw=String(name||'').trim(), whole=raw.toUpperCase()
   return null; }
 function afcCondMatch(name){ if(AFC_ARRHY.test(String(name||''))) return ['5y','Arrhythmia — a declined type on ManhattanLife’s list',21];
   var ab=afcAbbr(name); if(ab&&ab!==name) return AFC_CK[ab]||afcCondMatch(ab);
+  /* plain-English names for the entries that have their own question */
+  var raw=String(name||'');
+  if(/heart attack|myocardial infarction/i.test(raw)) return AFC_CK['Heart attack'];
+  if(/\bstrokes?\b|transient ischemic/i.test(raw)) return AFC_CK['Stroke / TIA'];
+  if(/seizure|epilep/i.test(raw)) return AFC_CK['Epilepsy / seizures'];
+  if(/pacemaker|defibrillator/i.test(raw)) return AFC_CK['Defibrillator / pacemaker'];
   var t=afcNorm(name); if(t.length<4) return null;
   var pick=null; AFC_CONDS.concat(AFC_PROCS).some(function(c){ var k=afcNorm(String(c.n).split(/[–(]/)[0]);
     if(k.length>=4&&(t===k||t.indexOf(k)>=0||k.indexOf(t)>=0)){ pick=c; return true; } return false; });
   if(!pick) return null;
+  /* p.18-19 entries that only decline in a narrower case (Health ZONE's parse, 28 Oct): uncorrected or still-open defects,
+     Lyme "Present", chronic bronchitis or narcotic/opioid use, amputation or blindness "Due to Disease", surgery not yet
+     released, build chart, hospital stays (recent or repeated), paraplegia/quadriplegia. Read at face value they would
+     decline a sellable client - a repaired septal defect, Lyme once - so they ask the agent to check the condition (amber)
+     instead of running the plain 5-year question. "All Types", "Any kind" and "in Any Form" widen, so they stay 5-year. */
+  if(!pick.sg&&(pick.q||/uncorrected|still open|[–-]\s*present|chronic|due to disease|not released|not within guidelines/i.test(pick.n))) return ['chk','Only a decline when: '+pick.n+(pick.q?' ('+pick.q.replace(/ \| /g,' · ')+')':''),pick.pg];
   var g=pick.sg?{diabetes:'diab','high blood pressure':'bp',cancer:'cancer',asthma:'asthma','rheumatoid arthritis':'ra',arthritis:'ra',osteoarthritis:'ra',arrhythmia:'5y','atrial fibrillation':'5y',hepatitis:'5y','kidney diseases or disorders':'5y','liver disease or disorders':'5y'}[afcNorm(pick.n)]:null;
   return [g||(pick.sg?'chk':'5y'),pick.n+(pick.q?' ('+pick.q.replace(/ \| /g,' · ')+')':''),pick.pg]; }
 
