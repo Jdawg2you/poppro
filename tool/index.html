@@ -5663,10 +5663,10 @@ function triadScreen(){ var I=S.intake||{}, C=S.client||{}, out=[], yr=new Date(
     else if(c.cg==='y') out.push({src:src,l:'bad',t:w+' — '+k[0]+', treated in the last two years: typically not insurable on Cigna.',s:k[2]?'No exception for this one.':'',ask:ask});
     else if(c.cg==='x') out.push({src:src,l:'warn',t:w+' — '+k[0]+', long-standing with no change for 2+ years: the guide’s exception.',s:'Answer “Yes” on the application and attach how long, how it’s controlled, and every prescription with its dose.',ask:ask});
     else out.push({src:src,l:(y&&yr-y>=3)?'warn':'bad',t:w+' — '+k[0]+'. A decline if treated, or advised to be, in the last two years.',ask:ask}); });
-  if(I.diabetic){ var dask={k:'diab',i:0,v:I.cgDiab||'',q:'Any of these?',o:[['n','None of them'],['y','Yes — one or more',1]]};
-    if(I.cgDiab==='n') out.push({src:'diab',l:'ok',t:'Diabetic, with none of Cigna’s diabetic declines. Insulin alone isn’t one.',ask:dask});
-    else if(I.cgDiab==='y') out.push({src:'diab',l:'bad',t:'Diabetic, with one of Cigna’s diabetic declines.',s:'Unless it was more than a year ago and not in the past year.',ask:dask});
-    else out.push({src:'diab',l:'warn',t:'Diabetic: insulin alone isn’t a decline on Cigna. Any one of these is — '+TRIAD_DIABETIC.join(' · ')+'.',s:'Unless it was more than a year ago and not in the past year. Controlled = A1C 7 or under and blood pressure 150/90 or below.',ask:dask}); }
+  if(I.diabetic){ var dask={k:'diab',i:0,v:I.cgDiab||'',q:'Any of these within the past year?',o:[['n','None in the past year'],['y','Yes — within the past year',1]]};   /* EBA p.1: "If these factors existed more than one year ago but not within the past year the risk can be insurable." */
+    if(I.cgDiab==='n') out.push({src:'diab',l:'ok',t:'Diabetic, with none of Cigna’s diabetic declines in the past year (older ones don’t count). Insulin alone isn’t one.',ask:dask});
+    else if(I.cgDiab==='y') out.push({src:'diab',l:'bad',t:'Diabetic, with one of Cigna’s diabetic declines within the past year.',s:'If it clears and a year passes with none of them, the guide says the risk can be insurable again.',ask:dask});
+    else out.push({src:'diab',l:'warn',t:'Diabetic: insulin alone isn’t a decline on Cigna. Any one of these is — '+TRIAD_DIABETIC.join(' · ')+'.',s:'Only the past year counts — any of these more than a year ago and not since can be insurable. Cigna’s “controlled”: A1C 7 or under and blood pressure 150/90 or below (ManhattanLife’s numbers differ).',ask:dask}); }
   return out; }
 function triadScreenHTML(){ var L=triadScreen(), bad=L.filter(function(x){ return x.l==='bad'; }).length, warn=L.filter(function(x){ return x.l==='warn'; }).length;
   var head=bad?'<div class="trd-stop">✕ '+bad+' thing'+(bad>1?'s':'')+' on Cigna’s decline lists — sort '+(bad>1?'them':'it')+' out before the $35 application.</div>'
