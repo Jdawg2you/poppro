@@ -179,6 +179,14 @@ if (mode === 'engine') {
   const v = cmp.find(r => r.label === 'Visits'), w = cmp.find(r => r.label === 'Wellness');
   ok(v.diff && v.a === '$50 x 3' && v.b === '$75 x 5' && !w.diff, 'compare marks the difference, not the sameness');
   ok(ctx.benWhen('gap.ea>0', { gap: { ea: 1 } }) && !ctx.benWhen('gap.ea>0', { gap: { ea: 0 } }), 'when expressions');
+  ok(ctx.benWhen('blVision', { blVision: true }) && !ctx.benWhen('blVision', {}) && ctx.benWhen('blDen==gold_trp', { blDen: 'gold_trp' }) && !ctx.benWhen('blDen==gold_trp', { blDen: 'gold_ppo' })
+    && ctx.benWhen('blDen in silver_ppo,gold_ppo', { blDen: 'gold_ppo' }) && !ctx.benWhen('blDen in silver_ppo,gold_ppo', { blDen: 'gold_trp' }) && !ctx.benWhen('blDen in silver_ppo,gold_ppo', {}), 'word when forms (on, ==, in)');
+  // Bright Life: both plans fill every key row, and the Humana rows follow the chosen add-ons.
+  const blD = JSON.parse(fs.readFileSync(new URL('../tool/benefits/brightlife.json', import.meta.url), 'utf8'));
+  const vl = ctx.benModel(blD, 'TX', 'VL 1500', {}), pp = ctx.benModel(blD, 'TX', 'PPO 1250', { blDen: 'gold_trp', blDenName: 'Gold TRP with Ortho', blVision: true });
+  ok(vl.key.some(r => r.label === 'Office visit limit' && /10 visits/.test(r.value)) && !vl.key.some(r => /Dental|Vision/.test(r.label)), 'VL 1500: visit limit shown, no Humana rows without add-ons');
+  ok(pp.key.some(r => r.label === 'Urgent care' && /\$90/.test(r.value)) && pp.key.some(r => r.value === 'Humana Gold TRP with Ortho') && pp.sections.some(s => s.rows.some(r => r.label === 'Dental annual maximum' && r.value === 'Unlimited')) && pp.key.some(r => r.label === 'Vision'), 'PPO 1250 + Gold TRP + vision: copay, dental plan and vision rows');
+  ok(pp.sections.some(s => s.rows.some(r => r.label === 'Orthodontia' && /12-month wait/.test(r.value))) && !pp.sections.some(s => s.rows.some(r => /Basic/.test(r.label) && /50% out/.test(r.value))), 'TRP: ortho wait, basic paid the same out of network');
   // Positive control on the real page: every builder row that should have an ⓘ maps to a data file name.
   ok(/BEN_FILE=\{afc:'afc',sdr:'sdr',his:'his',acc:'acc',gap:'gap',chas:'chas',hhc:'hhc',dvh:'dvh',lbp:'lb',lbs:'lb'\}/.test(html), 'row -> data file map covers every product row');
   if (!fails) console.log('benefit drawer checks passed');
