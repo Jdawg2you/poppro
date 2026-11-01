@@ -5843,7 +5843,10 @@ function csVerdicts(){ var I=S.intake||{}, C=S.client||{}, st=String(C.state||''
   var any=!!(st||age||(I.medList||[]).length||(I.conds||[]).length||I.pheight||I.diabetic||preg.length||mat.length);
   var lvl=function(L){ return L.some(function(x){ return x.l==='bad'; })?'red':(L.some(function(x){ return x.l==='warn'; })?'amber':(any?'green':'none')); };
   var bl=typeof blScreen==='function'?blScreen():[];
-  var blLvl=bl.some(function(x){ return x.l==='bad'; })?'red':(any||bl.length?'amber':'none');   /* never green - see blScreen */
+  /* Jesse, 1 Nov: "if they didn't answer yes to any of those things, then they would be able to get Bright Life" - clear on
+     every form question is green; a question still to ask is amber; a Yes is red. (The trainer's stricter ongoing-care
+     standard is said on the Bright Life card, not used to hold it amber.) */
+  var blLvl=bl.some(function(x){ return x.l==='bad'; })?'red':(bl.length?'amber':(any?'green':'none'));
   return {ml:{lvl:lvl(ml),L:ml},cg:{lvl:lvl(cg),L:cg},bl:{lvl:blLvl,L:bl},gaps:gaps,st:st}; }
 /* Bright Life screen (sandbox, Jesse 28 Oct): each Intake condition and medication against the Health History
    Disclosure Form rows in brightlife-rules.js. A hit = "check Yes" on the form. Never green: with nothing hit it stays
@@ -6616,8 +6619,14 @@ function renderRightFit(){ var el=$('rightFit'); if(!el) return; if(!RIGHT_FIT_O
        not: Amaze + Accident).  ACA strongest: no money -> the ACA plan alone; money -> ACA + the deductible buster.
    LifeX is off the tree (Jesse, 1 Nov). A suggestion from the Intake, never an underwriting decision. */
 var DT_ON=RIGHT_FIT_ON, AMAZE_MO=99.99, DT_NET_LINE=300;   /* Amaze: $99.99/mo, individual or family (Amaze material); Kyle's PDF says $99 */
-function dtPrice(t,lu,keep,tweak){ try{ var d=pbTierDefaults(t,lu); if(tweak) tweak(d.c);
-    var P=buildTierProducts(d.c,null,[]).filter(function(p){ return p.k&&d.drop.indexOf(p.k)<0&&(!keep||keep.indexOf(p.k)>=0); });
+/* Jesse, 1 Nov: the tree's prices must be the Quote's. When the Quote is on this lineup, read the package the agent built
+   (pkMonthly, as the column shows it); otherwise price the defaults - and dental only when the Quote has it on, because
+   on the Quote it's an add-on that starts off. */
+function dtPrice(t,lu,keep,tweak){ try{
+    var pk=S.packages&&S.packages[t], cur=(S.lineup||'mh')===lu&&pk&&(pk.products||[]).length;
+    if(cur&&!keep&&!tweak){ var Q=(pk.products||[]).slice(); return {sum:Math.round(pkMonthly(pk)*100)/100,P:Q,c:effCfg(t)}; }
+    var d=pbTierDefaults(t,lu); if(tweak) tweak(d.c); var dentOff=!pk||(pk.dropped||[]).indexOf('dvh')>=0;
+    var P=buildTierProducts(d.c,null,[]).filter(function(p){ return p.k&&d.drop.indexOf(p.k)<0&&(!keep||keep.indexOf(p.k)>=0)&&!(p.k==='dvh'&&dentOff); });
     return {sum:Math.round(P.reduce(function(s,p){ return s+(+p.monthly||0); },0)*100)/100,P:P,c:d.c}; }catch(e){ return {sum:0,P:[]}; } }
 /* The tree's answers (Jesse, 1 Nov): every question shows a YES or NO, and the agent can tick what decides it.
    S.dt holds only what the agent changed; anything left alone follows the Intake. */
@@ -6669,7 +6678,7 @@ function dtRoute(F){ var c=F.c||F.can, P=F.P, B=F.budget, fit=function(x){ retur
   if(F.mm){ R.why.push('Major medical is the point: '+F.mmWhy.map(esc).join('; ')+'.');
     if(c.cg&&!F.cgDear){ lead=opt.cg; R.why.push('Cigna takes them and it fits the budget — the 7350 plan, paired with the deductible buster.'); if(c.ml) R.alts.push(opt.ml); }
     else if(c.bl){ lead=opt.bl; R.why.push((c.cg?'Cigna is too expensive for their budget':'Cigna won’t take them')+' → Bright Life: a limited-benefit PPO with co-pays on the Cigna network.'); if(c.ml) R.alts.push(opt.ml); }
-    else if(c.ml){ lead=opt.ml; R.why.push((c.cg?'Cigna is too expensive':'Cigna won’t take them')+' and Bright Life won’t either → Manhattan’s package is the best fit.'); } }
+    else if(c.ml){ lead=opt.ml; R.why.push((c.cg?'Cigna is too expensive':'Cigna won’t take them')+' and Bright Life won’t either → Manhattan’s package is the right fit.'); } }
   else if(c.ml){ lead=opt.ml; R.why.push('ACA is ruled out and major medical isn’t the point → the Manhattan package of protection. Start in the middle and go up or down.'); if(c.cg) R.alts.push(opt.cg); }
   else if(c.cg){ lead=opt.cg; R.why.push('Manhattan won’t take them; Cigna will.'); }
   else if(c.bl){ lead=opt.bl; R.why.push('Manhattan and Cigna both say no; nothing on Bright Life’s form stops it yet.'); }
@@ -6710,7 +6719,7 @@ function renderTree(){ var host=$('dtHost'); if(!host) return; var C=S.client||{
   var st=function(k,ids){ var x=k&&!c[k]; return x?' x':(ids.indexOf(id)>=0?' lit':(R.alts.some(function(a){ return ids.indexOf(a.id)>=0; })?' alt':'')); };
   var chip=function(p){ return p>0?'<span class="dtf-px">'+fmt(p)+'/mo</span>':''; };
   var node=function(cls,tag,tagc,name,body,k,price){ var x=k&&!c[k];
-    return '<div class="dtf-node'+cls+'"><div class="dtf-top"><span class="dtf-tag '+tagc+'">'+tag+'</span>'+(x?'<span class="dtf-xx">✕ not for this client</span>':(cls.indexOf('lit')>=0?'<span class="dtf-you">★ lead with this</span>':(cls.indexOf('alt')>=0?'<span class="dtf-also">also show</span>':'')))+chip(x?0:price)+'</div>'
+    return '<div class="dtf-node'+cls+'"><div class="dtf-top"><span class="dtf-tag '+tagc+'">'+tag+'</span>'+(x?'<span class="dtf-xx">✕ not for this client</span>':(cls.indexOf('lit')>=0?'<span class="dtf-you">★ Right fit</span>':(cls.indexOf('alt')>=0?'<span class="dtf-also">also show</span>':'')))+chip(x?0:price)+'</div>'
       +'<div class="dtf-nm">'+name+'</div><div class="dtf-bd">'+body+'</div>'+(x?'<ul class="dt-xr">'+dtWhy(v[k].L,3)+'</ul>':'')+'</div>'; };
   var arrow=function(on,label,cls){ return '<div class="dtf-arr'+lit(on)+(cls?' '+cls:'')+'"><span>'+label+'</span></div>'; };
   /* YES / NO beside a question; "from the Intake" until the agent changes it */
@@ -6723,7 +6732,7 @@ function renderTree(){ var host=$('dtHost'); if(!host) return; var C=S.client||{
   var intakeMM=F.f.mm.filter(function(x){ return x!=='Client says they want major medical'; });
   var budgetQ=F.cgDear||F.broke, sick=!c.ml;
   var tree='<div class="dt-card dtf"><div class="dtf-head"><div><div class="dtf-k">HealthFirst · agent field guide</div><div class="dtf-t">The Right-Fit Decision Tree <small>— this client</small></div></div>'
-    +'<div class="dtf-ladder"><span class="g">GOOD</span><span class="b">BETTER</span><span class="p">BEST</span><small>Lead with one. Show up to three.</small></div></div>'
+    +'<div class="dtf-ladder"><span class="g">GOOD</span><span class="b">BETTER</span><span class="p">BEST</span><small>Lead with the right fit. Show up to three.</small></div></div>'
     +'<div class="dtf-node lit dtf-disc"><div class="dtf-nm"><span class="dtf-n">01</span> Discover in MyPopPro</div><div class="dtf-3">'
       +'<div><b>Household</b>'+esc(hh)+' · '+esc(String(C.state).toUpperCase())+' · age '+ratingAge()+(F.f.e&&F.f.e.ok?' · ACA ≈ '+fmt(F.acaNet)+'/mo after subsidy':'')+'</div>'
       +'<div><b>Health</b>'+meds+' medication'+(meds===1?'':'s')+' on the Intake · '+(flags?'<span class="dt-no">'+flags+' knockout'+(flags>1?'s':'')+'</span>':'no knockouts on file')+'</div>'
@@ -6731,9 +6740,9 @@ function renderTree(){ var host=$('dtHost'); if(!host) return; var C=S.client||{
     +arrow(true,'')
     +'<div class="dtf-grid">'
       +'<div class="dtf-left">'
-        +'<div class="dtf-yes'+lit(isACA)+'">◀ YES — ACA + optional support may be the best fit</div>'
+        +'<div class="dtf-yes'+lit(isACA)+'">◀ YES — ACA + optional support may be the right fit</div>'
         +node(isACA?' lit':'','ACA PATH','t-aca','ACA + optional support','Choose the ACA plan they qualify for'+(F.acaNet?' (about '+fmt(F.acaNet)+'/mo)':'')+'. Then the deductible buster: Hospital Indemnity Select sized to their deductible + accident'+(P.buster.sum?' = <b>'+fmt(P.buster.sum)+'/mo</b>':'')+' + dental. <i>Always say you checked ACA first.</i>',null,isACA?R.price:0)
-        +'<div class="dtf-node dtf-exc'+(id==='mgr'?' lit':'')+'"><div class="dtf-top"><span class="dtf-tag t-exc">EXCEPTION PATH</span>'+(id==='mgr'?'<span class="dtf-you">★ this client</span>':'')+'</div><div class="dtf-nm">Talk to your manager/mentor</div>'
+        +'<div class="dtf-node dtf-exc'+(id==='mgr'?' lit':'')+'"><div class="dtf-top"><span class="dtf-tag t-exc">EXCEPTION PATH</span>'+(id==='mgr'?'<span class="dtf-you">★ Right fit</span>':'')+'</div><div class="dtf-nm">Talk to your manager/mentor</div>'
           +'<div class="dtf-bd">When Manhattan, Cigna and Bright Life all say no — or they’re too unhealthy for the safety net’s ManhattanLife cover and need real medical.<ol><li>Revisit ACA.</li><li>Guaranteed acceptance, worked out with your manager: <span class="dtf-pill">Aither Health</span> medical (individual, no health questions, Enrollment First) · <span class="dtf-pill">Amerus</span></li>'
           +'<li>Guaranteed-acceptance add-ons on the same Enrollment First shelf, in place of ManhattanLife’s: <span class="dtf-pill">5Star hospital indemnity</span> from $76/mo · <span class="dtf-pill">5Star accident</span> from $24.61/mo · <span class="dtf-pill">TrioMed</span> accident + critical illness (GA, TX, AZ — not FL) · <span class="dtf-pill">Pre-Med Defender GAP</span> only with Aither’s Bronze 6500.</li></ol><span class="dt-no">Guaranteed acceptance ≠ full coverage.</span></div></div>'
       +'</div>'
@@ -6741,7 +6750,7 @@ function renderTree(){ var host=$('dtHost'); if(!host) return; var C=S.client||{
         /* 02 */
         +'<div class="dtf-node dtf-q lit"><div class="dtf-qh"><div class="dtf-nm"><span class="dtf-n">02</span> Is ACA the strongest fit?</div>'+yn('aca',F.aca,F.auto.aca)+'</div>'
           +'<div class="dtf-bd">Net premium, providers, prescriptions, exposure. '+(F.f.aca.length?'From the Intake: '+F.f.aca.join('; '):'Nothing on the Intake makes it the strongest fit — no big subsidy, no Medicaid range, no ACA-only doctor, no maternity.')+'</div></div>'
-        +arrow(!isACA,'NO → PRIVATE OPTIONS ARE THE BEST FIT')
+        +arrow(!isACA,'NO → PRIVATE OPTIONS ARE THE RIGHT FIT')
         /* 03 */
         +'<div class="dtf-node dtf-q'+lit(!isACA)+'"><div class="dtf-qh"><div class="dtf-nm"><span class="dtf-n">03</span> Needs or wants major medical?</div><span class="dtf-ans '+(F.mm?'y':'n')+'">'+(F.mm?'YES':'NO')+'</span></div>'
           +'<div class="dtf-bd">Tick anything that’s true — any one makes it a YES.</div><div class="dtf-ticks">'
@@ -6750,7 +6759,7 @@ function renderTree(){ var host=$('dtHost'); if(!host) return; var C=S.client||{
           +tick('baby',!!D.baby,'Planning a pregnancy','Manhattan doesn’t cover maternity')
           +tick('diab',!!D.diab,'Diabetes not under control, on several medications')
           +(intakeMM.length?'<div class="dtf-auto">From the Intake: '+intakeMM.map(esc).join(' · ')+'</div>':'')+'</div></div>'
-        +'<div class="dtf-split"><div class="dtf-lab'+lit(!isACA&&!F.mm)+'">NO → MANHATTAN POP IS THE BEST FIT ▼</div><div class="dtf-lab r'+lit(!isACA&&F.mm)+'">YES → MAJOR MEDICAL ▼</div></div>'
+        +'<div class="dtf-split"><div class="dtf-lab'+lit(!isACA&&!F.mm)+'">NO → MANHATTAN POP IS THE RIGHT FIT ▼</div><div class="dtf-lab r'+lit(!isACA&&F.mm)+'">YES → MAJOR MEDICAL ▼</div></div>'
         +'<div class="dtf-pair">'
           +node(st('ml',['ml','mlE']),'BETTER · CORE','t-ml','ManhattanLife POP','The default private recommendation. Kyle’s seven: Affordable Choice, hospital, out-of-pocket, accident, dental, home health (pays for itself on 3+ meds), living benefits. Start in the middle; go up or down by what they pay now.','ml',/^ml/.test(id)?R.price:P.core.sum)
           +'<div class="dtf-mid">WANTS MAJOR MEDICAL ▶</div>'
@@ -6764,7 +6773,7 @@ function renderTree(){ var host=$('dtHost'); if(!host) return; var C=S.client||{
         +arrow(id==='bl','WANTS MAJOR MEDICAL, BUT CIGNA IS TOO MUCH → BRIGHT LIFE')
         +node(st('bl',['bl']),'GOOD · BUDGET','t-bl','Bright Life','Limited-benefit PPO with co-pays on the Cigna network — the major-medical feel for less. Healthy people only: an annual check-up on an old condition counts as ongoing care. No specialty drugs.','bl',P.bl.sum)
         +arrow(id==='vb'||id==='vbs','MAJOR BUDGET LIMIT → THE SAFETY NET')
-        +'<div class="dtf-node dtf-vb'+lit(id==='vb'||id==='vbs')+'"><div class="dtf-top"><span class="dtf-tag t-vb">SAFETY NET</span>'+(id==='vb'||id==='vbs'?'<span class="dtf-you">★ lead with this</span>':'')+'</div><div class="dtf-nm">Virtual Basic <small>(your virtual medical safety net)</small></div>'
+        +'<div class="dtf-node dtf-vb'+lit(id==='vb'||id==='vbs')+'"><div class="dtf-top"><span class="dtf-tag t-vb">SAFETY NET</span>'+(id==='vb'||id==='vbs'?'<span class="dtf-you">★ Right fit</span>':'')+'</div><div class="dtf-nm">Virtual Basic <small>(your virtual medical safety net)</small></div>'
           +'<div class="dtf-bd">First recheck ACA savings, Medicaid and CHIP. Then Amaze telehealth — '+fmt2(AMAZE_MO)+'/mo, care access, not hospital insurance — plus:</div>'
           +'<div class="dtf-opts"><div class="dtf-opt'+(id==='vb'?' on':'')+(sick?' off':'')+'"><b>A · Real out-of-pocket protection</b><span>They pass ManhattanLife’s questions: + Hospital Indemnity, Out-of-Pocket and 24-hour accident.</span><em>'+fmt(AMAZE_MO+P.vbAdd.sum)+'/mo</em>'+(sick?'<i>ManhattanLife won’t take them</i>':'')+'</div>'
           +'<div class="dtf-opt'+(id==='vbs'?' on':'')+'"><b>B · Basic protection — too unhealthy for A</b><span>+ accident only. ManhattanLife’s 24-hour accident shown; the guaranteed-acceptance 5Star or TrioMed accident is on the exception path.</span><em>'+fmt(AMAZE_MO+P.vbAcc.sum)+'/mo</em></div></div>'
@@ -6774,7 +6783,7 @@ function renderTree(){ var host=$('dtHost'); if(!host) return; var C=S.client||{
     +'<div class="dtf-band"><b>DISCOVER → QUALIFY → BUILD → PRESENT</b><span>Lead with <b>one</b> recommendation; show up to <b>three</b>.</span><em>We sell health to sell life</em></div></div>';
   /* 3 · the recommendation */
   var go=R.lineup?'<button type="button" class="btn-gold" id="dtGo">Go with this → Quote</button>':'<button type="button" class="btn-gold" id="dtGo">Open the Quote →</button>';
-  var rec='<div class="dt-card dt-rec"><div class="dt-h">Lead with one</div><div class="dt-pick">'+esc(R.label)+(R.price>0?' <span>'+fmt(R.price)+'/mo</span>':'')+' '+dtVs(F,R.price)+'</div><ul class="dt-because">'+R.why.map(function(x){ return '<li>'+x+'</li>'; }).join('')+'</ul>'
+  var rec='<div class="dt-card dt-rec"><div class="dt-h">★ Right fit for this client</div><div class="dt-pick">'+esc(R.label)+(R.price>0?' <span>'+fmt(R.price)+'/mo</span>':'')+' '+dtVs(F,R.price)+'</div><ul class="dt-because">'+R.why.map(function(x){ return '<li>'+x+'</li>'; }).join('')+'</ul>'
     +(R.alts.length?'<div class="dt-alts">Also show: '+R.alts.map(function(a){ return '<b>'+esc(a.label)+'</b>'+(a.price>0?' '+fmt(a.price)+'/mo':''); }).join(' · ')+'</div>':'')+'<div class="dt-acts">'+go+'</div></div>';
   host.innerHTML='<div class="sectitle"><span class="dot">●</span> Coverage Decision Tree <small style="font-family:inherit;font-weight:600;color:var(--muted);font-size:13px">— agent only · built from the Intake · a suggestion, not an underwriting decision</small></div>'
     +big+tree+rec+'<div class="rfcheck"><b>Agent check before quoting:</b> state availability, current plan documents, eligibility, effective dates and total cost. Prices are the builder’s defaults for '+esc(String(C.state).toUpperCase())+', age '+ratingAge()+'.</div>';
@@ -8333,7 +8342,7 @@ function pbColHTML(T,anc){ var t=T[0], act=(t==='actual'), st=(S.client.state||'
     var byKpk={}; (pk.products||[]).forEach(function(p){ if(p.k) byKpk[p.k]=p; });
     var hdr=(S.lineup==='lx-mh-cg'||S.lineup==='custom')&&c.base&&c.base!=='afc'?[(c.base==='lifex'||c.base==='brightlife')?'Pivot down':'Pivot up',c.base==='lifex'?'LifeX':c.base==='brightlife'?'Bright Life':'Cigna']:(S.lineup==='lx-mh-cg'?['Lead','Manhattan']:[T[1],T[2]]);
     var incT=(S.include||{})[t]!==false;
-    if(act) html+=pbActHead(); else html+='<div class="pbcol'+(S.recommended===t?' rec':'')+(S.treePick&&S.treePick.tab===t&&S.treePick.lineup===(S.lineup||'mh')?' dtpick':'')+(incT?'':' excl')+(chosenTier()===t?' chosen':'')+'" data-t="'+t+'"><div class="pbhd">'+(S.treePick&&S.treePick.tab===t&&S.treePick.lineup===(S.lineup||'mh')?'<div class="dtbadge">🌳 Decision tree pick</div>':'')+'<div class="r1"><span class="tt">'+hdr[0]+'</span><button type="button" class="pbreset" data-act="reset1" title="Put this package back to the recommendation">↺ Reset</button></div><div class="nm">'+hdr[1]+'</div><div class="r3"><label class="pbshow"><input type="checkbox" data-act="inc"'+(incT?' checked':'')+'> Show on quote</label></div></div>'
+    if(act) html+=pbActHead(); else html+='<div class="pbcol'+(S.recommended===t?' rec':'')+(S.treePick&&S.treePick.tab===t&&S.treePick.lineup===(S.lineup||'mh')?' dtpick':'')+(incT?'':' excl')+(chosenTier()===t?' chosen':'')+'" data-t="'+t+'"><div class="pbhd">'+(S.treePick&&S.treePick.tab===t&&S.treePick.lineup===(S.lineup||'mh')?'<div class="dtbadge">★ Right fit</div>':'')+'<div class="r1"><span class="tt">'+hdr[0]+'</span><button type="button" class="pbreset" data-act="reset1" title="Put this package back to the recommendation">↺ Reset</button></div><div class="nm">'+hdr[1]+'</div><div class="r3"><label class="pbshow"><input type="checkbox" data-act="inc"'+(incT?' checked':'')+'> Show on quote</label></div></div>'
       +((S.lineup==='custom')?'':'<!--')+'<div style="padding:0 12px 4px"><select data-act="base" aria-label="Base plan" style="width:100%;font:inherit;font-size:13px;padding:6px 8px;border:1px solid #d6cdb4;border-radius:7px">'+pbOpts([['afc','Base: Manhattan — Affordable Choice']].concat(blOn()?(c.base==='lifex'?[['lifex','Base: LifeX (replaced by Bright Life)']]:[]).concat([['brightlife','Base: Bright Life']]):[['lifex','Base: LifeX']].concat(c.base==='brightlife'?[['brightlife','Base: Bright Life']]:[])).concat([['triad','Base: Cigna — Triad PPO']]),c.base||'afc')+'</select></div>'+((S.lineup==='custom')?'':'-->');
     var sum=0, addable=[], unavail=[];
     PB_SLOTS.forEach(function(sl){

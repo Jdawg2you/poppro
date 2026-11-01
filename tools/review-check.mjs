@@ -404,7 +404,7 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  S=JSON.parse(JSON.stringify(rfBase)); S.intake.pregNowP=true; goStep('quote'); compute(); await w(200); var rfe=document.getElementById('rightFit');
  ok(rfe&&/Coverage Decision Tree/.test(rfe.textContent)&&!!rfe.querySelector('a'),'Quote carries a link to the Coverage Decision Tree in place of the old right-fit panel: '+(rfe?rfe.textContent.slice(0,80):'none'));
  goStep('tree'); await w(200); var dth=document.getElementById('dtHost'), dtt=dth?dth.textContent:'';
- ok(/The big picture/.test(dtt)&&/Lead with one/.test(dtt)&&dtt.indexOf('Talk to your manager')>=0&&/Virtual Basic/.test(dtt)&&dtt.indexOf('99.99')>=0&&/not an underwriting decision/.test(dtt)&&!!document.getElementById('dtGo'),'Decision tree step renders the big picture, one recommendation, Virtual Basic at $99.99, manager/mentor and the disclaimer');
+ ok(/The big picture/.test(dtt)&&/Right fit for this client/.test(dtt)&&dtt.indexOf('Talk to your manager')>=0&&/Virtual Basic/.test(dtt)&&dtt.indexOf('99.99')>=0&&/not an underwriting decision/.test(dtt)&&!!document.getElementById('dtGo'),'Decision tree step renders the big picture, one recommendation, Virtual Basic at $99.99, manager/mentor and the disclaimer');
  ok(!!dth.querySelector('.dtf-node.x')&&/pregnan/i.test(dth.querySelector('.dtf-node.x').textContent),'pregnant now: Manhattan is crossed out with its reason on the tree');
  S=JSON.parse(JSON.stringify(rfBase));
  return {n:210, fails:fails}; })()`;
