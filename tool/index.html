@@ -980,6 +980,7 @@
   .tierinc label b{color:var(--navy);font-weight:700}
   .tierinc input{cursor:pointer;width:15px;height:15px;accent-color:var(--green)}
   /* Right-fit path (sandbox, Jesse 20 Oct): the decision tree, read from the Intake */
+  .dt-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin:0 0 14px}.dt-h{font-size:11.5px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--navy);margin-bottom:8px}.dt-now{font-size:15px;margin-bottom:6px}.dt-now span{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-right:8px}.dt-now small{color:var(--muted);font-size:12px}.dt-tab small{display:block;color:var(--muted);font-size:12px}.dt-true{color:#b42318}.dt-aca{font-size:13.5px;padding:7px 10px;background:#f4f7fb;border-radius:8px;margin:6px 0 10px}.dt-tab{width:100%;border-collapse:collapse;font-size:14px}.dt-tab th{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);text-align:left;padding:4px 6px;border-bottom:1px solid var(--line)}.dt-tab td{padding:7px 6px;border-bottom:1px solid #f0ece0;vertical-align:top}.dt-tab .r{text-align:right;white-space:nowrap}.dt-tab tr.x td:first-child{text-decoration:line-through;color:#9aa0a6}.dt-ok{color:#17824a}.dt-no{color:#b42318}.dt-amb{color:#a15c07}.dt-save{color:#17824a;font-weight:700}.dt-more{color:#b42318;font-weight:700}.dt-why3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px 16px;margin-top:10px;font-size:13px}.dt-why3 ul,.dt-xr{margin:4px 0 0;padding-left:16px}.dt-why3 li.bad,.dt-xr li.bad{color:#b42318}.dt-why3 li.warn,.dt-xr li.warn{color:#a15c07}.dt-why3 li.more,.dt-xr li.more{color:var(--muted);list-style:none}.dt-bud{font-size:13px;color:var(--muted);margin-top:8px}.dt-q{font-size:13.5px;margin:4px 0}.dt-mm{margin-left:8px;font-weight:600;color:var(--navy);white-space:nowrap}.dt-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px;margin-top:10px}.dt-box{border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;background:#fcfbf7;font-size:13px}.dt-box.lit{border-color:#c9a227;background:#fffaf0;box-shadow:0 0 0 3px #f3e3b0}.dt-box.alt{border-color:#7aa0d4}.dt-box.x{background:#f6f6f6}.dt-box.x .dt-nm{text-decoration:line-through;color:#8a8f96}.dt-tag{font-size:10.5px;font-weight:800;letter-spacing:.06em;color:#fff;background:var(--navy);border-radius:5px;padding:1px 6px}.dt-box.lit .dt-tag{background:#a8841c}.dt-nm{font-weight:800;font-size:15px;color:var(--navy);margin:5px 0 3px}.dt-nm small{font-weight:600;color:var(--muted);font-size:12px}.dt-rec{border:2px solid #c9a227;background:#fffaf0}.dt-pick{font-size:19px;font-weight:800;color:var(--navy)}.dt-pick span{font-size:16px;color:var(--ink)}.dt-because{margin:6px 0;padding-left:18px;font-size:14px;line-height:1.5}.dt-alts{font-size:13.5px;color:var(--muted)}.dt-acts{margin-top:10px}.dt-link{padding:10px 14px;font-size:14px}.dt-link>span{font-weight:800;color:var(--navy);margin-right:6px}.dtbadge{background:#c9a227;color:#fff;font-size:11.5px;font-weight:800;letter-spacing:.04em;text-align:center;padding:3px 6px;border-radius:8px;margin:0 0 6px;animation:dtbob 1.4s ease-in-out infinite}.pbcol.dtpick{box-shadow:0 0 0 3px #e9cf7a}@keyframes dtbob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}@media (prefers-reduced-motion:reduce){.dtbadge{animation:none}}
   .rfit{border:1px solid var(--line);border-radius:12px;margin:0 0 14px;background:#fff}
   .rfit>summary{cursor:pointer;padding:10px 14px;font-size:13px;list-style:none;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
   .rfit>summary::-webkit-details-marker{display:none}
@@ -1191,6 +1192,7 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
   <div class="stepper noprint" id="stepper">
     <button data-step="call"><span class="n">1</span> <span class="lgl">Discovery call</span><span class="sml">Call</span></button>
     <button data-step="intake"><span class="n">2</span> Intake</button>
+    <button data-step="tree" id="stepTreeBtn" style="display:none"><span class="n">3</span> <span class="lgl">Decision tree</span><span class="sml">Tree</span></button>
     <button data-step="quote" class="on"><span class="n">3</span> Quote</button>
     <button data-step="present"><span class="n">4</span> Present</button>
     <button data-step="enroll"><span class="n">5</span> Enroll</button>
@@ -1436,6 +1438,8 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
     </div>
    </div>
   </div>
+
+  <div id="step-tree" class="step"><div id="dtHost"></div></div>
 
   <div id="step-quote" class="step on">
 
@@ -6570,6 +6574,7 @@ function rightFitPath(f){ if(f.aca.length) return 'aca'; if(f.uwHard) return 'gi
 /* Not live yet (Jesse, 21 Oct: everything ships but the routing tree) - shown only in the sandbox, or with ?rf=1 */
 var RIGHT_FIT_ON=location.port==='8767'||/[?&]rf=1\b/.test(location.search);
 function renderRightFit(){ var el=$('rightFit'); if(!el) return; if(!RIGHT_FIT_ON){ el.style.display='none'; el.innerHTML=''; return; } S.rightFit=S.rightFit||{};
+  if(DT_ON){ var tp=S.treePick; el.outerHTML='<div id="rightFit" class="rfit dt-link hidein-client"><span>Coverage Decision Tree</span> '+(tp?'picked <b>'+esc(tp.label)+'</b> · ':'')+'<a href="#" onclick="goStep(\'tree\');return false">'+(tp?'open it':'open it — who takes them, what each costs against now, and what to lead with')+' →</a></div>'; return; }
   var f=rightFitFacts(), path=rightFitPath(f), ul=function(a){ return a.length?'<ul>'+a.map(function(x){ return '<li>'+x+'</li>'; }).join('')+'</ul>':''; };
   var NAME={aca:'ACA + optional HI Select', triad:'USAHealth Triad — BEST', pop:'ManhattanLife POP — BETTER (core)', budget:'BrightLife — GOOD', gi:'Exception path — ACA, then GI options'};
   var step=function(cls,q,a,why){ return '<li class="'+cls+'"><div><span class="rfq">'+q+'</span><span class="rfa">'+a+'</span></div><div class="rfwhy">'+why+'</div></li>'; };
@@ -6590,6 +6595,110 @@ function renderRightFit(){ var el=$('rightFit'); if(!el) return; if(!RIGHT_FIT_O
     '<ol>'+h+'</ol><div class="rfcheck"><b>Agent check before quoting:</b> state availability, current plan documents, eligibility, effective dates and total cost. This is a suggestion from the Intake, not an underwriting decision.</div>';
   var mm=$('rf_mm'); if(mm) mm.onchange=function(){ S.rightFit.mm=mm.checked; autosave(); renderRightFit(); };
 }
+/* ===== COVERAGE DECISION TREE (sandbox only, Jesse + Kyle 1 Nov) =====================================================
+   Its own step between Intake and Quote, agent-only. Kyle's Right-Fit Decision Tree (PDF 26 Oct, team call 27 Oct)
+   run on what the Intake already holds: the big picture first (what they pay now and its true cost, who takes them,
+   what each option costs against now), then Kyle's boxes with this client's path lit and every crossed-out option
+   giving its reason, then one recommendation - "lead with one, show up to three" - that the Quote picks up.
+   Who takes them = csVerdicts() (afc-rules / triad-rules / brightlife-rules). Prices = the builder's own defaults,
+   priced without touching the client's packages. Routing (Jesse, 1 Nov):
+     both Manhattan and Cigna: price -> Manhattan; wants major medical -> Cigna; coverage -> Cigna when it beats their
+       true cost now, else Manhattan.  One of them -> that one.  Bright Life only -> Bright Life.
+     none: money -> talk to your manager/mentor (Aither Health / Amerus, guaranteed acceptance); no money -> Virtual Basic.
+     over budget -> Manhattan Essential, Bright Life, then Virtual Basic (healthy: Amaze + HI + Out-of-Pocket + Accident;
+       not: Amaze + Accident).  ACA strongest: no money -> the ACA plan alone; money -> ACA + the deductible buster.
+   LifeX is off the tree (Jesse, 1 Nov). A suggestion from the Intake, never an underwriting decision. */
+var DT_ON=RIGHT_FIT_ON, AMAZE_MO=99.99;   /* Amaze: $99.99/mo, individual or family (Amaze material); Kyle's PDF says $99 */
+function dtPrice(t,lu,keep,tweak){ try{ var d=pbTierDefaults(t,lu); if(tweak) tweak(d.c);
+    var P=buildTierProducts(d.c,null,[]).filter(function(p){ return p.k&&d.drop.indexOf(p.k)<0&&(!keep||keep.indexOf(p.k)>=0); });
+    return {sum:Math.round(P.reduce(function(s,p){ return s+(+p.monthly||0); },0)*100)/100,P:P,c:d.c}; }catch(e){ return {sum:0,P:[]}; } }
+function dtFacts(){ var I=S.intake||{}, Cu=curIn(), v=csVerdicts(), f=rightFitFacts(), tags=whyTagList(I.whyTags);
+  var can={ml:v.ml.lvl!=='red',cg:v.cg.lvl!=='red',bl:v.bl.lvl!=='red'};
+  var prem=moneyNum(Cu.prem), ded=moneyNum(Cu.ded), P={
+    ess:dtPrice('good','mh'), core:dtPrice('better','mh'), comp:dtPrice('best','mh'),
+    bl:dtPrice('good','lx-mh-cg'), cg:dtPrice('best','lx-mh-cg'),
+    vbAdd:dtPrice('better','mh',['his','gap','acc']), vbAcc:dtPrice('better','mh',['acc']) };
+  var acaDed=+((S.aca||{}).ded)||0;
+  P.buster=dtPrice('good','mh',['his','acc'],function(c){ c.his={ben:Math.max(1000,Math.min(10000,Math.round((acaDed||5000)/1000)*1000)),amb:1,outp:0}; });
+  return {I:I,v:v,f:f,can:can,P:P,prem:prem,ded:ded,trueCost:prem>0?Math.round((prem+ded/12)*100)/100:0,
+    price:I.priority==='price'||tags.indexOf('Too expensive')>=0, mm:f.mm.length>0, budget:f.budget, acaNet:acaNetPrem(), acaDed:acaDed}; }
+/* the pick: {id, lineup, tab, label, price, why[], alts[]} */
+function dtRoute(F){ var c=F.can, P=F.P, B=F.budget, fit=function(x){ return !B||x<=B; }, R={why:[],alts:[]};
+  var opt={ml:{id:'ml',lineup:'mh',tab:'better',label:'Manhattan — '+TIER_NAME.better,price:P.core.sum},
+    mlE:{id:'mlE',lineup:'mh',tab:'good',label:'Manhattan — '+TIER_NAME.good,price:P.ess.sum},
+    cg:{id:'cg',lineup:'lx-mh-cg',tab:'best',label:'Cigna (USA Health Triad)',price:P.cg.sum},
+    bl:{id:'bl',lineup:'lx-mh-cg',tab:'good',label:'Bright Life',price:P.bl.sum},
+    vb:{id:'vb',label:'Virtual Basic (your virtual medical safety net)',price:AMAZE_MO+P.vbAdd.sum},
+    vbs:{id:'vbs',label:'Virtual Basic — care access + accident',price:AMAZE_MO+P.vbAcc.sum},
+    mgr:{id:'mgr',label:'Talk to your manager/mentor — guaranteed-acceptance options',price:0},
+    aca:{id:'aca',label:'The ACA plan',price:F.acaNet}, acab:{id:'acab',label:'The ACA plan + the deductible buster',price:F.acaNet+P.buster.sum}};
+  if(F.f.aca.length){ var broke=B>0&&B<opt.acab.price;
+    var pick=broke?opt.aca:opt.acab; R.why.push('ACA is the strongest fit: '+F.f.aca.map(function(x){ return x.replace(/<[^>]+>/g,''); }).join('; ')+'.');
+    R.why.push(broke?'Their budget ('+fmt(B)+'/mo) doesn’t stretch past the ACA plan itself.':'Add the deductible buster: Hospital Indemnity Select sized to the ACA deductible, plus accident.');
+    if(!broke&&c.ml) R.alts.push(opt.ml); return Object.assign(pick,R); }
+  var lead=null;
+  if(c.ml&&c.cg){ if(F.mm){ lead=opt.cg; R.why.push('They want or need major medical — Cigna is the major-medical rung.'); }
+    else if(F.price){ lead=opt.ml; R.why.push('Price matters most to them — Manhattan saves the most.'); }
+    else if(F.prem>0&&opt.cg.price<=F.prem){ lead=opt.cg; R.why.push('Coverage matters most, and Cigna still costs less than the '+fmt(F.prem)+'/mo they pay now'+(F.ded>0?' — with a lower deductible than their '+fmt(F.ded):'')+'.'); }
+    else { lead=opt.ml; R.why.push(F.prem>0?'Coverage matters, but Cigna costs more than they pay now — Manhattan is the default private recommendation.':'Manhattan is Kyle’s default private recommendation when they don’t need major medical.'); }
+    R.alts.push(lead.id==='ml'?opt.cg:opt.ml); }
+  else if(c.ml){ lead=opt.ml; R.why.push('Manhattan will take them; Cigna won’t.'); }
+  else if(c.cg){ lead=opt.cg; R.why.push('Cigna will take them; Manhattan won’t.'); }
+  else if(c.bl){ lead=opt.bl; R.why.push('Manhattan and Cigna both say no; nothing on Bright Life’s form stops it yet.'); }
+  if(c.bl&&lead&&lead.id!=='bl') R.alts.push(opt.bl);
+  if(lead&&!fit(lead.price)){ var was=lead; R.why.push(was.label+' is '+fmt(was.price)+'/mo against a budget of '+fmt(B)+'/mo.');
+    var down=[c.ml&&opt.mlE,c.bl&&opt.bl].filter(function(x){ return x&&fit(x.price); })[0];
+    if(down){ R.alts=[was]; lead=down; R.why.push('→ '+down.label+' fits the budget.'); }
+    else { lead=c.ml?opt.vb:opt.vbs; R.alts=[was]; R.why.push('Nothing on the shelf fits the budget → Virtual Basic: care access for '+fmt2(AMAZE_MO)+' a month plus '+(c.ml?'the ManhattanLife hospital, out-of-pocket and accident cover they can still get':'accident cover')+'.'); } }
+  if(!lead){ var poor=B>0&&B<150;
+    lead=poor?opt.vbs:opt.mgr; R.why.push('Manhattan, Cigna and Bright Life all say no on what’s in the Intake.');
+    R.why.push(poor?'Their budget is small, so care access plus accident is the realistic net.':'They can afford more → guaranteed acceptance. Talk to your manager/mentor before quoting it.'); if(!poor) R.alts.push(opt.vbs); }
+  R.alts=R.alts.filter(function(x,i,a){ return x&&x.id!==lead.id&&a.indexOf(x)===i; }).slice(0,2);
+  return Object.assign({},lead,R); }
+function dtVs(F,price){ if(!(F.prem>0)||!(price>0)) return ''; var d=Math.round(F.prem-price);   /* premium against premium - the deductible is a talking point, not savings */
+  return d>=0?'<span class="dt-save">saves '+fmt(d)+'/mo</span>':'<span class="dt-more">'+fmt(-d)+'/mo more than now</span>'; }
+function dtWhy(L,n){ var bad=L.filter(function(x){ return x.l==='bad'; }), warn=L.filter(function(x){ return x.l==='warn'; });
+  var pick=(bad.length?bad:warn).slice(0,n||2); return pick.map(function(x){ return '<li class="'+x.l+'">'+esc(x.t)+(x.who?' <i>('+esc(x.who)+')</i>':'')+'</li>'; }).join('')+((bad.length?bad:warn).length>(n||2)?'<li class="more">+ '+((bad.length?bad:warn).length-(n||2))+' more on the Intake strip</li>':''); }
+function renderTree(){ var host=$('dtHost'); if(!host) return; var C=S.client||{};
+  if(!C.state||!ratingAge()){ host.innerHTML='<div class="dt-card"><h3>Coverage Decision Tree</h3><p class="note">Add the state and ages on the Intake first — the tree prices every option for this client.</p><button type="button" class="btn-gold" onclick="goStep(\'intake\')">← Intake</button></div>'; return; }
+  var F=dtFacts(), R=dtRoute(F), c=F.can, P=F.P, v=F.v;
+  var stat=function(k){ return c[k]?(v[k].lvl==='amber'?'<b class="dt-amb">? check</b>':'<b class="dt-ok">✓ takes them</b>'):'<b class="dt-no">✕ won’t</b>'; };
+  /* 1 · the big picture */
+  var now=F.prem>0?'<div class="dt-now"><span>They pay now</span><b>'+fmt(F.prem)+'/mo</b>'+(F.ded>0?' + a '+fmt(F.ded)+' deductible = <b class="dt-true">'+fmt(F.trueCost)+'/mo true cost</b> <small>(premium + deductible ÷ 12 — say it; the savings column compares premiums only)</small>':' <small>· no deductible on the Intake</small>')+'</div>'
+    :'<div class="dt-now"><span>They pay now</span><small>No current premium on the Intake — add it under Current Insurance to see what each option saves.</small></div>';
+  var row=function(name,k,price,sub){ return '<tr class="'+(k&&!c[k]?'x':'')+'"><td>'+name+(sub?'<small>'+sub+'</small>':'')+'</td><td>'+(k?stat(k):'')+'</td><td class="r">'+(price>0?fmt(price)+'/mo':'—')+'</td><td class="r">'+(k&&!c[k]?'':dtVs(F,price))+'</td></tr>'; };
+  var big='<div class="dt-card dt-big"><div class="dt-h">The big picture</div>'+now
+    +(F.f.e&&F.f.e.ok?'<div class="dt-aca">ACA checked first: about <b>'+fmt(F.acaNet)+'/mo</b> after subsidy'+(F.acaDed?' with a '+fmt(F.acaDed)+' deductible':'')+'. '+(F.f.aca.length?'<b>It’s the strongest fit.</b>':'Not the strongest fit on what we know.')+'</div>':'')
+    +'<table class="dt-tab"><thead><tr><th>Option</th><th>Will they take them?</th><th class="r">Price</th><th class="r">Against their premium now</th></tr></thead><tbody>'
+    +row('Manhattan — '+TIER_NAME.good,'ml',P.ess.sum)+row('Manhattan — '+TIER_NAME.better,'ml',P.core.sum,'Kyle’s core package')+row('Manhattan — '+TIER_NAME.best,'ml',P.comp.sum)
+    +row('Cigna (USA Health Triad)','cg',P.cg.sum,'major medical · Triad '+(P.cg.c&&P.cg.c.triadPlan||'3500'))+row('Bright Life','bl',P.bl.sum,'limited-benefit PPO · no specialty drugs')
+    +'</tbody></table>'
+    +'<div class="dt-why3">'+['ml','cg','bl'].map(function(k){ var L=v[k].L; if(!L.length) return ''; return '<div><b>'+{ml:'Manhattan',cg:'Cigna',bl:'Bright Life'}[k]+'</b><ul>'+dtWhy(L,3)+'</ul></div>'; }).join('')+'</div>'
+    +(F.budget?'<div class="dt-bud">Budget: <b>'+fmt(F.budget)+'/mo</b></div>':'<div class="dt-bud">No budget on the Intake — add their max monthly to test it.</div>')+'</div>';
+  /* 2 · Kyle's tree, this client's path lit */
+  var on=function(id){ return R.id===id||(id==='ml'&&R.id==='mlE')?' lit':(R.alts.some(function(a){ return a.id===id||(id==='ml'&&a.id==='mlE'); })?' alt':''); };
+  var box=function(cls,tag,name,body,x){ return '<div class="dt-box'+cls+(x?' x':'')+'"><span class="dt-tag">'+tag+'</span><div class="dt-nm">'+name+'</div><div class="dt-bd">'+body+'</div>'+(x?'<ul class="dt-xr">'+x+'</ul>':'')+'</div>'; };
+  var tree='<div class="dt-card"><div class="dt-h">Kyle’s Right-Fit Decision Tree — this client</div>'
+    +'<div class="dt-q"><b>1 · Is ACA the strongest fit?</b> '+(F.f.aca.length?'Yes — '+F.f.aca.join('; '):'Not on what we know. Say you checked it first.')+'</div>'
+    +'<div class="dt-q"><b>2 · Needs or wants major medical?</b> '+(F.mm?'Yes — '+F.f.mm.map(esc).join('; '):'No — Manhattan fits.')+' <label class="dt-mm"><input type="checkbox" id="dt_mm"'+((S.rightFit||{}).mm?' checked':'')+'> Client says they want major medical</label></div>'
+    +'<div class="dt-grid">'
+    +box(on('aca')||on('acab'),'ACA PATH','ACA + optional support','The marketplace plan, plus the deductible buster when they can afford it: Hospital Indemnity Select sized to the deductible'+(P.buster.sum?' ('+fmt(P.buster.sum)+'/mo)':'')+', accident, dental.')
+    +box(on('ml'),'BETTER · CORE','ManhattanLife POP','Kyle’s seven: Affordable Choice, Hospital Indemnity, Out-of-Pocket, Accident + dental, home health (pays for itself on 3+ meds) and living benefits.',c.ml?'':dtWhy(v.ml.L))
+    +box(on('cg'),'BEST · MAJOR MEDICAL','USA Health Triad (Cigna)','Major medical. “Typically uninsurable” isn’t no — but a drug on Cigna’s auto-decline list is.',c.cg?'':dtWhy(v.cg.L))
+    +box(on('bl'),'GOOD · BUDGET','Bright Life','Limited-benefit PPO with co-pays. Healthy people only — an annual check-up on an old condition counts as ongoing care. No specialty drugs.',c.bl?'':dtWhy(v.bl.L))
+    +box(on('vb')||on('vbs'),'SAFETY NET','Virtual Basic <small>(your virtual medical safety net)</small>','Amaze telehealth '+fmt2(AMAZE_MO)+'/mo (care access, not hospital insurance) + what they can still get: hospital, out-of-pocket and accident = <b>'+fmt(AMAZE_MO+P.vbAdd.sum)+'</b> · too sick for those: accident only = <b>'+fmt(AMAZE_MO+P.vbAcc.sum)+'</b>.')
+    +box(on('mgr'),'PHONE A FRIEND','Talk to your manager/mentor','Too sick for all three and can afford more: guaranteed acceptance — <b>Aither Health</b> (individual, no health questions, through Enrollment First) or <b>Amerus</b>. Not priced here; work it out together.')
+    +'</div></div>';
+  /* 3 · the recommendation */
+  var go=R.lineup?'<button type="button" class="btn-gold" id="dtGo">Go with this → Quote</button>':'<button type="button" class="btn-gold" id="dtGo">Open the Quote →</button>';
+  var rec='<div class="dt-card dt-rec"><div class="dt-h">Lead with one</div><div class="dt-pick">'+esc(R.label)+(R.price>0?' <span>'+fmt(R.price)+'/mo</span>':'')+' '+dtVs(F,R.price)+'</div><ul class="dt-because">'+R.why.map(function(x){ return '<li>'+x+'</li>'; }).join('')+'</ul>'
+    +(R.alts.length?'<div class="dt-alts">Also show: '+R.alts.map(function(a){ return '<b>'+esc(a.label)+'</b>'+(a.price>0?' '+fmt(a.price)+'/mo':''); }).join(' · ')+'</div>':'')+'<div class="dt-acts">'+go+'</div></div>';
+  host.innerHTML='<div class="sectitle"><span class="dot">●</span> Coverage Decision Tree <small style="font-family:inherit;font-weight:600;color:var(--muted);font-size:13px">— agent only · built from the Intake · a suggestion, not an underwriting decision</small></div>'
+    +big+rec+tree+'<div class="rfcheck"><b>Agent check before quoting:</b> state availability, current plan documents, eligibility, effective dates and total cost. Prices are the builder’s defaults for '+esc(String(C.state).toUpperCase())+', age '+ratingAge()+'.</div>';
+  var mm=$('dt_mm'); if(mm) mm.onchange=function(){ S.rightFit=S.rightFit||{}; S.rightFit.mm=mm.checked; autosave(); renderTree(); };
+  $('dtGo').onclick=function(){ if(R.lineup){ S.treePick={lineup:R.lineup,tab:R.tab,label:R.label,at:new Date().toISOString()}; if(S.lineup!==R.lineup) pbApplyLineup(R.lineup); S.activeTab=R.tab; } else S.treePick=null; autosave(); goStep('quote'); }; }
+function dtInit(){ var b=$('stepTreeBtn'); if(!b||!DT_ON) return; b.style.display='';
+  var n=0; document.querySelectorAll('#stepper button').forEach(function(x){ if(x.style.display==='none') return; var sp=x.querySelector('.n'); if(sp) sp.textContent=String(++n); }); }
 function renderFlags(){
   var el=$('recFlags'); if(!el) return;
   var f=S.recFlags||[];
@@ -7562,6 +7671,7 @@ function goStep(s){
   if(s==='call') callOpen();
   if(s==='enroll'){ electedLock(); renderEnroll(); renderRecGap(); }
   if(s==='review') renderReview();
+  if(s==='tree') renderTree();
   if(s==='present') renderPresent();
   if(s==='quote'){ syncRateBasis(); acaSync(); autoPriceTiers(); fill(); compute(); }
   autosave(); window.scrollTo(0,0);
@@ -7656,6 +7766,7 @@ function bindInputs(){
   if($('tfra_show')) $('tfra_show').onchange=function(){ S.showTfra=this.checked; updateTfraVisibility(); autosave(); };
   if($('pop_show')) $('pop_show').onchange=function(){ S.showPop=this.checked; updateTfraVisibility(); autosave(); };
   document.querySelectorAll('#viewseg button').forEach(function(b){ b.onclick=function(){ setView(b.dataset.view); }; });
+  dtInit();
   document.querySelectorAll('#stepper button').forEach(function(b){ b.onclick=function(){ if(S.step==='intake' && b.dataset.step!=='intake') captureIntake(); goStep(b.dataset.step); }; });
   $('buildQuoteBtn').onclick=buildQuote;
   fillHeightOpts($('in_pheight')); fillHeightOpts($('in_sheight'));
@@ -8137,7 +8248,7 @@ function pbColHTML(T,anc){ var t=T[0], act=(t==='actual'), st=(S.client.state||'
     var byKpk={}; (pk.products||[]).forEach(function(p){ if(p.k) byKpk[p.k]=p; });
     var hdr=(S.lineup==='lx-mh-cg'||S.lineup==='custom')&&c.base&&c.base!=='afc'?[(c.base==='lifex'||c.base==='brightlife')?'Pivot down':'Pivot up',c.base==='lifex'?'LifeX':c.base==='brightlife'?'Bright Life':'Cigna']:(S.lineup==='lx-mh-cg'?['Lead','Manhattan']:[T[1],T[2]]);
     var incT=(S.include||{})[t]!==false;
-    if(act) html+=pbActHead(); else html+='<div class="pbcol'+(S.recommended===t?' rec':'')+(incT?'':' excl')+(chosenTier()===t?' chosen':'')+'" data-t="'+t+'"><div class="pbhd"><div class="r1"><span class="tt">'+hdr[0]+'</span><button type="button" class="pbreset" data-act="reset1" title="Put this package back to the recommendation">↺ Reset</button></div><div class="nm">'+hdr[1]+'</div><div class="r3"><label class="pbshow"><input type="checkbox" data-act="inc"'+(incT?' checked':'')+'> Show on quote</label></div></div>'
+    if(act) html+=pbActHead(); else html+='<div class="pbcol'+(S.recommended===t?' rec':'')+(S.treePick&&S.treePick.tab===t&&S.treePick.lineup===(S.lineup||'mh')?' dtpick':'')+(incT?'':' excl')+(chosenTier()===t?' chosen':'')+'" data-t="'+t+'"><div class="pbhd">'+(S.treePick&&S.treePick.tab===t&&S.treePick.lineup===(S.lineup||'mh')?'<div class="dtbadge">🌳 Decision tree pick</div>':'')+'<div class="r1"><span class="tt">'+hdr[0]+'</span><button type="button" class="pbreset" data-act="reset1" title="Put this package back to the recommendation">↺ Reset</button></div><div class="nm">'+hdr[1]+'</div><div class="r3"><label class="pbshow"><input type="checkbox" data-act="inc"'+(incT?' checked':'')+'> Show on quote</label></div></div>'
       +((S.lineup==='custom')?'':'<!--')+'<div style="padding:0 12px 4px"><select data-act="base" aria-label="Base plan" style="width:100%;font:inherit;font-size:13px;padding:6px 8px;border:1px solid #d6cdb4;border-radius:7px">'+pbOpts([['afc','Base: Manhattan — Affordable Choice']].concat(blOn()?(c.base==='lifex'?[['lifex','Base: LifeX (replaced by Bright Life)']]:[]).concat([['brightlife','Base: Bright Life']]):[['lifex','Base: LifeX']].concat(c.base==='brightlife'?[['brightlife','Base: Bright Life']]:[])).concat([['triad','Base: Cigna — Triad PPO']]),c.base||'afc')+'</select></div>'+((S.lineup==='custom')?'':'-->');
     var sum=0, addable=[], unavail=[];
     PB_SLOTS.forEach(function(sl){
