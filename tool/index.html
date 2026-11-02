@@ -6107,14 +6107,26 @@ function reviewCheck(){ var R=reviewState(), w=[], el=$('rv_warn'); if(!el) retu
 /* ---- GLP-1 on the Intake: S.intake.glp1 = {p:{on,drug,for,since,cost,source}, s:{...}} ---- */
 var GLP1_RX=/semaglutide|tirzepatide|liraglutide|dulaglutide|exenatide|ozempic|wegovy|rybelsus|mounjaro|zepbound|saxenda|victoza|trulicity|byetta|bydureon/i;
 var GLP1_F=['drug','for','since','cost','source','drx','drxcost'];
-/* Direction Rx member prices (30% off with the member code) - the 1-month Fixed GLP-1 rows of DirectionRx_Pricing,
+/* Direction Rx member prices (30% off with the member code) - the Fixed GLP-1 rows of DirectionRx_Pricing,
    Health Insurance/_reference/DIRECTIONRX-PRICING.md (16 Oct 2026). Compounded, cash-pay, not the brand-name drug.
+   The chart's "Mo." column is the length of the subscription and the price pays for all of it, so the monthly cost is
+   the price divided by the months (Jesse, 2 Nov: "the monthly cost would be divided by 3 and 2 and 1 respectively").
+   Each row: [dose, {months: member price for the whole term}]. B6 prices match B12 except 0.25mg for 2 months ($84).
    Retatrutide (investigational) and the two-price "New Patient" bundles are left out - nobody has said which a client gets. */
-var DRX_GLP1=[['sema-0.25','Semaglutide + B12 · 0.25mg/wk',83.30],['sema-0.5','Semaglutide + B12 · 0.5mg/wk',104.30],['sema-1','Semaglutide + B12 · 1mg/wk',139.30],
-  ['sema-1.7','Semaglutide + B12 · 1.7mg/wk',160.30],['sema-2.5','Semaglutide + B12 · 2.5mg/wk',167.30],
-  ['tirz-2.5','Tirzepatide + B12 · 2.5mg/wk',195.30],['tirz-5','Tirzepatide + B12 · 5mg/wk',195.30],['tirz-7.5','Tirzepatide + B12 · 7.5mg/wk',195.30],
-  ['tirz-10','Tirzepatide + B12 · 10mg/wk',230.30],['tirz-12.5','Tirzepatide + B12 · 12.5mg/wk',230.30],['tirz-15','Tirzepatide + B12 · 15mg/wk',229.95]];
-function drxOpts(){ return '<option value="">—</option>'+DRX_GLP1.map(function(r){ return '<option value="'+r[0]+'">'+r[1]+' — '+fmt2(r[2])+'/mo</option>'; }).join('')+'<option value="other">Other — type the price</option>'; }
+var DRX_GLP1_SRC=[['sema','Semaglutide + B12',[['0.25',{1:83.30,2:90.30,3:115.50}],['0.5',{1:104.30,2:115.50,3:161}],['1',{1:139.30,2:154,3:217}],
+    ['1.7',{1:160.30,2:182,3:262.50}],['2.5',{1:167.30,2:196,3:279.30}]]],
+  ['tirz','Tirzepatide + B12',[['2.5',{1:195.30,2:231,3:346.50}],['5',{1:195.30,2:231,3:346.50}],['7.5',{1:195.30,2:231,3:346.50,4:420,5:475.30}],
+    ['10',{1:230.30,2:279.30,3:417.90}],['12.5',{1:230.30,2:279.30,3:417.90,6:751.80}],['15',{1:229.95,2:279.30,3:384.30}]]]];
+/* flattened: [id, label, monthly cost, term price, months] */
+var DRX_GLP1=[]; DRX_GLP1_SRC.forEach(function(d){ d[2].forEach(function(r){ Object.keys(r[1]).forEach(function(m){ var tot=r[1][m];
+  DRX_GLP1.push([d[0]+'-'+r[0]+'-'+m+'m',d[1]+' · '+r[0]+'mg/wk',Math.round(tot/(+m)*100)/100,tot,+m]); }); }); });
+function drxOpts(){ var grp={}; DRX_GLP1.forEach(function(r){ (grp[r[1]]=grp[r[1]]||[]).push(r); });
+  return '<option value="">—</option>'+Object.keys(grp).map(function(g){ return '<optgroup label="'+g+'">'+grp[g].map(function(r){
+      return '<option value="'+r[0]+'">'+(r[4]===1?'1-month plan':r[4]+'-month plan · '+fmt2(r[3])+' ÷ '+r[4])+' = '+fmt2(r[2])+'/mo</option>'; }).join('')+'</optgroup>'; }).join('')
+    +'<option value="other">Other — type the price a month</option>'; }
+/* The chart link has to open for anyone: served next to the tool on mypoppro.com and the sandbox; from this Mac's
+   preview it points at the published sandbox copy instead of localhost. */
+var DRX_CHART=/^(localhost|127\.0\.0\.1)$/.test(location.hostname)?'http://sandbox.mypoppro.com/tool/docs/directionrx-pricing.pdf':'docs/directionrx-pricing.pdf';
 /* What switching to Direction Rx saves, per person and in all: what they pay now minus the member price. A person it
    wouldn't save money for counts as 0 - they'd simply not switch. (Jesse, 2 Nov: "that's a net savings for them".) */
 function glp1Saving(){ var G=(S.intake||{}).glp1||{}, out={p:0,s:0,mo:0};
@@ -6139,7 +6151,7 @@ function glp1Fill(){ var G=S.intake.glp1=S.intake.glp1||{};
   ['p','s'].forEach(function(w){ var g=G[w]=G[w]||{}, med=glp1FromMeds(w);
     /* A GLP-1 on that person's medication list answers the question unless the agent already said No. */
     if(!g.on&&med){ g.on='Yes'; g.inferred=true; if(!g.drug) g.drug=med; }
-    $('in_glp1_'+w).value=g.on||''; GLP1_F.forEach(function(f){ var el=$('in_glp1_'+w+'_'+f); el.value=(f==='cost'||f==='drxcost')?(g[f]?fmtMoney2(g[f]):''):(g[f]||''); });
+    $('in_glp1_'+w).value=g.on||''; GLP1_F.forEach(function(f){ var el=$('in_glp1_'+w+'_'+f); el.value=(f==='cost'||f==='drxcost')?(g[f]?fmtMoney2(g[f]):''):(f==='drx'&&/^(sema|tirz)-[\d.]+$/.test(g[f]||'')?g[f]+'-1m':(g[f]||'')); });   /* ids saved before 2 Nov were the 1-month rows */
     $('glp1Hint_'+w).textContent=med&&g.on==='No'?'Their medication list includes '+med+'.':''; });
   glp1Show(); glp1Need(); glp1SaveShow(); }
 /* Yes with no indication can't be routed (diabetes vs weight decide the presentation), and the brand doesn't settle it -
@@ -8022,6 +8034,7 @@ function bindInputs(){
   /* (set up) beside the three link boxes: jump to the free GOAT how-to below, even if it was folded away */
   document.querySelectorAll('#agentSetup [data-goat]').forEach(function(a){ a.onclick=function(e){ e.preventDefault(); var d=$('agentSetup'); if(d) d.classList.remove('goat-skipped'); var g=$('goatGrab'); if(g){ g.scrollIntoView({behavior:'smooth',block:'center'}); g.classList.add('flash'); setTimeout(function(){ g.classList.remove('flash'); },1600); } }; });
   $('setupBtn').onclick=openSetup; $('closeSetup').onclick=closeSetup;
+  document.querySelectorAll('.drxlink').forEach(function(x){ x.href=DRX_CHART; });
   ['p','s'].forEach(function(w){ var sel=$('in_glp1_'+w+'_drx'); sel.innerHTML=drxOpts();
     sel.addEventListener('change',function(){ var r=DRX_GLP1.filter(function(x){ return x[0]===sel.value; })[0]; if(r){ $('in_glp1_'+w+'_drxcost').value=fmtMoney2(r[2]); } $('in_glp1_'+w+'_drxcost').dispatchEvent(new Event('input',{bubbles:true})); }); });
   ['p','s'].forEach(function(w){ $('in_glp1_'+w).addEventListener('change',function(){ if(this.value==='Yes'&&!$('in_glp1_'+w+'_drug').value) $('in_glp1_'+w+'_drug').value=glp1FromMeds(w); glp1Show(); glp1Need(); }); $('in_glp1_'+w+'_for').addEventListener('change',glp1Need); });
