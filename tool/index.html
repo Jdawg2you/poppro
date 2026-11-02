@@ -5867,11 +5867,25 @@ function blScreen(){ var I=S.intake||{}, C=S.client||{}, sp=!!(I.who&&I.who.spou
   if(typeof BL_ROWS==='undefined') return out;
   var nm=function(w){ return String((w==='s'?C.sname:C.pname)||'').trim().split(/\s+/)[0]||(w==='s'?'Spouse':'Applicant'); };
   var whoC=function(x){ var w=[]; if(x.forP!==false) w.push(nm('p')); if(x.forS&&sp) w.push(nm('s')); return w.join(' & ')||nm('p'); };
-  var hit=function(r,who,why){ var t=r.t; if(!out.some(function(x){ return x.t===t&&x.who===who; })) out.push({l:'bad',p:r.p,t:t,who:who,why:why}); };
+  var hit=function(r,who,why,l,ask){ var t=r.t, ex=out.filter(function(x){ return x.t===t&&x.who===who; })[0]; l=l||'bad';
+    if(!ex) out.push({l:l,p:r.p,t:t,who:who,why:why,ask:ask}); else if(l==='bad'&&ex.l!=='bad'){ ex.l='bad'; ex.why=why; ex.ask=ask||null; } };
+  /* Part C is "diagnosed, treated, or hospitalized in the last 5 years - or still ongoing" (Jesse, 2 Nov: AFib years ago?).
+     A condition is a Yes only inside that window. ManhattanLife's 5-year question is the same one, so its answer is reused;
+     past the window, Bright Life's trainer still counts ongoing care - a yearly specialist visit - so that is asked next. */
+  var partC=function(r,c,i){ var mk=typeof afcCondMatch==='function'?(AFC_CK[c.name]||afcCondMatch(c.name)):null;
+    var in5=c.bl5||(mk&&mk[0]==='5y'&&c.afc?c.afc:''), lab=c.name+(c.yr?' ('+c.yr+')':''), who=whoC(c);
+    var q5={co:'Bright Life',k:'cond',i:i,key:'bl5',v:in5,q:'Diagnosed or treated in the last 5 years, or still being treated?',o:[['y','Yes — within 5 years or still treated',1],['n','More than 5 years ago, nothing since']]};
+    var qOn={co:'Bright Life',k:'cond',i:i,key:'blOn',v:c.blOn||'',q:'Any ongoing care for it now — even a yearly specialist visit?',o:[['y','Yes — still seen for it',1],['n','No care for it now']]};
+    if(in5==='y') return hit(r,who,lab+' — diagnosed or treated in the last 5 years'+(c.bl5?'':' (the ManhattanLife answer)'),'bad',q5);
+    if(in5==='n'){ if(c.blOn==='y') return hit(r,who,lab+' — over 5 years ago, but still ongoing care for it','bad',qOn);
+      if(c.blOn==='n') return;   /* past the window, no ongoing care: not a Yes on the form */
+      return hit(r,who,lab+' — over 5 years ago, no medicine since. Not a Yes on the form unless they still get care for it: Bright Life counts even a yearly specialist check.','warn',
+        qOn); }
+    hit(r,who,lab+' — Part C counts it only if diagnosed or treated in the last 5 years, or still ongoing.','warn',q5); };
   if(st&&BL_NO_HIRE.indexOf(st)>=0) out.push({l:'bad',p:'',t:'Bright Life can’t hire in '+st,who:'',why:'no-hire state (webinar 22 Oct)'});
   var meds=(I.medList||[]).map(function(m){ var lab=(typeof popMedResolve==='function'&&popMedResolve(m.name))||''; return {m:m,txt:String(m.name||'')+' '+lab,lab:lab}; });
   BL_ROWS.forEach(function(r){
-    (I.conds||[]).forEach(function(c){ if(r.c&&r.c.test(String(c.name||''))) hit(r,whoC(c),c.name+(c.yr?' ('+c.yr+')':'')); });
+    (I.conds||[]).forEach(function(c,i){ if(r.c&&r.c.test(String(c.name||''))){ if(r.p==='C') partC(r,c,i); else hit(r,whoC(c),c.name+(c.yr?' ('+c.yr+')':'')); } });
     if(r.rx&&r.m) meds.forEach(function(x){ if(r.m.test(x.txt)) hit(r,whoC(x.m),x.m.name+' (the medicine alone counts)'); });
     if(r.pend) [['p','pendP'],['s','pendS']].forEach(function(q){ if(q[0]==='s'&&!sp) return; if(I[q[1]]==='Surgery or procedure recommended'||I[q[1]]==='Still being followed up after surgery') hit(r,nm(q[0]),I[q[1]]); });
     if(r.heart3) ['p','s'].forEach(function(w){ if(w==='s'&&!sp) return; var n=meds.filter(function(x){ var f=(MED_FOR[x.lab]||[]).join('|'); return (w==='s'?x.m.forS:x.m.forP!==false)&&/blood pressure|heart|arrhythm|angina|stent/i.test(f); });
@@ -5905,21 +5919,21 @@ function csRoute(v){ var a=v.ml.lvl, b=v.cg.lvl, c=v.bl?v.bl.lvl:'none';
 function csLi(x){ return '<li class="'+x.l+'">'+(x.l==='bad'?'✕ ':x.l==='ok'?'✓ ':'⚠ ')+esc(x.t)+(x.s?'<small>'+esc(x.s)+'</small>':'')+cgAskBtns(x)+'</li>'; }
 /* One question, three places (strip, Intake list, Enroll): buttons write the answer onto the medication, the condition
    or the intake; clicking the chosen answer again clears it. */
-function cgAskBtns(x){ var a=x&&x.ask; if(!a) return ''; return '<span class="cg-ask"><span class="cg-q">Cigna: '+esc(a.q)+'</span>'+a.o.map(function(o){
-    return '<button type="button" class="'+(a.v===o[0]?'on':'')+(o[2]?' neg':'')+'" data-cga="'+a.k+'|'+a.i+'|'+o[0]+'">'+esc(o[1])+'</button>'; }).join('')+'</span>'; }
+function cgAskBtns(x){ var a=x&&x.ask; if(!a) return ''; return '<span class="cg-ask"><span class="cg-q">'+esc(a.co||'Cigna')+': '+esc(a.q)+'</span>'+a.o.map(function(o){
+    return '<button type="button" class="'+(a.v===o[0]?'on':'')+(o[2]?' neg':'')+'" data-cga="'+a.k+'|'+a.i+'|'+o[0]+(a.key?'|'+a.key:'')+'">'+esc(o[1])+'</button>'; }).join('')+'</span>'; }
 function cgInlineHTML(kind){ if(!CARRIER_STRIP_ON) return ''; var v; try{ v=csVerdicts(); }catch(e){ return ''; } var p=csSplit(v);
   return p.mine.concat(p.easier).filter(function(x){ return kind==='med'?/^med:/.test(x.src):/^(cond:|diab$)/.test(x.src); }).map(function(x){
     return '<div class="afcflag '+(x.l==='bad'?'bad':x.l==='ok'?'ok':'ask')+' cgflag"><span class="afct">'+(x.l==='bad'?'✕ ':x.l==='ok'?'✓ ':'⚠ ')+'<b>Cigna</b> — '+esc(x.t)+(x.s?'<span class="afcq">'+esc(x.s)+'</span>':'')+'</span>'+cgAskBtns(x)+'</div>'; }).join(''); }
 document.addEventListener('click',function(e){ var b=e.target&&e.target.closest&&e.target.closest('[data-cga]'); if(!b) return; e.preventDefault(); e.stopPropagation();
-  var p=b.dataset.cga.split('|'), I=S.intake||{}, tgt=p[0]==='med'?(I.medList||[])[+p[1]]:p[0]==='cond'?(I.conds||[])[+p[1]]:null, key=p[0]==='diab'?'cgDiab':'cg';
+  var p=b.dataset.cga.split('|'), I=S.intake||{}, tgt=p[0]==='med'?(I.medList||[])[+p[1]]:p[0]==='cond'?(I.conds||[])[+p[1]]:null, key=p[3]||(p[0]==='diab'?'cgDiab':'cg');
   if(p[0]==='diab') tgt=I; if(!tgt) return; if(tgt[key]===p[2]) delete tgt[key]; else tgt[key]=p[2];
   autosave(); if(typeof afcRender==='function') afcRender(); renderCarrierStrip(); if(typeof triadRerender==='function') try{ triadRerender(); }catch(x){} },true);
 function csPanel(k,v){
   if(k==='ml') return (v.ml.L.length?'<ul class="cs-ul">'+v.ml.L.map(csLi).join('')+'</ul>':'<div class="cs-ok">✓ Nothing on the Intake is on ManhattanLife’s decline lists.</div>')
     +'<div class="cs-src">Affordable Choice rules (agent guide AGT-AFC7010). HI Select, Out-of-Pocket and Cancer / Heart Attack &amp; Stroke have their own, shorter lists.</div>';
   if(k==='bl'){ var B=v.bl.L, bad=B.filter(function(x){ return x.l==='bad'; }), wn=B.filter(function(x){ return x.l!=='bad'; });
-    return (bad.length?'<div class="cs-sub">Checks “Yes” on Bright Life’s health form</div><ul class="cs-ul">'+bad.map(function(x){ return '<li class="bad">✕ '+(x.p?'Part '+x.p+' · ':'')+esc(x.t)+(x.who?' — '+esc(x.who):'')+'<small>'+esc(x.why)+'</small></li>'; }).join('')+'</ul>':'<div class="cs-ok" style="color:#6b4a07">Nothing on the Intake checks “Yes” on the form — but Bright Life is never a sure thing.</div>')
-      +(wn.length?'<ul class="cs-ul">'+wn.map(function(x){ return '<li class="warn">⚠ '+esc(x.t)+(x.who?' — '+esc(x.who):'')+'<small>'+esc(x.why)+'</small></li>'; }).join('')+'</ul>':'')
+    return (bad.length?'<div class="cs-sub">Checks “Yes” on Bright Life’s health form</div><ul class="cs-ul">'+bad.map(function(x){ return '<li class="bad">✕ '+(x.p?'Part '+x.p+' · ':'')+esc(x.t)+(x.who?' — '+esc(x.who):'')+'<small>'+esc(x.why)+'</small>'+cgAskBtns(x)+'</li>'; }).join('')+'</ul>':'<div class="cs-ok" style="color:#6b4a07">Nothing on the Intake checks “Yes” on the form — but Bright Life is never a sure thing.</div>')
+      +(wn.length?'<div class="cs-sub">Still to ask</div><ul class="cs-ul">'+wn.map(function(x){ return '<li class="warn">⚠ '+(x.p?'Part '+x.p+' · ':'')+esc(x.t)+(x.who?' — '+esc(x.who):'')+'<small>'+esc(x.why)+'</small>'+cgAskBtns(x)+'</li>'; }).join('')+'</ul>':'')
       +'<div class="cs-src">An AI look-back screens first, and underwriting counts any ongoing care — even a yearly specialist visit for something years ago. Ask Parts A–C of the Health History Disclosure Form word for word. The client becomes a W-2 employee of Bright Life (a research company) — say so before they apply. No GLP-1 for weight loss, no specialty drugs.</div>'; }
   var p=csSplit(v), h='';
   if(p.mine.length) h+='<div class="cs-sub">Cigna only — ManhattanLife wouldn’t stop on these</div><ul class="cs-ul">'+p.mine.map(csLi).join('')+'</ul>';
