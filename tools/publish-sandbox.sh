@@ -41,6 +41,7 @@ git push -q -u origin main
 # Pages on, served from main, at the sandbox address (no-ops once set)
 gh api -X POST "repos/$REPO/pages" -f "source[branch]=main" -f "source[path]=/" >/dev/null 2>&1 || true
 gh api -X PUT "repos/$REPO/pages" -f "cname=$HOST" >/dev/null 2>&1 || true
+gh api -X PUT "repos/$REPO/pages" -F "https_enforced=true" >/dev/null 2>&1 || true   # works once GitHub has issued the certificate
 
 echo ""
 echo "Done. https://$HOST/tool/ updates in a minute or two."
