@@ -6645,7 +6645,8 @@ function dtFacts(){ var I=S.intake||{}, Cu=curIn(), v=csVerdicts(), f=rightFitFa
   function c0(ok,x){ return ok&&x>0?x:Infinity; }
   /* nobody takes them: nothing to compare with, so under $300/mo counts as a major limit (guaranteed-acceptance medical rarely fits under it) - the agent can untick */
   var preg=v.ml.L.some(function(x){ return /pregnan|maternity/i.test(x.t); });
-  var auto={aca:f.aca.length>0, cgDear:budget>0&&P.cg.sum>budget, broke:budget>0&&(cheapest<Infinity?budget<cheapest:budget<DT_NET_LINE), baby:preg};
+  /* "wants ease ... and has plenty of room in their budget" outranks the Intake's budget figure (Jesse, 2 Nov) */
+  var auto={aca:f.aca.length>0, cgDear:budget>0&&P.cg.sum>budget&&!D.ease, broke:budget>0&&(cheapest<Infinity?budget<cheapest:budget<DT_NET_LINE), baby:preg};
   var pick=function(k){ return D[k]==null?auto[k]:D[k]===true||D[k]==='yes'; };
   /* 03 is about HOW they want to use a plan - fixed benefits (Manhattan POP) or major medical (Cigna / Bright Life).
      Health is underwriting's job: a condition on the Intake doesn't vote here (Jesse, 2 Nov). Saving money with a bit of
@@ -6691,7 +6692,8 @@ function dtRoute(F){ var c=F.c||F.can, P=F.P, B=F.budget, fit=function(x){ retur
   /* 03 · major medical */
   if(F.mm){ R.why.push('Major medical is the point: '+F.mmWhy.map(esc).join('; ')+'.');
     /* 04 decides between the two: room in the budget → Cigna; tighter → Bright Life, about half Cigna's price */
-    if(c.cg&&!F.cgDear){ lead=opt.cg; R.why.push((F.baby?'Cigna fits the budget — ask USA Health about the pregnancy before applying':'Cigna takes them and it fits the budget')+' — the 7350 plan, paired with the deductible buster.'); if(c.ml) R.alts.push(opt.ml); }
+    if(c.cg&&!F.cgDear){ lead=opt.cg; var cgFits=!(B>0)||P.cg.sum<=B, room=cgFits?'it fits the budget':'budget isn’t the limit (Cigna is '+fmt(P.cg.sum)+'/mo against the '+fmt(B)+' on the Intake)';
+      R.why.push((F.baby?'Cigna — '+room+'; ask USA Health about the pregnancy before applying':'Cigna takes them and '+room)+' — the 7350 plan, paired with the deductible buster.'); if(c.ml) R.alts.push(opt.ml); }
     else if(c.bl){ lead=opt.bl; R.why.push((c.cg?'Cigna is too expensive for their budget':'Cigna won’t take them')+' → Bright Life: a limited-benefit PPO with co-pays on the Cigna network.'); if(c.ml) R.alts.push(opt.ml); }
     else if(c.ml){ lead=opt.ml; R.why.push((c.cg?'Cigna is too expensive':'Cigna won’t take them')+' and Bright Life won’t either → Manhattan’s package is the right fit.'); } }
   else if(c.ml){ lead=opt.ml; R.why.push('ACA is ruled out and fixed benefits fit how they want to use a plan'+(F.save?' — they’d rather save significantly, even with a bit of extra work':'')+' → the Manhattan package of protection. Start in the middle and go up or down.'); if(c.cg&&!F.cgDear) R.alts.push(opt.cg); }
@@ -6700,7 +6702,9 @@ function dtRoute(F){ var c=F.c||F.can, P=F.P, B=F.budget, fit=function(x){ retur
   else if(c.bl){ lead=opt.bl; R.why.push('Manhattan and Cigna both say no; nothing on Bright Life’s form stops it yet.'); }
   if(lead&&/^ml/.test(lead.id)&&F.prem>0) R.why.push(lead.tab==='best'?'Comprehensive is '+fmt(lead.price)+'/mo — no more than the '+fmt(F.prem)+'/mo they pay now, so give them the most coverage for the same money.':lead.tab==='better'?'Complete fits inside the '+fmt(F.prem)+'/mo they pay now; Comprehensive would be '+fmt(P.comp.sum)+'.':'Even Complete is more than the '+fmt(F.prem)+'/mo they pay now — Essential is '+fmt(P.ess.sum)+'.');
   if(c.bl&&lead&&lead.id!=='bl'&&R.alts.length<2) R.alts.push(opt.bl);
-  if(lead&&!fit(lead.price)){ var was=lead; R.why.push(was.label+' is '+fmt(was.price)+'/mo against a budget of '+fmt(B)+'/mo.');
+  /* 04 is the agent's word on budget: when Cigna isn't too expensive there, the Intake figure doesn't drop it (Jesse's
+     $850 family, 2 Nov: wants major medical + ease still landed on Manhattan) */
+  if(lead&&!fit(lead.price)&&!(lead.id==='cg'&&!F.cgDear)){ var was=lead; R.why.push(was.label+' is '+fmt(was.price)+'/mo against a budget of '+fmt(B)+'/mo.');
     var down=[c.ml&&opt.mlE,c.bl&&opt.bl].filter(function(x){ return x&&fit(x.price)&&x.id!==was.id; })[0];
     if(down){ R.alts=[was]; lead=down; R.why.push('→ '+down.label+' fits the budget.'); }
     else { lead=c.ml?opt.vb:opt.vbs; R.alts=[was]; R.why.push('Nothing on the shelf fits the budget → '+lead.label+'.'); } }
