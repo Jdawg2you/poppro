@@ -44,10 +44,10 @@ if (mode === 'engine') {
   ok(near(r.bronze, tx.bronze40 * (F(40) + F(16) + F(12) + F(9)) / F(40)), 'three-oldest-children cap');
   ok(r.size === 6 && r.charged === 4, 'household size 6, charged 4');
   // 5. Subsidy at a middle income, worked by hand from the tables.
-  const fplLine = n => D.fpl2025.contiguous.base + D.fpl2025.contiguous.perPerson * (n - 1);
+  const fplLine = n => D.fpl.contiguous.base + D.fpl.contiguous.perPerson * (n - 1);
   const inc = Math.round(fplLine(2) * 2.5);                // 250% FPL, couple
   r = E({ st: 'TX', people: [{ age: 45, role: 'p' }, { age: 43, role: 's' }], income: inc });
-  const band = D.applicablePct2026.find(x => 250 >= x.fromFPL && 250 < (x.toFPL == null ? Infinity : x.toFPL));
+  const band = D.applicablePct.find(x => 250 >= x.fromFPL && 250 < (x.toFPL == null ? Infinity : x.toFPL));
   const pct = band.toFPL == null || band.startPct === band.endPct ? band.startPct
     : band.startPct + (band.endPct - band.startPct) * (250 - band.fromFPL) / (band.toFPL - band.fromFPL);
   const bench = tx.silver40 * (F(45) + F(43)) / F(40);
@@ -74,7 +74,7 @@ if (mode === 'engine') {
   ok(E({ st: 'TX', people: [{ age: '', role: 'p' }] }).ok === false, 'no age -> not ok');
   // 10. Family deductible and MOOP.
   r = E({ st: 'TX', people: [{ age: 45, role: 'p' }, { age: 43, role: 's' }] });
-  const moF = Math.min(D.bronze.avgMoop * 2, D.moop2026.family), moS = Math.min(D.bronze.avgMoop, D.moop2026.self);
+  const moF = Math.min(D.bronze.avgMoop * 2, D.moop.family), moS = Math.min(D.bronze.avgMoop, D.moop.self);
   ok(r.oop === moF && E({ st: 'TX', people: [{ age: 45, role: 'p' }] }).oop === moS, 'MOOP: typical bronze, family x2, never over the legal limit');
   ok(r.ded === D.bronze.avgDeductible * 2, 'family deductible = 2 x individual');
   // 11. Community-rated states ignore age.
