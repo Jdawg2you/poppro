@@ -6676,7 +6676,9 @@ function dtRoute(F){ var c=F.c||F.can, P=F.P, B=F.budget, fit=function(x){ retur
   if(F.aca){ var broke=F.broke||(B>0&&B<opt.acab.price), pick=broke?opt.aca:opt.acab;
     R.why.push('ACA is the strongest fit'+(F.f.aca.length?': '+F.f.aca.map(function(x){ return x.replace(/<[^>]+>/g,''); }).join('; '):' (your call)')+'.');
     R.why.push(broke?'Their budget doesn’t stretch past the ACA plan itself.':'Add the deductible buster: Hospital Indemnity Select sized to the ACA deductible, plus accident.');
-    if(!broke&&c.ml) R.alts.push(opt.ml); return Object.assign({},pick,R); }
+    /* the private option shown next to ACA follows 03 (Jesse, 2 Nov: major medical ticked still showed Manhattan) */
+    if(!broke){ var alt=F.mm?((c.cg&&!F.cgDear)?opt.cg:c.bl?opt.bl:c.cg?opt.cg:null):(c.ml?opt.ml:null); if(alt) R.alts.push(alt); }
+    return Object.assign({},pick,R); }
   /* nobody takes them → the exception path, whatever the budget (Jesse, 2 Nov: "if they really are unhealthy") */
   if(none){ R.why.push('ACA is ruled out, and Manhattan, Cigna and Bright Life all say no on what’s in the Intake → the exception path. Guaranteed acceptance is a conversation with your manager/mentor.');
     R.alts.push(opt.vbs); return Object.assign({},opt.mgr,R); }
@@ -6807,6 +6809,9 @@ function renderTree(){ var host=$('dtHost'); if(!host) return; var C=S.client||{
   host.querySelectorAll('[data-dtyn]').forEach(function(b){ b.onclick=function(){ dtState()[b.dataset.dtyn]=b.dataset.v; autosave(); renderTree(); }; });
   host.querySelectorAll('[data-dtclr]').forEach(function(a){ a.onclick=function(e){ e.preventDefault(); delete dtState()[a.dataset.dtclr]; autosave(); renderTree(); }; });
   host.querySelectorAll('[data-dtc]').forEach(function(x){ x.onchange=function(){ var k=x.dataset.dtc; if(k==='mm'){ S.rightFit=S.rightFit||{}; S.rightFit.mm=x.checked; } else dtState()[k]=x.checked; autosave(); renderTree(); }; });
+  /* the Quote page's ★ Right fit follows the tree as the answers change, not only when "Go with this" is pressed */
+  var tp=R.lineup?{lineup:R.lineup,tab:R.tab,label:R.label}:null, was=S.treePick;
+  if(was&&(!tp||was.lineup!==tp.lineup||was.tab!==tp.tab)){ S.treePick=tp?Object.assign(tp,{at:new Date().toISOString()}):null; autosave(); }
   $('dtGo').onclick=function(){ if(R.lineup){ S.treePick={lineup:R.lineup,tab:R.tab,label:R.label,at:new Date().toISOString()}; if(S.lineup!==R.lineup) pbApplyLineup(R.lineup); S.activeTab=R.tab; } else S.treePick=null; autosave(); goStep('quote'); }; }
 function dtInit(){ var b=$('stepTreeBtn'); if(!b||!DT_ON) return; b.style.display='';
   var n=0; document.querySelectorAll('#stepper button').forEach(function(x){ if(x.style.display==='none') return; var sp=x.querySelector('.n'); if(sp) sp.textContent=String(++n); }); }
