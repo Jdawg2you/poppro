@@ -6731,7 +6731,7 @@ function renderTree(){ var host=$('dtHost'); if(!host) return; var C=S.client||{
   var flags=['ml','cg','bl'].reduce(function(n,k){ return n+v[k].L.filter(function(x){ return x.l==='bad'; }).length; },0);
   var intakeMM=F.f.mm.filter(function(x){ return x!=='Client says they want major medical'; });
   var budgetQ=F.cgDear||F.broke, sick=!c.ml;
-  var tree='<div class="dt-card dtf"><div class="dtf-head"><div><div class="dtf-k">HealthFirst · agent field guide</div><div class="dtf-t">The Right-Fit Decision Tree <small>— this client</small></div></div>'
+  var tree='<div class="dt-card dtf"><div class="dtf-head"><div><div class="dtf-t">The Right-Fit Decision Tree <small>— this client</small></div></div>'
     +'<div class="dtf-ladder"><span class="g">GOOD</span><span class="b">BETTER</span><span class="p">BEST</span><small>Lead with the right fit. Show up to three.</small></div></div>'
     +'<div class="dtf-node lit dtf-disc"><div class="dtf-nm"><span class="dtf-n">01</span> Discover in MyPopPro</div><div class="dtf-3">'
       +'<div><b>Household</b>'+esc(hh)+' · '+esc(String(C.state).toUpperCase())+' · age '+ratingAge()+(F.f.e&&F.f.e.ok?' · ACA ≈ '+fmt(F.acaNet)+'/mo after subsidy':'')+'</div>'
