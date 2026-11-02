@@ -1150,7 +1150,7 @@ body.client #classicWrap>summary{display:none}
 <!-- Local compare label: shows only when served on 127.0.0.1:8766 (version B). Never appears on mypoppro.com. -->
 <button type="button" id="presentBack" onclick="presentBack()">← Back to the script</button>
 <div id="verBanner" style="display:none;position:sticky;top:0;z-index:9999;background:#9c3b2f;color:#fff;font:600 13px -apple-system,sans-serif;text-align:center;padding:6px 10px">VERSION B — in progress · compare with A at 127.0.0.1:8765</div>
-<script>if(location.port==='8767'){ var vb0=document.getElementById('verBanner'); vb0.style.display='block'; vb0.style.background='#1f6b3b'; vb0.textContent='PRESENT SANDBOX — not live · trying out Present mode'; document.title='Present · '+document.title; }
+<script>if((location.port==='8767'||location.hostname==='sandbox.mypoppro.com')){ var vb0=document.getElementById('verBanner'); vb0.style.display='block'; vb0.style.background='#1f6b3b'; vb0.textContent='PRESENT SANDBOX — not live · trying out Present mode'; document.title='Present · '+document.title; }
 if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.style.display='block'; document.title='B · '+document.title;
   /* The file's own timestamp: if this doesn't match the latest change, the browser is showing an old copy. */
   var lm=new Date(document.lastModified); if(!isNaN(lm)) vb.textContent+=' · updated '+lm.toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}); }</script>
@@ -5641,7 +5641,9 @@ function reviewConfFold(pg){ approvedFold(pg); var cf=document.querySelector('#r
    same package are framed as the deductible busters. Everything here comes from the 2027 rate & benefit guide + 2026 SBCs (benefits/triad.json), the
    USA Health product page and rate sheet (data/triad/TRIAD-Cigna-PPO.md) and the EBA Cigna underwriting guide.
    Shown only in the sandbox (port 8767 or ?triad=1) until Jesse ships it. */
-var TRIAD_FLOW_ON=location.port==='8767'||/[?&]triad=1\b/.test(location.search);
+/* Sandbox switches (Jesse, 1 Nov): on the local preview (port 8767) and on sandbox.mypoppro.com, which publishes this
+   branch for the team to see. mypoppro.com never matches, so live users never see them. */
+var TRIAD_FLOW_ON=(location.port==='8767'||location.hostname==='sandbox.mypoppro.com')||/[?&]triad=1\b/.test(location.search);
 function triadFlowOn(t){ return TRIAD_FLOW_ON&&!!t&&effCfg(t).base==='triad'&&popIsMajor(t); }
 /* Client-facing documents in the Carrier Library (Optimum Carrier Library/Triad Cigna/_all-states) */
 var TRIAD_SBC={'1000':'1IsUaoaOEElitukIQUYrAHFaFtgM-avdO','1500':'186pV59okJdncrf7zUrP54Wh9roXH8FiW','2500':'1HT8SuqRo1UFiaMYcZRMpD-PI36cCCnWA','3500':'1hHuKCkPIS1mBys4rS9DiEYmkFbaTFvCh',
@@ -5792,7 +5794,7 @@ function triadScreenHTML(){ var L=triadScreen(), bad=L.filter(function(x){ retur
    item ManhattanLife already flags at least as hard is listed once, under ManhattanLife; Cigna lists in full only what
    is Cigna-only or what Cigna would take when ManhattanLife won't. Build Quote follows it: ManhattanLife red and Cigna
    not red starts every package on the Cigna PPO. Shown only on port 8767 or with ?cs=1 until Jesse ships it. */
-var CARRIER_STRIP_ON=location.port==='8767'||/[?&]cs=1\b/.test(location.search);
+var CARRIER_STRIP_ON=(location.port==='8767'||location.hostname==='sandbox.mypoppro.com')||/[?&]cs=1\b/.test(location.search);
 var CS_OPEN='';
 function csCfg(){ var c=cfgClone(TIERCFG.best); c.sdr=cfgClone(PB_DEFAULT.sdr); c.hhc=PB_DEFAULT.hhc; c.chas=cfgClone(PB_DEFAULT.chas); return c; }
 function csStateGaps(st,age){ if(typeof HF_RATES==='undefined'||!HF_RATES||!st) return []; var c=csCfg(), out=[];
@@ -6582,7 +6584,7 @@ function rightFitFacts(){ var I=S.intake||{}, C=S.client||{}, e={ok:false};
   return f; }
 function rightFitPath(f){ if(f.aca.length) return 'aca'; if(f.uwHard) return 'gi'; if(f.overBudget) return 'budget'; if(f.mm.length) return 'triad'; return 'pop'; }
 /* Not live yet (Jesse, 21 Oct: everything ships but the routing tree) - shown only in the sandbox, or with ?rf=1 */
-var RIGHT_FIT_ON=location.port==='8767'||/[?&]rf=1\b/.test(location.search);
+var RIGHT_FIT_ON=(location.port==='8767'||location.hostname==='sandbox.mypoppro.com')||/[?&]rf=1\b/.test(location.search);
 function renderRightFit(){ var el=$('rightFit'); if(!el) return; if(!RIGHT_FIT_ON){ el.style.display='none'; el.innerHTML=''; return; } S.rightFit=S.rightFit||{};
   if(DT_ON){ var tp=S.treePick; el.outerHTML='<div id="rightFit" class="rfit dt-link hidein-client"><span>Coverage Decision Tree</span> '+(tp?'picked <b>'+esc(tp.label)+'</b> · ':'')+'<a href="#" onclick="goStep(\'tree\');return false">'+(tp?'open it':'open it — who takes them, what each costs against now, and what to lead with')+' →</a></div>'; return; }
   var f=rightFitFacts(), path=rightFitPath(f), ul=function(a){ return a.length?'<ul>'+a.map(function(x){ return '<li>'+x+'</li>'; }).join('')+'</ul>':''; };
@@ -7736,7 +7738,7 @@ function clientStripSum(){ var el=$('csSum'), cs=$('clientStrip'); if(!el||!cs) 
 var NAV_BASE=new URL('discovery.html',location.href).href.split('?')[0]   /* the Discovery call is MyPopPro's own page now (Jesse, 23 Oct) - same origin, no second site to ship */;
 function callAgent(){ var C=S.client||{}; return {a_name:C.agent||'',a_agency:(S.agency&&S.agency!=='HealthFirst')?S.agency:'',a_npn:S.agentNPN||'',a_phone:S.agentPhone||'',a_email:S.agentEmail||'',a_web:S.agentWebsite||'',a_book:S.agentBooking||'',a_bio:S.agentBio||''}; }
 function callInit(){ var f=$('callFrame'); if(!f||!f.contentWindow) return; try{ f.contentWindow.postMessage({source:'optimum-poppro',type:'call-init',v:1,pop:currentQuote(),agent:callAgent()},location.origin); }catch(e){} }
-function callOpen(){ var f=$('callFrame'); if(!f) return; if(!f.getAttribute('src')) f.src=NAV_BASE+'?embed=1&script=health&host=poppro'+(location.port==='8767'?'&v='+Date.now():''); else callInit(); }   /* the sandbox's navigator server caches; always fetch the newest there */
+function callOpen(){ var f=$('callFrame'); if(!f) return; if(!f.getAttribute('src')) f.src=NAV_BASE+'?embed=1&script=health&host=poppro'+((location.port==='8767'||location.hostname==='sandbox.mypoppro.com')?'&v='+Date.now():''); else callInit(); }   /* the sandbox's navigator server caches; always fetch the newest there */
 window.addEventListener('message',function(e){ var f=$('callFrame'); if(!f||e.source!==f.contentWindow) return; var d=e.data||{};
   if(d.source==='insurance-script-navigator'&&d.type==='call-ready') callInit();
   if(d.source==='insurance-script-navigator'&&d.type==='go-intake') goStep('intake');
