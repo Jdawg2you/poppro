@@ -3178,16 +3178,19 @@ function rxLineHTML(t){ var R=rxPlan(t); if(!(R.mo>0)) return '';
      :'<span>No Affordable Choice Rx benefit on this package — they pay the pharmacy price</span>')+'</div>'; }
 function tierTrue(t){ var r=tierTrue0(t), g=glp1SaveFor(t); return g>0?Object.assign({},r,{mo:r.mo-g,extra:r.extra-g,glp:g}):r; }
 function tierTrue0(t){ var pm=tierTotals(t).mo, med=+((S.packages[t]||{}).med)||0, r={mo:pm+med,note:'',extra:med};   /* true cost counts what prescriptions still cost them */
-  if(!popIsMajor(t)) return r; var c=effCfg(t), fam=acaPeople().length>1;
+  if(!popIsMajor(t)) return r; return trueOf(effCfg(t),(S.packages[t]||{}).products,pm,med); }
+/* True cost of a major-medical package from its settings and products - shared by the Quote and the decision tree so the
+   two always agree. Bright Life now counts its own deductible (it used to fall through to Cigna's book and count $0). */
+function trueOf(c,products,pm,med){ var r={mo:pm+med,note:'',extra:med}, fam=acaPeople().length>1;
   if(c.base==='lifex'){ var ld=(LIFEX_PPO.ded[c.lifexPlan||'$500 PPO']||500)*(fam?2:1),
-      lx=popInputsFor(c,(S.packages[t]||{}).products), lv=(+((S.intake||{}).visits)||0)*LIFEX_PPO.visit,
+      lx=popInputsFor(c,products), lv=(+((S.intake||{}).visits)||0)*LIFEX_PPO.visit,
       ly=(acaIn().fullded!==false?ld:0)+lv;
     if(lx.major&&lx.major.oop) ly=Math.min(ly,lx.major.oop);
     r.extra=med+ly/12; r.mo=pm+r.extra;
     r.note='True cost includes its $'+ld.toLocaleString('en-US')+' deductible'+(lv?' and $50 visit copays':'')+'. Preventive care and generic drugs are $0.';
     return r; }
-  var plan=triadBook().plans['Triad Cigna '+(c.triadPlan||'7350')]||{}, ded=(parseFloat(plan.deductible)||0)*(fam?2:1);
-  var x=popInputsFor(c,(S.packages[t]||{}).products), cop=(x.major&&x.major.visit)||0, vis=(+((S.intake||{}).visits)||0)*cop;
+  var plan=c.base==='brightlife'?((typeof BLR!=='undefined'&&BLR&&BLR.plans[c.blPlan||'VL 1500'])||{}):(triadBook().plans['Triad Cigna '+(c.triadPlan||'7350')]||{}), ded=(parseFloat(plan.deductible)||0)*(fam?2:1);
+  var x=popInputsFor(c,products), cop=(x.major&&x.major.visit)||0, vis=(+((S.intake||{}).visits)||0)*cop;
   var yr=(acaIn().fullded!==false?ded:0)+vis; if(x.major&&x.major.oop) yr=Math.min(yr,x.major.oop);
   r.extra=med+yr/12; r.mo=pm+r.extra; r.note='True cost includes its $'+ded.toLocaleString('en-US')+' deductible'+(vis?' and visit copays':'')+'.'; return r; }
 function popIsMajor(tier){ var c=effCfg(tier); return (c.base==='triad'||c.base==='lifex'||c.base==='brightlife')&&((S.packages[tier]||{}).products||[]).some(function(p){ return p.k==='base'; }); }
@@ -6773,8 +6776,20 @@ function dtRoute(F){ var c=F.c||F.can, P=F.P, B=F.budget, G=glp1Saving().mo, fit
   if(!lead){ lead=opt.mgr; R.why.push('Manhattan, Cigna and Bright Life all say no on what’s in the Intake → the exception path. Guaranteed acceptance is a conversation with your manager/mentor.'); R.alts.push(opt.vbs); }
   R.alts=R.alts.filter(function(x,i,a){ return x&&x.id!==lead.id&&a.indexOf(x)===i; }).slice(0,2);
   return Object.assign({},lead,R); }
-function dtVs(F,price){ if(!(F.prem>0)||!(price>0)) return ''; var d=Math.round(F.prem-price);   /* premium against premium - the deductible is a talking point, not savings */
-  return d>=0?'<span class="dt-save">saves '+fmt(d)+'/mo</span>':'<span class="dt-more">'+fmt(-d)+'/mo more than now</span>'; }
+/* The tree measures against the same baseline as the Quote (Budget & Notes "Anchor against": ACA bronze or the current
+   plan), and gives two numbers (Jesse, 2 Nov): monthly against monthly, and true cost against true cost - a plan that's
+   $181 more a month can still be $700 a month less once the deductible is counted. */
+function dtBase(F){ var B=anchorBase(); if(B) return {lab:B.lab,short:B.short,prem:B.prem,mo:B.mo,ded:B.ded};
+  return F.prem>0?{lab:'What they pay now',short:'now',prem:F.prem,mo:F.trueCost||F.prem,ded:F.ded}:null; }
+function dtNums(o){ if(!o||!(o.sum>0)) return null; var G=glp1Saving().mo, maj=o.c&&/^(triad|lifex|brightlife)$/.test(o.c.base);
+  var x=maj?popInputsFor(o.c,o.P):null, cp=maj?(+((S.intake||{}).visits)||0)*((x.major&&x.major.visit)||0)/12:0;
+  var tru=maj?trueOf(o.c,o.P,o.sum,0).mo:o.sum; return {mo:o.sum+cp-G,tru:tru-G,glp:G}; }
+function dtVs(F,o,two){ var B=dtBase(F), n=typeof o==='number'?{mo:o,tru:o,glp:0}:dtNums(o); if(!B||!n) return '';
+  var one=function(d,lab){ d=Math.round(d); return d>=0?'<span class="dt-save">saves '+fmt(d)+'/mo'+(lab?' '+lab:'')+'</span>':'<span class="dt-more">'+fmt(-d)+'/mo more'+(lab?' '+lab:'')+'</span>'; };
+  if(two) return one(B.prem-n.mo,'monthly')+' · '+one(B.mo-n.tru,'true cost');
+  return one(B.prem-n.mo); }
+function dtVsTrue(F,o){ var B=dtBase(F), n=typeof o==='number'?{mo:o,tru:o}:dtNums(o); if(!B||!n) return ''; var d=Math.round(B.mo-n.tru);
+  return d>=0?'<span class="dt-save">saves '+fmt(d)+'/mo</span>':'<span class="dt-more">'+fmt(-d)+'/mo more</span>'; }
 function dtWhy(L,n){ var bad=L.filter(function(x){ return x.l==='bad'; }), warn=L.filter(function(x){ return x.l==='warn'; });
   var pick=(bad.length?bad:warn).slice(0,n||2); return pick.map(function(x){ return '<li class="'+x.l+'">'+esc(x.t)+(x.who?' <i>('+esc(x.who)+')</i>':'')+'</li>'; }).join('')+((bad.length?bad:warn).length>(n||2)?'<li class="more">+ '+((bad.length?bad:warn).length-(n||2))+' more on the Intake strip</li>':''); }
 function renderTree(){ var host=$('dtHost'); if(!host) return; var C=S.client||{};
@@ -6782,14 +6797,15 @@ function renderTree(){ var host=$('dtHost'); if(!host) return; var C=S.client||{
   var F=dtFacts(), R=dtRoute(F), c=F.can, P=F.P, v=F.v;
   var stat=function(k){ return c[k]?(v[k].lvl==='amber'?'<b class="dt-amb">? check</b>':'<b class="dt-ok">✓ takes them</b>'):'<b class="dt-no">✕ won’t</b>'; };
   /* 1 · the big picture */
-  var now=F.prem>0?'<div class="dt-now"><span>They pay now</span><b>'+fmt(F.prem)+'/mo</b>'+(F.ded>0?' + a '+fmt(F.ded)+' deductible = <b class="dt-true">'+fmt(F.trueCost)+'/mo true cost</b> <small>(premium + deductible ÷ 12 — say it; the savings column compares premiums only)</small>':' <small>· no deductible on the Intake</small>')+'</div>'
-    :'<div class="dt-now"><span>They pay now</span><small>No current premium on the Intake — add it under Current Insurance to see what each option saves.</small></div>';
-  var row=function(name,k,price,sub){ return '<tr class="'+(k&&!c[k]?'x':'')+'"><td>'+name+(sub?'<small>'+sub+'</small>':'')+'</td><td>'+(k?stat(k):'')+'</td><td class="r">'+(price>0?fmt(price)+'/mo':'—')+'</td><td class="r">'+(k&&!c[k]?'':dtVs(F,price))+'</td></tr>'; };
+  var BB=dtBase(F), G=glp1Saving().mo;
+  var now=BB?'<div class="dt-now"><span>Measured against · '+esc(BB.lab)+'</span><b>'+fmt(BB.prem)+'/mo</b>'+(BB.mo>BB.prem+0.5?' · <b class="dt-true">'+fmt(BB.mo)+'/mo true cost</b> <small>(premium + deductible ÷ 12, + copays — say both numbers)</small>':'')+' <small>· the same baseline as the Quote (Budget &amp; Notes → Anchor against)</small>'+(G>0?'<div><small>Every option is net of the '+fmt(G)+'/mo GLP-1 saving through Direction Rx.</small></div>':'')+'</div>'
+    :'<div class="dt-now"><span>Measured against</span><small>Nothing to compare yet — price the ACA on the Intake, or add their current premium under Current Insurance.</small></div>';
+  var row=function(name,k,o,sub){ var price=o&&o.sum, xx=k&&!c[k]; return '<tr class="'+(xx?'x':'')+'"><td>'+name+(sub?'<small>'+sub+'</small>':'')+'</td><td>'+(k?stat(k):'')+'</td><td class="r">'+(price>0?fmt(price)+'/mo':'—')+'</td><td class="r">'+(xx?'':dtVs(F,o))+'</td><td class="r">'+(xx?'':dtVsTrue(F,o))+'</td></tr>'; };
   var big='<div class="dt-card dt-big"><div class="dt-h">The big picture</div>'+now
     +(F.f.e&&F.f.e.ok?'<div class="dt-aca">ACA checked first: about <b>'+fmt(F.acaNet)+'/mo</b> after subsidy'+(F.acaDed?' with a '+fmt(F.acaDed)+' deductible':'')+'. '+(F.f.aca.length?'<b>It’s the strongest fit.</b>':'Not the strongest fit on what we know.')+'</div>':'')
-    +'<table class="dt-tab"><thead><tr><th>Option</th><th>Will they take them?</th><th class="r">Price</th><th class="r">Against their premium now</th></tr></thead><tbody>'
-    +row('Manhattan — '+TIER_NAME.good,'ml',P.ess.sum)+row('Manhattan — '+TIER_NAME.better,'ml',P.core.sum,'Kyle’s core package')+row('Manhattan — '+TIER_NAME.best,'ml',P.comp.sum)
-    +row('Cigna (USA Health Triad)','cg',P.cg.sum,'major medical · Triad '+(P.cg.c&&P.cg.c.triadPlan||'7350'))+row('Bright Life','bl',P.bl.sum,'limited-benefit PPO · no specialty drugs')
+    +'<table class="dt-tab"><thead><tr><th>Option</th><th>Will they take them?</th><th class="r">Price</th><th class="r">Monthly vs '+(BB?esc(BB.short):'now')+'</th><th class="r">True cost vs '+(BB?esc(BB.short):'now')+'</th></tr></thead><tbody>'
+    +row('Manhattan — '+TIER_NAME.good,'ml',P.ess)+row('Manhattan — '+TIER_NAME.better,'ml',P.core,'Kyle’s core package')+row('Manhattan — '+TIER_NAME.best,'ml',P.comp)
+    +row('Cigna (USA Health Triad)','cg',P.cg,'major medical · Triad '+(P.cg.c&&P.cg.c.triadPlan||'7350'))+row('Bright Life','bl',P.bl,'limited-benefit PPO · no specialty drugs')
     +'</tbody></table>'
     +'<div class="dt-why3">'+['ml','cg','bl'].map(function(k){ var L=v[k].L; if(!L.length) return ''; return '<div><b>'+{ml:'Manhattan',cg:'Cigna',bl:'Bright Life'}[k]+'</b><ul>'+dtWhy(L,3)+'</ul></div>'; }).join('')+'</div>'
     +(F.budget?'<div class="dt-bud">Budget: <b>'+fmt(F.budget)+'/mo</b></div>':'<div class="dt-bud">No budget on the Intake — add their max monthly to test it.</div>')+'</div>';
@@ -6872,7 +6888,7 @@ function renderTree(){ var host=$('dtHost'); if(!host) return; var C=S.client||{
     +'<div class="dtf-band"><b>DISCOVER → QUALIFY → BUILD → PRESENT</b><span>Lead with <b>one</b> recommendation; show up to <b>three</b>.</span><em>We sell health to sell life</em></div></div>';
   /* 3 · the recommendation */
   var go=R.lineup?'<button type="button" class="btn-gold" id="dtGo">Go with this → Quote</button>':'<button type="button" class="btn-gold" id="dtGo">Open the Quote →</button>';
-  var rec='<div class="dt-card dt-rec"><div class="dt-h">★ Right fit for this client</div><div class="dt-pick">'+esc(R.label)+(R.price>0?' <span>'+fmt(R.price)+'/mo</span>':'')+' '+dtVs(F,R.price)+'</div><ul class="dt-because">'+R.why.map(function(x){ return '<li>'+x+'</li>'; }).join('')+'</ul>'
+  var rec='<div class="dt-card dt-rec"><div class="dt-h">★ Right fit for this client</div><div class="dt-pick">'+esc(R.label)+(R.price>0?' <span>'+fmt(R.price)+'/mo</span>':'')+' '+dtVs(F,({ml:(R.tab==='best'?P.comp:R.tab==='good'?P.ess:P.core),mlE:P.ess,cg:P.cg,bl:P.bl})[R.id]||R.price,true)+'</div><ul class="dt-because">'+R.why.map(function(x){ return '<li>'+x+'</li>'; }).join('')+'</ul>'
     +(R.alts.length?'<div class="dt-alts">Also show: '+R.alts.map(function(a){ return '<b>'+esc(a.label)+'</b>'+(a.price>0?' '+fmt(a.price)+'/mo':''); }).join(' · ')+'</div>':'')+'<div class="dt-acts">'+go+'</div></div>';
   host.innerHTML='<div class="sectitle"><span class="dot">●</span> Coverage Decision Tree <small style="font-family:inherit;font-weight:600;color:var(--muted);font-size:13px">— agent only · built from the Intake · a suggestion, not an underwriting decision</small></div>'
     +big+tree+rec+'<div class="rfcheck"><b>Agent check before quoting:</b> state availability, current plan documents, eligibility, effective dates and total cost. Prices are the builder’s defaults for '+esc(String(C.state).toUpperCase())+', age '+ratingAge()+'.</div>';
