@@ -34,6 +34,9 @@ echo "$HOST" > "$OUT/CNAME"
 printf 'User-agent: *\nDisallow: /\n' > "$OUT/robots.txt"
 
 cd "$OUT"
+# GitHub adds its own commit when the custom domain is saved, so a plain push was rejected ("fetch first", 1 Nov).
+# Build on top of whatever is there: move the branch to the remote tip (files on disk untouched), then commit our copy.
+git fetch -q origin main 2>/dev/null && git reset -q --soft origin/main
 git add -A
 if git diff --cached --quiet; then echo "Nothing new since the last publish."; else git commit -q -m "Sandbox from present $SHA"; fi
 git push -q -u origin main
