@@ -6646,20 +6646,21 @@ function dtFacts(){ var I=S.intake||{}, Cu=curIn(), v=csVerdicts(), f=rightFitFa
   /* nobody takes them: nothing to compare with, so under $300/mo counts as a major limit (guaranteed-acceptance medical rarely fits under it) - the agent can untick */
   var preg=v.ml.L.some(function(x){ return /pregnan|maternity/i.test(x.t); });
   /* "wants ease ... and has plenty of room in their budget" outranks the Intake's budget figure (Jesse, 2 Nov) */
-  var auto={aca:f.aca.length>0, cgDear:budget>0&&P.cg.sum>budget&&!D.ease, broke:budget>0&&(cheapest<Infinity?budget<cheapest:budget<DT_NET_LINE), baby:preg};
+  var auto={aca:f.aca.length>0, cgDear:budget>0&&P.cg.sum>budget&&!(D.ease&&!D.save), broke:budget>0&&(cheapest<Infinity?budget<cheapest:budget<DT_NET_LINE), baby:preg};
   var pick=function(k){ return D[k]==null?auto[k]:D[k]===true||D[k]==='yes'; };
   /* 03 is about HOW they want to use a plan - fixed benefits (Manhattan POP) or major medical (Cigna / Bright Life).
-     Health is underwriting's job: a condition on the Intake doesn't vote here (Jesse, 2 Nov). Saving money with a bit of
-     extra work outweighs "the ease"; it never outweighs "the client says they want major medical" or a pregnancy. */
+     Health is underwriting's job: a condition on the Intake doesn't vote here (Jesse, 2 Nov). "Wants to save significantly"
+     outweighs every major-medical tick - the agent then explains the trade (Jesse, 2 Nov). A pregnancy still rules
+     Manhattan out through underwriting, so that client goes on to Cigna or Bright Life anyway. */
   if(pick('baby')) can.ml=false;   /* ManhattanLife declines the household during a pregnancy - a hand tick counts too */
   var save=!!D.save, mmWhy=[];
   if((S.rightFit||{}).mm) mmWhy.push('Client says they want major medical');
   if(I.mental) mmWhy.push('Mental-health care requested');
-  if(D.ease&&!save) mmWhy.push('Wants the ease of a traditional plan — co-pays, a network, no claim forms — and has plenty of room in the budget');
+  if(D.ease) mmWhy.push('Wants the ease of a traditional plan — co-pays, a network, no claim forms — and has plenty of room in the budget');
   if(pick('baby')) mmWhy.push('Pregnant or planning a pregnancy — Manhattan isn’t an option');
   return {I:I,v:v,f:f,can:can,P:P,prem:prem,ded:ded,trueCost:prem>0?Math.round((prem+ded/12)*100)/100:0,
     price:I.priority==='price'||tags.indexOf('Too expensive')>=0, budget:budget, acaNet:acaNetPrem(), acaDed:acaDed,
-    auto:auto, aca:pick('aca'), mm:mmWhy.length>0, mmWhy:mmWhy, save:save, baby:pick('baby'), cgDear:pick('cgDear'), broke:pick('broke'), low:low}; }
+    auto:auto, aca:pick('aca'), mm:mmWhy.length>0&&!save, mmWhy:mmWhy, save:save, baby:pick('baby'), cgDear:pick('cgDear'), broke:pick('broke'), low:low}; }
 /* the pick: {id, lineup, tab, label, price, why[], alts[]} */
 function dtRoute(F){ var c=F.c||F.can, P=F.P, B=F.budget, fit=function(x){ return !B||x<=B; }, R={why:[],alts:[]};
   var opt={ml:{id:'ml',lineup:'mh',tab:'better',label:'Manhattan — '+TIER_NAME.better,price:P.core.sum},
@@ -6696,7 +6697,10 @@ function dtRoute(F){ var c=F.c||F.can, P=F.P, B=F.budget, fit=function(x){ retur
       R.why.push((F.baby?'Cigna — '+room+'; ask USA Health about the pregnancy before applying':'Cigna takes them and '+room)+' — the 7350 plan, paired with the deductible buster.'); if(c.ml) R.alts.push(opt.ml); }
     else if(c.bl){ lead=opt.bl; R.why.push((c.cg?'Cigna is too expensive for their budget':'Cigna won’t take them')+' → Bright Life: a limited-benefit PPO with co-pays on the Cigna network.'); if(c.ml) R.alts.push(opt.ml); }
     else if(c.ml){ lead=opt.ml; R.why.push((c.cg?'Cigna is too expensive':'Cigna won’t take them')+' and Bright Life won’t either → Manhattan’s package is the right fit.'); } }
-  else if(c.ml){ lead=opt.ml; R.why.push('ACA is ruled out and fixed benefits fit how they want to use a plan'+(F.save?' — they’d rather save significantly, even with a bit of extra work':'')+' → the Manhattan package of protection. Start in the middle and go up or down.'); if(c.cg&&!F.cgDear) R.alts.push(opt.cg); }
+  else if(c.ml){ lead=opt.ml; R.why.push('ACA is ruled out and fixed benefits fit how they want to use a plan'+(F.save?' — they’d rather save significantly, even with a bit of extra work':'')+' → the Manhattan package of protection. Start in the middle and go up or down.');
+    if(F.save&&F.mmWhy.length){ R.why.push('They also said: '+F.mmWhy.map(esc).join('; ')+'. Saving comes first, so explain the trade: Manhattan pays set cash amounts when something happens and they file the claim, instead of co-pays on a network card. Show Cigna'+(c.bl?' or Bright Life':'')+' beside it so they see what the ease costs each month.');
+      var mmAlt=c.cg?opt.cg:c.bl?opt.bl:null; if(mmAlt) R.alts.push(mmAlt); }
+    else if(c.cg&&!F.cgDear) R.alts.push(opt.cg); }
   else if(c.cg&&!F.cgDear){ lead=opt.cg; R.why.push('Manhattan won’t take them; Cigna will, and it fits the budget.'); }
   else if(c.cg){ lead=opt.cg; R.why.push('Manhattan won’t take them; Cigna will.'); }
   else if(c.bl){ lead=opt.bl; R.why.push('Manhattan and Cigna both say no; nothing on Bright Life’s form stops it yet.'); }
@@ -6706,7 +6710,7 @@ function dtRoute(F){ var c=F.c||F.can, P=F.P, B=F.budget, fit=function(x){ retur
      $850 family, 2 Nov: wants major medical + ease still landed on Manhattan) */
   if(lead&&!fit(lead.price)&&!(lead.id==='cg'&&!F.cgDear)){ var was=lead; R.why.push(was.label+' is '+fmt(was.price)+'/mo against a budget of '+fmt(B)+'/mo.');
     var down=[c.ml&&opt.mlE,c.bl&&opt.bl].filter(function(x){ return x&&fit(x.price)&&x.id!==was.id; })[0];
-    if(down){ R.alts=[was]; lead=down; R.why.push('→ '+down.label+' fits the budget.'); }
+    if(down){ R.alts=[was].concat(F.save&&F.mmWhy.length?R.alts:[]); lead=down;   /* keep the major-medical comparison the explanation promises */ R.why.push('→ '+down.label+' fits the budget.'); }
     else { lead=c.ml?opt.vb:opt.vbs; R.alts=[was]; R.why.push('Nothing on the shelf fits the budget → '+lead.label+'.'); } }
   if(!lead){ lead=opt.mgr; R.why.push('Manhattan, Cigna and Bright Life all say no on what’s in the Intake → the exception path. Guaranteed acceptance is a conversation with your manager/mentor.'); R.alts.push(opt.vbs); }
   R.alts=R.alts.filter(function(x,i,a){ return x&&x.id!==lead.id&&a.indexOf(x)===i; }).slice(0,2);
@@ -6780,7 +6784,7 @@ function renderTree(){ var host=$('dtHost'); if(!host) return; var C=S.client||{
           +tick('baby',F.baby,'Pregnant or planning a pregnancy',(F.baby?'Manhattan isn’t an option · '+['cg','bl'].map(function(k){ var lv=v[k].lvl; if(!F.auto.baby&&lv==='green') lv='amber';   /* ticked by hand: the Intake never asked them */
             return {cg:'Cigna',bl:'Bright Life'}[k]+': '+({green:'takes them',amber:'check first',red:'no',none:'check first'}[lv]||'check first')+(k==='bl'&&lv!=='red'?' (its form asks about pregnancy)':''); }).join(' · '):'Manhattan won’t take the household')+(D.baby==null&&F.auto.baby?' · from the Intake':''))
           +'<div class="dtf-grp">Points to fixed benefits (Manhattan)</div>'
-          +tick('save',!!D.save,'Wants to save significantly on their monthly cost, even if it means a little extra work on their part','filing a claim when something happens')
+          +tick('save',!!D.save,'Wants to save significantly on their monthly cost, even if it means a little extra work on their part',D.save&&F.mmWhy.length?'outweighs the major-medical ticks above — explain the trade':'filing a claim when something happens')
           +(intakeMM.length?'<div class="dtf-auto">On the Intake: '+intakeMM.map(esc).join(' · ')+'</div>':'')+'</div></div>'
         +'<div class="dtf-split"><div class="dtf-lab'+lit(!isACA&&!F.mm)+'">FIXED BENEFITS → MANHATTAN POP ▼</div><div class="dtf-lab r'+lit(!isACA&&F.mm)+'">MAJOR MEDICAL → CIGNA OR BRIGHT LIFE ▼</div></div>'
         +'<div class="dtf-pair">'
