@@ -1299,6 +1299,9 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
       <div class="fld"><label>How long on it</label><input id="in_glp1_p_since" placeholder="e.g. 8 months"></div>
       <div class="fld"><label>What they pay a month</label><input id="in_glp1_p_cost" class="money2" inputmode="decimal" placeholder="e.g., $499.00"></div>
       <div class="fld"><label>Where they get it</label><select id="in_glp1_p_source"><option value="">—</option><option>Pharmacy</option><option>Telehealth</option><option>Compounded</option><option>Other</option></select></div>
+      <div class="fld"><label>Direction Rx option <a href="docs/directionrx-pricing.pdf" target="_blank" rel="noopener" class="drxlink">price chart ↗</a></label><select id="in_glp1_p_drx" class="drxsel"></select></div>
+      <div class="fld"><label>Direction Rx a month</label><input id="in_glp1_p_drxcost" class="money2" inputmode="decimal" placeholder="member price"></div>
+      <div class="glp1save" id="glp1Save_p"></div>
     </div>
     <div class="glp1q" id="glp1Row_s"><label>Spouse — on a GLP-1 now? <select id="in_glp1_s" data-w="s"><option value="">—</option><option>No</option><option>Yes</option></select></label><span class="note" id="glp1Hint_s"></span></div>
     <div class="intakegrid glp1grid" id="glp1More_s" style="display:none">
@@ -1307,6 +1310,9 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
       <div class="fld"><label>How long on it</label><input id="in_glp1_s_since" placeholder="e.g. 8 months"></div>
       <div class="fld"><label>What they pay a month</label><input id="in_glp1_s_cost" class="money2" inputmode="decimal" placeholder="e.g., $499.00"></div>
       <div class="fld"><label>Where they get it</label><select id="in_glp1_s_source"><option value="">—</option><option>Pharmacy</option><option>Telehealth</option><option>Compounded</option><option>Other</option></select></div>
+      <div class="fld"><label>Direction Rx option <a href="docs/directionrx-pricing.pdf" target="_blank" rel="noopener" class="drxlink">price chart ↗</a></label><select id="in_glp1_s_drx" class="drxsel"></select></div>
+      <div class="fld"><label>Direction Rx a month</label><input id="in_glp1_s_drxcost" class="money2" inputmode="decimal" placeholder="member price"></div>
+      <div class="glp1save" id="glp1Save_s"></div>
     </div>
 
     <div class="intake-sec" id="sec_health">Health &amp; Routing</div>
@@ -2616,14 +2622,16 @@ function anchorBase(){ var k=(S.intake&&S.intake.anchor)||'aca';
   return null; }
 /* The package's side of 'premium vs premium': its premiums plus any doctor copays it charges (a
    Cigna copay x visits / 12). Medications are left out on both sides - a separate bucket. */
-function pkgPremMo(t){ var pk=S.packages[t]||{}, m=tierTotals(t).mo, x=null;
+function pkgPremMo(t){ return pkgPremMo0(t)-glp1SaveFor(t); }   /* net of the GLP-1 saving through Direction Rx (Jesse, 2 Nov) */
+function pkgPremMo0(t){ var pk=S.packages[t]||{}, m=tierTotals(t).mo, x=null;
   if(popIsMajor(t)){ x=popInputsFor(effCfg(t),pk.products); m+=(+((S.intake||{}).visits)||0)*((x.major&&x.major.visit)||0)/12; }
   return m; }
-function pkgCopayMo(t){ return pkgPremMo(t)-tierTotals(t).mo; }
+function pkgCopayMo(t){ return pkgPremMo0(t)-tierTotals(t).mo; }
 /* The small line under 'Premium vs premium' that shows the copays folded in. */
 function copayNote(B,t){ var bits=[];
   if(B&&B.copayMo>0) bits.push(B.short+' side incl. '+fmt2(B.copayMo)+'/mo doctor copays ('+B.visits+' visits × '+fmt2(B.copay)+' ÷ 12)');
   var pc=t?pkgCopayMo(t):0; if(pc>0) bits.push('package incl. '+fmt2(pc)+'/mo copays');
+  var gs=t?glp1SaveFor(t):0; if(gs>0) bits.push('package net of '+fmt2(gs)+'/mo GLP-1 saving through Direction Rx');
   return bits.join(' · '); }
 function anchorNote(){ var el=$('anchorNote'); if(!el) return; var k=$('in_anchor').value;
   el.innerHTML=k==='none'?'No savings figures — the quote just compares the Good, Better and Best packages with each other.'
@@ -3168,7 +3176,8 @@ function rxLineHTML(t){ var R=rxPlan(t); if(!(R.mo>0)) return '';
     +(R.afc?'<span>Rx benefit: up to '+fmt2(R.cap||R.covered)+' a year'+(R.day?' <small>('+fmt2(R.day)+' per day they fill)</small>':'')+'</span>'
       +(R.pay>0?'<span class="dn">They pay about '+fmt2(R.pay)+' a year ('+fmt2(R.payMo)+'/mo)</span>':'<span class="up">Covered by the plan’s Rx benefit</span>')
      :'<span>No Affordable Choice Rx benefit on this package — they pay the pharmacy price</span>')+'</div>'; }
-function tierTrue(t){ var pm=tierTotals(t).mo, med=+((S.packages[t]||{}).med)||0, r={mo:pm+med,note:'',extra:med};   /* true cost counts what prescriptions still cost them */
+function tierTrue(t){ var r=tierTrue0(t), g=glp1SaveFor(t); return g>0?Object.assign({},r,{mo:r.mo-g,extra:r.extra-g,glp:g}):r; }
+function tierTrue0(t){ var pm=tierTotals(t).mo, med=+((S.packages[t]||{}).med)||0, r={mo:pm+med,note:'',extra:med};   /* true cost counts what prescriptions still cost them */
   if(!popIsMajor(t)) return r; var c=effCfg(t), fam=acaPeople().length>1;
   if(c.base==='lifex'){ var ld=(LIFEX_PPO.ded[c.lifexPlan||'$500 PPO']||500)*(fam?2:1),
       lx=popInputsFor(c,(S.packages[t]||{}).products), lv=(+((S.intake||{}).visits)||0)*LIFEX_PPO.visit,
@@ -6071,7 +6080,32 @@ function reviewCheck(){ var R=reviewState(), w=[], el=$('rv_warn'); if(!el) retu
   el.innerHTML=w.map(function(x){ return '<div>'+x+'</div>'; }).join(''); }
 /* ---- GLP-1 on the Intake: S.intake.glp1 = {p:{on,drug,for,since,cost,source}, s:{...}} ---- */
 var GLP1_RX=/semaglutide|tirzepatide|liraglutide|dulaglutide|exenatide|ozempic|wegovy|rybelsus|mounjaro|zepbound|saxenda|victoza|trulicity|byetta|bydureon/i;
-var GLP1_F=['drug','for','since','cost','source'];
+var GLP1_F=['drug','for','since','cost','source','drx','drxcost'];
+/* Direction Rx member prices (30% off with the member code) - the 1-month Fixed GLP-1 rows of DirectionRx_Pricing,
+   Health Insurance/_reference/DIRECTIONRX-PRICING.md (16 Oct 2026). Compounded, cash-pay, not the brand-name drug.
+   Retatrutide (investigational) and the two-price "New Patient" bundles are left out - nobody has said which a client gets. */
+var DRX_GLP1=[['sema-0.25','Semaglutide + B12 · 0.25mg/wk',83.30],['sema-0.5','Semaglutide + B12 · 0.5mg/wk',104.30],['sema-1','Semaglutide + B12 · 1mg/wk',139.30],
+  ['sema-1.7','Semaglutide + B12 · 1.7mg/wk',160.30],['sema-2.5','Semaglutide + B12 · 2.5mg/wk',167.30],
+  ['tirz-2.5','Tirzepatide + B12 · 2.5mg/wk',195.30],['tirz-5','Tirzepatide + B12 · 5mg/wk',195.30],['tirz-7.5','Tirzepatide + B12 · 7.5mg/wk',195.30],
+  ['tirz-10','Tirzepatide + B12 · 10mg/wk',230.30],['tirz-12.5','Tirzepatide + B12 · 12.5mg/wk',230.30],['tirz-15','Tirzepatide + B12 · 15mg/wk',229.95]];
+function drxOpts(){ return '<option value="">—</option>'+DRX_GLP1.map(function(r){ return '<option value="'+r[0]+'">'+r[1]+' — '+fmt2(r[2])+'/mo</option>'; }).join('')+'<option value="other">Other — type the price</option>'; }
+/* What switching to Direction Rx saves, per person and in all: what they pay now minus the member price. A person it
+   wouldn't save money for counts as 0 - they'd simply not switch. (Jesse, 2 Nov: "that's a net savings for them".) */
+function glp1Saving(){ var G=(S.intake||{}).glp1||{}, out={p:0,s:0,mo:0};
+  ['p','s'].forEach(function(w){ var g=G[w]||{}; if(w==='s'&&!(S.intake&&S.intake.spouse!==false&&$('in_who_spouse')&&$('in_who_spouse').checked)) return;
+    if(g.on!=='Yes'||!(+g.cost>0)||!(+g.drxcost>0)) return; out[w]=Math.max(0,Math.round((+g.cost-(+g.drxcost))*100)/100); out.mo+=out[w]; });
+  out.mo=Math.round(out.mo*100)/100; return out; }
+/* Direction Rx is a ManhattanLife member benefit, so a package only counts the saving if it holds a ManhattanLife product. */
+var ML_KEYS=['afc','sdr','his','acc','gap','hhc','chas'];
+function glp1SaveFor(t){ var pk=S.packages&&S.packages[t]; if(!pk) return 0; var dr=pk.dropped||[];
+  var ml=(pk.products||[]).some(function(p){ return p.k&&dr.indexOf(p.k)<0&&(ML_KEYS.indexOf(p.k)>=0||(p.k==='dvh'&&!/Sparkle/.test(p.name||''))); });
+  return ml?glp1Saving().mo:0; }
+function glp1SaveShow(){ var G=(S.intake||{}).glp1||{}; ['p','s'].forEach(function(w){ var el=$('glp1Save_'+w); if(!el) return; var g=G[w]||{};
+    if(g.on!=='Yes'||!(+g.drxcost>0)){ el.innerHTML=''; return; }
+    if(!(+g.cost>0)){ el.innerHTML='<span class="note">Add what they pay a month now to see the saving.</span>'; return; }
+    var d=Math.round(((+g.cost)-(+g.drxcost))*100)/100;
+    el.innerHTML=d>0?'<b class="up">Saves '+fmt2(d)+'/mo</b> through Direction Rx ('+fmt2(+g.cost)+' now → '+fmt2(+g.drxcost)+') · counted in every package with a ManhattanLife product. <i>Compounded, cash-pay — their prescriber decides; we hand over the code.</i>'
+      :'<b class="dn">No saving</b> — Direction Rx is '+fmt2(-d)+'/mo more than they pay now, so nothing is counted.'; }); }
 function glp1FromMeds(w){ var m=(S.intake.medList||[]).filter(function(x){ return GLP1_RX.test(String(x.name||'')) && (w==='s'?x.forS:(x.forP!==false)); }); return m.length?m[0].name:''; }
 function glp1Show(){ ['p','s'].forEach(function(w){ var on=$('in_glp1_'+w).value==='Yes'; $('glp1More_'+w).style.display=on?'':'none'; });
   var sp=$('in_who_spouse')&&$('in_who_spouse').checked; $('glp1Row_s').style.display=sp?'':'none'; if(!sp) $('glp1More_s').style.display='none'; }
@@ -6079,9 +6113,9 @@ function glp1Fill(){ var G=S.intake.glp1=S.intake.glp1||{};
   ['p','s'].forEach(function(w){ var g=G[w]=G[w]||{}, med=glp1FromMeds(w);
     /* A GLP-1 on that person's medication list answers the question unless the agent already said No. */
     if(!g.on&&med){ g.on='Yes'; g.inferred=true; if(!g.drug) g.drug=med; }
-    $('in_glp1_'+w).value=g.on||''; GLP1_F.forEach(function(f){ var el=$('in_glp1_'+w+'_'+f); el.value=f==='cost'?(g.cost?fmtMoney2(g.cost):''):(g[f]||''); });
+    $('in_glp1_'+w).value=g.on||''; GLP1_F.forEach(function(f){ var el=$('in_glp1_'+w+'_'+f); el.value=(f==='cost'||f==='drxcost')?(g[f]?fmtMoney2(g[f]):''):(g[f]||''); });
     $('glp1Hint_'+w).textContent=med&&g.on==='No'?'Their medication list includes '+med+'.':''; });
-  glp1Show(); glp1Need(); }
+  glp1Show(); glp1Need(); glp1SaveShow(); }
 /* Yes with no indication can't be routed (diabetes vs weight decide the presentation), and the brand doesn't settle it -
    Ozempic is often taken for weight. So an inferred Yes says where it came from, and the indication glows until it's asked. */
 function glp1Need(){ var G=S.intake.glp1||{}; ['p','s'].forEach(function(w){ var g=G[w]||{}, on=$('in_glp1_'+w).value==='Yes', f=$('in_glp1_'+w+'_for');
@@ -6089,8 +6123,8 @@ function glp1Need(){ var G=S.intake.glp1||{}; ['p','s'].forEach(function(w){ var
     if(on&&g.inferred&&$('in_glp1_'+w).value==='Yes') $('glp1Hint_'+w).textContent=need?'From their medication list. Ask: is it for diabetes, or for the weight?':'From their medication list.'; }); }
 function glp1Read(){ var G={}, old=S.intake.glp1||{}; ['p','s'].forEach(function(w){ var g={on:$('in_glp1_'+w).value};
     if((old[w]||{}).inferred&&g.on==='Yes') g.inferred=true;
-    GLP1_F.forEach(function(f){ var v=$('in_glp1_'+w+'_'+f).value; g[f]=f==='cost'?(moneyNum(v)||0):String(v||'').trim(); }); G[w]=g; });
-  S.intake.glp1=G; }
+    GLP1_F.forEach(function(f){ var v=$('in_glp1_'+w+'_'+f).value; g[f]=(f==='cost'||f==='drxcost')?(moneyNum(v)||0):String(v||'').trim(); }); G[w]=g; });
+  S.intake.glp1=G; glp1SaveShow(); }
 /* From the suite's flat health keys (glp1On… / spGlp1On…). */
 function glp1FromSuite(h){ var one=function(pre){ var k=function(f){ return h[pre+f]; }; if(!k('On')&&!k('Drug')) return null;
     return {on:k('On')||'', drug:k('Drug')||'', for:k('For')||'', since:k('Since')||'', cost:moneyNum(String(k('Cost')||''))||0, source:k('Source')||''}; };
@@ -6648,7 +6682,7 @@ function dtFacts(){ var I=S.intake||{}, Cu=curIn(), v=csVerdicts(), f=rightFitFa
   /* nobody takes them: nothing to compare with, so under $300/mo counts as a major limit (guaranteed-acceptance medical rarely fits under it) - the agent can untick */
   var preg=v.ml.L.some(function(x){ return /pregnan|maternity/i.test(x.t); });
   /* "wants ease ... and has plenty of room in their budget" outranks the Intake's budget figure (Jesse, 2 Nov) */
-  var auto={aca:f.aca.length>0, cgDear:budget>0&&P.cg.sum>budget&&!(D.ease&&!D.save), broke:false, baby:preg};   /* 05 is asked, never assumed: "we don't know how cheap a budget consideration" (Jesse, 2 Nov) */
+  var auto={aca:f.aca.length>0, cgDear:budget>0&&P.cg.sum-glp1Saving().mo>budget&&!(D.ease&&!D.save), broke:false, baby:preg};   /* 05 is asked, never assumed: "we don't know how cheap a budget consideration" (Jesse, 2 Nov) */
   var pick=function(k){ return D[k]==null?auto[k]:D[k]===true||D[k]==='yes'; };
   /* 03 is about HOW they want to use a plan - fixed benefits (Manhattan POP) or major medical (Cigna / Bright Life).
      Health is underwriting's job: a condition on the Intake doesn't vote here (Jesse, 2 Nov). "Wants to save significantly"
@@ -6664,7 +6698,8 @@ function dtFacts(){ var I=S.intake||{}, Cu=curIn(), v=csVerdicts(), f=rightFitFa
     price:I.priority==='price'||tags.indexOf('Too expensive')>=0, budget:budget, acaNet:acaNetPrem(), acaDed:acaDed,
     auto:auto, aca:pick('aca'), mm:mmWhy.length>0&&!save, mmWhy:mmWhy, save:save, baby:pick('baby'), cgDear:pick('cgDear'), broke:pick('broke'), low:low}; }
 /* the pick: {id, lineup, tab, label, price, why[], alts[]} */
-function dtRoute(F){ var c=F.c||F.can, P=F.P, B=F.budget, fit=function(x){ return !B||x<=B; }, R={why:[],alts:[]};
+function dtRoute(F){ var c=F.c||F.can, P=F.P, B=F.budget, G=glp1Saving().mo, fit=function(x){ return !B||x-G<=B; }, R={why:[],alts:[]};   /* GLP-1 saving through Direction Rx counts against the budget */
+  if(G>0&&B>0) R.why.push('Switching their GLP-1 to Direction Rx saves '+fmt(G)+'/mo, so a package up to '+fmt(B+G)+'/mo still nets out inside their '+fmt(B)+' budget.');
   var opt={ml:{id:'ml',lineup:'mh',tab:'better',label:'Manhattan — '+TIER_NAME.better,price:P.core.sum},
     mlE:{id:'mlE',lineup:'mh',tab:'good',label:'Manhattan — '+TIER_NAME.good,price:P.ess.sum},
     cg:{id:'cg',lineup:'lx-mh-cg',tab:'best',label:'Cigna (USA Health Triad 7350)',price:P.cg.sum},
@@ -7948,6 +7983,8 @@ function bindInputs(){
   /* (set up) beside the three link boxes: jump to the free GOAT how-to below, even if it was folded away */
   document.querySelectorAll('#agentSetup [data-goat]').forEach(function(a){ a.onclick=function(e){ e.preventDefault(); var d=$('agentSetup'); if(d) d.classList.remove('goat-skipped'); var g=$('goatGrab'); if(g){ g.scrollIntoView({behavior:'smooth',block:'center'}); g.classList.add('flash'); setTimeout(function(){ g.classList.remove('flash'); },1600); } }; });
   $('setupBtn').onclick=openSetup; $('closeSetup').onclick=closeSetup;
+  ['p','s'].forEach(function(w){ var sel=$('in_glp1_'+w+'_drx'); sel.innerHTML=drxOpts();
+    sel.addEventListener('change',function(){ var r=DRX_GLP1.filter(function(x){ return x[0]===sel.value; })[0]; if(r){ $('in_glp1_'+w+'_drxcost').value=fmtMoney2(r[2]); } $('in_glp1_'+w+'_drxcost').dispatchEvent(new Event('input',{bubbles:true})); }); });
   ['p','s'].forEach(function(w){ $('in_glp1_'+w).addEventListener('change',function(){ if(this.value==='Yes'&&!$('in_glp1_'+w+'_drug').value) $('in_glp1_'+w+'_drug').value=glp1FromMeds(w); glp1Show(); glp1Need(); }); $('in_glp1_'+w+'_for').addEventListener('change',glp1Need); });
   if($('in_who_spouse')) $('in_who_spouse').addEventListener('change',glp1Show);
   ['input','change'].forEach(function(ev){ var si=$('step-intake'); if(si) si.addEventListener(ev,function(e){ if(e.target&&e.target.closest&&!e.target.closest('#whyTagBox')) setTimeout(whySay,0); }); });
