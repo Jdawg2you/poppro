@@ -40,6 +40,30 @@ const TEST = `(async function(){
     ok(p[0]<=p[1]+0.01&&p[1]<=p[2]+0.01, 'card '+(i+1)+' '+id+' pays step up: '+p.join(' / '));
     ok(S.ev[i].preset===id, 'card '+(i+1)+' keeps scenario '+id); n++; }
 
+  /* "This year" in two lines with the math (team call, 3 Nov): the monthly saving row, then each side's year worked out,
+     and Ahead/Behind = anchor year - package year, which must equal the old single figure
+     12 x (anchor premium - package premium) + (anchor's share of the event - package net). */
+  var B0=anchorBase(), A0=evAnchor(); ok(!!B0&&!!A0, 'an anchor is priced, so the year rows can be checked');
+  var money=function(t){ var m=String(t).match(/-?\\$[\\d,]+(\\.\\d+)?/g)||[]; return m.map(function(x){ return +x.replace(/[$,]/g,''); }); };
+  for(var j=0;j<2&&B0&&A0;j++){ evApplyPreset(0,['hosp','urgent'][j]); await wait(30);
+    var tb=document.querySelector('#evOut0 .evtab'), cells=Array.prototype.slice.call(tb.querySelectorAll('.c'));
+    var mi=cells.findIndex(function(c){ return /^Monthly premium savings/.test(c.innerText); }), yi=cells.findIndex(function(c){ return /^This year, with this event/.test(c.innerText); });
+    ok(mi>=0&&yi>mi, ['hosp','urgent'][j]+': both rows present (monthly '+mi+', year '+yi+')');
+    var aOwe=evAnchorOweEv(S.ev[0],A0), aYr=B0.prem*12+aOwe, cols=evIncluded();
+    ok(/= \\$/.test(cells[yi+1].innerText)&&Math.abs(money(cells[yi+1].querySelector('b').innerText)[0]-Math.round(aYr))<=1, ['hosp','urgent'][j]+': anchor year shown = 12 x premium + their share ('+Math.round(aYr)+'): '+cells[yi+1].innerText.replace(/\\s+/g,' '));
+    cols.forEach(function(T,ci){ var t=T[0], o=evTierPack(t), r=evEvent(S.ev[0],Object.assign({},o,{negotPct:negApplies(0,evScnBill(S.ev[0]).total)?S.negot.pct:0}));
+      var old=(B0.prem-pkgPremMo(t))*12+(aOwe-r.net), cell=cells[yi+2+ci], em=(cell.querySelector('em')||{}).innerText||'';
+      var shown=money(em)[0]*(/^Behind/.test(em)?-1:1);
+      ok(/^(Ahead|Behind) /.test(em)&&Math.abs(shown-Math.round(old))<=1, ['hosp','urgent'][j]+' '+t+': '+em+' equals the old single figure '+Math.round(old));
+      var mc=cells[mi+2+ci].innerText, d=B0.prem-pkgPremMo(t);
+      ok((d>=0?/^Saves/:/^Costs/).test(mc)&&Math.abs(money(mc)[0]-Math.abs(Math.round(d*100)/100))<0.01, ['hosp','urgent'][j]+' '+t+': monthly saving '+mc.replace(/\\s+/g,' ')+' vs '+d.toFixed(2)); }); }
+  /* every column explains true cost, on the Quote and in Client View */
+  renderBuilder(); await wait(60);
+  ok(document.querySelectorAll('#sec_builder .tcn').length===evIncluded().length, 'Quote: a true-cost line under every column ('+document.querySelectorAll('#sec_builder .tcn').length+')');
+  setView('client'); buildPrintout(); await wait(60);
+  ok(document.querySelectorAll('#printout .po-save .tcn').length===evIncluded().length&&document.querySelectorAll('#printout .evyr').length>0, 'Client View: true-cost line under every column and the year rows ('+document.querySelectorAll('#printout .po-save .tcn').length+')');
+  setView('agent'); await wait(30);
+
   /* an add-on raises the bill and the payout and keeps the scenario */
   evApplyPreset(1,'urgent'); await wait(30);
   var b0=evScnBill(S.ev[1]).total, p0=evEvent(S.ev[1],evTierPack('best')).pays, inp=document.querySelector('#ev1_editor [data-f="add.visit.n"]');

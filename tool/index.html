@@ -417,6 +417,7 @@
   .evtab .c.h.anc,#printout .evtab .c.h.anc{background:var(--maroon)}.evtab .c.anc,#printout .evtab .c.anc{background:#fbf3f1}
   .evtab .c.big,#printout .evtab .c.big{font-family:var(--serif);font-weight:700;font-size:15px}
   .evtab .up,#printout .evtab .up{color:var(--green)}.evtab .dn,#printout .evtab .dn{color:var(--maroon)}
+  .evtab .evyr,#printout .evtab .evyr{color:var(--ink);font-size:12px}.evtab .evyr b,#printout .evtab .evyr b{display:block;font-weight:700;color:var(--navy)}.evtab .evyr em,#printout .evtab .evyr em{display:block;font-style:normal;font-family:var(--serif);font-weight:700;font-size:15px;margin-top:2px}.evtab .evyr.up em,#printout .evtab .evyr.up em{color:var(--green)}.evtab .evyr.dn em,#printout .evtab .evyr.dn em{color:var(--maroon)}.evtab .evmo,#printout .evtab .evmo{font-weight:700}
   .evbill,#printout .evbill{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;padding:10px 2px 8px}
   .evbill span,#printout .evbill span{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700}
   .evbill b,#printout .evbill b{font-family:var(--serif);font-size:30px;color:var(--navy);line-height:1}
@@ -3185,6 +3186,12 @@ function rxLineHTML(t){ var R=rxPlan(t); if(!(R.mo>0)) return '';
     +(R.afc?'<span>Rx benefit: up to '+fmt2(R.cap||R.covered)+' a year'+(R.day?' <small>('+fmt2(R.day)+' per day they fill)</small>':'')+'</span>'
       +(R.pay>0?'<span class="dn">They pay about '+fmt2(R.pay)+' a year ('+fmt2(R.payMo)+'/mo)</span>':'<span class="up">Covered by the plan’s Rx benefit</span>')
      :'<span>No Affordable Choice Rx benefit on this package — they pay the pharmacy price</span>')+'</div>'; }
+/* What "true cost" means, said under EVERY package column on the Quote and in Client View (team call, 3 Nov: it showed
+   only under a package with a deductible, so a Manhattan column had no explanation). The anchor's side, then this one's. */
+function trueCostNote(t,base){ var tt=tierTrue(t), out='True cost = premium + deductible ÷ 12';
+  if(base){ var dm=base.mo-base.prem; out+='. '+base.your.charAt(0).toUpperCase()+base.your.slice(1)+': '+(base.ded>0&&dm>0.5?fmt(base.ded)+' deductible → '+fmt2(base.mo)+'/mo':'no deductible counted → '+fmt2(base.mo)+'/mo'); }
+  out+='. This package: '+(tt.note?tt.note.replace(/^True cost includes /,'includes ').replace(/\.$/,''):'no deductible (fixed benefits), so it’s the premium'+(tt.extra>0.005&&!tt.glp?' + what prescriptions still cost':''));
+  return out+'.'; }
 function tierTrue(t){ var r=tierTrue0(t), g=glp1SaveFor(t); return g>0?Object.assign({},r,{mo:r.mo-g,extra:r.extra-g,glp:g}):r; }
 function tierTrue0(t){ var pm=tierTotals(t).mo, med=+((S.packages[t]||{}).med)||0, r={mo:pm+med,note:'',extra:med};   /* true cost counts what prescriptions still cost them */
   /* A column built on their ACA plan carries that plan's deductible and copays too - the add-ons don't erase it, and
@@ -4476,7 +4483,7 @@ function compute(){
           +'That’s <b>'+fmt(bMo)+'</b>/mo in true cost. Your Package of Protection is <b>'+fmt(pMo)+'</b>/mo. '
           +'So when you count the deductible, you’re <b>'+fmt(adAmt)+'</b>/mo better off — here’s what that adds up to '
           +'if you simply set it aside, before any growth at all.';
-        $('ad_fine').textContent='Based on your ACA true cost (premium + deductible ÷ 12) minus your package, assuming the deductible is met. Simple total set aside — no investment growth assumed.';
+        $('ad_fine').textContent='Based on the true cost of '+B.your+' (premium + deductible ÷ 12) minus your package, assuming the deductible is met. Simple total set aside — no investment growth assumed.';   /* follows the anchor (Jesse, 3 Nov) */
       }
     }
   }
@@ -4677,7 +4684,7 @@ function buildPrintout(){
       html+='</div><div class="po-tot"><div class="m"><span>Monthly</span><b>'+fmt2(x.mo)+'</b></div><div class="a"><span>Annual</span><span>'+fmt2(x.yr)+'</span></div></div>'+rxLineHTML(x.t).replace('class="pbrx"','class="pbrx po-rx"');
       if(base){ var ttx=tierTrue(x.t), sv=anchorSavings(base,pkgPremMo(x.t),x.mo+ttx.extra), cpn=copayNote(B,x.t), vs=base.k==='aca'?'your marketplace plan':'your current plan';
         var ln=function(lab,v){ return '<div class="ln"><span>'+lab+'</span><b class="'+(v>=0?'up':'dn')+'">'+(v>=0?'saves ':'costs ')+fmt2(Math.abs(v))+'/mo'+(v>=0?'':' more')+'</b></div>'; };
-        html+='<div class="po-save"><div class="vs">Compared with '+vs+'</div>'+ln('Premium',sv.actual)+(cpn?'<div class="tn">'+cpn+'</div>':'')+ln('True cost',sv.tru)+(ttx.note?'<div class="tn">'+ttx.note+'</div>':'')
+        html+='<div class="po-save"><div class="vs">Compared with '+vs+'</div>'+ln('Premium',sv.actual)+(cpn?'<div class="tn">'+cpn+'</div>':'')+ln('True cost',sv.tru)+'<div class="tn tcn">'+trueCostNote(x.t,base)+'</div>'
           +'<div class="yr '+(sv.tru>=0?'up':'dn')+'">'+(sv.tru>=0?'Ahead '+fmt2(sv.tru*12)+' a year':'Behind '+fmt2(-sv.tru*12)+' a year')+'<small>on true cost</small></div></div>'; }
       var dp=dentalPrice(x.t), hasD=tierHasDental(x.t);
       html+='<div class="po-choose'+(isCh?' on':'')+'" data-choose="'+x.t+'" role="button" tabindex="0"><span class="box">'+(isCh?'☑':'☐')+'</span> This is my plan</div>';
@@ -8440,8 +8447,16 @@ function evTableHTML(i,opt){ var O=opt||{}, tiers=O.tiers?EV_TIERS.filter(functi
     +res.map(function(x){ return '<div class="c">'+(x.r.negotiated!=null?fmt2(x.r.negotiated):'—<small>major medical</small>')+'</div>'; }).join('');
   h+='<div class="c l">You pay <small>(or net)</small></div>'+(A?'<div class="c anc big">'+fmt2(aOwe)+(A.note?'<small>'+A.note+'</small>':(A.how&&aOwe>=A.oop?'<small>'+A.how+'</small>':''))+'</div>':'')
     +res.map(function(x){ var n=x.r.net; return '<div class="c big '+(n<=0?'up':'dn')+'">'+(x.o.unknown&&!x.r.pays?'<small>'+x.o.unknown+'</small>':(n<=0?'You NET '+fmt2(-n):'You pay '+fmt2(n)))+'</div>'; }).join('');
-  if(A&&B){ h+='<div class="c l">This year <small>premium savings + this event</small></div><div class="c anc">—</div>'
-    +res.map(function(x){ var sv=anchorSavings(B,pkgPremMo(x.T[0]))||{actual:0}, v=sv.actual*12+(aOwe-x.r.net); return '<div class="c '+(v>=0?'up':'dn')+'">'+(v>=0?'Ahead ':'Behind ')+fmt(Math.abs(v))+'</div>'; }).join(''); }
+  /* Two lines with the math showing (team call, 3 Nov - Kyle: "I want to see the numbers that got me to this"):
+     the monthly premium saving against the anchor, then the year with this event, each side worked out. The total is
+     the same as before - 12 x the premium difference + (their share of the event - the package's net). */
+  if(A&&B){ var aYr=B.prem*12+aOwe;
+    h+='<div class="c l">Monthly premium savings <small>vs '+esc(B.your)+'</small></div><div class="c anc">'+fmt2(B.prem)+'/mo<small>what '+esc(B.your)+' costs a month</small></div>'
+    +res.map(function(x){ var d=B.prem-pkgPremMo(x.T[0]); return '<div class="c evmo '+(d>=0?'up':'dn')+'">'+(d>=0?'Saves '+fmt2(d):'Costs '+fmt2(-d)+' more')+'/mo<small>'+fmt2(pkgPremMo(x.T[0]))+'/mo</small></div>'; }).join('');
+    h+='<div class="c l">This year, with this event <small>12 months of premium + what this event costs them</small></div>'
+    +'<div class="c anc evyr">12 × '+fmt2(B.prem)+' + '+fmt2(aOwe)+'<small>premiums + their share of this event</small><b>= '+fmt(aYr)+'</b></div>'
+    +res.map(function(x){ var pm=pkgPremMo(x.T[0]), n=x.r.net, y=pm*12+n, v=aYr-y;
+      return '<div class="c evyr '+(v>=0?'up':'dn')+'">12 × '+fmt2(pm)+(n>=0?' + '+fmt2(n):' − '+fmt2(-n))+'<small>premiums '+(n>=0?'+ what they still pay for this event':'− what the benefits pay them beyond the bill')+'</small><b>= '+(y>=0?fmt(y):fmt(-y)+' back to them')+'</b><em>'+(v>=0?'Ahead ':'Behind ')+fmt(Math.abs(v))+'</em></div>'; }).join(''); }
   h+='</div>';
   if(res.some(function(x){ return !x.o.major; })) h+='<div class="evhow"><b>How the money reaches you:</b> the Manhattan benefits are fixed amounts paid for the event, not a share of the bill. In network, show the card and the provider bills ManhattanLife directly; whatever the benefits pay beyond the bill comes back to you. Out of network, you pay the provider and the benefits are paid to you.</div>';
   if((+sc.days||0)>0&&res.some(function(x){ return x.o.afc; })) h+='<div class="evsrc printonly">Affordable Choice surgery benefits (paid on the policy fee schedule) are extra and not counted above.</div>';
@@ -8603,8 +8618,8 @@ function pbColHTML(T,anc){ var t=T[0], act=(t==='actual'), st=(S.client.state||'
         +(bud>0?'<div class="bud">'+(net<=bud?'<b class="up">✓ '+pbMoney(bud-Math.max(0,net))+' under their '+fmt(bud)+' budget</b> once the GLP-1 saving is counted'+(sum>bud?'<small>The bill alone is '+pbMoney(sum-bud)+' over budget — the '+pbMoney(gS)+' Direction Rx saving more than covers it.</small>':'<small>The bill alone is inside the budget too.</small>'):'<b class="dn">'+pbMoney(net-bud)+' over their '+fmt(bud)+' budget</b>, even after the GLP-1 saving<small>The bill alone is '+pbMoney(sum-bud)+' over; the saving takes '+pbMoney(gS)+' off.</small>')+'</div>':'')+'</div>'; }
     if(!act) var tt=tierTrue(t), sv=anchorSavings(anc,pkgPremMo(t),sum+tt.extra), cpn=copayNote(anc,t);
     if(sv){ var line=function(lab,v){ return '<div class="sv"><span>'+lab+'</span><b class="'+(v>=0?'up':'dn')+'">'+(v>=0?'saves ':'costs ')+pbMoney(Math.abs(v))+(v>=0?'':' more')+'</b></div>'; };
-      html+='<div class="pbsave">'+line('Premium vs premium',sv.actual)+(cpn?'<div class="sv" style="font-size:10.5px;color:var(--muted)">'+cpn+'</div>':'')+line('True cost',sv.tru)
-        +'<div class="sv tf"><span>Room for a TFRA <i style="font-style:normal;color:var(--muted);font-size:10.5px">(premium saving)</i></span><b>'+(sv.tfra>0?pbMoney(sv.tfra)+'/mo':'—')+'</b></div>'+(tt.note?'<div class="sv" style="color:#8a6a1f;font-size:11px">'+tt.note+'</div>':'')+'</div>'; }
+      html+='<div class="pbsave">'+line('Premium vs premium',sv.actual)+(cpn?'<div class="sv" style="font-size:10.5px;color:var(--muted)">'+cpn+'</div>':'')+line('True cost',sv.tru)+'<div class="sv tcn" style="color:#8a6a1f;font-size:11px">'+trueCostNote(t,anc)+'</div>'
+        +'<div class="sv tf"><span>Room for a TFRA <i style="font-style:normal;color:var(--muted);font-size:10.5px">(premium saving)</i></span><b>'+(sv.tfra>0?pbMoney(sv.tfra)+'/mo':'—')+'</b></div>'+'</div>'; }
     if(!act) html+='<button type="button" class="pbchoose'+(chosenTier()===t?' on':'')+'" data-act="choose" title="The package the client is going with — it carries to Client View and Enroll">'+(chosenTier()===t?'✓ Client’s choice — this is their plan':'Choose this plan')+'</button>';
     html+='</div>';
   return {html:html,sum:sum}; }
