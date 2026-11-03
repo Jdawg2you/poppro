@@ -904,6 +904,7 @@
   body.client #printout{display:block;max-width:1000px;margin:12px auto 60px;padding:0 16px;box-sizing:border-box}
   .pbanchor{font-size:12.5px;color:var(--navy);background:#fbf9f2;border:1px solid var(--line);border-radius:8px;padding:7px 12px;margin:0 0 10px}
   .pbacanote{font-size:12.5px;color:#7a5600;background:#fff4d6;border:1px solid #e8c770;border-radius:8px;padding:7px 12px;margin:0 0 10px}
+  .pbanchor .ancfell{margin-top:5px;padding:4px 8px;border-radius:6px;background:#fff4d6;border:1px solid #e8c770;color:#7a5600;font-size:12px}
   .pbanchor a.jump{color:#9a5b00;text-decoration:none;border-bottom:1px dotted #d9b36a;margin-left:6px}
   .pbsave{border-top:1px dashed var(--line);margin-top:6px;padding:6px 10px 8px;font-size:12px}
   .pbsave .sv{display:flex;justify-content:space-between;gap:8px;padding:2px 0}.pbsave .sv span{color:var(--muted)}
@@ -2618,12 +2619,16 @@ function acaEstFlags(){ var A=acaIn(), C=curIn(), ov=A.ov, onAca=(A.status==='on
 /* The one baseline every savings figure uses - builder, client view, printout. */
 function anchorBase(){ var k=(S.intake&&S.intake.anchor)||'aca';
   if(k==='cur'&&curIn().paying===false) k='aca';   /* not paying for it now: compare against the marketplace, as the script does */
-  if(k==='aca'){ if(!(+S.aca.prem>0)) return null;   // nothing priced yet (a full subsidy still has a gross premium)
-    var t=acaTrueParts(), v=+((S.intake||{}).visits)||0, cp=+S.aca.copay||0, cm=v*cp/12;
-    return {k:'aca',lab:'ACA bronze',short:'ACA',your:'your marketplace plan',prem:t.net+cm,premOnly:t.net,copayMo:cm,visits:v,copay:cp,mo:t.mo,yr:t.yr,ded:+S.aca.ded||0}; }
-  if(k==='cur'){ var C=curIn(); if(!(+C.prem>0)) return null; var c=curTrue();
-    var v2=+((S.intake||{}).visits)||0, cp2=+C.copay||0, cm2=v2*cp2/12;
-    return {k:'cur',lab:'Current plan',short:'current plan',your:'your current plan',prem:(+C.prem)+cm2,premOnly:+C.prem,copayMo:cm2,visits:v2,copay:cp2,mo:c.mo,yr:c.yr,ded:+C.ded||0}; }
+  var aca=function(){ if(!(+S.aca.prem>0)) return null;   // nothing priced yet (a full subsidy still has a gross premium)
+      var t=acaTrueParts(), v=+((S.intake||{}).visits)||0, cp=+S.aca.copay||0, cm=v*cp/12;
+      return {k:'aca',lab:'ACA bronze',short:'ACA',your:'your marketplace plan',prem:t.net+cm,premOnly:t.net,copayMo:cm,visits:v,copay:cp,mo:t.mo,yr:t.yr,ded:+S.aca.ded||0}; },
+    cur=function(){ var C=curIn(); if(!(+C.prem>0)) return null; var c=curTrue();
+      var v2=+((S.intake||{}).visits)||0, cp2=+C.copay||0, cm2=v2*cp2/12;
+      return {k:'cur',lab:'Current plan',short:'current plan',your:'your current plan',prem:(+C.prem)+cm2,premOnly:+C.prem,copayMo:cm2,visits:v2,copay:cp2,mo:c.mo,yr:c.yr,ded:+C.ded||0}; };
+  /* Whatever the agent anchors against drives the whole Quote. If that side has no numbers, fall back to the other one
+     rather than comparing nothing, and say so on the anchor strip (Jesse, 3 Nov). */
+  if(k==='aca'){ var a=aca(); if(a) return a; var c0=cur(); return c0?Object.assign(c0,{fell:'aca'}):null; }
+  if(k==='cur'){ var c1=cur(); if(c1) return c1; var a1=aca(); return a1?Object.assign(a1,{fell:'cur'}):null; }
   return null; }
 /* The package's side of 'premium vs premium': its premiums plus any doctor copays it charges (a
    Cigna copay x visits / 12). Medications are left out on both sides - a separate bucket. */
@@ -2640,7 +2645,7 @@ function copayNote(B,t){ var bits=[];
   return bits.join(' · '); }
 function anchorNote(){ var el=$('anchorNote'); if(!el) return; var k=$('in_anchor').value;
   el.innerHTML=k==='none'?'No savings figures — the quote just compares the Good, Better and Best packages with each other.'
-    :(k==='cur'&&!(+curIn().prem>0)?'<span style="color:var(--maroon)">Add their current premium under Current Insurance, or nothing is compared.</span>'
+    :(k==='cur'&&!(+curIn().prem>0)?'<span style="color:var(--maroon)">Add their current premium under Current Insurance — until then the quote compares with the ACA.</span>'
     :'What the savings on the quote are measured against.'); }
 function acaTrueParts(){ var a=S.aca, np=Math.max(0,(+a.prem||0)-(+a.subsidy||0)), c=acaCostShare(a);
   var yr=np*12+c.cs; return {net:np,visYr:c.visYr,yr:yr,mo:yr/12,capped:c.capped}; }
@@ -8672,7 +8677,8 @@ function renderBuilder(){
   var anc=anchorBase(), ak=(S.intake&&S.intake.anchor)||'aca';
   var anchorStrip='<div class="pbanchor">'+(anc?'Anchored against <b>'+anc.lab+'</b>: '+pbMoney(anc.prem)+'/mo premium'+(anc.copayMo>0?' + doctor copays':'')+' · '+pbMoney(anc.mo)+'/mo true cost'
       :(ak==='cur'?'Anchor is the current plan, but there is no current premium — add it under Current Insurance.':(ak==='aca'?'Anchor is the ACA bronze, but it has no premium yet — add the state and ages on the Intake.':'No anchor — the packages are only compared with each other.')))
-    +' <a href="#" class="jump" data-jumpto="in_anchor">change</a></div>';
+    +' <a href="#" class="jump" data-jumpto="in_anchor">change</a>'
+    +(anc&&anc.fell?'<div class="ancfell">'+(anc.fell==='cur'?'Current plan is picked, but there’s no current premium on file — showing the ACA until you add it under Current Insurance.':'The ACA can’t be priced yet (add the state and ages on the Intake) — showing their current plan until then.')+'</div>':'')+'</div>';
   var LINEUPS=[['mh','Manhattan only'],['lx-mh-cg',blOn()?'Bright Life · Manhattan · Cigna':'LifeX · Manhattan · Cigna'],['custom',blOn()?'Create your custom plan':'Custom — you choose each']];
   if(DT_ON) LINEUPS.splice(2,0,['aca','ACA + protection'],['vb','Virtual Basic']);
   if(S.lineup==='cg') LINEUPS.splice(2,0,['cg','Cigna base · Manhattan add-ons']);   /* Jesse, 29 Oct: three lineups - Custom covers the Cigna start; kept only for saved files */
