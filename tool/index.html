@@ -2910,11 +2910,11 @@ function followTasks(){
      business beats the generic employer prompt; each referral is its own line so it can be checked off. */
   var NV=S.nav||{}, bz=NV.biz_lead==='Yes'||!!String(NV.biz_name||'').trim(), wk=String(NV.work_kind||'');
   if(bz){ var bw=String(NV.biz_want||''), bRet=/retirement/i.test(bw), bGrp=/group/i.test(bw)||!bRet;
-    t.push({id:'bizlead',big:true,text:'<b>Business lead</b> — '+esc(NV.biz_name||'their employer')+(NV.biz_size?' · about '+esc(NV.biz_size)+' employees':'')+(NV.biz_what?' · '+esc(NV.biz_what):'')+(NV.biz_where?' · '+esc(NV.biz_where):'')+(NV.biz_rel?' · '+esc(NV.biz_rel.toLowerCase()):'')
+    t.push({id:'bizlead',big:true,text:'<b>Business lead</b> — '+esc(NV.biz_name||'their employer')+(NV.biz_size?' · about '+esc(NV.biz_size)+' employees':'')+(NV.biz_what?' · '+esc(NV.biz_what):'')+(NV.biz_where?' · '+esc(NV.biz_where):'')+(NV.biz_rel?' · '+esc(NV.biz_rel.toLowerCase()):'')+(NV.biz_offers?' · offers now: '+esc(NV.biz_offers):'')
       +'. Follow up on '+(bGrp&&bRet?'<b>group health &amp; benefits</b> and a <b>retirement plan for the business</b>':bRet?'a <b>retirement plan for the business</b>':'<b>group health &amp; benefits</b>')
       +(NV.biz_contact?' — talk to '+esc(NV.biz_contact):'')+(NV.biz_notes?'. <i>'+esc(NV.biz_notes)+'</i>':'')+'.'}); }
   else if(/Self-employed|Own a business/.test(wk)) t.push({id:'employer',text:'They work for themselves — ask whether the business could use <b>group benefits</b> or a <b>retirement plan for the business</b>.'});
-  else t.push({id:'employer',text:'Ask about their <b>employer</b> — it could open a group-plan opportunity.'});
+  else if(!/Retired|Not working/.test(wk)) t.push({id:'employer',text:'Ask about their <b>employer</b> — it could open a group-plan opportunity.'});
   String(NV.refs||'').split(/\n+/).map(function(x){ return x.trim(); }).filter(Boolean).forEach(function(r,i){ t.push({id:'ref'+i,text:'<b>Referral:</b> '+esc(r)+' — reach out and introduce yourself.'}); });
   t.push({id:'referrals',text:'<b>Ask for referrals.</b> Their beneficiaries are often your first referrals — if they aren’t already family on this plan.'});
   return t;
@@ -4223,7 +4223,7 @@ function applySuiteClient(c, live){ var sm=$('setupModal'); if(sm&&!live&&sm.cla
   if(h.drugTx==="Yes") extra.push("Alcohol / drug treatment (applicant)"+(h.drugTxWhen?": "+h.drugTxWhen:""));
   if(h.spDrugTx==="Yes") extra.push("Alcohol / drug treatment (spouse)"+(h.spDrugTxWhen?": "+h.spDrugTxWhen:""));
   if(h.lifeLb) extra.push("Living benefits on their life cover: "+h.lifeLb);
-  if(h.bizLead==="Yes"||h.bizName) extra.push("Business lead: "+[h.bizName,h.bizSize?h.bizSize+" employees":"",h.bizWhat,h.bizWhere,h.bizRel,h.bizWant,h.bizContact?"talk to "+h.bizContact:"",h.bizNotes].filter(Boolean).join(" — "));
+  if(h.bizLead==="Yes"||h.bizName) extra.push("Business lead: "+[h.bizName,h.bizSize?h.bizSize+" employees":"",h.bizWhat,h.bizWhere,h.bizRel,h.selfTeam?"self-employed: "+h.selfTeam.toLowerCase():"",h.bizOffers?"offers now: "+h.bizOffers:"",h.bizWant,h.bizContact?"talk to "+h.bizContact:"",h.bizNotes].filter(Boolean).join(" — "));
   String(h.refs||"").split(/\n+/).map(function(x){ return x.trim(); }).filter(Boolean).forEach(function(r){ extra.push("Referral: "+r); });
   if(h.healthOther) extra.push("Also mentioned: "+h.healthOther);
   /* Only when the script flagged next year as different. */
@@ -4882,7 +4882,7 @@ function suiteFromNavProfile(P){
       spGlp1On:P.sp_glp1||"", spGlp1Drug:P.sp_glp1_drug||"", spGlp1For:P.sp_glp1_for||"", spGlp1Since:P.sp_glp1_since||"", spGlp1Cost:P.sp_glp1_cost||"", spGlp1Source:P.sp_glp1_source||"",
       apptWhen:P.appt_when||"", apptWho:P.appt_who||"", apptNotes:P.appt_notes||"", occupation:P.occupation||"", occYears:P.occ_years||"", /* team call, 3 Nov */ curSrc:P.cur_src||"", curFamCost:P.cur_fam_cost||"", losingWhy:P.losing_why||"", workKind:P.work_kind||"",
       cpap:P.cpap||"", cpapWho:P.cpap_who||"", drugTx:P.drug_tx||"", drugTxWhen:P.drug_tx_when||"", spDrugTx:P.sp_drug_tx||"", spDrugTxWhen:P.sp_drug_tx_when||"", lifeLb:P.life_lb||"",
-      bizLead:P.biz_lead||"", bizRel:P.biz_rel||"", bizName:P.biz_name||"", bizSize:P.biz_size||"", bizWhat:P.biz_what||"", bizWhere:P.biz_where||"",
+      bizLead:P.biz_lead||"", bizEmps:P.biz_emps||"", selfTeam:P.self_team||"", bizOffers:P.biz_offers||"", bizRel:P.biz_rel||"", bizName:P.biz_name||"", bizSize:P.biz_size||"", bizWhat:P.biz_what||"", bizWhere:P.biz_where||"",
       bizWant:P.biz_want||"", bizContact:P.biz_contact||"", bizNotes:P.biz_notes||"", refs:P.refs||"", spOnPlan:P.sp_on_plan||"", spOccupation:P.sp_occupation||"", finDep:P.fin_dep||"", finDepNote:P.fin_dep_note||"", finalExp:P.final_exp||"", finalExpNote:P.final_exp_note||"",
       kidsHealth:P.kids_health||"", wantDental:P.want_dental||"", wantVision:P.want_vision||"", wantHearing:P.want_hearing||"",
       curCarrier:P.cur_carrier||"", curPlan:P.cur_plan||"", curPrem:P.cur_prem||"", curEmpPrem:P.cur_emp_prem||"", curTotal:P.cur_total||"",

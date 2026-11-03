@@ -3034,16 +3034,25 @@ hs_why:{s:"2",pf:"why",t:"Why they're shopping",l:[
 
 {t:"say",x:"<b>And your work &mdash;</b>"},
 {t:"ask",x:"What do you do for a living? ___(type of work) &mdash; how long have you been doing that? ___(how long)"},
-{t:"ask",unless:["cur_src","Work"],x:"Is that working for someone, for yourself, or do you own the business? {{work_kind}}"},
+{t:"ask",unless:["cur_src","Work"],x:"Tell me a little about that &mdash; who's that with?"},
+{t:"do",unless:["cur_src","Work"],x:"Let them answer in their own words &mdash; don't read the choices out. Then click what fits: {{work_kind}}"},
 {t:"ask",when:["work_kind","Employed"],unless:["cur_src","Work"],x:"<span class=\"optpill\">Read the room</span> Does your work offer health coverage? {{emp_offer}}"},
 {t:"do",when:["emp_offer","Yes"],x:"An affordable work plan can take away the marketplace subsidy, so note roughly what it would cost them."},
 
-{t:"ask",when:[["cur_src","Work"],["work_kind","Employed"]],x:"<span class=\"optpill\">Read the room</span> Is that a smaller company? About how many people work there &mdash; and what's it called? {{biz_lead}}"},
-{t:"ask",when:[["work_kind","Own a business"],["work_kind","Self-employed"]],x:"Do you have anyone working with you? About how many? And do you offer them anything right now &mdash; health, dental, a retirement plan? {{biz_lead}}"},
-{t:"pf",ks:["biz_name","biz_size","biz_what","biz_where","biz_want"],when:["biz_lead","Yes"]},
-{t:"say",when:[["cur_src","Work"],["work_kind","Employed"]],unless:["biz_lead",["","No"]],x:"You know &mdash; I might be able to reach out to them and help them find some better group options for all of you."},
+{t:"ask",when:[["cur_src","Work"],["work_kind","Employed"]],x:"<span class=\"optpill\">Read the room</span> Is that a smaller company? {{biz_lead}}"},
+{t:"ask",allOf:[["biz_lead","Yes"],["work_kind","!~Own"],["work_kind","!~Self"]],x:"Oh, okay &mdash; about how many people work there? ___(how many employees) And what's it called? ___(company name)"},
+
+{t:"ask",when:["work_kind","Own a business"],x:"By chance, do you have employees? {{biz_emps}}"},
+{t:"ask",when:["work_kind","Self-employed"],x:"Do you have people working with you &mdash; or is it more contractor work? {{self_team}}"},
+{t:"ask",when:[["biz_emps","Yes"],["self_team","Employees"]],x:"Do you offer them any benefits now &mdash; like health, dental, or a retirement plan? {{biz_offers}}"},
+{t:"ask",when:[["biz_emps","Yes"],["self_team","Employees"]],x:"Oh, okay &mdash; how many employees do you have? ___(how many employees) And what's the business called? ___(company name)"},
+{t:"do",when:["self_team","Contractors"],x:"Contractors usually can't go on a group health plan &mdash; the second conversation here is more likely <b>a retirement plan for the business</b>. If it's worth a follow-up, click <b>Yes</b>: {{biz_lead}}"},
+{t:"do",when:[["self_team","Just me"],["biz_emps","No"]],x:"Just them &mdash; a <b>retirement plan for the business</b> can still fit a one-person business. If it's worth a follow-up, click <b>Yes</b>: {{biz_lead}}"},
+{t:"pf",ks:["biz_what","biz_where","biz_want"],when:["biz_lead","Yes"]},
+
+{t:"say",allOf:[["biz_lead","Yes"],["work_kind","!~Own"],["work_kind","!~Self"]],x:"You know &mdash; I might be able to reach out to them and help them find some better group options for all of you."},
 {t:"say",when:[["work_kind","Own a business"],["work_kind","Self-employed"]],unless:["biz_lead",["","No"]],x:"That's worth a separate conversation &mdash; there are group options and retirement plans built for a business your size, and they can save you and your people money. Let's get you sorted first, and I'll come back to it."},
-{t:"do",x:"<b>Business lead:</b> a small employer with poor benefits, or a business they own, is a second conversation &mdash; group health and benefits, or a retirement plan for the business. Click <b>Yes</b>, note the name and size, and it lands on your follow-up list at the end. <b>Don&rsquo;t pitch it on this call.</b> The footer button <b>+ Business lead / referral</b> opens the same box any time."},
+{t:"do",when:[["cur_src","Work"],["work_kind","Employed"],["work_kind","Own a business"],["work_kind","Self-employed"]],x:"<b>Business lead:</b> a small employer with poor benefits, or a business they own, is a second conversation &mdash; group health and benefits, or a retirement plan for the business. Click <b>Yes</b>, note the name and size, and it lands on your follow-up list at the end. <b>Don&rsquo;t pitch it on this call.</b> The footer button <b>+ Business lead / referral</b> opens the same box any time."},
 
 {t:"ask",x:"And when you picture the right plan for you &mdash; what's most important?"},
 {t:"pf",ks:["why_note"]},
@@ -4509,6 +4518,7 @@ document.addEventListener("click",function(e){
     P[k]=v;
   }
   if(k==="cur_src") P.cur_is_aca=v?(v==="Marketplace (ACA)"?"Yes":"No"):P.cur_is_aca;
+  if((k==="biz_emps"&&v==="Yes")||(k==="self_team"&&v==="Employees")){ P.biz_lead="Yes"; if(!P.biz_rel) P.biz_rel="Owns it"; }
   var lifted=pLift(k,v);
   if(k==="bp_meds"){ P.bp_meds_set=v?"1":""; P.bp_meds_auto=""; if(!v) bpSync(); }
   pStore(); pFlash();
@@ -4604,6 +4614,7 @@ function render(){
       (HOST?'<div class="navafc" data-afcwrap="cond" data-who="'+(L.who||"")+'">'+navAfcCondHTML(L.who)+'</div>':'')+'</div>';
     var x=fmt(L.x||"");
     if(L.unless && whenHit(L.unless)) return "";   /* e.g. the protected-position ask is pointless for a current employer's plan */
+    if(L.allOf && !L.allOf.every(function(pr){ return condHit(pVal(pr[0]),pr[1]); })) return "";   /* every pair has to hold, as on a branch */
     if(L.when && L.t!=="askif" && L.t!=="alt" && L.t!=="pf"){
       var isList=Object.prototype.toString.call(L.when[0])==="[object Array]";
       var got=isList ? L.when.map(function(pr){return pVal(pr[0])}).join("")
@@ -5049,6 +5060,9 @@ PF_SPEC_HEALTH=[
     list. Referrals sit here too, and never start a new discovery. */
  {sec:"Business lead & referrals",id:"leads"},
  {k:"biz_lead",drives:true,l:"Business lead?",w:1,opt:["","No","Yes"]},
+ {k:"biz_emps",drives:true,l:"They own it: employees?",w:1,opt:["","No","Yes"],showIf:["work_kind","Own a business"]},
+ {k:"self_team",drives:true,l:"Self-employed: who works with them",w:2,opt:["","Just me","Contractors","Employees"],showIf:["work_kind","Self-employed"]},
+ {k:"biz_offers",l:"Benefits they offer now",w:3,multi:true,opt:["","Nothing yet","Health","Dental","Retirement plan"],showIf:[["biz_emps","Yes"],["self_team","Employees"]]},
  {k:"biz_rel",l:"Their connection",w:2,opt:["","Works there","Owns it","Spouse works there","Other"],showIf:["biz_lead","Yes"]},
  {k:"biz_name",l:"Company name",w:2,showIf:["biz_lead","Yes"]},
  {k:"biz_size",l:"About how many employees",w:1,showIf:["biz_lead","Yes"]},
@@ -5133,7 +5147,7 @@ var DATEKEYS={dob:1,last_day:1,start_when:1,sp_dob:1,spouse_dob:1,appt_when:1};
 var BLANKMAP={
  "last name":"last","zip":"zip","their zip":"zip","height":"height","weight":"weight",
  "last day of cover":"last_day","start date":"start_when","booked for":"appt_when","spouse or partner":"sp_name","time A":"","time B":"","age":"age","their age":"age","spouse age":"sp_age","approximate savings":"i_liquid","comfortable budget":"budget_comfort","max":"budget_max","your income":"income_this","hospital stay":"stay_what","doctor":"doc_name","practice":"doc_practice","your retirement age":"i_retire","spouse retirement age":"sp_retire",
- "type of work":"occupation","how long":"occ_years",
+ "type of work":"occupation","how long":"occ_years","how many employees":"biz_size","company name":"biz_name",
  "income this year":"income_this","income next year":"income_next","spouse income":"sp_income",
  "household income":"hh_income","retirement age":"i_retire","liquid savings":"i_liquid",
  "where is it":"asset_where","how much":"asset_amt",
@@ -6654,7 +6668,7 @@ function popClient(){
       apptWhen:P.appt_when||"", apptWho:P.appt_who||"", apptNotes:P.appt_notes||"",
       occupation:P.occupation||"", occYears:P.occ_years||"", /* team call, 3 Nov */ curSrc:P.cur_src||"", curFamCost:P.cur_fam_cost||"", losingWhy:P.losing_why||"", workKind:P.work_kind||"",
       cpap:P.cpap||"", cpapWho:P.cpap_who||"", drugTx:P.drug_tx||"", drugTxWhen:P.drug_tx_when||"", spDrugTx:P.sp_drug_tx||"", spDrugTxWhen:P.sp_drug_tx_when||"", lifeLb:P.life_lb||"",
-      bizLead:P.biz_lead||"", bizRel:P.biz_rel||"", bizName:P.biz_name||"", bizSize:P.biz_size||"", bizWhat:P.biz_what||"", bizWhere:P.biz_where||"",
+      bizLead:P.biz_lead||"", bizEmps:P.biz_emps||"", selfTeam:P.self_team||"", bizOffers:P.biz_offers||"", bizRel:P.biz_rel||"", bizName:P.biz_name||"", bizSize:P.biz_size||"", bizWhat:P.biz_what||"", bizWhere:P.biz_where||"",
       bizWant:P.biz_want||"", bizContact:P.biz_contact||"", bizNotes:P.biz_notes||"", refs:P.refs||"", spOnPlan:P.sp_on_plan||"", spOccupation:P.sp_occupation||"", finDep:P.fin_dep||"", finDepNote:P.fin_dep_note||"", finalExp:P.final_exp||"", finalExpNote:P.final_exp_note||"",
       kidsHealth:P.kids_health||"",
       wantDental:P.want_dental||"", wantVision:P.want_vision||"", wantHearing:P.want_hearing||"",
