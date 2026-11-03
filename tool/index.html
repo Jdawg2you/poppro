@@ -1045,6 +1045,7 @@
 .pbhead input.pbprice{width:92px;font:inherit;font-weight:700;font-size:15px;color:var(--navy);text-align:right;padding:5px 6px;border:1.5px solid var(--gold);border-radius:7px;background:#fffdf7}
 .pbrow.edited{border-color:var(--gold)}
 .edtag{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;background:var(--gold);color:#12213b;border-radius:999px;padding:1px 7px;margin-left:4px;vertical-align:middle}
+.pbhead .nm .acahint{display:inline-block;margin-top:4px;padding:2px 7px;border-radius:5px;background:#fff4d6;border:1px solid #e8c770;color:#7a5600;font-size:11.5px;font-weight:500;line-height:1.35}
 .pbhead .nm .cov{display:block;font-weight:500;font-size:12px;color:var(--muted);margin-top:2px;line-height:1.35}
 .pbhead .pr{margin-left:auto;font-weight:700;font-variant-numeric:tabular-nums;color:var(--navy);white-space:nowrap}
 .pbhead .pr.na{color:var(--muted);font-weight:500;font-size:12px}
@@ -8220,7 +8221,8 @@ function pbControls(k,c){
 /* What each row actually buys — shown under the product name so the price never stands alone. */
 function pbSummary(k,c,live){
   var m=function(v){ return '$'+Number(v).toLocaleString('en-US'); };
-  if(k==='base'&&c.base==='aca') return 'their marketplace plan, priced on the ACA panel';
+  if(k==='base'&&c.base==='aca'){ var aa=S.aca||{}, ap=+aa.prem||0, as=+aa.subsidy||0;
+    return ap&&as?'their marketplace plan: '+fmt2(ap)+' − '+fmt2(as)+' subsidy = '+fmt2(acaNetPrem())+'/mo net':'their marketplace plan, priced on the ACA panel'; }
   if(k==='base'&&c.base==='amaze') return fmt2(AMAZE_MO)+'/mo · virtual primary & urgent care';
   if(k==='base') return c.base==='lifex'?(c.lifexPlan||'$500 PPO')+' · '+((LX&&LX.plans[c.lifexPlan||'$500 PPO']||{}).family||''):c.base==='brightlife'?blPlanName(c)+' · '+((BLR&&(BLR.plans[c.blPlan||'VL 1500']||{}).net)||'')+' network':'$'+Number(c.triadPlan||3500).toLocaleString('en-US')+' deductible PPO';
   if(k==='afc') return LVLNAME[c.afc]+' plan';
@@ -8557,7 +8559,7 @@ function pbColHTML(T,anc){ var t=T[0], act=(t==='actual'), st=(S.client.state||'
       var mlTag=(blOn()&&c.base&&c.base!=='afc'&&k!=='base'&&k!=='lbp'&&k!=='lbs')?'<span class="mltag" title="This product is ManhattanLife’s, not '+(c.base==='brightlife'?'Bright Life':c.base==='triad'?'Cigna':'the base carrier')+'’s">ManhattanLife</span>':'';
       var info=benFileFor(k,c)?'<button type="button" class="pbinfo" data-ben="'+k+'" title="Benefits — '+sl.name+'" aria-label="Benefits for '+sl.name+'">i</button>':'';
       var hf=histFam(), hm=histSelf(), hiK=HIST_KEYS.indexOf(k)>=0, selfLB=(k==='lbp'||k==='lbs')&&hm.length;
-      html+='<div class="pbrow'+(edited?' edited':'')+(hf.any&&hiK?' hist':'')+(selfLB?' histself':'')+'"><div class="pbhead"><span class="nm">'+sl.name+mlTag+info+(edited?' <span class="edtag">edited</span>':'')+'<span class="cov">'+esc(pbSummary(k,c,live)||'')+'</span></span>'+prHtml
+      html+='<div class="pbrow'+(edited?' edited':'')+(hf.any&&hiK?' hist':'')+(selfLB?' histself':'')+'"><div class="pbhead"><span class="nm">'+sl.name+mlTag+info+(edited?' <span class="edtag">edited</span>':'')+'<span class="cov">'+esc(pbSummary(k,c,live)||'')+'</span>'+(k==='base'&&c.base==='aca'&&!((+(S.aca||{}).prem||0)&&(+(S.aca||{}).subsidy||0))?'<span class="acahint">Enter price <b>+</b> subsidy in the Intake’s ACA section → net lands here</span>':'')+'</span>'+prHtml
         +'<button class="pbib" data-act="tog" data-k="'+k+'" aria-label="Change '+sl.name+'">'+(open?'▴':'▾')+'</button>'
         +'<button class="pbib" data-act="rm" data-k="'+k+'" title="Remove" aria-label="Remove '+sl.name+'">✕</button></div>'
         +(selfLB?'<div class="histnote">They’ve had '+esc(hm.join(' and '))+' — term living benefits likely won’t be available. Look at whole life: add it as <b>Other</b>.</div>':'')
