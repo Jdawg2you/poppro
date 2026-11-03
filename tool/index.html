@@ -902,6 +902,7 @@
   body.client .discl{display:none!important}
   body.client #printout{display:block;max-width:1000px;margin:12px auto 60px;padding:0 16px;box-sizing:border-box}
   .pbanchor{font-size:12.5px;color:var(--navy);background:#fbf9f2;border:1px solid var(--line);border-radius:8px;padding:7px 12px;margin:0 0 10px}
+  .pbacanote{font-size:12.5px;color:#7a5600;background:#fff4d6;border:1px solid #e8c770;border-radius:8px;padding:7px 12px;margin:0 0 10px}
   .pbanchor a.jump{color:#9a5b00;text-decoration:none;border-bottom:1px dotted #d9b36a;margin-left:6px}
   .pbsave{border-top:1px dashed var(--line);margin-top:6px;padding:6px 10px 8px;font-size:12px}
   .pbsave .sv{display:flex;justify-content:space-between;gap:8px;padding:2px 0}.pbsave .sv span{color:var(--muted)}
@@ -8666,7 +8667,7 @@ function renderBuilder(){
     +LINEUPS.map(function(L){ var on=(S.lineup||'mh')===L[0]; return '<button type="button" data-lineup="'+L[0]+'" style="font:inherit;font-size:13px;font-weight:600;border-radius:999px;padding:7px 14px;cursor:pointer;border:1px solid '+(on?'var(--navy)':'#d6cdb4')+';background:'+(on?'var(--navy)':'#fff')+';color:'+(on?'#fff':'var(--ink)')+'">'+L[1]+'</button>'; }).join('')+'</div>';
   lineupBar=lineupBar.replace(/<\/div>$/,presentBtn+'</div>');
   var html=(PR_STATE==='failed'?'<div class="hidein-client noprint" style="margin:0 0 10px;padding:10px 14px;border:1px solid #f1b4ad;background:#fdecea;color:#b42318;border-radius:10px;font-weight:700">The full ManhattanLife rate file didn’t load, so some products (Out-of-Pocket, dental, Cancer/Heart/Stroke) can’t be priced in many states. <a href="#" onclick="location.reload();return false" style="color:#b42318">Refresh the page</a> before you quote.</div>':'')
-    +lineupBar+anchorStrip+'<div class="bh" style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap"><h3>Package builder</h3><small>'+st+' · age '+age+' · '+({i:'Individual',s:'Individual + Spouse',c:'Individual + Children',f:'Family'}[householdKey()])+' · prices from the ManhattanLife rate tables</small><button type="button" class="picbtn hidein-client noprint" data-copypic="plans" style="margin-left:auto">📋 Copy plans</button></div><div class="pb3">';
+    +lineupBar+anchorStrip+(S.lineup==='aca'?'<div class="pbacanote hidein-client noprint"><b>Only use this lineup when ACA is their best option</b> (step 02 of the Decision Tree). The marketplace plan stays — these packages add the protection on top so they still get the full POP.</div>':'')+'<div class="bh" style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap"><h3>Package builder</h3><small>'+st+' · age '+age+' · '+({i:'Individual',s:'Individual + Spouse',c:'Individual + Children',f:'Family'}[householdKey()])+' · prices from the ManhattanLife rate tables</small><button type="button" class="picbtn hidein-client noprint" data-copypic="plans" style="margin-left:auto">📋 Copy plans</button></div><div class="pb3">';
   tiers.forEach(function(T){ var r=pbColHTML(T,anc); html+=r.html; totals[T[0]]=r.sum; });
   html+='</div>';
   var ladder=!S.lineup||S.lineup==='mh';   // the step-up check only means something on a Good/Better/Best ladder
