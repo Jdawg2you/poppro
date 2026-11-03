@@ -5461,10 +5461,13 @@ function reviewCurTick(){ var t=chosenTier(), R=reviewState(), p=reviewPages(t)[
 /* The client's care card (optimumprotects.com/card): MyPopPro sends a personal link that fills the agent's name and
    phone (from Setup), the people on the plan, dental, and ONLY the doctors ticked "✓ In network" on the Intake, each in
    its slot. Everything rides after the # so it never reaches the server. (Jesse, 18 Oct) */
-var CARE_CARD_URL='https://optimumprotects.com/card/';   /* live since 18 Oct 2026 */
+var CARE_CARD_URL=/(^|\.)mypoppro\.com$/.test(location.hostname)?location.origin+'/tool/card/':'http://sandbox.mypoppro.com/tool/card/';   /* Jesse, 2 Nov: the agency-branded card for every plan lives with MyPopPro (sandbox first); the old optimumprotects.com/card links keep working */
+function carePlan(t){ var c=t&&S.cfg&&S.cfg[t==='actual'?(S.actual||{}).from:t], b=c&&c.base;   /* 'ml' = ManhattanLife Affordable Choice: the card shows First Health, CareGuide, EasyCare2go */
+  return !b||b==='afc'?'ml':({triad:'Cigna (USA Health Triad)',brightlife:'Bright Life',lifex:'LifeX',aca:'ACA marketplace plan',amaze:'Amaze'})[b]||'ml'; }
 function careCardData(){ var I=S.intake||{}, C=S.client||{}, R=reviewState(), slot={me:'md',sp:'sd',kid:'kd'};
   if(!R.cardId){ R.cardId=Math.random().toString(36).slice(2,10); autosave(); }   /* this client's card: its own saved copy on any device */
-  var o={i:R.cardId};
+  var o={i:R.cardId}, et0=enrolledTier();
+  if(String(S.agency||'').trim()) o.ag=String(S.agency).trim(); var pl=carePlan(et0); if(pl!=='ml') o.pl=pl;
   if(String(C.agent||'').trim()) o.a=String(C.agent).trim(); var ph=String(S.agentPhone||'').replace(/\D/g,''); if(ph) o.p=ph;
   var n=acaPeople().filter(function(x){ var a=parseFloat(x.age); return x.role!=='k'||a>=18; }).length; if(n>0) o.n=n;   /* adults only: primary, spouse, and kids 18 and over (Jesse, 18 Oct) */ var et=enrolledTier(); if(et&&tierHasDental(et)) o.d=1;
   [1,2,3].forEach(function(k){ var nm=String(I['docs'+k]||'').trim(), w=I['docs'+k+'who']; if(nm&&I['docs'+k+'net']===true&&slot[w]) o[slot[w]]=o[slot[w]]?o[slot[w]]+'; '+nm:nm; });

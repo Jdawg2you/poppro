@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My Care Card</title>
+<meta name="description" content="Write down your in-network doctor, urgent care, hospital and pharmacy, then print a wallet card, copy it to your notes, or text it to your family.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="My Care Card — where to go, who to call">
+<meta property="og:description" content="Your in-network doctor, urgent care, hospital and the numbers you need, on one wallet card.">
+<meta name="theme-color" content="#ffffff">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<!--
+  Care card (Jesse, 18 Oct 2026). Deliberately NOT Optimum-branded: any agent can send clients here.
+  Jesse, 2 Nov: branded with the AGENT'S agency (from MyPopPro Setup), for every plan - the ManhattanLife parts
+  (First Health, CareGuide, EasyCare2go, Rx Valet, the front-desk line) show only when the plan is ManhattanLife
+  Affordable Choice (link pl:'ml', or no pl = the older links). Any other plan gets a member-services line the client
+  fills from the back of their ID card - no numbers we haven't verified for that carrier.
+  Carrier facts are copied from manhattanlife/index.html (which cites ManhattanLife/vendor material) - never memory.
+  Everything typed stays on the client's own device (localStorage); nothing is sent anywhere.
+  Optional link prefill for agents: ?agent=Name&phone=5551234567
+-->
+<style>
+  :root{ --navy:#006B66; --navy-2:#00857E; --teal:#00A9A1; --sky:#E8F6F5; --ink:#14202E; --muted:#5B6878; --line:#D8E1EA; --bg:#F5F8FB; --card:#fff; --green:#1F7A4D; --amber:#8A5A00; }
+  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --ink:#E8EEF5; --muted:#A3B1C2; --line:#2B3A4C; --bg:#0D1622; --card:#142132; --sky:#14302E; } }
+  :root[data-theme="dark"]{ --ink:#E8EEF5; --muted:#A3B1C2; --line:#2B3A4C; --bg:#0D1622; --card:#142132; --sky:#14302E; }
+  *{box-sizing:border-box}
+  [hidden]{display:none!important}   /* .num is display:flex, which would otherwise show a hidden row (the dental number) */
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;-webkit-text-size-adjust:100%}
+  header{background:#fff;color:#14202E;padding:16px 16px 18px;border-bottom:4px solid var(--teal)}
+  header .agency{font-size:22px;font-weight:800;color:#006B66;letter-spacing:-.01em;margin:0 0 8px}
+  .wrap{max-width:760px;margin:0 auto;padding:0 16px}
+  header .wrap{padding:0}
+  .carrier{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#006B66}
+  h1{font-size:28px;line-height:1.15;margin:6px 0 6px;font-weight:800}
+  header p{margin:0;color:#4B5866;max-width:560px}
+  main{padding:18px 0 40px}
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin:0 0 14px}
+  .panel h2{font-size:17px;margin:0 0 2px}
+  .panel .sub{color:var(--muted);font-size:14px;margin:0 0 12px}
+  .row{display:grid;grid-template-columns:1fr 170px;gap:8px;margin:0 0 10px}
+  @media (max-width:560px){ .row{grid-template-columns:1fr} }
+  label.f{display:block;font-size:13px;font-weight:600;color:var(--muted);margin:0 0 3px}
+  input[type=text],input[type=tel]{width:100%;font:inherit;font-size:16px;padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink)}
+  input:focus{outline:2px solid var(--navy-2);outline-offset:1px}
+  .find{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:600;color:var(--navy-2);text-decoration:none;margin:0 0 12px}
+  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .find{color:#5FD3CC} }
+  .who{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--navy-2);margin:12px 0 6px}
+  .chk{display:flex;gap:8px;align-items:center;font-weight:600;margin:4px 0 10px}
+  .chk input{width:20px;height:20px}
+  .nums{display:grid;gap:8px}
+  .num{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:10px 12px;background:var(--sky);border-radius:10px;font-size:14.5px}
+  .num b{font-weight:700}
+  .num a{color:inherit;font-weight:700;white-space:nowrap}
+  .say{font-size:14px;color:var(--muted);margin:10px 0 0}
+  .who .opt{font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted);font-size:.92em}
+  .actions{position:sticky;bottom:0;background:linear-gradient(transparent,var(--bg) 30%);padding:18px 0 14px;display:flex;flex-direction:column;gap:9px}
+  .arow{display:flex;gap:10px;flex-wrap:wrap}
+  .arow.two .btn{flex:1 1 calc(50% - 5px);white-space:normal;line-height:1.3}
+  .sharenote{font-size:13px;color:var(--muted);margin:0 2px;line-height:1.4}
+  .btn{flex:1 1 150px;font:inherit;font-weight:700;font-size:16px;border-radius:11px;padding:13px 16px;cursor:pointer;border:1px solid var(--navy);background:var(--card);color:var(--navy);text-align:center;text-decoration:none}
+  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .btn{color:#E8EEF5;border-color:#5FD3CC} :root:not([data-theme="light"]) .btn.primary{color:#fff} }
+  .btn.primary{background:var(--navy);color:#fff}
+  @media (max-width:560px){ .actions{gap:7px;padding:12px 0 10px} .arow{flex-wrap:nowrap;gap:6px} .btn{flex:1 1 0;font-size:14px;padding:11px 6px} .arow.two .btn{flex:1 1 0;font-size:13px;padding:10px 8px} .sharenote{font-size:12px} }
+  @media (max-width:420px){ #preview .wc{zoom:.88} }
+  .note{font-size:13px;color:var(--muted)}
+  .toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:var(--green);color:#fff;font-weight:700;padding:10px 16px;border-radius:999px;opacity:0;transition:opacity .2s;pointer-events:none}
+  .toast.on{opacity:1}
+  .preview{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin:6px 0 0}
+  footer{font-size:12.5px;color:var(--muted);padding:0 0 30px}
+  .clear{background:none;border:0;color:var(--muted);text-decoration:underline;font:inherit;font-size:13px;cursor:pointer;padding:0}
+
+  /* the wallet card itself: standard card size, front + back */
+  .wc{width:3.375in;height:2.125in;border:1px dashed #9AA8B8;border-radius:.12in;padding:.1in .12in;background:#fff;color:#0F1A26;overflow:hidden;font-family:Inter,Arial,sans-serif;display:flex;flex-direction:column}
+  .wc .hd{display:flex;justify-content:space-between;align-items:center;border-bottom:1.5px solid #00A9A1;padding-bottom:2px;margin-bottom:3px;gap:4px}
+  .wc .hd img.st{height:.26in;width:auto}
+  .wc .hd img.lg{height:.34in;width:auto}
+  .wc .hd .grow{flex:1}
+  .wc .hd b{font-size:8pt;color:#006B66;letter-spacing:.04em;text-transform:uppercase}
+  .wc .hd span{font-size:6.5pt;color:#5B6878}
+  .wc .ln{font-size:7pt;line-height:1.28;display:flex;gap:4px}
+  .wc .ln i{font-style:normal;font-weight:700;color:#006B66;min-width:.72in;flex:none}
+  .wc .ln em{font-style:normal;white-space:nowrap;margin-left:auto;padding-left:4px}
+  .wc.dense .ln{font-size:6.2pt;line-height:1.2}
+  .wc .nudge{margin-top:auto;font-size:6.4pt;line-height:1.3;color:#006B66;font-weight:700;border-top:1px dotted #9FD9D5;padding-top:2px}
+  .wc .nudge+.ft{margin-top:2px}
+  .wc .ft{margin-top:auto;font-size:5.6pt;color:#5B6878}
+  .wc .empty{font-size:7pt;color:#7A8796;margin:auto 0;text-align:center}
+  @media print{
+    @page{margin:.5in}
+    body{background:#fff}
+    header,main>.panel,.actions,footer,.toast,.no-print{display:none!important}
+    main{padding:0}
+    #printArea{display:block!important}
+    .preview{justify-content:flex-start}
+    .wc{border-color:#000}
+  }
+  #printArea{display:none}
+  body:not(.is-ml) .ml{display:none!important}
+  body.is-ml .nml{display:none!important}
+  .wc .hd .ag+b{border-left:1px solid #9FD9D5;padding-left:5px}
+  .wc .hd .ag{font-size:7.5pt;font-weight:800;color:#006B66;max-width:1.6in;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  #printCards .pair{display:flex;gap:.2in;margin:0 0 .18in;break-inside:avoid;page-break-inside:avoid}
+  #printArea .how{font:11pt Inter,Arial,sans-serif;margin:0 0 .15in;color:#000}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="agency" id="agencyName" hidden></div>
+    <div class="carrier" id="planLine">ManhattanLife Affordable Choice members</div>
+    <h1>My Care Card</h1>
+    <p>Where to go and who to call — on one card for your wallet, your phone, or your family. Fill in what you have; blanks are left off.</p>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="panel">
+    <h2>Your doctors</h2>
+    <p class="sub"><span class="ml">You don't have to pick a primary care doctor — but choosing one in the First Health network means you'll know exactly where to go.</span><span class="nml">Choosing a doctor in your plan's network means you'll know exactly where to go.</span></p>
+    <a class="find ml" href="https://providerlocator.firsthealth.com/home/index" target="_blank" rel="noopener">Find an in-network doctor on First Health ↗</a>
+    <div class="who">Your doctor</div>
+    <div class="row"><div><label class="f" for="me_doc">Name</label><input type="text" id="me_doc" autocomplete="off" placeholder="Dr. Jane Smith"></div><div><label class="f" for="me_doc_ph">Phone</label><input type="tel" id="me_doc_ph" placeholder="(555) 555-5555"></div></div>
+    <div class="who">Spouse's doctor <span class="opt">(if applicable)</span></div>
+    <div class="row"><div><label class="f" for="sp_doc">Name</label><input type="text" id="sp_doc" autocomplete="off"></div><div><label class="f" for="sp_doc_ph">Phone</label><input type="tel" id="sp_doc_ph"></div></div>
+    <div class="who">Kids' doctor <span class="opt">(if applicable)</span></div>
+    <div class="row"><div><label class="f" for="kid_doc">Name</label><input type="text" id="kid_doc" autocomplete="off"></div><div><label class="f" for="kid_doc_ph">Phone</label><input type="tel" id="kid_doc_ph"></div></div>
+  </section>
+
+  <section class="panel">
+    <h2>Urgent care, hospital and pharmacy</h2>
+    <p class="sub">Confirm each one is in <span class="ml">the First Health network</span><span class="nml">your plan's network</span> before you need it.</p>
+    <a class="find ml" href="https://providerlocator.firsthealth.com/home/index" target="_blank" rel="noopener">Look them up on First Health ↗</a>
+    <div class="who">Urgent care</div>
+    <div class="row"><div><label class="f" for="urgent">Name and location</label><input type="text" id="urgent" autocomplete="off"></div><div><label class="f" for="urgent_ph">Phone</label><input type="tel" id="urgent_ph"></div></div>
+    <div class="who">Hospital / ER</div>
+    <div class="row"><div><label class="f" for="hosp">Name and location</label><input type="text" id="hosp" autocomplete="off"></div><div><label class="f" for="hosp_ph">Phone</label><input type="tel" id="hosp_ph"></div></div>
+    <div class="who">Pharmacy</div>
+    <div class="row"><div><label class="f" for="pharm">Name and location</label><input type="text" id="pharm" autocomplete="off"></div><div><label class="f" for="pharm_ph">Phone</label><input type="tel" id="pharm_ph"></div></div>
+  </section>
+
+  <section class="panel">
+    <h2>Dental</h2>
+    <label class="chk"><input type="checkbox" id="has_dental"> I have <span class="ml">the DVH Select dental plan</span><span class="nml">a dental plan</span></label>
+    <div id="dentalBox" hidden>
+      <a class="find ml" href="https://manhattanlife.solutionssimplified.com/" target="_blank" rel="noopener">Find a dentist on the Careington network ↗</a>
+      <div class="row"><div><label class="f" for="dent">Dentist</label><input type="text" id="dent" autocomplete="off"></div><div><label class="f" for="dent_ph">Phone</label><input type="tel" id="dent_ph"></div></div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Your agent</h2>
+    <div class="row"><div><label class="f" for="agent">Name</label><input type="text" id="agent" autocomplete="off"></div><div><label class="f" for="agent_ph">Phone</label><input type="tel" id="agent_ph"></div></div>
+    <div class="row"><div><label class="f" for="people">Adults on the plan <span style="font-weight:400">(18 and over)</span></label><input type="tel" inputmode="numeric" id="people" placeholder="1"></div><div></div></div>
+  </section>
+
+  <section class="panel">
+    <h2>Important numbers to have</h2>
+    <div class="nml">
+      <p class="sub">Your plan's member services number is on the back of your insurance ID card.</p>
+      <div class="row"><div><label class="f" for="mem">Member services</label><input type="text" id="mem" autocomplete="off" placeholder="Plan name or member ID"></div><div><label class="f" for="mem_ph">Phone</label><input type="tel" id="mem_ph"></div></div>
+    </div>
+    <div class="nums ml">
+      <div class="num"><span><b>Find a doctor</b> — First Health · client code FHIND</span><a href="tel:+18002265116">800-226-5116</a></div>
+      <div class="num"><span><b>Medical bill over $2,500?</b> Call CareGuide before you pay</span><a href="tel:+14699022267">469-902-2267</a></div>
+      <div class="num"><span><b>24/7 telehealth</b> — EasyCare2go · Group ID mlins2023</span><a href="tel:+18667313017">866-731-3017</a></div>
+      <div class="num"><span><b>Prescription discounts</b> — Rx Valet, in your EasyCare2go login</span><a href="tel:+18557982538">855-798-2538</a></div>
+      <div class="num" id="dentNum" hidden><span><b>Dental network</b> — Careington</span><a href="tel:+18002900424">800-290-0424</a></div>
+    </div>
+    <p class="say ml">At the front desk, say: “I have the ManhattanLife Affordable Choice plan. Do you take the First Health network?”</p>
+  </section>
+
+  <section class="panel no-print">
+    <h2>Your card</h2>
+    <p class="sub">This is what prints — <b id="printCount">2 cards</b>: one for each adult on the plan (18 and over), plus a spare. Cut on the dashed lines and fold or glue the two sides back to back.</p>
+    <div class="preview" id="preview"></div>
+  </section>
+
+  <div class="actions">
+    <div class="arow">
+      <button class="btn primary" type="button" id="printBtn">Print wallet card</button>
+      <button class="btn" type="button" id="copyBtn">Copy for my notes</button>
+      <a class="btn" id="textBtn" href="#">Text it</a>
+    </div>
+    <p class="sharenote">Send this page to yourself or your family — it opens with everything filled in, ready to edit, save or print.</p>
+    <div class="arow two">
+      <a class="btn" id="shareTextBtn" href="#">💬 Text this page — to keep editing</a>
+      <button class="btn" type="button" id="shareCopyBtn">🔗 Copy this page's link — to keep editing</button>
+    </div>
+  </div>
+
+  <footer>
+    <p>What you type stays on this phone or computer — it isn't sent anywhere. <button class="clear" type="button" id="clearBtn">Clear everything</button></p>
+    <p>Provided by your licensed insurance agent<span id="ftAgency"></span><span class="ml"> for ManhattanLife Affordable Choice members</span>. This card is a convenience — not an insurance ID card<span class="ml">, and not issued by ManhattanLife</span>. Always confirm a provider is in network before your visit.</p>
+  </footer>
+</main>
+
+<div id="printArea"><p class="how">Cut on the dashed lines. Fold or glue the two sides back to back — one card for each adult on the plan, plus a spare.</p><div id="printCards"></div></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+  var BASE='ml-care-card-v1', $=function(id){ return document.getElementById(id); };
+  /* The link (#c=<base64url JSON>) says WHICH card this is (i) and what to start it with: from MyPopPro {a,p,n,d,md,sd,kd},
+     or a whole filled-in card shared back {f:{field:value}, d}. Each card id is saved separately on this device, so an
+     agent filling cards for several clients never mixes them up. After the # = never sent to the server. */
+  function b64d(b){ b=b.replace(/-/g,'+').replace(/_/g,'/'); while(b.length%4) b+='='; return JSON.parse(decodeURIComponent(escape(atob(b)))); }
+  function b64e(o){ return btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''); }
+  var J=null; try{ var m=/[#&]c=([A-Za-z0-9_-]+)/.exec(location.hash||''); if(m) J=b64d(m[1]); }catch(e){ J=null; }
+  function newId(){ return Math.random().toString(36).slice(2,10); }
+  var CID=(J&&J.i)?String(J.i).replace(/[^A-Za-z0-9]/g,'').slice(0,24):'';
+  if(!CID){ try{ CID=localStorage.getItem(BASE+':default')||''; if(!CID){ CID=newId(); localStorage.setItem(BASE+':default',CID); } }catch(e){ CID=newId(); } }
+  var KEY=BASE+':'+CID, LINK_T=0, X={}, P={ag:'',pl:'ml'};   /* P: whose card (agency) and which plan - pl 'ml' = ManhattanLife Affordable Choice, anything else is that plan's name */   /* X: the pocket reminder from MyPopPro - g (not on the plan yet), lw (levels lowered), rm (review month) */   /* when the last shared card was applied: a NEWER shared card replaces this one */
+  var F=['people','me_doc','me_doc_ph','sp_doc','sp_doc_ph','kid_doc','kid_doc_ph','urgent','urgent_ph','hosp','hosp_ph','pharm','pharm_ph','dent','dent_ph','agent','agent_ph','mem','mem_ph'];
+  var esc=function(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); };
+  var val=function(id){ return String(($(id)||{}).value||'').trim(); };
+  function phone(v){ var d=String(v||'').replace(/\D/g,''); if(d.length===11&&d[0]==='1') d=d.slice(1); return d.length===10?d.slice(0,3)+'-'+d.slice(3,6)+'-'+d.slice(6):String(v||'').trim(); }
+
+  /* the fixed numbers, from the ManhattanLife resource page */
+  var FIXED=[['Find a doctor','First Health · code FHIND','800-226-5116'],['Bill over $2,500','CareGuide — call first','469-902-2267'],['Telehealth','EasyCare2go · grp mlins2023','866-731-3017'],['Rx discounts','Rx Valet · in EasyCare2go','855-798-2538']];
+
+  /* only what's filled in: [label, name, phone] */
+  function entries(){ var out=[], add=function(lab,n,p,key){ n=val(n); p=phone(val(p)); if(n||p) out.push([lab,n,p,key]); };
+    add('My doctor','me_doc','me_doc_ph','me'); add('Spouse’s doctor','sp_doc','sp_doc_ph','sp'); add('Kids’ doctor','kid_doc','kid_doc_ph','kid');
+    add('Urgent care','urgent','urgent_ph','urgent'); add('Hospital / ER','hosp','hosp_ph','hosp'); add('Pharmacy','pharm','pharm_ph','pharm');
+    if($('has_dental').checked) add('Dentist','dent','dent_ph','dent');
+    add('My agent','agent','agent_ph','agent'); return out; }
+  function isML(){ return !P.pl||P.pl==='ml'; }
+  function planName(){ return isML()?'ManhattanLife Affordable Choice':String(P.pl); }
+  function fixed(){ if(!isML()){ var m=[], n=val('mem'), ph=phone(val('mem_ph')); if(n||ph) m.push(['Member services',n,ph]); return m; } var f=FIXED.slice(); if($('has_dental').checked) f.push(['Dental network','Careington','800-290-0424']); return f; }
+
+  /* one short line: what isn't on the plan yet (or that levels can go up), who to ask, and the review month */
+  var GAPNAME={dvh:'dental',lb:'life insurance',chas:'cancer & heart coverage'};
+  function nudges(){ var g=(X.g||[]).filter(function(k){ return !(k==='dvh'&&$('has_dental').checked); }).map(function(k){ return GAPNAME[k]; }).filter(Boolean);
+    var who=(val('agent').split(/\s+/)[0]||'your agent')+(val('agent_ph')?' '+phone(val('agent_ph')):''), L=[];
+    if(g.length) L.push('Not on your plan yet: '+g.join(' · ')+' — ask '+who);
+    else if(X.lw) L.push('Want more coverage? Your levels can be raised — ask '+who);
+    if(X.rm) L.push('Your plan review: '+X.rm);
+    return L; }
+  function cardsHTML(){ var E=entries(), dense=E.length>7?' dense':'';
+    var front='<div class="wc'+dense+'"><div class="hd">'+(P.ag?'<span class="ag">'+esc(P.ag)+'</span>':'')+'<b class="grow">My care card</b><span>'+esc(isML()?'First Health network':planName())+'</span></div>'
+      +(E.length?E.map(function(e){ return '<div class="ln"><i>'+esc(e[0])+'</i><span>'+esc(e[1])+'</span><em>'+esc(e[2])+'</em></div>'; }).join('')
+        :'<div class="empty">Fill in your doctor, urgent care and hospital above — they print here.</div>')
+      +'<div class="ft">Confirm a provider is in network before your visit.</div></div>';
+    var X=fixed(), back='<div class="wc'+(X.length>4?' dense':'')+'"><div class="hd"><span class="ag">'+esc(P.ag||'My plan')+'</span><span>'+esc(isML()?'ManhattanLife · Affordable Choice':planName())+'</span></div>'
+      +X.map(function(x){ return '<div class="ln"><i>'+esc(x[0])+'</i><span>'+esc(x[1])+'</span><em>'+esc(x[2])+'</em></div>'; }).join('')
+      +(!isML()&&!X.length?'<div class="ln"><i>Member services</i><span>on the back of your ID card</span></div>':'')
+      +(nudges().length?'<div class="nudge">'+nudges().map(esc).join('<br>')+'</div>':'')
+      +'<div class="ft">'+(isML()?'Front desk: “I have the ManhattanLife Affordable Choice plan on the First Health network.” ':'')+'Not an insurance ID card.</div></div>';
+    return front+back; }
+
+  function shareLink(){ var f={}; F.forEach(function(k){ var v=val(k); if(v) f[k]=v; }); var o={i:CID,f:f,t:Date.now()}; if(P.ag) o.ag=P.ag; if(!isML()) o.pl=P.pl; if($('has_dental').checked) o.d=1; if(X.g&&X.g.length) o.g=X.g; if(X.lw) o.lw=1; if(X.rm) o.rm=X.rm;
+    return location.origin+location.pathname+'#c='+b64e(o); }
+  /* client-facing text: only what's filled in, grouped like the card, no share link (it has its own buttons) */
+  var TXTLAB={me:'My doctor',sp:'My spouse\u2019s doctor',kid:'My kids\u2019 doctor',urgent:'Urgent care',hosp:'Hospital / ER',pharm:'Pharmacy',dent:'My dentist'};
+  var NUMLAB={'Find a doctor':'Find a doctor \u2014 First Health (code FHIND)','Bill over $2,500':'Medical bill over $2,500 \u2014 CareGuide, call first','Telehealth':'24/7 telehealth \u2014 EasyCare2go (Group ID mlins2023)','Rx discounts':'Prescription discounts \u2014 Rx Valet, in your EasyCare2go login (Group ID mlins2023)','Dental network':'Dental network \u2014 Careington','Member services':'Member services (back of your ID card)'};
+  function plainText(){
+    var by={}; entries().forEach(function(e){ by[e[3]]=e; });
+    var L=[], sec=function(title,lines){ lines=lines.filter(Boolean); if(!lines.length) return; L.push(''); L.push(title); lines.forEach(function(x){ L.push(x); }); };
+    var pair=function(n,p){ return [n,p].filter(Boolean).join(' \u00b7 '); };
+    var line=function(k){ var e=by[k]; return e?TXTLAB[k]+': '+pair(e[1],e[2]):''; };
+    L.push('MY CARE CARD'+(P.ag?' \u2014 '+P.ag:'')); L.push(isML()?'ManhattanLife Affordable Choice \u00b7 First Health network':planName());
+    sec('MY DOCTORS',[line('me'),line('sp'),line('kid')]);
+    sec('URGENT CARE & HOSPITAL',[line('urgent'),line('hosp'),line('pharm')]);
+    if($('has_dental').checked) sec('DENTAL',[line('dent'),isML()?'Find a dentist (Careington network): https://manhattanlife.solutionssimplified.com/':'']);
+    sec('MY AGENT', by.agent?[pair(by.agent[1],by.agent[2])]:[]);
+    var nums=[]; fixed().forEach(function(x){
+      nums.push(x[0]==='Member services'?NUMLAB[x[0]]+': '+[x[1],x[2]].filter(Boolean).join(' \u00b7 '):(NUMLAB[x[0]]||x[0]+' \u2014 '+x[1])+': '+x[2]);
+      if(x[0]==='Find a doctor') nums.push('Find a doctor online: https://providerlocator.firsthealth.com/home/index');
+    });
+    sec('IMPORTANT NUMBERS',nums);
+    var n=nudges(); if(n.length){ L.push(''); n.forEach(function(x){ L.push(x); }); }
+    return L.join('\n'); }
+
+  /* one card per adult on the plan (18 and over), plus a spare (Jesse, 18 Oct); capped so a typo can't print 50 pages */
+  function copies(){ var n=parseInt(val('people'),10); if(!(n>0)) n=1; return Math.min(n,10)+1; }
+  function brand(){ document.body.classList.toggle('is-ml',isML());
+    $('agencyName').textContent=P.ag; $('agencyName').hidden=!P.ag; $('planLine').textContent=planName()+' members';
+    $('ftAgency').textContent=P.ag?' at '+P.ag:''; document.title='My Care Card'+(P.ag?' \u2014 '+P.ag:''); }
+  function render(){ brand(); $('dentalBox').hidden=!$('has_dental').checked; $('dentNum').hidden=!($('has_dental').checked&&isML());
+    var h=cardsHTML(), n=copies(); $('preview').innerHTML=h; $('printCount').textContent=n+' card'+(n===1?'':'s');
+    $('printCards').innerHTML=new Array(n+1).join('<div class="pair">'+h+'</div>');
+    $('textBtn').href='sms:?&body='+encodeURIComponent(plainText());
+    $('shareTextBtn').href='sms:?&body='+encodeURIComponent('Your care card \u2014 open it to see, edit or print it: '+shareLink()); }
+
+  function save(){ try{ var o={has_dental:$('has_dental').checked,_t:LINK_T,x:X,p:P}; F.forEach(function(k){ o[k]=val(k); }); localStorage.setItem(KEY,JSON.stringify(o)); }catch(e){} }
+  function load(){ var o=null; try{ o=JSON.parse(localStorage.getItem(KEY)||'null'); }catch(e){}
+    if(o){ F.forEach(function(k){ if(o[k]!=null&&$(k)) $(k).value=o[k]; }); $('has_dental').checked=!!o.has_dental; if(o.x) X=o.x; if(o.p) P={ag:o.p.ag||'',pl:o.p.pl||'ml'}; }
+    if(J&&(J.ag||J.pl)) P={ag:J.ag?String(J.ag).slice(0,60):P.ag,pl:J.pl?String(J.pl).slice(0,60):'ml'};
+    if(J&&(J.g||J.lw||J.rm)) X={g:J.g||[],lw:J.lw?1:0,rm:J.rm||''};
+    /* keep the address on this card's link, so a bookmark or a refresh opens the same card */
+    try{ if(!J||!J.i) history.replaceState(null,'',location.pathname+location.search+'#c='+b64e({i:CID})); }catch(e){}
+    /* Sent from MyPopPro: #c=<base64url JSON> {a:agent, p:phone, n:people, d:dental, md/sd/kd: doctors the agent
+       verified in network}. After the # so it never reaches the server. It fills only boxes that are still empty, so
+       re-opening the link never undoes the client's own edits. */
+    var fresh=!!(J&&J.f&&+J.t&&!(o&&+o._t>=+J.t));   /* a card sent later than the one saved here wins */
+    /* a newer card sent by the agent fills in what it carries and leaves the rest alone, so the client's own additions
+       (the urgent care they found, a doctor they confirmed by phone) survive a re-send (Jesse, 18 Oct) */
+    if(fresh){ var nf=J.f||{}; Object.keys(nf).forEach(function(k){ if(F.indexOf(k)>=0&&$(k)&&String(nf[k]).trim()) $(k).value=k.slice(-3)==='_ph'?phone(nf[k]):String(nf[k]); });
+      if(J.d) $('has_dental').checked=true; LINK_T=+J.t; J=null; } else if(o&&o._t) LINK_T=+o._t;
+    if(J){ var fill=function(id,v){ if(v!=null&&String(v).trim()&&!val(id)&&$(id)) $(id).value=id.slice(-3)==='_ph'?phone(v):String(v); }, f=J.f||{};
+      Object.keys(f).forEach(function(k){ if(F.indexOf(k)>=0) fill(k,f[k]); });
+      fill('agent',J.a); fill('agent_ph',J.p); fill('people',J.n?String(J.n):''); fill('me_doc',J.md); fill('sp_doc',J.sd); fill('kid_doc',J.kd);
+      if(J.d) $('has_dental').checked=true; }
+    /* an agent can also send ?agent=Name&phone=5551234567 by hand */
+    try{ var q=new URLSearchParams(location.search); if(q.get('agent')&&!val('agent')) $('agent').value=q.get('agent'); if(q.get('phone')&&!val('agent_ph')) $('agent_ph').value=phone(q.get('phone')); if(q.get('people')&&!val('people')) $('people').value=String(parseInt(q.get('people'),10)||''); }catch(e){} }
+  function toast(t){ var el=$('toast'); el.textContent=t; el.classList.add('on'); setTimeout(function(){ el.classList.remove('on'); },1600); }
+
+  load(); render(); save();   /* keep what the link brought (and a newer card's time) even before they type */
+  document.addEventListener('input',function(){ render(); save(); });
+  document.addEventListener('change',function(){ render(); save(); });
+  $('printBtn').onclick=function(){ render(); window.print(); };
+  $('copyBtn').onclick=function(){ var t=plainText();
+    var done=function(){ toast('Copied — paste it into your Notes app'); };
+    if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(done,function(){ fallback(t); done(); }); else { fallback(t); done(); } };
+  function fallback(t){ var a=document.createElement('textarea'); a.value=t; a.style.position='fixed'; a.style.opacity='0'; document.body.appendChild(a); a.select(); try{ document.execCommand('copy'); }catch(e){} a.remove(); }
+  $('shareCopyBtn').onclick=function(){ var t=shareLink();
+    var done=function(){ toast('\u2713 Link copied'); };
+    if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(done,function(){ fallback(t); done(); }); else { fallback(t); done(); } };
+  $('clearBtn').onclick=function(){ if(!confirm('Clear everything on this card?')) return; F.forEach(function(k){ if($(k)) $(k).value=''; }); $('has_dental').checked=false; try{ localStorage.removeItem(KEY); }catch(e){} J=null; LINK_T=0; load(); render(); save(); };
+})();
+</script>
+</body>
+</html>
