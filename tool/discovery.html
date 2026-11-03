@@ -2856,7 +2856,7 @@ ID:{
 hs_start:"1.1",
 hs_warm:"1.2", hs_warm_yes:"1.2a", hs_warm_book:"1.2b",
 hs_book_times:"1.3", hs_book_who:"1.3a", hs_book_lock:"1.3b", hs_book_end:"1.3c",
-hs_open:"2.1", hs_qualify_first:"2.2", hs_tone:"2.3", hs_why:"2.4",
+hs_open:"2.1", hs_role:"2.1a", hs_qualify_first:"2.2", hs_tone:"2.3", hs_why:"2.4",
 hs_why_losing:"2.4a", hs_current:"2.4b", hs_diff:"2.5", hs_startdate:"2.6",
 hs_family:"3.1", hs_occupation:"3.2",
 hs_qualify:"4.1", hs_household:"4.2",
@@ -2887,7 +2887,7 @@ hs_warm:{s:"1",pf:"who",t:"Warm reach-out",l:[
 hs_warm_yes:{s:"1",t:"They'll talk now",l:[
 {t:"say",x:"Perfect &mdash; this'll only take a few minutes, and I'll tell you straight away whether I can help."},
 {t:"do",x:"Go straight into the open. You have already confirmed who they are, so skip the verification there."}
-],b:[{k:"Into the call",to:"hs_qualify_first",c:"go"}]},
+],b:[{k:"Into the call",to:"hs_role",c:"go"}]},
 
 hs_warm_book:{s:"1",t:"Book it instead",l:[
 {t:"say",x:"No problem at all &mdash; let's get a proper time on the calendar so I'm not rushing you."},
@@ -2921,6 +2921,8 @@ hs_book_lock:{s:"1",t:"Lock it in",l:[
 {t:"tip",x:"Say it however it comes out of your mouth &mdash; the words are not the point. The point is that they hear our time is worth something too. That is what turns a booking into a kept appointment."},
 {t:"do",x:"Wait for the yes. That yes is the appointment."},
 {t:"say",x:"And just so you know, we won't be paying for anything on that call. What I'll do is break it all down so you're completely clear, and then you'll tell me which direction you'd like to go from there."},
+{t:"say",x:"And so nothing surprises you later &mdash; here's how it works from there. When we find the one that fits you and your budget, we apply for it together, right on the phone. It goes to the carrier for their final approval &mdash; that's their call, not mine. Once it's approved, <b>the carrier takes the first payment</b>, so have that ready in the account. Then I call you and we go through exactly what you've got, line by line.",when:["did_discovery","Yes"]},
+{t:"warn",x:"<b>Say the draft out loud on this call.</b> Most of what looks like a lapse in this book is a <b>failed first draft</b> &mdash; a termination one to seventeen days after issue, because the money was not there. One sentence now prevents it. &ldquo;Be ready, have the money in the bank, because that's always a surprise when all of a sudden you have $500, $800 getting drafted out of your account.&rdquo; (Kara DeNardo, 2 Nov.)",when:["did_discovery","Yes"]},
 {t:"ask",x:"<span class=\"optpill\">Read the room</span> Real quick &mdash; what time do you have us down for?"},
 {t:"tip",x:"Match it to when you&rsquo;re meeting. <b>Within the next 15 minutes:</b> you aren&rsquo;t really setting anything &mdash; skip it. <b>Later today:</b> a light confirm is enough. <b>Another day:</b> this is the one you really lock in &mdash; make them say the day and the time back to you."},
 {t:"appt"},
@@ -2941,6 +2943,17 @@ hs_open:{s:"2",pf:"who",t:"Open",l:[
 {t:"say",x:"Hi ___(first name) &mdash; this is ___(your name) with ___(your agency). We have the appointment for the private health insurance. How are you today?"},
 {t:"do",x:"Pause."},
 {t:"say",x:"<i>Optional &mdash; (is this still a good time to connect?)</i>"}
+],b:[{k:"Next",to:"hs_role",c:"go"}]},
+
+/* Kara DeNardo's Role & Purpose, 2 Nov - identity before the first question; the bio (hs_tone) stays the credibility
+   block after hs_qualify_first. Never mentions carrier count: the bio owns that. (Jesse approved, 3 Nov - sandbox.) */
+hs_role:{s:"2",t:"Role & purpose",l:[
+{t:"say",x:"Let me tell you what I am first, because it decides what I'm able to do for you. I'm what's called a licensed underwriter &mdash; I'm licensed by the state of ___(client's state) to represent the insurance carriers. Not one of them. All of them."},
+{t:"say",x:"So here's how this goes. I'll ask you some questions &mdash; a few about your health, a few about your household, and a few about money, and I'll tell you why before I ask those. Then we look at what actually fits."},
+{t:"say",x:"Sound fair?"},
+{t:"do",x:"Fifteen seconds, and it is the only thing a self-booked client has to go on. They clicked a calendar link and now a stranger is on the phone &mdash; <b>say who you are before you ask them anything.</b> <b>Type their state into the sentence from the lead card before you dial</b> &mdash; it fills State on their profile; the ZIP in Part 4 confirms it."},
+{t:"tip",x:"<b>How much to read, by call type.</b> <b>They booked it themselves:</b> all of it. <b>Your setter booked it:</b> all of it &mdash; they heard this in someone else's voice, not yours. <b>You booked it yourself:</b> you already said it, so skip to &ldquo;Sound fair?&rdquo; or skip the card. <b>Warm call:</b> first paragraph only &mdash; you have not earned more yet."},
+{t:"train",x:"<b>&ldquo;Licensed underwriter&rdquo; is doing work that &ldquo;agent&rdquo; does not.</b> It says you are permitted to represent all of them, which is the premise the whole call rests on. The phrase already exists further down the script, but only as an SSN objection-handler &mdash; by then it is a defence rather than a frame. (Kara DeNardo, 2 Nov.)"}
 ],b:[{k:"Next",to:"hs_qualify_first",c:"go"}]},
 
 hs_qualify_first:{s:"2",t:"Qualify first",l:[
@@ -2973,7 +2986,7 @@ hs_found_end:{s:"2",t:"Ending it well",l:[
 ],b:[{k:"Back to the start",to:"hs_start",c:"go"}]},
 
 hs_tone:{s:"2",t:"Set the tone",l:[
-{t:"say",x:"Before we dive in, let me tell you a little about who I am and how I work."},
+{t:"say",x:"Now &mdash; one thing about how I work, because it explains a couple of the questions coming."},
 {t:"say",x:"___(your bio)"},
 {t:"do",x:"That's <b>your bio</b>, from Set up. Say it in your own words &mdash; what matters is that they hear you're not tied to one company, so you can be trusted to compare. Change it any time; empty means the default."},
 {t:"say",x:"So most agents will try to sell you a policy right away. We look at your whole situation and put together a <b>Package of Protection</b>."},
@@ -5130,9 +5143,10 @@ function pBlank(lab){
    over with every client - website and booking link go into the client emails and the post-call text. */
 /* The agent's "who I am", read at 2.3 (Jesse, 17 Oct). Empty = this default, so clearing storage never leaves a
    blank on the call. Built from Jesse's bootcamp framing (Health Insurance/_training/financial-framing/, block A),
-   health first because they called about health. MyPopPro carries the same text - tools/check.sh compares them. */
+   health first because they called about health. MyPopPro (tool/index.html) and the Script Navigator carry the same text - tools/why-check.mjs compares
+   MyPopPro with the navigator only, so change this copy by hand with the other two. */
 /* Jesse rewrote the default in his own words, 17 Oct. */
-var DEFAULT_BIO="I'm a licensed health insurance agent, but I also help families with life insurance, retirement planning and a number of other financial solutions. What I'll do first is find out what's most important to you, and then we'll tailor a plan that actually accomplishes your goals. There are a lot of companies out there and a lot of products, but they don't all do the same thing, so what really matters is who you work with, and that they're looking out for your best interest based on your specific goals. I'm not beholden to any one company. Working with over 40 carriers, it's my job to compare those companies, starting with the A-rated ones, and find the best fit for you. We'll get into that in a moment.";
+var DEFAULT_BIO="I'm a licensed health insurance agent, but I also help families with life insurance, retirement planning and a number of other financial solutions. What I'll do first is find out what's most important to you, and then we'll tailor a plan that actually accomplishes your goals. There are a lot of companies out there and a lot of products, but they don't all do the same thing, so what really matters is who you work with, and that they're looking out for your best interest based on your specific goals. I'm not beholden to any one company. Working with over 40 carriers, it's my job to compare those companies, starting with the A-rated ones, and find the best fit for you. We'll look at them together, and you'll be the one who picks. We'll get into that in a moment.";
 function agentBio(){ var b=String(A.a_bio||"").trim(); return b||DEFAULT_BIO; }
 /* "Life insurance now" for MyPopPro's notes: the Yes/No and its follow-ups as one line (Jesse, 17 Oct) */
 function lifeNowLine(){ if(P.life_has==="No") return "None"; if(P.life_has!=="Yes") return P.life_now||"";
