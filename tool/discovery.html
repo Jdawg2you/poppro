@@ -309,6 +309,9 @@ footer{background:var(--navy);padding:10px 20px;display:flex;gap:8px;align-items
 .fbtn:disabled{opacity:.32;cursor:default}
 .drawerbtn{font-size:11.5px;font-weight:600;color:var(--gold);border:1px solid rgba(201,162,78,.5);
   padding:8px 12px;border-radius:999px}
+.covclock{background:#fff4d6;border:1px solid #e8c770;color:#5a4300;border-radius:10px;padding:10px 14px;font-size:14px;line-height:1.45}
+.covclock.hot{background:#fde8e8;border-color:#e3a1a1;color:#7a1f1f}
+.stfull{font-size:.85em;color:#6b7280;margin-left:4px}
 .drawerbtn:hover{background:var(--gold);color:var(--navy);border-color:var(--gold)}
 
 .reader{position:fixed;inset:0;z-index:60;background:var(--cream);display:none;flex-direction:column}
@@ -2835,34 +2838,34 @@ health:{
 first:"hs_start",
 P:{
 "1":"Decide which call this is, and either start it or book it.",
-"2":"Earn the right to ask, and find out why they are shopping.",
-"3":"Who is on the plan, what they do for a living, and any business behind it.",
-"4":"Income, savings and the rest of the money picture, asked while the reason for asking is fresh.",
-"5":"The quick yes-or-no questions for the whole household, then the facts that decide which plans they can buy.",
+"2":"Earn the right to ask, find out why they are shopping, what they have, what they do, and who we are covering.",
+"3":"Income, savings and the rest of the money picture, for the household together, asked while the reason is fresh.",
+"4":"Why a private plan can do better, and when it needs to start.",
+"5":"The quick yes-or-no questions for the whole household, then everyone's details in one pass.",
 "6":"Health, one person at a time: you, then the spouse, then the kids.",
 "7":"Position the presentation and book it with the right people on it."
 },
 drawers:["hfpl","hsay"],
-S:{"1":"Appointment or Warm","2":"The Open","3":"Household & Work","4":"Money",
+S:{"1":"Appointment or Warm","2":"The Open","3":"Money","4":"The Difference",
    "5":"Quick Questions","6":"Health","7":"Book It"},
 STAGES:[
 {n:1,lbl:"Start",secs:["1"]},
 {n:2,lbl:"Open",secs:["2"]},
-{n:3,lbl:"Work & money",secs:["3","4"]},
+{n:3,lbl:"Money",secs:["3","4"]},
 {n:4,lbl:"Health",secs:["5","6"]},
 {n:5,lbl:"Book",secs:["7"]}],
-ENTRY:{"1":"hs_start","2":"hs_open","3":"hs_family","4":"hs_income",
+ENTRY:{"1":"hs_start","2":"hs_open","3":"hs_income","4":"hs_diff",
        "5":"hs_quick","6":"hs_history","7":"hs_book"},
 ID:{
 hs_start:"1.1",
 hs_warm:"1.2", hs_warm_yes:"1.2a", hs_warm_book:"1.2b",
 hs_book_times:"1.3", hs_book_who:"1.3a", hs_book_lock:"1.3b", hs_book_end:"1.3c",
 hs_open:"2.1", hs_role:"2.1a", hs_qualify_first:"2.2", hs_tone:"2.3", hs_why:"2.4",
-hs_current:"2.4a", hs_diff:"2.5", hs_startdate:"2.6",
-hs_family:"3.1", hs_occupation:"3.2",
-hs_income:"4.1", hs_budget:"4.2",
+hs_current:"2.4a", hs_family:"2.5",
+hs_income:"3.1", hs_budget:"3.2",
+hs_diff:"4.1", hs_startdate:"4.2",
 hs_quick:"5.1", hs_qualify:"5.2",
-hs_history:"6.1", hs_conds:"6.2", hs_sp_history:"6.3", hs_sp_conds:"6.4", hs_kids:"6.5",
+hs_history:"6.1", hs_sp_history:"6.2", hs_conds:"6.3", hs_kids:"6.4",
 hs_found:"2.2a", hs_found_end:"2.2b",
 hs_book:"7.1"
 },
@@ -2895,6 +2898,7 @@ hs_warm_book:{s:"1",t:"Book it instead",l:[
 ],b:[{k:"Set the time",to:"hs_book_times",c:"go"}]},
 
 hs_book_times:{s:"1",t:"Two times",l:[
+{t:"covclock"},
 {t:"tip",when:["did_discovery","Yes"],x:"<b>Book it for today &mdash; ideally the next 10 to 15 minutes.</b> Everything is built in this tool, so that's all the time you need, and the closer the follow-up, the warmer the close. Later tonight if you have to. Tomorrow is the last resort."},
 {t:"say",when:["did_discovery","Yes"],x:"Give me about fifteen minutes to put your options together &mdash; can I call you right back at ___(time A)? &hellip; If that's tight, how about later today at ___(time B)?"},
 {t:"say",when:["did_discovery",["","No"]],dflt:true,x:"Let's look at tomorrow &mdash; would during the day or the evening be better for you?"},
@@ -2995,96 +2999,80 @@ hs_tone:{s:"2",t:"Set the tone",l:[
 {t:"train",x:"<b>The full reason comes right before the money questions, in Part 4.</b> Said here it is forgotten ten minutes later and the 401(k) question sounds nosy; said there it is fresh when they answer. (Team call, 3 Nov.)"}
 ],b:[{k:"Next",to:"hs_why",c:"go"}]},
 
-/* The why opens what the agent needs next, on the same card (team call, 3 Nov): the chips replace the old three
-   branch buttons. Too expensive asks the premium and where the plan comes from; through work asks about the
-   company, which is where a business lead starts. Life change is gone - it is the why itself, not a branch. */
+/* The why opens what the agent needs next, on the same card (team calls, 3 Nov). Too expensive and a high deductible
+   open the same plan questions - every plan has a deductible, so it is always asked. Where the plan comes from decides
+   the rest: through work asks the employer's share, the job and the company (a business lead starts there); private
+   and the marketplace ask who it's with and what they do for work. Losing coverage asks the date, and the coverage
+   clock goes red when they have none or are about to lose it. */
 hs_why:{s:"2",pf:"why",t:"Why they're shopping",l:[
 {t:"ask",x:"So what made you start looking? <details class=\"ideas\"><summary>Ideas to keep them talking</summary><ul><li>Was it the cost &mdash; what you pay each month?</li><li>Or what it covers &mdash; the deductible, what you end up paying anyway?</li><li>Did the rate go up this year?</li><li>A claim that didn't pay, or a bill you didn't expect?</li><li>A doctor who isn't in the network?</li><li>Or is it changing &mdash; losing it through work, a new job, a move, a baby?</li></ul></details>"},
 {t:"pf",ks:["why_matters","why_tags"]},
 {t:"pf",ks:["why_other"],when:["why_tags","~Other"]},
-{t:"do",x:"Type <b>their exact words, the way they said them</b> &mdash; &ldquo;healthcare has just gotten so flippin' expensive&rdquo;, &ldquo;I&rsquo;m paying way too much for what I get&rdquo; &mdash; not a note about them (&ldquo;wants cheaper&rdquo;): a note can&rsquo;t be quoted back as something they said. Then click whatever is behind it &mdash; <b>the questions for it open right here</b>, and more than one can be true. On the presentation you quote them: <i>&ldquo;Last time we talked, you said &hellip;&rdquo;</i>. Whatever they say, they're right. Agree."},
+{t:"do",x:"Type <b>their exact words, the way they said them</b> &mdash; &ldquo;healthcare has just gotten so flippin' expensive&rdquo;, &ldquo;I&rsquo;m paying way too much for what I get&rdquo; &mdash; not a note about them (&ldquo;wants cheaper&rdquo;): a note can&rsquo;t be quoted back as something they said. Then click what's behind it &mdash; <b>the questions for it open right here</b>. On the presentation you quote them: <i>&ldquo;Last time we talked, you said &hellip;&rdquo;</i>. Whatever they say, they're right. Agree."},
 
-{t:"say",when:["why_tags","~Too expensive"],x:"<b>Too expensive &mdash;</b>"},
-{t:"ask",when:["why_tags","~Too expensive"],x:"What are you paying for it now? ___(they pay) &mdash; and is that through work, the marketplace, or a plan you bought yourself? {{cur_src}}"},
+{t:"covclock"},
+{t:"say",when:["why_tags","~Losing"],x:"<b>Losing coverage &mdash;</b> I understand."},
+{t:"ask",when:["why_tags","~Losing"],x:"When's your last day of coverage? ___(last day of cover) &mdash; and is it a done deal? {{losing}}"},
+{t:"ask",when:["why_tags","~Losing"],x:"What's happening &mdash; why are you losing it? ___(why they're losing it)"},
+{t:"warn",when:["why_tags","~Losing"],x:"<b>The date, not the month.</b> It sets the start date, and once it passes they are uninsured. Retiring early, starting a business, COBRA running out, a divorce, a buy-out &mdash; <b>starting a business is a business lead too.</b>"},
+
+{t:"ask",when:[["why_tags","~Too expensive"],["why_tags","~Deductible"],["why_tags","~Losing"],["why_tags","~Doctor"],["why_tags","~Other"]],x:"Got it. And how much are you paying right now? ___(they pay)"},
+{t:"ask",when:[["why_tags","~Too expensive"],["why_tags","~Deductible"],["why_tags","~Losing"],["why_tags","~Doctor"],["why_tags","~Other"]],x:"Is that through work, a plan you bought yourself, or the marketplace? {{cur_src}}"},
+
+{t:"ask",when:["cur_src","Work"],x:"Do you know what your employer puts in on top of that? ___(employer pays) &mdash; so the real cost is ___(total cost)."},
+{t:"do",when:["cur_src","Work"],x:"The employer's share is the number that makes a private plan look reasonable later. Most people have never added the two together &mdash; if they don't know it, write that and move on."},
 {t:"ask",when:["cur_src","Work"],x:"Is that just you on it, or the family too? And what would it cost to put everyone on? ___(what it costs to add the family)"},
 {t:"do",when:["cur_src","Work"],x:"<b>Very common:</b> work pays for the employee and next to nothing for the family &mdash; about $100 a paycheck for them, $1,000 a month to add a spouse and a child. Then you are quoting the family, and the employee may well stay where they are."},
-{t:"ask",when:["cur_src","Work"],x:"<span class=\"optpill\">Read the room</span> Is that a smaller company? About how many people work there &mdash; and what's it called? {{biz_lead}}"},
-{t:"pf",ks:["biz_name","biz_size","biz_what","biz_where"],when:["biz_lead","Yes"]},
-{t:"say",when:["biz_lead","Yes"],x:"You know &mdash; I might be able to reach out to them and help them find some better group options for all of you."},
-{t:"do",when:["cur_src","Work"],x:"Small companies usually can&rsquo;t offer good benefits &mdash; it is often why the employee is calling at all. If they give you the name, click <b>Yes</b> on <b>Business lead</b>: it lands on your follow-up list at the end. <b>Don&rsquo;t pitch the business on this call</b> &mdash; one sentence, then back to them."},
+
+{t:"ask",when:["cur_src",["Private","Marketplace (ACA)"]],x:"Who's it with? ___(current carrier) &mdash; and do you know what the plan's called? ___(plan name)"},
+{t:"ask",when:["cur_src","Marketplace (ACA)"],x:"Are you getting a subsidy on it? About how much a month?"},
 {t:"pf",ks:["cur_subsidy"],when:["cur_src","Marketplace (ACA)"]},
-{t:"do",when:["cur_src","Marketplace (ACA)"],x:"The income questions in Part 4 usually tell you why the marketplace got expensive &mdash; the subsidy shrinks as income goes up."},
+{t:"do",when:["cur_src","Marketplace (ACA)"],x:"The income questions in Part 3 usually tell you why the marketplace got expensive &mdash; the subsidy shrinks as income goes up, and it can come back as a bill at tax time."},
 
-{t:"ask",when:["why_tags","~Deductible"],x:"<b>Deductible too high &mdash;</b> what is it now? ___(deductible)"},
-{t:"do",when:["why_tags","~Deductible"],x:"Food for thought, not a new branch: you name it on the presentation, when they see a plan that pays from the first visit."},
+{t:"ask",when:[["why_tags","~Too expensive"],["why_tags","~Deductible"],["why_tags","~Losing"],["why_tags","~Doctor"],["why_tags","~Other"]],x:"And what's the deductible on it? ___(deductible)"},
+{t:"do",when:["why_tags","~Deductible"],x:"<b>They said the deductible is the problem</b> &mdash; food for thought: you name it on the presentation, when they see a plan that pays from the first visit."},
 
-{t:"say",when:["why_tags","~Losing"],x:"<b>Losing coverage &mdash;</b> I understand. Let me understand what you've been used to."},
-{t:"ask",when:["why_tags","~Losing"],x:"What's happening &mdash; why are you losing it? ___(why they're losing it)"},
-{t:"do",when:["why_tags","~Losing"],x:"Retiring early, starting their own business, COBRA running out, a divorce, a buy-out &mdash; the reason is usually the life change itself. <b>Starting a business is a business lead too</b> &mdash; you&rsquo;ll ask about it in Part 3."},
-{t:"ask",when:["why_tags","~Losing"],x:"What were you paying for it out of pocket? ___(they pay) &mdash; and was your employer putting in on top of that? ___(employer pays) &mdash; so the real cost is ___(total cost)."},
-{t:"ask",when:["why_tags","~Losing"],x:"What's the deductible on it? ___(deductible)"},
-{t:"ask",when:["why_tags","~Losing"],x:"Is it a done deal that you're losing it? {{losing}} &mdash; and when's your last day of coverage? ___(last day of cover)"},
-{t:"warn",when:["why_tags","~Losing"],x:"<b>The date, not the month.</b> It sets the effective date and the enrolment clock. When it isn't asked, the case stalls on it."},
+{t:"say",x:"<b>And your work &mdash;</b>"},
+{t:"ask",x:"What do you do for a living? ___(type of work) &mdash; how long have you been doing that? ___(how long)"},
+{t:"ask",unless:["cur_src","Work"],x:"Is that working for someone, for yourself, or do you own the business? {{work_kind}}"},
+{t:"ask",when:["work_kind","Employed"],unless:["cur_src","Work"],x:"<span class=\"optpill\">Read the room</span> Does your work offer health coverage? {{emp_offer}}"},
+{t:"do",when:["emp_offer","Yes"],x:"An affordable work plan can take away the marketplace subsidy, so note roughly what it would cost them."},
 
-{t:"do",when:["why_tags","~No coverage"],x:"<b>No coverage now:</b> nothing to compare against &mdash; go straight on."},
+{t:"ask",when:[["cur_src","Work"],["work_kind","Employed"]],x:"<span class=\"optpill\">Read the room</span> Is that a smaller company? About how many people work there &mdash; and what's it called? {{biz_lead}}"},
+{t:"ask",when:[["work_kind","Own a business"],["work_kind","Self-employed"]],x:"Do you have anyone working with you? About how many? And do you offer them anything right now &mdash; health, dental, a retirement plan? {{biz_lead}}"},
+{t:"pf",ks:["biz_name","biz_size","biz_what","biz_where","biz_want"],when:["biz_lead","Yes"]},
+{t:"say",when:[["cur_src","Work"],["work_kind","Employed"]],unless:["biz_lead",["","No"]],x:"You know &mdash; I might be able to reach out to them and help them find some better group options for all of you."},
+{t:"say",when:[["work_kind","Own a business"],["work_kind","Self-employed"]],unless:["biz_lead",["","No"]],x:"That's worth a separate conversation &mdash; there are group options and retirement plans built for a business your size, and they can save you and your people money. Let's get you sorted first, and I'll come back to it."},
+{t:"do",x:"<b>Business lead:</b> a small employer with poor benefits, or a business they own, is a second conversation &mdash; group health and benefits, or a retirement plan for the business. Click <b>Yes</b>, note the name and size, and it lands on your follow-up list at the end. <b>Don&rsquo;t pitch it on this call.</b> The footer button <b>+ Business lead / referral</b> opens the same box any time."},
+
 {t:"ask",x:"And when you picture the right plan for you &mdash; what's most important?"},
 {t:"pf",ks:["why_note"]},
 {t:"do",x:"Anything more they tell you goes in <b>their story</b> &mdash; it's for you, not read back. If this answer says it better than the first one, put their words in the <b>why</b> box instead."}
 ],bh:"What's next?",b:[
-{k:"Their plan — the rest of the details",to:"hs_current",c:"go",allOf:[["why_tags","!~Losing"],["why_tags","!~No coverage"]]},
-{k:"Next",to:"hs_diff",c:"go",when:[["why_tags","~Losing"],["why_tags","~No coverage"]]},
-{k:"Skip the plan details",to:"hs_diff",allOf:[["why_tags","!~Losing"],["why_tags","!~No coverage"]]}]},
+{k:"Their plan \u2014 the last few details",to:"hs_current",c:"go",when:[["why_tags","~Too expensive"],["why_tags","~Deductible"],["why_tags","~Losing"],["why_tags","~Doctor"],["why_tags","~Other"]]},
+{k:"Who we\u2019re covering",to:"hs_family",c:"go",allOf:[["why_tags","!~Too expensive"],["why_tags","!~Deductible"],["why_tags","!~Losing"],["why_tags","!~Doctor"],["why_tags","!~Other"]]},
+{k:"Skip the plan details",to:"hs_family",when:[["why_tags","~Too expensive"],["why_tags","~Deductible"],["why_tags","~Losing"],["why_tags","~Doctor"],["why_tags","~Other"]]}]},
 
-hs_current:{s:"2",pf:"current",t:"Their plan — the details",l:[
-{t:"say",x:"Okay &mdash; before I show you anything, let me understand what you've got, so I'm comparing like for like."},
-{t:"ask",x:"Who's your current carrier? ___(current carrier) &mdash; and do you know what the plan's called? ___(plan name)"},
-{t:"ask",when:["cur_src",""],x:"Is that through work, the marketplace, or a plan you bought yourself? {{cur_src}}"},
-{t:"ask",x:"What are you paying for that out of pocket? ___(they pay)"},
-{t:"ask",x:"And you're still paying that today &mdash; it hasn't ended? {{cur_paying}}"},
-{t:"ask",when:["cur_src",["Work",""]],x:"And do you know what your employer puts in on top of that? ___(employer pays) &mdash; so the real cost is ___(total cost)."},
-{t:"do",when:["cur_src",["Work",""]],x:"The employer's share is the number that makes a private plan look reasonable later. Most people have never added the two together."},
-{t:"ask",x:"What's the deductible on it? ___(deductible) &mdash; and the most you could pay in a year, the out-of-pocket max? ___(out-of-pocket max)"},
-{t:"pf",ks:["cur_subsidy"],when:["cur_is_aca","Yes"]},
+hs_current:{s:"2",pf:"current",t:"Their plan \u2014 the last details",l:[
+{t:"say",x:"Just a couple more on the plan, so I'm comparing like for like."},
+{t:"ask",when:["cur_src",["Work",""]],x:"Who's the carrier? ___(current carrier) &mdash; and do you know what the plan's called? ___(plan name)"},
+{t:"ask",unless:["why_tags","~Losing"],x:"And you're still paying that today &mdash; it hasn't ended? {{cur_paying}}"},
+{t:"ask",x:"The most you could pay in a year &mdash; the out-of-pocket max? ___(out-of-pocket max)"},
 {t:"ask",x:"Do you have an HSA with it? {{has_hsa}}"},
-{t:"ask",x:"Roughly how many times a year do you end up at the doctor? ___(visits a year) &mdash; and is there a copay? ___(copay)"},
-{t:"train",x:"<b>You are building the comparison now, not at the presentation.</b> Deductible, visits and copay are what turn &ldquo;my premium is $420&rdquo; into what they actually spend in a year. Without them you are comparing your plan against a number they half remember."},{t:"do",x:"If they don't know a number, write what they said and move on. You are not auditing them, and a guess you can check beats a silence."}
-],b:[{k:"Next",to:"hs_diff",c:"go"}]},
+{t:"do",x:"If they don't know a number, write what they said and move on. You are not auditing them, and a guess you can check beats a silence. How often they see the doctor is asked with the health questions."}
+],b:[{k:"Who we\u2019re covering",to:"hs_family",c:"go"}]},
 
-hs_diff:{s:"2",t:"The differentiator",l:[
-{t:"say",x:"I work with a lot of self-employed people frustrated with what healthcare costs. Every marketplace plan &mdash; ACA, Obamacare, same thing &mdash; has to carry all ten essential benefits. <details class=\"ideas\"><summary>The 10 essential benefits</summary><ol><li>Outpatient care &mdash; doctor visits without being admitted</li><li>Emergency services</li><li>Hospitalization &mdash; surgery and overnight stays</li><li>Pregnancy, maternity and newborn care</li><li>Mental health and substance use disorder services</li><li>Prescription drugs</li><li>Rehabilitative and habilitative services and devices &mdash; physical, speech and occupational therapy</li><li>Lab services</li><li>Preventive and wellness services, and chronic disease management</li><li>Pediatric services, including dental and vision for children</li></ol><small>Source: HealthCare.gov, &ldquo;What Marketplace health insurance plans cover&rdquo;.</small></details>"},
-{t:"say",x:"Most people don't need all ten. If you're not planning on having a baby, why pay for maternity &mdash; one of the most expensive things a plan can cover? So I tailor a plan around what you actually use."},
-{t:"tip",x:"<b>Calling it a PPO is fine.</b> Early on &mdash; and now and then after &mdash; add: &ldquo;that is to say, you can pick your doctor, in network or out of network, if you choose.&rdquo;"}
-],b:[{k:"Next",to:"hs_startdate",c:"go"}]},
-
-hs_startdate:{s:"2",t:"Start date",l:[
-{t:"ask",x:"Assuming we get you qualified &mdash; when would you want your coverage to start? ___(start date)"},
-{t:"do",x:"Usually no sooner than 15 days out. Most carriers start on the 1st or the 15th."},
-{t:"train",x:"<b>Ask it even when you think you know.</b> If they're losing cover you'll assume they want it the day after, and you'll often be right. But some are on a spouse's plan for a month, some are waiting on a new job's cover, some want it lined up with a birthday. Asking costs a sentence; assuming wrong costs the effective date.<br><br>Ask it forward: <i>&ldquo;so we line this up right &mdash; when would you want it to start?&rdquo;</i> reads as planning."}
-],b:[{k:"Who we’re covering",to:"hs_family",c:"go"}]},
-
-hs_family:{s:"3",pf:"who",t:"Who we're covering",l:[
+hs_family:{s:"2",pf:"who",t:"Who we're covering",l:[
 {t:"ask",x:"And today &mdash; are we looking at coverage for just you, or a spouse or partner, kids? {{married}} <span class=\"chiplbl\">Dependents / kids</span> {{kids}}"},
-{t:"ask",x:"<span class=\"optpill\">Read the room</span> Anyone else financially depending on you &mdash; grandchildren, a parent?"},
-{t:"do",x:"You want the shape of the household here, not the detail. Names, dates of birth and the rest come person by person in Part 6 &mdash; but knowing now that there is a spouse is what lets the questions about them follow straight after yours."}
-],b:[{k:"Next",to:"hs_occupation",c:"go"}]},
-
-hs_occupation:{s:"3",pf:"income",t:"Work",l:[
-{t:"ask",x:"What do you do for a living? ___(type of work) &mdash; and how long have you been doing that? ___(how long)"},
-{t:"ask",x:"Is that working for someone, for yourself, or do you own the business? {{work_kind}}"},
-{t:"ask",when:["work_kind",["Employed",""]],x:"<span class=\"optpill\">Optional &middot; read the room</span> Does your work offer health coverage? {{emp_offer}}"},
-{t:"ask",when:["married",["Married","Partnered"]],x:"<span class=\"optpill\">Optional &middot; read the room</span> And your spouse &mdash; what do they do, and does their work offer coverage? {{sp_emp_offer}}"},
-{t:"do",when:[["emp_offer","Yes"],["sp_emp_offer","Yes"]],x:"An affordable work plan can take away the marketplace subsidy, so note whose job it is and roughly what it would cost them."},
-{t:"ask",when:[["work_kind","Own a business"],["work_kind","Self-employed"]],x:"Do you have anyone working with you? About how many? And do you offer them anything right now &mdash; health, dental, a retirement plan? {{biz_lead}}"},
-{t:"pf",ks:["biz_name","biz_size","biz_what","biz_want"],when:["biz_lead","Yes"],unless:["work_kind",["Employed","Retired","Not working",""]]},
-{t:"say",when:[["work_kind","Own a business"],["work_kind","Self-employed"]],x:"That's worth a separate conversation &mdash; there are group options and retirement plans built for a business your size, and they can save you and your people money. Let's get you sorted first, and I'll come back to it."},
-{t:"ask",when:["work_kind","Employed"],unless:["biz_lead","Yes"],x:"<span class=\"optpill\">Read the room</span> Is that a smaller company? About how many people work there, and what's it called? {{biz_lead}}"},
-{t:"pf",ks:["biz_name","biz_size","biz_where"],when:["work_kind","Employed"],unless:["biz_lead",["","No"]]},
-{t:"do",x:"<b>Business lead:</b> a small employer with poor benefits, or a business they own, is a second conversation &mdash; group health and benefits, or a retirement plan for the business. Click <b>Yes</b>, note the name and size, and it lands on your follow-up list at the end. <b>Don&rsquo;t pitch it on this call.</b> The footer button <b>+ Business lead / referral</b> opens the same box any time."},
-{t:"train",x:"<b>This is not small talk.</b> What they do decides how much risk sits outside the health plan. An office job and a power-line job carry the same health premium and completely different exposure &mdash; accident cover, disability, workman's comp. You're listening for the gap you'll name on the presentation."},
-{t:"do",x:"If they're changing jobs or retiring, follow it. It moves the timeline and usually the income."}
+{t:"ask",when:["married",["Married","Partnered"]],x:"Is your spouse or partner on the plan we're looking at, or covered somewhere else? {{sp_on_plan}}"},
+{t:"ask",when:["married",["Married","Partnered"]],x:"And what do they do for a living? ___(spouse work) &mdash; does their work offer coverage? {{sp_emp_offer}}"},
+{t:"do",when:["married",["Married","Partnered"]],x:"Ask it either way. If they are on the plan, the application asks it; if they aren't, it tells you why &mdash; and where the rest of the household's money comes from."},
+{t:"ask",x:"Anyone else financially depending on you &mdash; grandchildren, a parent? {{fin_dep}}"},
+{t:"pf",ks:["fin_dep_note"],when:["fin_dep","Yes"]},
+{t:"do",x:"You want the shape of the household here, not the detail. Names, dates of birth and the rest come in Part 6 &mdash; everyone's details on one card."}
 ],b:[{k:"On to the money",to:"hs_income",c:"go"}]},
 
-hs_income:{s:"4",pf:"income",t:"Income and the cliff",l:[
+hs_income:{s:"3",pf:"income",t:"Income and the cliff",l:[
 {t:"say",x:"Okay &mdash; this is the part I mentioned, and here's why I ask it. The marketplace and work plans are guaranteed issue; private plans ask some health questions, so I'll get to those. But I also look at the money, because I'll be looking at several plans for you. Some carry a deductible and some don't. If I recommend one with a $10,000 deductible and it turns out you don't have $10,000 sitting spare, I've just put you somewhere that could throw you into a financial spiral &mdash; and that would be my fault, not yours."},
 {t:"say",x:"So this isn't to sell you any more insurance. It's so what I recommend actually fits. Does that make sense?"},
 {t:"train",x:"<b>Position it right before you ask it.</b> Said at the top of the call it is forgotten; said here, they answer the 401(k) question without blinking. Keep the $10,000 a <i>plan</i> figure &mdash; the moment it sounds like you think <i>they</i> have a $10,000 problem, the sentence changes character. (Jesse's bootcamp framing, 17 Oct; the placement from the team call, 3 Nov.)"},
@@ -3104,6 +3092,8 @@ hs_income:{s:"4",pf:"income",t:"Income and the cliff",l:[
 {t:"ask",x:"Have you given any thought to a target age for retirement? ___(your retirement age)"},
 {t:"ask",when:["has_assets","No"],x:"And are you putting anything away for retirement right now?"},
 {t:"pf",ks:["sp_retire"],when:["married",["Married","Partnered"]]},
+{t:"ask",x:"And God forbid something happened to you tomorrow &mdash; who would cover the final expenses? {{final_exp}}"},
+{t:"pf",ks:["final_exp_note"],when:["final_exp",["Family would","Not sure","Savings","Insurance"]]},
 {t:"ask",x:"Any actual life insurance in place right now &mdash; including through work? {{life_has}}"},
 {t:"pf",ks:["life_src","life_type","life_amt","life_who","life_cost"],when:["life_has","Yes"]},
 {t:"ask",when:["life_has","Yes"],x:"Do you know if it comes with living benefits &mdash; money you can use while you're alive if you get seriously ill? {{life_lb}}"},
@@ -3113,15 +3103,27 @@ hs_income:{s:"4",pf:"income",t:"Income and the cliff",l:[
 {t:"train",x:"<b>You are not selling any of this today.</b> You are finding out whether a big medical bill would land on savings, on a retirement account, or on nothing at all. That answer is what the Package of Protection conversation is built from on the presentation call."}
 ],b:[{k:"Next",to:"hs_budget",c:"go"}]},
 
-hs_budget:{s:"4",t:"Bank",l:[
+hs_budget:{s:"3",t:"Bank",l:[
 {t:"ask",when:[["why_tags","~Losing coverage"],["why_tags","~No coverage now"]],x:"And if a medical bill landed tomorrow, what could you pay without it hurting? ___(bill tomorrow)"},
 {t:"do",when:[["why_tags","~Losing coverage"],["why_tags","~No coverage now"]],x:"Only because they have no cover to lean on. If they have a plan today, skip it."},
 {t:"say",x:"The coverage is drafted from a checking or savings account &mdash; most carriers don't take cards."},
 {t:"ask",x:"Do you bank with a credit union or a national bank? {{bank_kind}}"},
 {t:"do",x:"Optional &mdash; skip it if it doesn't fit the call. It does not change the quote."}
+],b:[{k:"Next",to:"hs_diff",c:"go"}]},
+
+hs_diff:{s:"4",t:"The differentiator",l:[
+{t:"say",x:"I work with a lot of self-employed people frustrated with what healthcare costs. Every marketplace plan &mdash; ACA, Obamacare, same thing &mdash; has to carry all ten essential benefits. <details class=\"ideas\"><summary>The 10 essential benefits</summary><ol><li>Outpatient care &mdash; doctor visits without being admitted</li><li>Emergency services</li><li>Hospitalization &mdash; surgery and overnight stays</li><li>Pregnancy, maternity and newborn care</li><li>Mental health and substance use disorder services</li><li>Prescription drugs</li><li>Rehabilitative and habilitative services and devices &mdash; physical, speech and occupational therapy</li><li>Lab services</li><li>Preventive and wellness services, and chronic disease management</li><li>Pediatric services, including dental and vision for children</li></ol><small>Source: HealthCare.gov, &ldquo;What Marketplace health insurance plans cover&rdquo;.</small></details>"},
+{t:"say",x:"Most people don't need all ten. If you're not planning on having a baby, why pay for maternity &mdash; one of the most expensive things a plan can cover? So I tailor a plan around what you actually use."},
+{t:"tip",x:"<b>Calling it a PPO is fine.</b> Early on &mdash; and now and then after &mdash; add: &ldquo;that is to say, you can pick your doctor, in network or out of network, if you choose.&rdquo;"}
+],b:[{k:"Next",to:"hs_startdate",c:"go"}]},
+
+hs_startdate:{s:"4",t:"Start date",l:[
+{t:"covclock"},
+{t:"ask",x:"Assuming we get you qualified &mdash; when would you want your coverage to start? ___(start date)"},
+{t:"do",x:"Usually no sooner than 15 days out. Most carriers start on the 1st or the 15th."},
+{t:"train",x:"<b>Ask it even when you think you know.</b> If they're losing cover you'll assume they want it the day after, and you'll often be right. But some are on a spouse's plan for a month, some are waiting on a new job's cover, some want it lined up with a birthday. Asking costs a sentence; assuming wrong costs the effective date.<br><br>Ask it forward: <i>&ldquo;so we line this up right &mdash; when would you want it to start?&rdquo;</i> reads as planning."}
 ],b:[{k:"On to the quick questions",to:"hs_quick",c:"go"}]},
 
-/* The quick yes-or-no round, for everyone at once, before anyone's height and weight (team call, 3 Nov) */
 hs_quick:{s:"5",pf:"famhist",t:"Quick questions, for everyone",l:[
 {t:"say",x:"Now a few quick yes-or-no questions, for everyone on the plan &mdash; these change which plans are worth quoting."},
 {t:"ask",x:"Does anyone have a history of cancer, heart attack or stroke &mdash; does it run in the family?"},
@@ -3137,19 +3139,21 @@ hs_quick:{s:"5",pf:"famhist",t:"Quick questions, for everyone",l:[
 {t:"docs",when:["keep_docs","Yes"]},
 {t:"train",when:["keep_docs","Yes"],x:"<b>The name is not the point. &ldquo;Must keep&rdquo; is.</b> If a doctor is a hard requirement that decides whether a network plan is even on the table, before you quote anything. If they're relaxed about it you have far more room."},
 {t:"do",when:["keep_docs","Yes"],x:"They usually have not checked whether that doctor takes their ACA plan. &ldquo;Not checked&rdquo; is a real answer &mdash; record it rather than guessing."},
+{t:"ask",x:"Roughly how many times a year does everyone end up at the doctor? ___(visits a year) &mdash; and is there a copay on your plan now? ___(copay)"},
+{t:"do",x:"Visits and copay are what turn &ldquo;my premium is $420&rdquo; into what they actually spend in a year &mdash; the comparison is built from it."},
 {t:"ask",x:"Would you like me to look into dental coverage? {{want_dental}}"},
 {t:"ask",x:"Does anyone wear glasses or contacts &mdash; vision? {{want_vision}}"},
 {t:"ask",x:"And hearing? {{want_hearing}}"},
 {t:"do",x:"Quick asks. They cost nothing here and they are the easiest thing to add to a package later. GLP-1s are asked person by person in Part 6, by name."}
 ],b:[{k:"Now your details",to:"hs_qualify",c:"go"}]},
 
-hs_qualify:{s:"5",pf:"build",t:"Qualification",l:[
-{t:"say",x:"Now let me get your details, one person at a time &mdash; starting with you. So I know which private plans you may qualify for &mdash;"},
-{t:"ask",x:"what's your zip code? ___(zip) &mdash; and that's ___(state), right?"},
-{t:"ask",x:"Your date of birth? ___(DOB) &mdash; so that makes you ___(age)."},
-{t:"ask",x:"Height and weight? ___(height) ___(weight)"},
-{t:"ask",x:"And do you use any tobacco products? {{tobacco}}"}
-],b:[{k:"Your health",to:"hs_history",c:"go"}]},
+hs_qualify:{s:"5",pf:"build",t:"Everyone's details",l:[
+{t:"say",x:"Now let me get everyone's details &mdash; so I know which private plans you may qualify for."},
+{t:"ask",x:"What's your zip code? ___(zip) &mdash; and that's ___(state), right?"},
+{t:"ask",x:"<b>You &mdash;</b> date of birth? ___(DOB) &mdash; so that makes you ___(age). Height and weight? ___(height) ___(weight) &mdash; any tobacco? {{tobacco}}"},
+{t:"ask",when:["married",["Married","Partnered"]],x:"<b>And your spouse or partner &mdash;</b> name? ___(spouse first name) ___(spouse last name) {{sp_sex}} &mdash; date of birth? ___(spouse DOB), so that's ___(spouse age). Height and weight? ___(spouse height) ___(spouse weight) &mdash; tobacco? {{sp_tobacco}}"},
+{t:"do",x:"One pass, everyone together &mdash; the spouse sits right under you, not three cards later. The kids come at the end of Part 6."}
+],b:[{k:"Medications \u2014 you",to:"hs_history",c:"go"}]},
 
 hs_history:{s:"6",pf:"health",t:"Health history",l:[
 {t:"say",x:"Now a few health questions, so I know what you'll actually qualify for."},
@@ -3168,36 +3172,9 @@ hs_history:{s:"6",pf:"health",t:"Health history",l:[
 {t:"dobig",x:"<b>Ask it by name, even when they have just told you they take nothing.</b> This is the medication people leave out most often, and it is usually not deliberate: a lot of it is paid cash or comes from a compounding pharmacy, so it never felt like a prescription &mdash; and someone taking it for weight rather than diabetes frequently does not count themselves as being on medication at all."},
 {t:"warn",when:["glp1","Yes"],x:"<b>Why you ask it flat, and what not to do with the answer.</b> It is a live underwriting question on the medically underwritten plans, and the indication matters &mdash; diabetes and weight are not read the same way, which is why you ask which one. Write down what they say and carry on. Do not react to it, do not advise them about the drug, and <b>never suggest stopping or pausing it before an application</b>. That is a medical decision, it is not yours to make, and advising it is the kind of thing that ends a licence."},
 {t:"ask",x:"And aside from what we've covered already &mdash; are there any other health conditions I should know about? ___(anything else about their health)"}
-],b:[{k:"Next",to:"hs_conds",c:"go"}]},
-
-hs_conds:{s:"6",pf:"health",t:"Recent history",l:[
-{t:"ask",x:"In the last five years, any surgeries? {{recent_stay}}"},
-{t:"ask",when:["recent_stay","Yes"],x:"What was that for? ___(what for)"},
-{t:"ask",x:"And any hospital stays in the last two years? {{hosp_stay}}"},
-{t:"ask",when:["hosp_stay","Yes"],x:"What was that for? ___(hospital stay)"},
-{t:"ask",x:"Has a doctor recommended any surgery, procedure or tests you haven't had yet &mdash; or are you still being followed up after one? {{pending_care}}"},
-{t:"ask",when:["pending_care",["Surgery or procedure recommended","Tests or results pending","Still being followed up after surgery"]],x:"What is it, and where are you with it? ___(pending what)"},
-{t:"pendflag"},
-{t:"ask",x:"In the last 12 months, has any test come back abnormal for you &mdash; a biopsy, mammogram, Pap smear, PSA or CEA &mdash; or are you waiting on results, or told to get a test you haven't had yet? Any positive BRCA gene test, or weight loss you can't explain? {{abn12}}"},
-{t:"r12flag"},
-{t:"ask",x:"And one the application asks everyone &mdash; have you ever had treatment for alcohol or drug use? A program, rehab, anything like that? {{drug_tx}}"},
-{t:"ask",when:["drug_tx","Yes"],x:"When was that? ___(when the treatment was)"},
-{t:"warn",x:"<b>Ask it even when it feels awkward.</b> It is on the application, and applications have come back declined on it when nobody asked on the call. Ask it flat, write down the answer and the date, and move on &mdash; you are not judging it."},
-{t:"ask",x:"Are you working right now &mdash; or on disability or unable to work? {{disabled}}"},
-{t:"disflag"},
-{t:"note",x:"<b>Standing rule on every yes:</b> when was it, what was it for, and what are they taking for it now."}
-],bh:"Who's next?",b:[
-{k:"Now the spouse / partner",to:"hs_sp_history",c:"go",when:["married",["Married","Partnered"]]},
-{k:"Skip the spouse — on to the kids",to:"hs_kids",allOf:[["married",["Married","Partnered"]],["kids",["1","2","3","4+"]]]},
-{k:"Skip the spouse — book it",to:"hs_book",allOf:[["married",["Married","Partnered"]],["kids",["","0"]]]},
-{k:"Now the kids",to:"hs_kids",c:"go",allOf:[["married",["Single","Divorced","Widowed",""]],["kids",["1","2","3","4+"]]]},
-{k:"Book the presentation",to:"hs_book",c:"go",allOf:[["married",["Single","Divorced","Widowed",""]],["kids",["","0"]]]}]},
+],b:[{k:"Medications \u2014 your spouse",to:"hs_sp_history",c:"go",when:["married",["Married","Partnered"]]},{k:"Recent history",to:"hs_conds",c:"go",when:["married",["Single","Divorced","Widowed",""]]}]},
 
 hs_sp_history:{s:"6",pf:"sphealth",t:"Spouse — details and health",l:[
-{t:"say",when:["married",["Married"]],x:"<b>Now your spouse &mdash;</b>"},
-{t:"say",when:["married",["Partnered"]],x:"<b>Now your partner &mdash;</b>"},
-{t:"ask",x:"Name? ___(spouse first name) ___(spouse last name) {{sp_sex}} &mdash; date of birth? ___(spouse DOB), so that's ___(spouse age)."},
-{t:"ask",x:"Height and weight? ___(spouse height) ___(spouse weight) &mdash; and tobacco? {{sp_tobacco}}"},
 {t:"ask",x:"Is ___(spouse first name) on any medications right now?"},
 {t:"meds",who:"sp",warn:"<b>Spell them, per person.</b> It matters twice as much here: a medication logged against the wrong person rates the wrong life."},
 {t:"tip",x:"This is a separate list from yours. What goes in here is recorded as the spouse's, which is how the plan gets rated on the right person."},
@@ -3210,24 +3187,38 @@ hs_sp_history:{s:"6",pf:"sphealth",t:"Spouse — details and health",l:[
 {t:"ask",when:["sp_glp1","Yes"],x:"What do they pay a month for it? ___(what the spouse pays for it) &mdash; and where do they get it? {{sp_glp1_source}}"},
 {t:"dobig",when:["sp_glp1","Yes"],x:"<b>Ask it separately, do not carry the answer across from the applicant.</b> One of them on Ozempic for diabetes and the other on Wegovy for weight is an ordinary pairing, not an edge case &mdash; and the two answers go to different places. Recording them as one household answer gets one of the two people the wrong plan."},
 {t:"ask",x:"And aside from what we've covered &mdash; any other health conditions for ___(spouse first name)? ___(spouse anything else)"}
-],b:[{k:"Next",to:"hs_sp_conds",c:"go"}]},
+],b:[{k:"Recent history \u2014 both of you",to:"hs_conds",c:"go"}]},
 
-hs_sp_conds:{s:"6",pf:"sphealth",t:"Spouse recent history",l:[
-{t:"ask",x:"In the last five years, any surgeries for ___(spouse first name)? {{sp_recent_stay}}"},
+/* Recent history for both of them on one card (team call, 3 Nov): each question to you, then straight to the spouse. */
+hs_conds:{s:"6",pf:"health",t:"Recent history \u2014 both of you",l:[
+{t:"ask",x:"In the last five years, any surgeries? {{recent_stay}}"},
+{t:"ask",when:["recent_stay","Yes"],x:"What was that for? ___(what for)"},
+{t:"ask",when:["married",["Married","Partnered"]],x:"And ___(spouse first name)? {{sp_recent_stay}}"},
 {t:"ask",when:["sp_recent_stay","Yes"],x:"What was that for? ___(spouse what for)"},
-{t:"ask",x:"And any hospital stays in the last two years? {{sp_hosp_stay}}"},
+{t:"ask",x:"Any hospital stays in the last two years? {{hosp_stay}}"},
+{t:"ask",when:["hosp_stay","Yes"],x:"What was that for? ___(hospital stay)"},
+{t:"ask",when:["married",["Married","Partnered"]],x:"And ___(spouse first name)? {{sp_hosp_stay}}"},
 {t:"ask",when:["sp_hosp_stay","Yes"],x:"What was that for? ___(spouse stay what)"},
-{t:"ask",x:"Has a doctor recommended any surgery, procedure or tests ___(spouse first name) hasn't had yet &mdash; or are they still being followed up after one? {{sp_pending_care}}"},
+{t:"ask",x:"Has a doctor recommended any surgery, procedure or tests you haven't had yet &mdash; or are you still being followed up after one? {{pending_care}}"},
+{t:"ask",when:["pending_care",["Surgery or procedure recommended","Tests or results pending","Still being followed up after surgery"]],x:"What is it, and where are you with it? ___(pending what)"},
+{t:"pendflag"},
+{t:"ask",when:["married",["Married","Partnered"]],x:"And ___(spouse first name)? {{sp_pending_care}}"},
 {t:"ask",when:["sp_pending_care",["Surgery or procedure recommended","Tests or results pending","Still being followed up after surgery"]],x:"What is it, and where are they with it? ___(spouse pending what)"},
 {t:"pendflag",who:"sp"},
-{t:"ask",x:"In the last 12 months, has any test come back abnormal for ___(spouse first name) &mdash; a biopsy, mammogram, Pap smear, PSA or CEA &mdash; or are they waiting on results, or told to get a test they haven't had yet? Any positive BRCA gene test, or weight loss they can't explain? {{sp_abn12}}"},
+{t:"ask",x:"In the last 12 months, has any test come back abnormal &mdash; a biopsy, mammogram, Pap smear, PSA or CEA &mdash; or are you waiting on results, or told to get a test you haven't had yet? Any positive BRCA gene test, or weight loss you can't explain? {{abn12}}"},
+{t:"r12flag"},
+{t:"ask",when:["married",["Married","Partnered"]],x:"And ___(spouse first name)? {{sp_abn12}}"},
 {t:"r12flag",who:"sp"},
-{t:"ask",x:"And the same one I asked you &mdash; has ___(spouse first name) ever had treatment for alcohol or drug use? {{sp_drug_tx}}"},
+{t:"ask",x:"And one the application asks everyone &mdash; has anyone ever had treatment for alcohol or drug use? A program, rehab, anything like that? You? {{drug_tx}}"},
+{t:"ask",when:["drug_tx","Yes"],x:"When was that? ___(when the treatment was)"},
+{t:"ask",when:["married",["Married","Partnered"]],x:"And ___(spouse first name)? {{sp_drug_tx}}"},
 {t:"ask",when:["sp_drug_tx","Yes"],x:"When was that? ___(spouse treatment when)"},
-{t:"ask",x:"Is ___(spouse first name) working right now &mdash; or on disability or unable to work? {{sp_disabled}}"},
+{t:"warn",x:"<b>Ask it even when it feels awkward.</b> It is on the application, and applications have come back declined on it when nobody asked on the call. Ask it flat, write down the answer and the date, and move on &mdash; you are not judging it."},
+{t:"ask",x:"Are you working right now &mdash; or on disability or unable to work? {{disabled}}"},
+{t:"disflag"},
+{t:"ask",when:["married",["Married","Partnered"]],x:"And ___(spouse first name)? {{sp_disabled}}"},
 {t:"disflag",who:"sp"},
-{t:"note",x:"<b>Standing rule on every yes:</b> when was it, what was it for, and what are they taking for it now."},
-{t:"train",x:"<b>Doctors, dental, vision and hearing were asked once, for the household,</b> in the quick questions. If the spouse has a doctor they want to keep that you have not recorded, go back to 5.1 and add them &mdash; that list is shared."}
+{t:"note",x:"<b>Standing rule on every yes:</b> when was it, what was it for, and what are they taking for it now."}
 ],bh:"Who's next?",b:[
 {k:"Now the kids",to:"hs_kids",c:"go",when:["kids",["1","2","3","4+"]]},
 {k:"Book the presentation",to:"hs_book",c:"go",when:["kids",["","0"]]}]},
@@ -4154,6 +4145,10 @@ var S,STAGES,ENTRY,ID,N,curScript=null;
 var cur="start",hist=[],redo=[],t0=null,tick=null;
 function $(id){return document.getElementById(id)}
 
+/* "OK" reads aloud as "okay": show the state's name beside its code (Jesse, 3 Nov) */
+function stFull(v){ var c=String(v||"").trim().toUpperCase(), n=(typeof US_STATES!=="undefined"&&US_STATES[c])||""; return '<span class="stfull">'+(n?'('+n+')':'')+'</span>'; }
+document.addEventListener("input",function(e){ var t=e.target; if(!t||!t.getAttribute||t.getAttribute("data-pk")!=="state") return;
+  var nx=t.nextElementSibling; if(nx&&nx.classList.contains("stfull")) nx.outerHTML=stFull(t.value); });
 function copyFill(x){
   return String(x).replace(/_{3,}\s*\(([^)]+)\)/g,function(m,lab){
     var v=(typeof pBlank==="function")?pBlank(lab):"";
@@ -4193,7 +4188,7 @@ function fmt(x){
                        ' placeholder="'+esc(lab)+'">'+esc(v)+'</textarea>';
               var mny=(typeof pSpecOf==="function")&&(pSpecOf(k)||{}).money;   /* money blanks read as money while typing (Jesse, 16 Oct) */
               return '<input class="iblank'+(mny?' imoney':'')+'"'+(mny?' inputmode="decimal"':'')+(k==="state"?' list="statelist"':k==="branch"?' list="branchlist"':'')+' data-pk="'+k+'" data-inline="1" title="'+esc(lab)+'"'+
-                     ' placeholder="'+(mny?'$ ':'')+esc(lab)+'" style="width:'+w+'ch" value="'+esc(v).replace(/"/g,"&quot;")+'">';
+                     ' placeholder="'+(mny?'$ ':'')+esc(lab)+'" style="width:'+w+'ch" value="'+esc(v).replace(/"/g,"&quot;")+'">'+(k==="state"?stFull(v):'');
             }
             return v ? '<span class="filled'+(lab==="your bio"?" fbio":"")+'">'+esc(v)+'</span>'
                      : '<span class="blank"></span><span class="hint">('+lab+')</span>';
@@ -4484,8 +4479,9 @@ function pfInline(ks){
           f.opt.map(function(oo){ return '<option'+(v===oo?" selected":"")+'>'+oo+'</option>'; }).join("")+'</select></span>';
       /* short option lists render as clickable chips */
       var opts=f.opt.filter(function(x){return x!==""});
+      var picked=f.multi?String(v||"").split(", ").filter(Boolean):[v];   /* two why chips picked lit neither (team call, 3 Nov) */
       return '<span class="pfi"><i>'+pfiLabel(f)+'</i>'+opts.map(function(oo){
-        return '<button type="button" class="chip'+(v===oo?" on":"")+'" data-pfset="'+k+'" data-pfval="'+oo+'">'+oo+'</button>';
+        return '<button type="button" class="chip'+(picked.indexOf(oo)>-1?" on":"")+'" data-pfset="'+k+'" data-pfval="'+oo+'">'+oo+'</button>';
       }).join("")+'</span>';
     }
     var ph=PF_PLACEHOLDER[k]||"";
@@ -4656,6 +4652,7 @@ function render(){
         NX.map(function(x,i){ return '<li class="'+(i===0?"done":(i===1?"now":""))+'"><b>'+(i===0?"&#10003; ":"")+x[0]+'</b><span>'+x[1]+'</span></li>'; }).join("")+'</ol>'+
         (HOST?'<button type="button" class="nxgo" data-nextgo="intake">Review the Intake &rarr;</button>'
              :'<a class="nxgo" href="https://mypoppro.com/" target="_blank" rel="noopener">Open MyPopPro &rarr;</a>')+'</div></div>'; }
+    if(L.t==="covclock"){ var cc=covClock(); return cc?'<div class="line"><div class="covclock'+(cc.hot?' hot':'')+'">'+cc.html+'</div></div>':''; }
     if(L.t==="appt") return '<div class="line"><div class="apptpick">'+apptHTML()+'</div></div>';
     if(L.t==="fhgrid") return '<div class="line">'+fhGridHTML(L.rows==="preg"?FHROWS_PREG:FHROWS)+'</div>';
     if(L.t==="deps") return !PROFILE_ON ? "" : '<div class="line" id="depscard">'+pDepsHTML()+'</div>';
@@ -4914,6 +4911,9 @@ PF_SPEC_HEALTH=[
  {k:"sp_height",l:"Height",w:1,showIf:["married",["Married","Partnered"]]},
  {k:"sp_weight",l:"Weight",w:1,showIf:["married",["Married","Partnered"]]},
  {k:"sp_tobacco",l:"Tobacco",w:1,opt:["","No","Yes"],showIf:["married",["Married","Partnered"]]},
+ {k:"sp_on_plan",l:"Spouse on this plan?",w:1,opt:["","Yes","No"],showIf:["married",["Married","Partnered"]]},
+ {k:"fin_dep",drives:true,l:"Anyone else depending on them?",w:1,opt:["","No","Yes"]},
+ {k:"fin_dep_note",l:"Who depends on them",hint:"a grandchild, a parent &mdash; who and how",type:"area",w:3,showIf:["fin_dep","Yes"]},
  {k:"deps",type:"deps"},
  {k:"kids_health",l:"Kids \u2014 health, medications, anything to know",type:"area",w:3},
 
@@ -4987,6 +4987,7 @@ PF_SPEC_HEALTH=[
  {k:"occupation",l:"What they do",w:2},{k:"occ_years",l:"How long",w:1},
  {k:"work_kind",drives:true,l:"Works",w:2,opt:["","Employed","Self-employed","Own a business","Retired","Not working"]},
  {k:"emp_offer",l:"Health coverage offered through their work?",w:2,opt:["","No","Yes"]},
+ {k:"sp_occupation",l:"Spouse \u2014 what they do",w:2,showIf:["married",["Married","Partnered"]]},
  {k:"sp_emp_offer",l:"Through their spouse's work?",w:2,opt:["","No","Yes"],showIf:["married",["Married","Partnered"]]},
 
  {sec:"Qualify",id:"build"},
@@ -5032,6 +5033,8 @@ PF_SPEC_HEALTH=[
  {k:"asset_prot",l:"Protectable?",w:1,opt:["","Yes","No"],showIf:["has_assets","Yes"]},
  {k:"asset_risk",l:"Protected or at market risk?",w:1,opt:["","Protected","Market risk","Not sure"],showIf:["has_assets","Yes"]},
  {k:"asset_notes",l:"Notes on their money / details",w:2},
+ {k:"final_exp",drives:true,l:"Final expenses \u2014 who'd cover them",w:2,opt:["","Insurance","Savings","Family would","Not sure"]},
+ {k:"final_exp_note",l:"Final expenses \u2014 notes",w:3,showIf:["final_exp",["Insurance","Savings","Family would","Not sure"]]},
  {k:"life_has",drives:true,l:"Life insurance now?",w:1,opt:["","No","Yes"]},
  {k:"life_src",l:"Through",w:1,opt:["","Work","Private","Both"],showIf:["life_has","Yes"]},
  {k:"life_type",l:"Type",w:1,opt:["","Term","Whole","Not sure"],showIf:["life_has","Yes"]},
@@ -5162,7 +5165,7 @@ var BLANKMAP={
  "current carrier":"cur_carrier","plan name":"cur_plan","they pay":"cur_prem",
  "employer pays":"cur_emp_prem","total cost":"cur_total","deductible":"cur_ded",
  "visits a year":"cur_visits","copay":"cur_copay","what was missing":"cov_gap",
- "what it costs to add the family":"cur_fam_cost","why they're losing it":"losing_why","who uses the CPAP":"cpap_who",
+ "what it costs to add the family":"cur_fam_cost","spouse work":"sp_occupation","why they're losing it":"losing_why","who uses the CPAP":"cpap_who",
  "when the treatment was":"drug_tx_when","spouse treatment when":"sp_drug_tx_when",
  "out-of-pocket max":"cur_oop","planned next year":"planned","pending what":"pending_what","spouse pending what":"sp_pending_what","life insurance now":"life_now","bill tomorrow":"bill_tomorrow",
  "spouse what for":"sp_recent_what","spouse stay what":"sp_stay_what",
@@ -6222,6 +6225,20 @@ function stateMatches(q){
    always what someone means about their own coverage.
    A DATE OF BIRTH may not. A month and a day with no year is not a birthday, it is half
    of one, and guessing a year on a date that sets the rate is not a saving worth making. */
+/* The coverage clock (Jesse, 3 Nov): no coverage now, or losing it on a date, is the risk on the call - louder with
+   kids, and "let me think about it" must not run them past the date. */
+function covClock(){
+  var tags=String(pVal("why_tags")||""), none=/No coverage now/.test(tags), losing=/Losing/.test(tags);
+  if(!none&&!losing) return null;
+  var kids=/^[1-4]/.test(String(pVal("kids")||"")), kt=kids?' <b>And there are kids on this</b> &mdash; one ER visit or a broken arm with no coverage lands on the family.':'';
+  if(none) return {hot:true,html:'<b>&#128308; No coverage right now.</b> Every day without it is the risk.'+kt+' Aim for the earliest start date, and don&rsquo;t book the next call days out &mdash; &ldquo;let me think about it&rdquo; leaves them uninsured.'};
+  var t=pFutureDate(pVal("last_day")), m=t&&t.match(/^(\d\d)\/(\d\d)\/(\d{4})$/);
+  if(!m) return {hot:false,html:'<b>&#9201; Losing coverage &mdash; get the last day.</b> Once it passes, they are uninsured.'+kt};
+  var d=new Date(+m[3],+m[1]-1,+m[2]), now=new Date(); now.setHours(0,0,0,0);
+  var n=Math.round((d-now)/864e5), ds=d.toLocaleDateString("en-US",{month:"short",day:"numeric"});
+  if(n<0) return {hot:true,html:'<b>&#128308; Their coverage ended '+ds+' &mdash; '+(-n)+' day'+(n===-1?'':'s')+' ago.</b> They are uninsured now.'+kt+' Earliest start date, and apply on this call if you can.'};
+  return {hot:n<=30,html:'<b>&#9201; Coverage ends '+ds+' &mdash; '+n+' day'+(n===1?'':'s')+' from today.</b> '+(n<=30?'That is not time to think it over &mdash; apply now so the new plan starts the day after.':'Line the start date up with the day after it ends.')+kt};
+}
 function pFutureDate(v){
   var t=String(v||"").trim(); if(!t) return null;
   if(/[A-Za-z]/.test(t)) return null;
@@ -6638,7 +6655,7 @@ function popClient(){
       occupation:P.occupation||"", occYears:P.occ_years||"", /* team call, 3 Nov */ curSrc:P.cur_src||"", curFamCost:P.cur_fam_cost||"", losingWhy:P.losing_why||"", workKind:P.work_kind||"",
       cpap:P.cpap||"", cpapWho:P.cpap_who||"", drugTx:P.drug_tx||"", drugTxWhen:P.drug_tx_when||"", spDrugTx:P.sp_drug_tx||"", spDrugTxWhen:P.sp_drug_tx_when||"", lifeLb:P.life_lb||"",
       bizLead:P.biz_lead||"", bizRel:P.biz_rel||"", bizName:P.biz_name||"", bizSize:P.biz_size||"", bizWhat:P.biz_what||"", bizWhere:P.biz_where||"",
-      bizWant:P.biz_want||"", bizContact:P.biz_contact||"", bizNotes:P.biz_notes||"", refs:P.refs||"",
+      bizWant:P.biz_want||"", bizContact:P.biz_contact||"", bizNotes:P.biz_notes||"", refs:P.refs||"", spOnPlan:P.sp_on_plan||"", spOccupation:P.sp_occupation||"", finDep:P.fin_dep||"", finDepNote:P.fin_dep_note||"", finalExp:P.final_exp||"", finalExpNote:P.final_exp_note||"",
       kidsHealth:P.kids_health||"",
       wantDental:P.want_dental||"", wantVision:P.want_vision||"", wantHearing:P.want_hearing||"",
       curCarrier:P.cur_carrier||"", curPlan:P.cur_plan||"", curPrem:P.cur_prem||"",
