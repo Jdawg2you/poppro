@@ -586,7 +586,7 @@
   .pr-rail .box{border:1px solid var(--line);border-radius:12px;background:#faf7ef;padding:12px}
   .pr-rail .box b{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
   .pr-rail .box button{display:block;width:100%;text-align:left;margin-top:6px;font-weight:600}
-  .pr-qa summary{cursor:pointer;font-weight:600;font-size:13px;color:var(--navy);padding:4px 0}.pr-qa p{margin:4px 0 8px;font-size:13px;color:#374151}
+  .pr-qa summary{cursor:pointer;font-weight:600;font-size:13px;color:var(--navy);padding:4px 0}.pr-qa p{margin:4px 0 8px;font-size:13px;color:#374151}.pr-qa .pr-qah{display:block;margin:10px 0 2px;padding-top:8px;border-top:1px solid var(--line)}
   .pr-apply ol{margin:6px 0 0;padding-left:20px}.pr-apply li{margin:8px 0;font-size:14px}
   .pr-apply .why{display:block;font-size:12px;color:var(--muted)}
   .pr-fields{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;margin-top:8px}
@@ -7378,6 +7378,20 @@ var STORY_KYLE='<p class="st-act"><b>1 · Why the big number is never the real n
  +'<li><b>Never promise the check.</b> It happened because a fixed benefit was bigger than a reduced bill &mdash; the amount depends entirely on the bill. And it wasn&rsquo;t a windfall: she came out with a blood-clot diagnosis and a medication for life. It was a serious illness the plan covered well.</li>'
  +'<li><b>CareGuide</b> is &ldquo;a medical bill advocacy service, not insurance. It does not pay medical bills. Results vary by case.&rdquo; Promise that somebody will look &mdash; never an outcome. Best results when they call <b>before</b> paying anything: 469-902-2267 &middot; cgasaves.com/manhattanlifemembers</li>'
  +'</ul></div>';
+/* Follow-up questions clients ask once the plan is on the table (Jesse, 3 Nov, from a presentation call). MyPopPro's
+   own list, shown under the script's ten; the same text went to Health ZONE for the source script. No figures that
+   depend on the state or the product: the plan's own numbers are on the Quote. Underwriting answers name the rule and
+   never promise an approval (AFC agent guide p.20: tests in the last 12 months that were not normal, still pending, or
+   advised and not done). */
+var PR_FOLLOWUP=[
+ ['“Is that per person, or for all of us together?”','Per person. Each of you gets your own visits and your own benefits, and the counts reset every January 1st.'],
+ ['“Do I have to do a blood or urine test?”','No exam, no blood, no urine. It’s health questions on the application, and the carrier checks your prescription and medical records itself. I’ll call you as soon as they come back with a decision.'],
+ ['“Do I pay it all up front? What if we’re not approved?”','Nothing comes out today. We pick the day your coverage starts, and the first payment comes out on that day, only once you’re approved. If you’re not approved, nothing is charged. We usually set the start a week or two out so there’s time for the approval.'],
+ ['“My husband has had tests they never found a cause for. Will that get us declined?”','Health underwriting looks at different things from life insurance. The question it asks is about the last 12 months: any test that came back other than normal, is still waiting on a result, or a test a doctor recommended that wasn’t done. If his came back normal and nothing is outstanding, that is in his favor. Honestly, we only know when we apply. It only affects his application, not yours or the kids’, and nothing is paid unless a policy is issued.'],
+ ['“It’s about the same as the marketplace. I wish it was a little less.”','The monthly number can look close. The difference is what happens when you use it: no deductible to get through first, no referrals and no prior authorizations, and you choose the doctor. Then take off what this saves you on prescriptions, and the real monthly cost is lower than the premium. If it still needs to come down, we take the living benefits off for now and add them later. The health coverage stays the same.'],
+ ['“Does the prescription part only work at the big chains? I like my local pharmacy.”','Use whichever pharmacy you like. The prescription benefit pays you back per fill, wherever you fill it: you take a picture of the receipt in the app. The discount card prices are usually best at the big chains, so check both and pick.'],
+ ['“Does the living benefit cover the kids too?”','It covers the two of you. For the kids I’d look at something permanent rather than a short-term policy, and we go through that on your Benefits Review call.'],
+ ['“Let me talk to my husband and I’ll get back to you.”','Of course, it’s a decision for both of you. What time tomorrow works? I’ll put it on both our calendars, and if he has questions, have him on the call so he hears it from me. Approval is based on your health today, so the sooner we apply, the better.']];
 var PR_STORY_HEAD='<b>Story repository (who to tell)</b>';
 /* "Enrolling with plan edits" (Jesse, 17 Oct): the card + side-by-side open under the script; edits never touch the quote */
 /* the same two buttons above and below the edit section, so nobody has to scroll to find them (Jesse, 17 Oct) */
@@ -7417,7 +7431,8 @@ function renderPresent(){ var host=$('presentHost'); if(!host) return; if(triadF
   fr.onload=function(){ try{ var doc=fr.contentDocument; scriptClean(doc); presentPaginate(doc);
       benLoadSafe('afc').then(function(){ presentWire(doc,t); presentGo(+S.present.pg||0); });
       var R=presentRailFromScript(doc);
-      $('prQA').innerHTML='<b>Quick answers — objections</b>'+R.qa.map(function(q){ return '<details><summary>'+esc(q[0])+'</summary><p>'+esc(q[1])+'</p></details>'; }).join('');
+      var qaRow=function(q){ return '<details><summary>'+esc(q[0])+'</summary><p>'+esc(q[1])+'</p></details>'; };
+      $('prQA').innerHTML='<b>Quick answers — objections</b>'+R.qa.map(qaRow).join('')+'<b class="pr-qah">Follow-up questions</b>'+PR_FOLLOWUP.map(qaRow).join('');
       $('prStories').innerHTML=PR_STORY_HEAD+(R.stories.length?R.stories.map(function(x,i){ return '<button type="button" data-story="'+i+'">📖 '+esc(x.story)+(x.html?' <em class="st-ready">Ready</em>':'')+'</button>'; }).join(''):'<p style="font-size:13px;color:var(--muted);margin:4px 0 0">No stories yet.</p>');
       $('prStories').querySelectorAll('[data-story]').forEach(function(b){ b.onclick=function(){ var x=R.stories[+b.dataset.story], pop=$('prPop');
         pop.innerHTML='<div class="pr-pop"><button type="button" class="x" aria-label="Close">×</button><div class="sec">Story</div><h4>'+esc(x.title||x.story)+'</h4><p><b>When to tell it:</b> '+esc(x.at)+'</p>'+(x.html?'<p style="font-size:12.5px;color:var(--muted);margin:0 0 6px">Asked: '+esc(x.story)+'</p>'+x.html:'<p style="font-style:italic;color:var(--muted)">Story coming soon.</p>')+'<p class="rule">Never a client’s name — “a buddy of mine”, “a coworker of mine”.</p></div>';
