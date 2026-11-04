@@ -8199,6 +8199,8 @@ if(HOST){
   hostShut(); setTimeout(hostShut,0);
   var _pStoreHost=pStore; pStore=function(){ _pStoreHost.apply(null,arguments); hostPush(); };
   window.addEventListener("message",function(e){ if(!hostOk(e.origin)) return; var d=e.data;
+    if(d&&d.source==="optimum-poppro"&&d.type==="notes"){ P.notes=String(d.notes||""); var pn=$("pnotes"); if(pn&&document.activeElement!==pn) pn.value=P.notes;
+      try{ localStorage.setItem(PKEY,JSON.stringify(P)); }catch(x){} return; }   /* MyPopPro's Post-it (Jesse, 4 Nov) */
     if(!d||d.source!=="optimum-poppro"||d.type!=="call-init") return; HOST_ORIGIN=e.origin;
     if(!HOST_AFC_LOADING){ HOST_AFC_LOADING=true; var sc=document.createElement("script"); sc.src=HOST_ORIGIN+"/tool/afc-rules.js"+(/localhost|127\.0\.0\.1/.test(HOST_ORIGIN)?"?v="+Date.now():"");
       sc.onload=function(){ HOST_AFC=true; navAfcRefresh(); pMedsRefresh(); }; document.head.appendChild(sc); }

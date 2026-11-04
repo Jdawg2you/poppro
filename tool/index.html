@@ -6476,7 +6476,7 @@ function loadFile(file){
   };
   rd.readAsText(file);
 }
-function autosave(){ try{ localStorage.setItem('hf_pop_last',JSON.stringify(S)); }catch(e){} }
+function autosave(){ try{ localStorage.setItem('hf_pop_last',JSON.stringify(S)); }catch(e){} if(window.qnRefresh) qnRefresh(); }   /* the Post-it follows every save */
 /* Saves from before the ACA section kept the agent's typed ACA numbers in S.aca with an
    acaEdited flag, and the current plan's carrier/plan in the intake. Carry typed numbers over
    as actual figures so a reopened quote shows what the agent entered, not a fresh estimate. */
@@ -9128,6 +9128,62 @@ compute();
 goStep(S.step||'call'); ppUpdatedToast();
 loadPortalRates();
 loadBaseRates();
+</script>
+<!-- Quick notes, the floating Post-it (Jesse, 4 Nov): the same note as the Intake's Notes and the call's profile Notes,
+     on screen on every step. For the random stuff only - answers belong in the Discovery questions or the Intake. -->
+<style>
+  .qn-tab{position:fixed;right:0;top:calc(50% - 150px);z-index:61;width:34px;padding:10px 0 9px;border:1.5px solid #c69a3c;border-right:none;
+    border-radius:12px 0 0 12px;background:#FAC775;color:#633806;font:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;
+    box-shadow:-2px 4px 12px rgba(18,33,59,.18)}
+  .qn-tab:hover{background:#f7bb58}
+  .qn-tab .qn-ico{font-size:17px;line-height:1}
+  .qn-tab .qn-lbl{writing-mode:vertical-rl;transform:rotate(180deg);font-size:11.5px;font-weight:700;letter-spacing:.04em}
+  .qn-tab .qn-dot{width:8px;height:8px;border-radius:50%;background:#854F0B;display:none}
+  .qn-tab.has .qn-dot{display:block}
+  .qn-pad{position:fixed;right:44px;top:calc(50% - 200px);z-index:62;width:300px;background:#FDF1D6;border:1.5px solid #E6A93A;border-radius:10px;
+    padding:9px 11px 10px;box-shadow:0 10px 28px rgba(18,33,59,.22);display:none;transform:rotate(-.4deg)}
+  .qn-pad.open{display:block}
+  .qn-head{display:flex;align-items:center;gap:7px;color:#633806;margin-bottom:6px;cursor:default}
+  .qn-head b{flex:1;font-size:13.5px}
+  .qn-head button{border:none;background:none;color:#633806;font-size:18px;line-height:1;cursor:pointer;padding:0 3px}
+  .qn-pad textarea{width:100%;box-sizing:border-box;min-height:190px;resize:vertical;background:#FFF9EC;border:1px solid #E6A93A;border-radius:7px;
+    padding:8px 9px;font:13px/1.5 inherit;font-family:inherit;color:#412402}
+  .qn-pad textarea:focus{outline:2px solid #c69a3c;outline-offset:0}
+  .qn-pad textarea::placeholder{color:#a8865a;font-style:italic}
+  .qn-foot{font-size:11px;color:#854F0B;margin-top:6px;line-height:1.4}
+  @media print{.qn-tab,.qn-pad{display:none!important}}
+</style>
+<button type="button" class="qn-tab noprint hidein-client" id="qnTab" title="Quick notes — for the random stuff"><span class="qn-ico">🗒</span><span class="qn-lbl">Quick notes</span><span class="qn-dot"></span></button>
+<div class="qn-pad noprint hidein-client" id="qnPad" role="dialog" aria-label="Quick notes">
+  <div class="qn-head"><span>🗒</span><b>Quick notes</b><button type="button" id="qnClose" title="Fold it away" aria-label="Fold it away">&minus;</button></div>
+  <textarea id="qnText" placeholder="For the random stuff: grandkids' names, a story, where they went off on a tangent.
+
+Not for anything important. Answers go in the Discovery questions or the Intake, because MyPopPro uses them everywhere else."></textarea>
+  <div class="qn-foot">Same note as Notes in the Client profile and on the Intake. Saved as you type.</div>
+</div>
+<script>
+(function(){
+  var TAG='From the discovery call — ', tab=$('qnTab'), pad=$('qnPad'), ta=$('qnText'), sendT=null;
+  /* what people typed: the Intake's Notes without MyPopPro's own summary line, which stays in the Intake box */
+  function mine(){ return String(((S.intake||{}).notes)||'').split('\n').filter(function(l){ return l.indexOf(TAG)!==0; }).join('\n').replace(/^\n+|\s+$/g,''); }
+  window.qnRefresh=function(){ var t=mine(); if(document.activeElement!==ta&&ta.value!==t) ta.value=t; tab.classList.toggle('has',!!t.trim()); };
+  function toFrame(t){ var f=$('callFrame'); if(!f||!f.contentWindow) return; try{ f.contentWindow.postMessage({source:'optimum-poppro',type:'notes',notes:t},location.origin); }catch(e){} }
+  function setOpen(o){ pad.classList.toggle('open',o); try{ localStorage.setItem('mpp_qn_open',o?'1':''); }catch(e){} if(o){ qnRefresh(); ta.focus(); } }
+  tab.onclick=function(){ setOpen(!pad.classList.contains('open')); };
+  $('qnClose').onclick=function(){ setOpen(false); };
+  ta.addEventListener('input',function(){ S.intake=S.intake||{}; var I=S.intake, t=ta.value;
+    var tags=String(I.notes||'').split('\n').filter(function(l){ return l.indexOf(TAG)===0; });
+    I.notes=(t.replace(/\s+$/,'')+(tags.length?'\n'+tags.join('\n'):'')).replace(/^\n+/,'');
+    I.navNotesLast=t.split('\n').map(function(l){ return l.replace(/\s+$/,''); }).filter(function(l){ return l.trim(); });
+    if($('in_notes')&&$('in_notes').value!==I.notes) $('in_notes').value=I.notes;
+    if($('enNotes')&&document.activeElement!==$('enNotes')) $('enNotes').value=I.notes;
+    tab.classList.toggle('has',!!t.trim()); autosave();
+    clearTimeout(sendT); sendT=setTimeout(function(){ toFrame(mine()); },300); });
+  /* the Intake's own Notes box and the enroll page's: typing there shows here */
+  ['in_notes','enNotes'].forEach(function(id){ document.addEventListener('input',function(e){ if(e.target&&e.target.id===id){ qnRefresh(); clearTimeout(sendT); sendT=setTimeout(function(){ toFrame(mine()); },300); } }); });
+  try{ if(localStorage.getItem('mpp_qn_open')) pad.classList.add('open'); }catch(e){}
+  qnRefresh();
+})();
 </script>
 </body>
 </html>
