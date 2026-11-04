@@ -204,28 +204,29 @@ select option{background:var(--navy);color:#fff}
 .pillbtn.arm{background:var(--rust);border-color:var(--rust);color:#fff}
 .pillbtn.arm:hover{background:var(--rust);border-color:var(--rust);color:#fff}
 
-.stages{background:var(--card);margin:12px 16px 0;border-radius:10px;display:flex;overflow:hidden;
+.stages{background:var(--card);margin:8px 16px 0;border-radius:10px;display:flex;overflow:hidden;
   box-shadow:0 1px 3px rgba(22,32,60,.06)}
-.stage{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:12px 6px;
-  font-size:12.5px;font-weight:600;color:var(--muted);border-right:1px solid var(--rule);min-width:0;
+.stage{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:6px 6px;
+  font-size:12px;font-weight:600;color:var(--muted);border-right:1px solid var(--rule);min-width:0;
   cursor:pointer;transition:background .12s,color .12s;font-family:var(--sans)}
 .stage:hover{background:var(--goldsoft);color:var(--golddk)}
 .stage:hover .n{background:var(--gold);color:var(--navy)}
 .stage.on:hover{background:var(--navy-deep);color:#fff}
 .stage.on:hover .n{background:var(--gold);color:var(--navy)}
 .stage:last-child{border-right:none}
-.stage .n{width:21px;height:21px;border-radius:50%;background:var(--rule);color:var(--muted);
+.stage .n{width:17px;height:17px;border-radius:50%;background:var(--rule);color:var(--muted);
   display:grid;place-items:center;font-size:11px;font-weight:700;flex-shrink:0}
 .stage.on{background:var(--navy);color:#fff}
 .stage.on .n{background:var(--gold);color:var(--navy)}
 .stage .lbl{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
-main{flex:1;padding:14px 16px 16px}
+main{flex:1;padding:8px 16px 16px}
 .wrap{max-width:800px;margin:0 auto;background:var(--card);border-radius:10px;
-  padding:24px 28px 28px;box-shadow:0 1px 3px rgba(22,32,60,.06)}
-.eyebrow{font-size:12.5px;font-weight:600;color:var(--golddk);margin-bottom:7px}
-.cardtitle{display:flex;align-items:center;gap:12px;font-family:var(--serif);font-size:25px;font-weight:700;letter-spacing:-.015em;
-  margin-bottom:20px;line-height:1.2}
+  padding:14px 22px 22px;box-shadow:0 1px 3px rgba(22,32,60,.06)}
+.eyebrow{display:none}   /* the section rides in the title now: "Money \2014  Income" (Jesse, 4 Nov) */
+.cardtitle .ctsec{color:var(--golddk);font-weight:600}
+.cardtitle{display:flex;align-items:center;gap:12px;font-family:var(--serif);font-size:21px;font-weight:700;letter-spacing:-.015em;
+  margin-bottom:12px;line-height:1.2}
 
 .line{margin-bottom:11px}
 .say{background:#FDFBF6;border:1px solid var(--rule);border-left:3px solid var(--gold);
@@ -271,7 +272,7 @@ main{flex:1;padding:14px 16px 16px}
 .hint{color:var(--muted);font-size:.72em;font-style:italic;font-family:var(--sans);
   font-weight:500;margin-left:3px;white-space:nowrap}
 
-.branchhead{font-size:12.5px;font-weight:600;color:var(--muted);margin:26px 0 11px;
+.branchhead{font-size:12.5px;font-weight:600;color:var(--muted);margin:16px 0 8px;
   display:flex;align-items:center;gap:10px}
 .branchhead::after{content:"";flex:1;height:1px;background:var(--rule)}
 .branches{display:flex;flex-direction:column;gap:8px}
@@ -296,7 +297,7 @@ main{flex:1;padding:14px 16px 16px}
 .wrap{position:relative}
 .bid{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:10px;font-weight:600;
   color:var(--muted);opacity:.75;margin-left:auto;padding-left:10px;flex-shrink:0}
-.trail{margin-top:24px;padding-top:12px;border-top:1px solid var(--rule);
+.trail{margin-top:14px;padding-top:8px;border-top:1px solid var(--rule);
   font-size:10.5px;font-weight:600;letter-spacing:.06em;color:var(--muted);line-height:1.9;word-break:break-word}
 .trail span{color:var(--golddk);text-transform:uppercase;letter-spacing:.13em;margin-right:4px}
 .trail{padding-bottom:14px}
@@ -3093,7 +3094,7 @@ hs_family:{s:"2",pf:"who",t:"Who we're covering",l:[
 {t:"do",x:"You want the shape of the household here, and first names. Dates of birth and the rest come in Parts 5 and 6 &mdash; everyone's details on one card."}
 ],b:[{k:"On to the money",to:"hs_income",c:"go"}]},
 
-hs_income:{s:"3",pf:"income",t:"Income and the cliff",l:[
+hs_income:{s:"3",pf:"income",t:"Income",l:[
 {t:"say",x:"Okay &mdash; this is the part I mentioned, and here's why I ask it. The marketplace and work plans are guaranteed issue; private plans ask some health questions, so I'll get to those. But I also look at the money, because I'll be looking at several plans for you. Some carry a deductible and some don't. If I recommend one with a $10,000 deductible and it turns out you don't have $10,000 sitting spare, I've just put you somewhere that could throw you into a financial spiral &mdash; and that would be my fault, not yours."},
 {t:"say",x:"So this isn't to sell you any more insurance. It's so what I recommend actually fits. Does that make sense?"},
 {t:"train",x:"<b>Position it right before you ask it.</b> Said at the top of the call it is forgotten; said here, they answer the 401(k) question without blinking. Keep the $10,000 a <i>plan</i> figure &mdash; the moment it sounds like you think <i>they</i> have a $10,000 problem, the sentence changes character. (Jesse's bootcamp framing, 17 Oct; the placement from the team call, 3 Nov.)"},
@@ -3126,7 +3127,7 @@ hs_income:{s:"3",pf:"income",t:"Income and the cliff",l:[
 {t:"train",x:"<b>You are not selling any of this today.</b> You are finding out whether a big medical bill would land on savings, on a retirement account, or on nothing at all. That answer is what the Package of Protection conversation is built from on the presentation call."}
 ],b:[{k:"Next",to:"hs_budget",c:"go"}]},
 
-hs_budget:{s:"3",t:"Bank",l:[
+hs_budget:{s:"3",t:"Continued",l:[
 {t:"ask",when:[["why_tags","~Losing coverage"],["why_tags","~No coverage now"]],x:"And if a medical bill landed tomorrow, what could you pay without it hurting? ___(bill tomorrow)"},
 {t:"do",when:[["why_tags","~Losing coverage"],["why_tags","~No coverage now"]],x:"Only because they have no cover to lean on. If they have a plan today, skip it."},
 {t:"say",x:"The coverage is drafted from a checking or savings account &mdash; most carriers don't take cards."},
@@ -4609,7 +4610,7 @@ function render(){
       '<path d="M36 26.5 L 30 20.5 M36 26.5 L 40 18.5" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/>'+
       '</svg></span>'
     : "";
-  $("cardtitle").innerHTML=n.t+leadSw+'<span class="profcta">'+nudge+
+  $("cardtitle").innerHTML='<span>'+(S[n.s]?'<span class="ctsec">'+S[n.s]+' &mdash;</span> ':'')+n.t+'</span>'+leadSw+'<span class="profcta">'+nudge+
     '<button type="button" class="cardprof'+(nudge?" pulse":"")+'" id="cardprofbtn">Client profile</button></span>';
   var cpb=document.getElementById("cardprofbtn"); if(cpb) cpb.onclick=pOpen;
   $("jump").value=n.s;
