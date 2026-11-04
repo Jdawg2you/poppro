@@ -2880,7 +2880,7 @@ hs_start:{s:"1",t:"Which call is this?",unmark:"did_discovery",l:[
 hs_warm:{s:"1",pf:"who",t:"Warm reach-out",l:[
 {t:"say",x:"Hi ___(first name)? This is ___(your name) &mdash; I'm reaching out because you'd originally requested some information about private health options."},
 {t:"say",x:"I wanted to get back to you and see how we can best help you out."},
-{t:"ask",x:"I've got your date of birth as ___ &mdash; is that right? {{dob}}"},
+{t:"ask",x:"I've got your date of birth as ___(DOB) &mdash; is that right?"},
 {t:"do",x:"Confirm one thing you already have. It proves the request was real and it earns the next sixty seconds."},
 {t:"train",x:"They did not book this call, so the first objection lands here rather than later. Handle it and keep going, or book it properly &mdash; do not push a discovery call into a bad moment."}
 ],bh:"How does it land?",b:[
@@ -3036,23 +3036,29 @@ hs_why:{s:"2",pf:"why",t:"Why they're shopping",l:[
 {t:"ask",x:"What do you do for a living? ___(type of work) &mdash; how long have you been doing that? ___(how long)"},
 {t:"ask",unless:["cur_src","Work"],x:"Tell me a little about that &mdash; who's that with?"},
 {t:"do",unless:["cur_src","Work"],x:"Let them answer in their own words &mdash; don't read the choices out. Then click what fits: {{work_kind}}"},
+{t:"ask",when:["work_kind","~disability"],x:"I'm sorry to hear that &mdash; what's the reason, if you don't mind me asking? ___(reason for disability)"},
+{t:"disflag"},
+{t:"do",when:["work_kind","Not working"],x:"Not working &mdash; keep in mind how they'll pay for the plan. The income questions in Part 3 get you there; don't ask it here."},
 {t:"ask",when:["work_kind","Employed"],unless:["cur_src","Work"],x:"<span class=\"optpill\">Read the room</span> Does your work offer health coverage? {{emp_offer}}"},
-{t:"do",when:["emp_offer","Yes"],x:"An affordable work plan can take away the marketplace subsidy, so note roughly what it would cost them."},
+{t:"pf",ks:["emp_why_not"],when:["emp_offer","Yes"],unless:["work_kind",["Retired","Not working","On disability / unable to work"]]},
+{t:"do",when:["emp_offer","Yes"],unless:["work_kind",["Retired","Not working","On disability / unable to work"]],x:"Food for thought: why aren't they taking it? An affordable work plan can also take away the marketplace subsidy, so note roughly what it would cost them."},
 
-{t:"ask",when:[["cur_src","Work"],["work_kind","Employed"]],x:"<span class=\"optpill\">Read the room</span> Is that a smaller company? {{biz_lead}}"},
-{t:"ask",allOf:[["biz_lead","Yes"],["work_kind","!~Own"],["work_kind","!~Self"]],x:"Oh, okay &mdash; about how many people work there? ___(how many employees) And what's it called? ___(company name)"},
+{t:"ask",when:[["cur_src","Work"],["work_kind","Employed"]],unless:["work_kind",["Own a business","Self-employed","Retired","Not working","On disability / unable to work"]],x:"<span class=\"optpill\">Read the room</span> Is it a larger company, or more of a smaller one? {{co_size}}"},
+{t:"ask",allOf:[["co_size","Smaller"]],unless:["work_kind",["Own a business","Self-employed","Retired","Not working","On disability / unable to work"]],x:"<span class=\"optpill\">Read the room</span> Oh, okay &mdash; what's the name of the company? ___(company name)"},
+{t:"ask",allOf:[["co_size","Smaller"]],unless:["work_kind",["Own a business","Self-employed","Retired","Not working","On disability / unable to work"]],x:"And about how many employees do you think they have? ___(how many employees)"},
 
 {t:"ask",when:["work_kind","Own a business"],x:"By chance, do you have employees? {{biz_emps}}"},
 {t:"ask",when:["work_kind","Self-employed"],x:"Do you have people working with you &mdash; or is it more contractor work? {{self_team}}"},
-{t:"ask",when:[["biz_emps","Yes"],["self_team","Employees"]],x:"Do you offer them any benefits now &mdash; like health, dental, or a retirement plan? {{biz_offers}}"},
-{t:"ask",when:[["biz_emps","Yes"],["self_team","Employees"]],x:"Oh, okay &mdash; how many employees do you have? ___(how many employees) And what's the business called? ___(company name)"},
-{t:"do",when:["self_team","Contractors"],x:"Contractors usually can't go on a group health plan &mdash; the second conversation here is more likely <b>a retirement plan for the business</b>. If it's worth a follow-up, click <b>Yes</b>: {{biz_lead}}"},
-{t:"do",when:[["self_team","Just me"],["biz_emps","No"]],x:"Just them &mdash; a <b>retirement plan for the business</b> can still fit a one-person business. If it's worth a follow-up, click <b>Yes</b>: {{biz_lead}}"},
-{t:"pf",ks:["biz_what","biz_where","biz_want"],when:["biz_lead","Yes"]},
+{t:"ask",when:[["biz_emps","Yes"],["self_team","Employees"]],unless:["work_kind",["Employed","Retired","Not working","On disability / unable to work",""]],x:"Oh, okay &mdash; do you offer them any benefits now, like health, dental, or a retirement plan? {{biz_offers}}"},
+{t:"ask",when:[["biz_emps","Yes"],["self_team","Employees"]],unless:["work_kind",["Employed","Retired","Not working","On disability / unable to work",""]],x:"And how many employees do you have? ___(how many employees)"},
+{t:"ask",when:[["biz_emps","Yes"],["self_team","Employees"]],unless:["work_kind",["Employed","Retired","Not working","On disability / unable to work",""]],x:"And what's your business called? ___(company name)"},
+{t:"do",when:["self_team","Contractors"],unless:["work_kind",["Employed","Retired","Not working","On disability / unable to work",""]],x:"Contractors usually can't go on a group health plan &mdash; the second conversation here is more likely <b>a retirement plan for the business</b>. If it's worth a follow-up, click <b>Yes</b>: {{biz_lead}}"},
+{t:"do",when:[["self_team","Just me"],["biz_emps","No"]],unless:["work_kind",["Employed","Retired","Not working","On disability / unable to work",""]],x:"Just them &mdash; a <b>retirement plan for the business</b> can still fit a one-person business. If it's worth a follow-up, click <b>Yes</b>: {{biz_lead}}"},
+{t:"pf",ks:["biz_where","biz_want","biz_notes"],when:["biz_lead","Yes"],unless:["work_kind",["Retired","Not working","On disability / unable to work"]]},
 
-{t:"say",allOf:[["biz_lead","Yes"],["work_kind","!~Own"],["work_kind","!~Self"]],x:"You know &mdash; I might be able to reach out to them and help them find some better group options for all of you."},
+{t:"say",allOf:[["co_size","Smaller"]],unless:["work_kind",["Own a business","Self-employed","Retired","Not working","On disability / unable to work"]],x:"You know &mdash; I might be able to reach out to them and help them find some better group options for all of you."},
 {t:"say",when:[["work_kind","Own a business"],["work_kind","Self-employed"]],unless:["biz_lead",["","No"]],x:"That's worth a separate conversation &mdash; there are group options and retirement plans built for a business your size, and they can save you and your people money. Let's get you sorted first, and I'll come back to it."},
-{t:"do",when:[["cur_src","Work"],["work_kind","Employed"],["work_kind","Own a business"],["work_kind","Self-employed"]],x:"<b>Business lead:</b> a small employer with poor benefits, or a business they own, is a second conversation &mdash; group health and benefits, or a retirement plan for the business. Click <b>Yes</b>, note the name and size, and it lands on your follow-up list at the end. <b>Don&rsquo;t pitch it on this call.</b> The footer button <b>+ Business lead / referral</b> opens the same box any time."},
+{t:"do",when:[["cur_src","Work"],["work_kind","Employed"],["work_kind","Own a business"],["work_kind","Self-employed"]],unless:["work_kind",["Retired","Not working","On disability / unable to work"]],x:"<b>Business lead:</b> a small employer with poor benefits, or a business they own, is a second conversation &mdash; group health and benefits, or a retirement plan for the business. A smaller company, or employees of their own, puts it on your follow-up list at the end. <b>Don&rsquo;t pitch it on this call.</b> The footer button <b>+ Business lead / referral</b> opens the same box any time."},
 
 {t:"ask",x:"And when you picture the right plan for you &mdash; what's most important?"},
 {t:"pf",ks:["why_note"]},
@@ -3073,12 +3079,18 @@ hs_current:{s:"2",pf:"current",t:"Their plan \u2014 the last details",l:[
 
 hs_family:{s:"2",pf:"who",t:"Who we're covering",l:[
 {t:"ask",x:"And today &mdash; are we looking at coverage for just you, or a spouse or partner, kids? {{married}} <span class=\"chiplbl\">Dependents / kids</span> {{kids}}"},
-{t:"ask",when:["married",["Married","Partnered"]],x:"Is your spouse or partner on the plan we're looking at, or covered somewhere else? {{sp_on_plan}}"},
+{t:"ask",when:["married",["Married","Partnered"]],x:"And what's your spouse's name? ___(spouse first name)"},
+{t:"ask",when:["kids",["1","2","3","4+"]],x:"And what are your kids' names? {{kidnames}}"},
+{t:"do",when:[["married",["Married","Partnered"]],["kids",["1","2","3","4+"]]],x:"First names only, so you can use them for the rest of the call. Dates of birth and the rest come later."},
 {t:"ask",when:["married",["Married","Partnered"]],x:"And what do they do for a living? ___(spouse work) &mdash; does their work offer coverage? {{sp_emp_offer}}"},
-{t:"do",when:["married",["Married","Partnered"]],x:"Ask it either way. If they are on the plan, the application asks it; if they aren't, it tells you why &mdash; and where the rest of the household's money comes from."},
+{t:"pf",ks:["sp_emp_why_not"],when:["sp_emp_offer","Yes"]},
+{t:"ask",when:["married",["Married","Partnered"]],x:"Are they working right now &mdash; or on disability or unable to work? {{sp_disabled}}"},
+{t:"ask",when:["sp_disabled","~Yes"],x:"What's the reason, if you don't mind me asking? ___(spouse disability reason)"},
+{t:"disflag",who:"sp"},
+{t:"do",when:["married",["Married","Partnered"]],x:"Ask about their work either way &mdash; it tells you where the rest of the household's money comes from, and whether their work plan is an option for the family."},
 {t:"ask",x:"Anyone else financially depending on you &mdash; grandchildren, a parent? {{fin_dep}}"},
 {t:"pf",ks:["fin_dep_note"],when:["fin_dep","Yes"]},
-{t:"do",x:"You want the shape of the household here, not the detail. Names, dates of birth and the rest come in Part 6 &mdash; everyone's details on one card."}
+{t:"do",x:"You want the shape of the household here, and first names. Dates of birth and the rest come in Parts 5 and 6 &mdash; everyone's details on one card."}
 ],b:[{k:"On to the money",to:"hs_income",c:"go"}]},
 
 hs_income:{s:"3",pf:"income",t:"Income and the cliff",l:[
@@ -3086,7 +3098,7 @@ hs_income:{s:"3",pf:"income",t:"Income and the cliff",l:[
 {t:"say",x:"So this isn't to sell you any more insurance. It's so what I recommend actually fits. Does that make sense?"},
 {t:"train",x:"<b>Position it right before you ask it.</b> Said at the top of the call it is forgotten; said here, they answer the 401(k) question without blinking. Keep the $10,000 a <i>plan</i> figure &mdash; the moment it sounds like you think <i>they</i> have a $10,000 problem, the sentence changes character. (Jesse's bootcamp framing, 17 Oct; the placement from the team call, 3 Nov.)"},
 {t:"ask",x:"So let's start with income &mdash; roughly what will your income be this year? ___(your income)"},
-{t:"pf",ks:["sp_income"],when:["married",["Married","Partnered"]]},
+{t:"ask",when:["married",["Married","Partnered"]],x:"And [[sp_name|your spouse]]&rsquo;s income? ___(spouse income)"},
 {t:"pf",ks:["hh_income"]},
 {t:"ask",x:"And is next year going to look about the same, or different? {{next_same}}"},
 {t:"pf",ks:["income_next","sp_income_next","hh_income_next"],when:["next_same","Different"]},
@@ -3166,7 +3178,7 @@ hs_qualify:{s:"5",pf:"build",t:"Everyone's details",l:[
 
 hs_history:{s:"6",pf:"health",t:"Health history",l:[
 {t:"say",x:"Now a few health questions, so I know what you'll actually qualify for."},
-{t:"ask",x:"Are you on any medications right now?"},
+{t:"ask",x:"Are you on any medications right now? <span class=\"hint\">([[first|primary]])</span>"},
 {t:"meds",warn:"<b>Spell them, per person.</b> &ldquo;Alma Sartin&rdquo; turned out to be olmesartan and cost a follow-up call on a real case."},
 {t:"do",x:"The medications tell you the conditions. Answer the follow-ups they raise &mdash; you do not need to read a list of illnesses at someone."},
 {t:"ask",x:"Do you have any conditions we haven't covered yet &mdash; anything with your heart, or anything else major or worth noting? It all comes back when they do your review."},
@@ -3216,17 +3228,15 @@ hs_conds:{s:"6",pf:"health",t:"Recent history \u2014 both of you",l:[
 {t:"pendflag",who:"sp"},
 {t:"ask",x:"In the last 12 months, has any test come back abnormal &mdash; a biopsy, mammogram, Pap smear, PSA or CEA &mdash; or are you waiting on results, or told to get a test you haven't had yet? Any positive BRCA gene test, or weight loss you can't explain? {{abn12}}"},
 {t:"r12flag"},
+{t:"pf",ks:["abn12_note"],allOf:[["abn12","!"],["abn12","!No"]]},
 {t:"ask",when:["married",["Married","Partnered"]],x:"And ___(spouse first name)? {{sp_abn12}}"},
 {t:"r12flag",who:"sp"},
+{t:"pf",ks:["sp_abn12_note"],allOf:[["sp_abn12","!"],["sp_abn12","!No"]]},
 {t:"ask",x:"And one the application asks everyone &mdash; has anyone ever had treatment for alcohol or drug use? A program, rehab, anything like that? You? {{drug_tx}}"},
 {t:"ask",when:["drug_tx","Yes"],x:"When was that? ___(when the treatment was)"},
 {t:"ask",when:["married",["Married","Partnered"]],x:"And ___(spouse first name)? {{sp_drug_tx}}"},
 {t:"ask",when:["sp_drug_tx","Yes"],x:"When was that? ___(spouse treatment when)"},
 {t:"warn",x:"<b>Ask it even when it feels awkward.</b> It is on the application, and applications have come back declined on it when nobody asked on the call. Ask it flat, write down the answer and the date, and move on &mdash; you are not judging it."},
-{t:"ask",x:"Are you working right now &mdash; or on disability or unable to work? {{disabled}}"},
-{t:"disflag"},
-{t:"ask",when:["married",["Married","Partnered"]],x:"And ___(spouse first name)? {{sp_disabled}}"},
-{t:"disflag",who:"sp"},
 {t:"note",x:"<b>Standing rule on every yes:</b> when was it, what was it for, and what are they taking for it now."}
 ],bh:"Who's next?",b:[
 {k:"Now the kids",to:"hs_kids",c:"go",when:["kids",["1","2","3","4+"]]},
@@ -4166,7 +4176,14 @@ function copyFill(x){
 }
 
 function fmt(x){
-  return x.replace(/\{\{c:([^}]+)\}\}/g,function(m,c){
+  return x.replace(/\[\[([a-z0-9_]+)\|([^\]]*)\]\]/g,function(m,k,fb){   /* a name as plain words - "Melissa's income" (Jesse, 4 Nov) */
+            var v=(typeof pVal==="function")?String(pVal(k)||"").trim():""; return v?esc(v):fb; })
+          .replace(/\{\{kidnames\}\}/g,function(){   /* one box per child they said they have; the same names fill 6.4 */
+            if(!PROFILE_ON) return "";
+            var list=P.deps||[], want=parseInt(String(P.kids||"").replace(/[^0-9]/g,""),10)||0, n=Math.max(want,list.length), h="";
+            for(var i=0;i<n;i++) h+='<input class="iblank" data-dep="'+i+'" data-depk="n" data-inline="1" placeholder="child '+(i+1)+'" style="width:14ch" value="'+esc((list[i]||{}).n||"").replace(/"/g,"&quot;")+'">';
+            return h; })
+          .replace(/\{\{c:([^}]+)\}\}/g,function(m,c){
             if(!PROFILE_ON) return "";
             var on=((typeof P!=="undefined"&&P.conds)||[]).indexOf(c)>-1;
             return '<input type="checkbox" class="cinline" data-cond="'+c.replace(/"/g,"&quot;")+
@@ -4191,7 +4208,7 @@ function fmt(x){
             var k=(typeof BLANKMAP!=="undefined")?BLANKMAP[lab]:null;
             var v=(typeof pBlank==="function")?pBlank(lab):"";
             if(k && k.indexOf("a_")!==0 && PROFILE_ON){
-              var w=Math.max(DATEKEYS[k]?16:9,Math.min(26,(v||lab).length+2));
+              var w=Math.max(DATEKEYS[k]?16:k==="state"?22:9,Math.min(26,(v||lab).length+2));   /* a whole state name, not "North Caro" (Jesse, 4 Nov) */
               if(MULTILINE[k])
                 return '<textarea class="iblank igrow" data-pk="'+k+'" data-inline="1" rows="1"'+
                        ' placeholder="'+esc(lab)+'">'+esc(v)+'</textarea>';
@@ -4455,7 +4472,7 @@ function medSuggest(q,limit){
   return Object.keys(best).sort(function(a,b){return best[a]-best[b];}).slice(0,limit||8);
 }
 
-var PF_PLACEHOLDER={arrangement_cost:"their number, or 15,000",asset_where:"401k / IRA / Roth / etc"};
+var PF_PLACEHOLDER={emp_why_not:"food for thought &mdash; why not take it?",sp_emp_why_not:"food for thought &mdash; why not take it?",abn12_note:"what it was, when, what came of it &mdash; or a possible explanation",sp_abn12_note:"what it was, when, what came of it &mdash; or a possible explanation",arrangement_cost:"their number, or 15,000",asset_where:"401k / IRA / Roth / etc"};
 
 var MULTILINE={goal:1,health_notes:1,inplace_notes:1,recent_what:1,app_notes:1,bank_notes:1,
   doing_now:1,asset_notes:1,kids_names:1};
@@ -4469,6 +4486,7 @@ function pFit(el){
      runs after render and has the last word on the width, so the floor belongs here. */
   var k=el.getAttribute && el.getAttribute("data-pk");
   if(k && typeof DATEKEYS!=="undefined" && DATEKEYS[k]) n=Math.max(n,16);
+  if(k==="state") n=Math.max(n,22);   /* the longest name plus the list arrow */
   el.style.width=n+"ch";
 }
 
@@ -4519,6 +4537,19 @@ document.addEventListener("click",function(e){
   }
   if(k==="cur_src") P.cur_is_aca=v?(v==="Marketplace (ACA)"?"Yes":"No"):P.cur_is_aca;
   if((k==="biz_emps"&&v==="Yes")||(k==="self_team"&&v==="Employees")){ P.biz_lead="Yes"; if(!P.biz_rel) P.biz_rel="Owns it"; }
+  if(k==="co_size"){ if(v==="Smaller"){ P.biz_lead="Yes"; if(!P.biz_rel) P.biz_rel="Works there"; }
+                     else if(P.biz_lead==="Yes"&&!P.biz_name&&P.biz_rel!=="Owns it"){ P.biz_lead=v?"No":""; if(P.biz_rel==="Works there") P.biz_rel=""; } }
+  /* Retired showed "how many employees" from an answer clicked under Own a business (Jesse, 4 Nov): the old kind's answers go */
+  if(k==="work_kind"){
+    var wasLead=P.biz_lead==="Yes"&&!P.biz_name&&/^(Owns it|Works there)$/.test(P.biz_rel||"");
+    if(v!=="Own a business") P.biz_emps=""; if(v!=="Self-employed") P.self_team="";
+    if(v!=="Own a business"&&v!=="Self-employed") P.biz_offers="";
+    if(v!=="Employed"&&P.cur_src!=="Work") P.co_size="";
+    if(wasLead&&(!v||/Retired|Not working|disability/.test(v)||(v==="Employed"&&P.biz_rel==="Owns it"))){ P.biz_lead=""; P.biz_rel=""; P.co_size=""; }
+    if(/disability/.test(v)) P.disabled="Yes — on disability or unable to work";
+    else if(/^(Employed|Self-employed|Own a business)$/.test(v)) P.disabled="No — working / able to work";
+    else if(/^Yes/.test(P.disabled||"")) P.disabled="";
+  }
   var lifted=pLift(k,v);
   if(k==="bp_meds"){ P.bp_meds_set=v?"1":""; P.bp_meds_auto=""; if(!v) bpSync(); }
   pStore(); pFlash();
@@ -4987,7 +5018,9 @@ PF_SPEC_HEALTH=[
  {k:"sp_pending_care",drives:true,l:"Care a doctor recommended, not done yet",w:3,opt:["","No","Surgery or procedure recommended","Tests or results pending","Still being followed up after surgery"]},
  {k:"sp_pending_what",l:"What it is",w:3},
  {k:"sp_abn12",drives:true,l:"Abnormal test, BRCA+ or weight loss — last 12 months",w:3,opt:["", "No", "Abnormal biopsy", "Abnormal mammogram", "Abnormal Pap smear", "A test recommended, not done yet", "Results not normal, or still pending", "Rising PSA", "Rising CEA", "Treated for an abnormal test result", "Positive BRCA 1 or 2 gene test", "Weight loss they can’t explain"]},
+ {k:"sp_abn12_note",l:"Explain it &mdash; or a possible explanation",type:"area",w:3,showIf:["sp_abn12",["Abnormal biopsy", "Abnormal mammogram", "Abnormal Pap smear", "A test recommended, not done yet", "Results not normal, or still pending", "Rising PSA", "Rising CEA", "Treated for an abnormal test result", "Positive BRCA 1 or 2 gene test", "Weight loss they can’t explain"]]},
  {k:"sp_disabled",drives:true,l:"Able to work?",w:2,opt:["", "No — working / able to work", "Yes — on disability or unable to work"]},
+ {k:"sp_dis_why",l:"Reason",w:2,showIf:["sp_disabled","~Yes"]},
  {k:"sp_recent_what",l:"What for",w:2},
  {k:"sp_hosp_stay",l:"Hospital stay, last 2 yrs",w:1,opt:["","No","Yes"]},
  {k:"sp_stay_what",l:"What for",w:2},
@@ -4996,10 +5029,13 @@ PF_SPEC_HEALTH=[
  {k:"sp_health_notes",l:"Anything else about their health",type:"area",w:3},
  {sec:"Work",id:"work"},
  {k:"occupation",l:"What they do",w:2},{k:"occ_years",l:"How long",w:1},
- {k:"work_kind",drives:true,l:"Works",w:2,opt:["","Employed","Self-employed","Own a business","Retired","Not working"]},
- {k:"emp_offer",l:"Health coverage offered through their work?",w:2,opt:["","No","Yes"]},
+ {k:"work_kind",drives:true,l:"Works",w:3,opt:["","Employed","Self-employed","Own a business","Retired","Not working","On disability / unable to work"]},
+ {k:"dis_why",l:"Disability &mdash; the reason",w:2,showIf:["work_kind","~disability"]},
+ {k:"emp_offer",drives:true,l:"Health coverage offered through their work?",w:2,opt:["","No","Yes"]},
+ {k:"emp_why_not",l:"Why not use work's coverage?",w:3,showIf:["emp_offer","Yes"]},
  {k:"sp_occupation",l:"Spouse \u2014 what they do",w:2,showIf:["married",["Married","Partnered"]]},
- {k:"sp_emp_offer",l:"Through their spouse's work?",w:2,opt:["","No","Yes"],showIf:["married",["Married","Partnered"]]},
+ {k:"sp_emp_offer",drives:true,l:"Through their spouse's work?",w:2,opt:["","No","Yes"],showIf:["married",["Married","Partnered"]]},
+ {k:"sp_emp_why_not",l:"Why not use their work's coverage?",w:3,showIf:["sp_emp_offer","Yes"]},
 
  {sec:"Qualify",id:"build"},
  {k:"height",l:"Height",w:1},{k:"weight",l:"Weight",w:1},
@@ -5019,6 +5055,7 @@ PF_SPEC_HEALTH=[
  {k:"pending_care",drives:true,l:"Care a doctor recommended, not done yet",w:3,opt:["","No","Surgery or procedure recommended","Tests or results pending","Still being followed up after surgery"]},
  {k:"pending_what",l:"What it is",w:3},
  {k:"abn12",drives:true,l:"Abnormal test, BRCA+ or weight loss — last 12 months",w:3,opt:["", "No", "Abnormal biopsy", "Abnormal mammogram", "Abnormal Pap smear", "A test recommended, not done yet", "Results not normal, or still pending", "Rising PSA", "Rising CEA", "Treated for an abnormal test result", "Positive BRCA 1 or 2 gene test", "Weight loss they can’t explain"]},
+ {k:"abn12_note",l:"Explain it &mdash; or a possible explanation",type:"area",w:3,showIf:["abn12",["Abnormal biopsy", "Abnormal mammogram", "Abnormal Pap smear", "A test recommended, not done yet", "Results not normal, or still pending", "Rising PSA", "Rising CEA", "Treated for an abnormal test result", "Positive BRCA 1 or 2 gene test", "Weight loss they can’t explain"]]},
  {k:"disabled",drives:true,l:"Able to work?",w:2,opt:["", "No — working / able to work", "Yes — on disability or unable to work"]},
  {k:"hosp_stay",drives:true,l:"Hospital stay, last 2 yrs",w:1,opt:["","No","Yes"]},
  {k:"stay_what",l:"What for",w:2,showIf:["hosp_stay","Yes"]},
@@ -5060,6 +5097,7 @@ PF_SPEC_HEALTH=[
     list. Referrals sit here too, and never start a new discovery. */
  {sec:"Business lead & referrals",id:"leads"},
  {k:"biz_lead",drives:true,l:"Business lead?",w:1,opt:["","No","Yes"]},
+ {k:"co_size",drives:true,l:"Larger or smaller company?",w:2,opt:["","Smaller","Larger"],showIf:[["cur_src","Work"],["work_kind","Employed"]]},
  {k:"biz_emps",drives:true,l:"They own it: employees?",w:1,opt:["","No","Yes"],showIf:["work_kind","Own a business"]},
  {k:"self_team",drives:true,l:"Self-employed: who works with them",w:2,opt:["","Just me","Contractors","Employees"],showIf:["work_kind","Self-employed"]},
  {k:"biz_offers",l:"Benefits they offer now",w:3,multi:true,opt:["","Nothing yet","Health","Dental","Retirement plan"],showIf:[["biz_emps","Yes"],["self_team","Employees"]]},
@@ -5070,7 +5108,7 @@ PF_SPEC_HEALTH=[
  {k:"biz_where",l:"Where it is",w:1,showIf:["biz_lead","Yes"]},
  {k:"biz_want",l:"Could use",w:3,multi:true,opt:["","Group health & benefits","A retirement plan for the business"],showIf:["biz_lead","Yes"]},
  {k:"biz_contact",l:"Who to talk to there",hint:"name and phone, if they gave it",w:2,showIf:["biz_lead","Yes"]},
- {k:"biz_notes",l:"Notes on the business",type:"area",w:3,showIf:["biz_lead","Yes"]},
+ {k:"biz_notes",l:"Notes on the business",sl:"Agent notes",type:"area",w:3,showIf:["biz_lead","Yes"]},
  {k:"refs",l:"Referrals &mdash; one per line",hint:"name, phone, how they know them, what they need",type:"area",w:3},
 
  {sec:"Budget",id:"budget"},
@@ -5179,7 +5217,7 @@ var BLANKMAP={
  "current carrier":"cur_carrier","plan name":"cur_plan","they pay":"cur_prem",
  "employer pays":"cur_emp_prem","total cost":"cur_total","deductible":"cur_ded",
  "visits a year":"cur_visits","copay":"cur_copay","what was missing":"cov_gap",
- "what it costs to add the family":"cur_fam_cost","spouse work":"sp_occupation","why they're losing it":"losing_why","who uses the CPAP":"cpap_who",
+ "what it costs to add the family":"cur_fam_cost","spouse work":"sp_occupation","why they're losing it":"losing_why","reason for disability":"dis_why","spouse disability reason":"sp_dis_why","who uses the CPAP":"cpap_who",
  "when the treatment was":"drug_tx_when","spouse treatment when":"sp_drug_tx_when",
  "out-of-pocket max":"cur_oop","planned next year":"planned","pending what":"pending_what","spouse pending what":"sp_pending_what","life insurance now":"life_now","bill tomorrow":"bill_tomorrow",
  "spouse what for":"sp_recent_what","spouse stay what":"sp_stay_what",
@@ -5679,7 +5717,7 @@ document.addEventListener("change", function(e){
 document.addEventListener("input",function(e){
   var t=e.target, i;
   if(t.hasAttribute && t.hasAttribute("data-dep")){
-    i=+t.getAttribute("data-dep"); P.deps=P.deps||[]; P.deps[i]=P.deps[i]||{};
+    i=+t.getAttribute("data-dep"); P.deps=P.deps||[]; for(var j=0;j<=i;j++) P.deps[j]=P.deps[j]||{};   /* child 2 typed first leaves no hole */
     P.deps[i][t.getAttribute("data-depk")]=t.value;
     if(t.getAttribute("data-depk")==="dob"){ var a=ageOf(t.value); if(a){ P.deps[i].age=a;
       document.querySelectorAll('[data-dep="'+i+'"][data-depk="age"]').forEach(function(ai){ ai.value=a; }); } }
@@ -6667,6 +6705,7 @@ function popClient(){
          agent looks for "when am I seeing this person again". */
       apptWhen:P.appt_when||"", apptWho:P.appt_who||"", apptNotes:P.appt_notes||"",
       occupation:P.occupation||"", occYears:P.occ_years||"", /* team call, 3 Nov */ curSrc:P.cur_src||"", curFamCost:P.cur_fam_cost||"", losingWhy:P.losing_why||"", workKind:P.work_kind||"",
+      disWhy:P.dis_why||"", spDisWhy:P.sp_dis_why||"", empWhyNot:P.emp_why_not||"", spEmpWhyNot:P.sp_emp_why_not||"", abn12Note:P.abn12_note||"", spAbn12Note:P.sp_abn12_note||"", coSize:P.co_size||"",   /* Jesse, 4 Nov */
       cpap:P.cpap||"", cpapWho:P.cpap_who||"", drugTx:P.drug_tx||"", drugTxWhen:P.drug_tx_when||"", spDrugTx:P.sp_drug_tx||"", spDrugTxWhen:P.sp_drug_tx_when||"", lifeLb:P.life_lb||"",
       bizLead:P.biz_lead||"", bizEmps:P.biz_emps||"", selfTeam:P.self_team||"", bizOffers:P.biz_offers||"", bizRel:P.biz_rel||"", bizName:P.biz_name||"", bizSize:P.biz_size||"", bizWhat:P.biz_what||"", bizWhere:P.biz_where||"",
       bizWant:P.biz_want||"", bizContact:P.biz_contact||"", bizNotes:P.biz_notes||"", refs:P.refs||"", spOnPlan:P.sp_on_plan||"", spOccupation:P.sp_occupation||"", finDep:P.fin_dep||"", finDepNote:P.fin_dep_note||"", finalExp:P.final_exp||"", finalExpNote:P.final_exp_note||"",

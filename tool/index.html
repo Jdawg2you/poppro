@@ -1236,6 +1236,7 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
       <div class="whylab">What’s behind it <small>click any</small></div>
       <div class="chips" id="whyTagBox"></div>
       <div class="whysay" id="whySay"></div>
+      <div class="fld" style="margin:6px 0 0"><label>Why they're losing coverage <small>read back with their why</small></label><input id="in_losingwhy" placeholder="e.g. opening a business, retiring early, COBRA running out"></div>
     </div>
     <div class="fld" style="margin-bottom:8px"><label>Their story <small>for you · not read back or printed</small></label><input id="in_whyshop" placeholder="e.g. premium jumped in January, a claim that didn't pay, lost the group plan"></div>
     <div class="fld" style="margin-bottom:8px"><label>Plan they already found <small>what they landed on and what it costs</small></label><input id="in_foundplan" placeholder="e.g. Ambetter Silver, $612/mo"></div>
@@ -4136,6 +4137,7 @@ function applySuiteClient(c, live){ var sm=$('setupModal'); if(sm&&!live&&sm.cla
   if(h.whyMatters) I.whyMatters=h.whyMatters;
   if(h.whyTags) I.whyTags=whyTagList(h.whyTags);
   if(h.lastDay) I.lastDay=suiteDate(h.lastDay);
+  if(h.losingWhy!=null&&String(h.losingWhy).trim()) I.losingWhy=String(h.losingWhy).trim();   /* read back with their why (Jesse, 4 Nov) */
   var g1=glp1FromSuite(h); if(g1) I.glp1=g1;
   if(h.foundPlan) I.foundPlan=h.foundPlan;
 
@@ -4202,8 +4204,9 @@ function applySuiteClient(c, live){ var sm=$('setupModal'); if(sm&&!live&&sm.cla
   if(h.spPendingCare!=null){ I.pendS=h.spPendingCare==='No'?'No':(h.spPendingCare||I.pendS||''); I.pendWhatS=h.spPendingWhat||''; }
   if(h.abn12!=null) I.abn12P=h.abn12||I.abn12P||''; if(h.spAbn12!=null) I.abn12S=h.spAbn12||I.abn12S||'';
   if(h.disabled!=null) I.disP=h.disabled||I.disP||''; if(h.spDisabled!=null) I.disS=h.spDisabled||I.disS||'';
-  if(h.abn12&&!/^No/.test(h.abn12)) extra.push("Last 12 months (applicant): "+h.abn12); if(h.spAbn12&&!/^No/.test(h.spAbn12)) extra.push("Last 12 months (spouse): "+h.spAbn12);
-  if(h.disabled&&!/^No/.test(h.disabled)) extra.push("Applicant: "+h.disabled); if(h.spDisabled&&!/^No/.test(h.spDisabled)) extra.push("Spouse: "+h.spDisabled);
+  if(h.abn12&&!/^No/.test(h.abn12)) extra.push("Last 12 months (applicant): "+h.abn12+(h.abn12Note?" — "+h.abn12Note:"")); if(h.spAbn12&&!/^No/.test(h.spAbn12)) extra.push("Last 12 months (spouse): "+h.spAbn12+(h.spAbn12Note?" — "+h.spAbn12Note:""));
+  if(h.disabled&&!/^No/.test(h.disabled)) extra.push("Applicant: "+h.disabled+(h.disWhy?" — "+h.disWhy:"")); if(h.spDisabled&&!/^No/.test(h.spDisabled)) extra.push("Spouse: "+h.spDisabled+(h.spDisWhy?" — "+h.spDisWhy:""));
+  if(h.empWhyNot) extra.push("Work offers coverage — why not use it: "+h.empWhyNot); if(h.spEmpWhyNot) extra.push("Spouse's work offers coverage — why not use it: "+h.spEmpWhyNot);
   if(h.pendingCare&&h.pendingCare!=='No') extra.push("Recommended, not done yet (applicant): "+h.pendingCare+(h.pendingWhat?" — "+h.pendingWhat:""));
   if(h.spPendingCare&&h.spPendingCare!=='No') extra.push("Recommended, not done yet (spouse): "+h.spPendingCare+(h.spPendingWhat?" — "+h.spPendingWhat:""));
   if(h.billTomorrow) extra.push("Could pay a bill of "+h.billTomorrow+" tomorrow without stress");
@@ -4881,6 +4884,7 @@ function suiteFromNavProfile(P){
       glp1On:P.glp1||"", glp1Drug:P.glp1_drug||"", glp1For:P.glp1_for||"", glp1Since:P.glp1_since||"", glp1Cost:P.glp1_cost||"", glp1Source:P.glp1_source||"",
       spGlp1On:P.sp_glp1||"", spGlp1Drug:P.sp_glp1_drug||"", spGlp1For:P.sp_glp1_for||"", spGlp1Since:P.sp_glp1_since||"", spGlp1Cost:P.sp_glp1_cost||"", spGlp1Source:P.sp_glp1_source||"",
       apptWhen:P.appt_when||"", apptWho:P.appt_who||"", apptNotes:P.appt_notes||"", occupation:P.occupation||"", occYears:P.occ_years||"", /* team call, 3 Nov */ curSrc:P.cur_src||"", curFamCost:P.cur_fam_cost||"", losingWhy:P.losing_why||"", workKind:P.work_kind||"",
+      disWhy:P.dis_why||"", spDisWhy:P.sp_dis_why||"", empWhyNot:P.emp_why_not||"", spEmpWhyNot:P.sp_emp_why_not||"", abn12Note:P.abn12_note||"", spAbn12Note:P.sp_abn12_note||"", coSize:P.co_size||"",   /* Jesse, 4 Nov */
       cpap:P.cpap||"", cpapWho:P.cpap_who||"", drugTx:P.drug_tx||"", drugTxWhen:P.drug_tx_when||"", spDrugTx:P.sp_drug_tx||"", spDrugTxWhen:P.sp_drug_tx_when||"", lifeLb:P.life_lb||"",
       bizLead:P.biz_lead||"", bizEmps:P.biz_emps||"", selfTeam:P.self_team||"", bizOffers:P.biz_offers||"", bizRel:P.biz_rel||"", bizName:P.biz_name||"", bizSize:P.biz_size||"", bizWhat:P.biz_what||"", bizWhere:P.biz_where||"",
       bizWant:P.biz_want||"", bizContact:P.biz_contact||"", bizNotes:P.biz_notes||"", refs:P.refs||"", spOnPlan:P.sp_on_plan||"", spOccupation:P.sp_occupation||"", finDep:P.fin_dep||"", finDepNote:P.fin_dep_note||"", finalExp:P.final_exp||"", finalExpNote:P.final_exp_note||"",
@@ -5055,7 +5059,9 @@ function whyFacts(I,tags){ I=I||S.intake||{}; tags=tags||whyTagList(I.whyTags); 
   var paying=+C.prem>0&&C.paying!==false;
   if(has('Too expensive')&&paying){ P.push('you’re paying '+m0(C.prem)+' a month'+(has('Deductible too high')&&+C.ded>0?', with a '+m0(C.ded)+' deductible to get through first':'')); }
   else if(has('Deductible too high')&&+C.ded>0) P.push('you’ve got a '+m0(C.ded)+' deductible to get through first');
-  if(has('Losing coverage')&&I.lastDay) P.push('your coverage ends '+I.lastDay);
+  var lw=String(I.losingWhy||'').trim().replace(/[.!\s]+$/,'');   /* "losing it: opening a business" (Jesse, 4 Nov) */
+  if(has('Losing coverage')&&I.lastDay) P.push('your coverage ends '+I.lastDay+(lw?' (losing it: '+lw+')':''));
+  else if(has('Losing coverage')&&lw) P.push('you’re losing your coverage (losing it: '+lw+')');
   if(has('No coverage now')) P.push('right now '+(whyHouse()==='you'?'you don’t have':'nobody in the family has')+' coverage');
   if(has('Doctor / network')){ var dn=whyDocs(); if(dn) P.push('you want to keep '+dn); }
   if(!P.length) return '';
@@ -5130,7 +5136,7 @@ function docNetLegacy(){ var I=S.intake||{}; if(!(S.docs||{}).net||!I.keepafc) r
 function docNetRoll(){ var I=S.intake||{}, any=[1,2,3].some(function(n){ var v=I['docs'+n+'net']; return String(I['docs'+n]||'').trim()&&(v===true||v==='no'); }); if(!any) return;
   var st=docNetStatus(); S.docs=S.docs||{}; S.docs.net=st!=='q'; I.keepafc=st==='ok'?'yes':st==='no'?'no':'';
   if($('in_net')) $('in_net').checked=S.docs.net; if($('in_keepafc')) $('in_keepafc').value=I.keepafc; }
-function whySay(){ var el=$('whySay'); if(!el) return; var I=Object.assign({},S.intake||{},{whyMatters:($('in_whymatters')||{}).value,whyTags:whyReadTags()});
+function whySay(){ var el=$('whySay'); if(!el) return; var I=Object.assign({},S.intake||{},{whyMatters:($('in_whymatters')||{}).value,losingWhy:($('in_losingwhy')||{}).value,whyTags:whyReadTags()});
   var raw=whyRaw(I), note=whyLooksLikeNote(raw), r=whyReadBack(I);
   el.innerHTML=note?'<b class="ws-warn">That reads like a note, not their words</b> — it won’t be quoted back as “you said”. Type it the way they said it: <i>“I’m paying way too much for what I get.”</i>'
     :r?'<b>What you’ll say back:</b> '+esc(r):'<b>What you’ll say back:</b> <span class="ws-none">type their words above — it’s quoted back to them on the presentation.</span>'; }
@@ -6516,7 +6522,7 @@ function readIntake(){
   [1,2,3].forEach(function(n){ S.intake['docs'+n+'who']=$('in_docs'+n+'_who').value; S.intake['docs'+n+'net']=docNetRead(n); });   docNetRoll();   /* whose + verified in network: feeds the care card */
   glp1Read(); S.intake.whyTags=whyReadTags();
   S.intake.keepaca=$('in_keepaca').value; S.intake.keepafc=$('in_keepafc').value; S.intake.docnote=$('in_docnote').value;
-  S.intake.pheight=$('in_pheight').value; S.intake.pweight=$('in_pweight').value; S.intake.sheight=$('in_sheight').value; S.intake.sweight=$('in_sweight').value; S.intake.psex=$('in_psex').value; S.intake.ssex=$('in_ssex').value; S.intake.kidsNote=$('in_kids').value; S.intake.routeNote=$('in_routenote').value; S.intake.docsNote=$('in_docsnote').value; S.intake.whyShop=$('in_whyshop').value; S.intake.whyMatters=$('in_whymatters').value; S.intake.foundPlan=$('in_foundplan').value; S.intake.effDate=$('in_effdate').value;
+  S.intake.pheight=$('in_pheight').value; S.intake.pweight=$('in_pweight').value; S.intake.sheight=$('in_sheight').value; S.intake.sweight=$('in_sweight').value; S.intake.psex=$('in_psex').value; S.intake.ssex=$('in_ssex').value; S.intake.kidsNote=$('in_kids').value; S.intake.routeNote=$('in_routenote').value; S.intake.docsNote=$('in_docsnote').value; S.intake.whyShop=$('in_whyshop').value; S.intake.whyMatters=$('in_whymatters').value; S.intake.losingWhy=($('in_losingwhy')||{}).value||''; S.intake.foundPlan=$('in_foundplan').value; S.intake.effDate=$('in_effdate').value;
   S.docs.net=$('in_net').checked; S.docs.rx=$('in_rx').checked; S.docs.famcancer=!!(S.intake.famcancer||S.intake.famheart);
 }
 function captureIntake(){
@@ -6548,7 +6554,7 @@ function fillIntake(){
   $('in_docs1').value=I.docs1||''; $('in_docs2').value=I.docs2||''; $('in_docs3').value=I.docs3||'';
   [1,2,3].forEach(function(n){ $('in_docs'+n+'_who').value=I['docs'+n+'who']||''; docNetPaint(n,I['docs'+n+'net']); });   docNetLegacy();
   $('in_keepaca').value=I.keepaca||''; $('in_keepafc').value=I.keepafc||''; $('in_docnote').value=I.docnote||''; if(window.netSync) setTimeout(window.netSync,0);
-  $('in_pheight').value=I.pheight||''; $('in_pweight').value=I.pweight||''; $('in_sheight').value=I.sheight||''; $('in_sweight').value=I.sweight||''; $('in_psex').value=I.psex||''; $('in_ssex').value=I.ssex||''; $('in_kids').value=I.kidsNote||''; $('in_routenote').value=I.routeNote||''; $('in_docsnote').value=I.docsNote||''; $('in_whyshop').value=I.whyShop||''; $('in_whymatters').value=I.whyMatters||''; $('in_foundplan').value=I.foundPlan||''; $('in_effdate').value=I.effDate||''; updateBMI('p'); updateBMI('s'); buildFlag('p'); buildFlag('s');
+  $('in_pheight').value=I.pheight||''; $('in_pweight').value=I.pweight||''; $('in_sheight').value=I.sheight||''; $('in_sweight').value=I.sweight||''; $('in_psex').value=I.psex||''; $('in_ssex').value=I.ssex||''; $('in_kids').value=I.kidsNote||''; $('in_routenote').value=I.routeNote||''; $('in_docsnote').value=I.docsNote||''; $('in_whyshop').value=I.whyShop||''; $('in_whymatters').value=I.whyMatters||''; if($('in_losingwhy')) $('in_losingwhy').value=I.losingWhy||''; $('in_foundplan').value=I.foundPlan||''; $('in_effdate').value=I.effDate||''; updateBMI('p'); updateBMI('s'); buildFlag('p'); buildFlag('s');
   $('in_net').checked=!!S.docs.net; $('in_rx').checked=!!S.docs.rx;
   $('in_carrier').value=I.carrier||''; $('in_plan').value=I.plan||'';
   var C=curIn(); ['prem','emp','ded','oop','copay'].forEach(function(k){ $('in_cur_'+k).value=(+C[k])?fmtMoneyStr(String(C[k])):''; });
@@ -8094,7 +8100,7 @@ function bindInputs(){
   [['in_abn12_p','abn12P'],['in_abn12_s','abn12S'],['in_dis_p','disP'],['in_dis_s','disS']].forEach(function(x){ var el=$(x[0]); if(el) el.addEventListener('change',function(){ S.intake[x[1]]=el.value; autosave(); r12Watch(); uwWatch(); }); });
   ['in_maternity_p','in_maternity_s','in_mental_p','in_mental_s'].forEach(function(id){ $(id).addEventListener('change',function(){ setTimeout(uwWatch,0); }); });
   document.querySelectorAll('#step-intake .chip input').forEach(function(cb){ cb.addEventListener('change',function(){ syncChips(); readIntake(); autosave(); }); });
-  ['in_pname','in_sname','in_agent','in_address','in_state','in_zip','in_page','in_sage','in_majorcond_note','in_diabetic_note','in_docs1','in_docs2','in_docs3','in_carrier','in_plan','in_visits','in_budget_comfort','in_income','in_retage','in_savings','in_invest','in_invnote','in_docnote','in_budget','in_notes','in_kids','in_routenote','in_docsnote','in_whyshop','in_whymatters','in_foundplan','in_effdate']
+  ['in_pname','in_sname','in_agent','in_address','in_state','in_zip','in_page','in_sage','in_majorcond_note','in_diabetic_note','in_docs1','in_docs2','in_docs3','in_carrier','in_plan','in_visits','in_budget_comfort','in_income','in_retage','in_savings','in_invest','in_invnote','in_docnote','in_budget','in_notes','in_kids','in_routenote','in_docsnote','in_whyshop','in_whymatters','in_losingwhy','in_foundplan','in_effdate']
     .forEach(function(id){ var el=$(id); if(el) el.addEventListener('input',function(){ captureIntake(); }); });
   [1,2,3].forEach(function(n){ var el=$('in_docs'+n+'_net'); if(el) el.querySelectorAll('[data-net]').forEach(function(b){ b.onclick=function(){ docNetPaint(n,b.dataset.net==='in'?true:b.dataset.net==='out'?'no':''); el.dispatchEvent(new Event('change')); }; }); });
   ['in_docs1_who','in_docs2_who','in_docs3_who','in_docs1_net','in_docs2_net','in_docs3_net'].forEach(function(id){ var el=$(id); if(el) el.addEventListener('change',function(){ captureIntake(); autosave(); }); });
