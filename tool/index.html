@@ -852,7 +852,7 @@
   .en-pol{display:inline-block;margin-left:6px;font-size:11.5px;font-weight:700;color:#17824a;background:#eaf7ef;border:1px solid #b9e3c9;border-radius:999px;padding:1px 8px}
   @keyframes enjust{0%{box-shadow:0 0 0 0 rgba(34,160,90,.6)}100%{box-shadow:0 0 0 8px rgba(34,160,90,0)}}
   .en-f.just input,.en-f.just select{border-color:#22a05a;animation:enjust .9s ease-out}
-  .fab-save{position:fixed;right:var(--edge-right,0px);top:50%;transform:translateY(-50%);z-index:60;display:flex;align-items:center;gap:8px;padding:9px 10px 9px 12px;border:1.5px solid #c69a3c;border-right:none;border-radius:14px 0 0 14px;background:#12213b;color:#fff;font:inherit;cursor:pointer;box-shadow:-2px 4px 14px rgba(18,33,59,.28);max-width:58px;overflow:hidden;transition:max-width .25s ease}
+  .fab-save{position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:60;display:flex;align-items:center;gap:8px;padding:9px 10px 9px 12px;border:1.5px solid #c69a3c;border-right:none;border-radius:14px 0 0 14px;background:#12213b;color:#fff;font:inherit;cursor:pointer;box-shadow:-2px 4px 14px rgba(18,33,59,.28);max-width:58px;overflow:hidden;transition:max-width .25s ease}
   .fab-save .fs-ico{font-size:20px;flex:none}
   .fab-save .fs-txt{display:flex;flex-direction:column;text-align:left;white-space:normal;width:200px;flex:none;opacity:0;transition:opacity .2s}
   .fab-save .fs-txt b{font-size:13.5px}.fab-save .fs-txt span{font-size:11.5px;color:#e9d6a6;line-height:1.35;margin-top:2px}
@@ -9132,7 +9132,7 @@ loadBaseRates();
 <!-- Quick notes, the floating Post-it (Jesse, 4 Nov): the same note as the Intake's Notes and the call's profile Notes,
      on screen on every step. For the random stuff only - answers belong in the Discovery questions or the Intake. -->
 <style>
-  .qn-tab{position:fixed;right:var(--edge-right,0px);top:calc(50% - 150px);z-index:61;width:34px;padding:10px 0 9px;border:1.5px solid #c69a3c;border-right:none;
+  .qn-tab{position:fixed;right:0;bottom:calc(50% + 43px);z-index:61;width:34px;padding:10px 0 9px;border:1.5px solid #c69a3c;border-right:none;
     border-radius:12px 0 0 12px;background:#FAC775;color:#633806;font:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;
     box-shadow:-2px 4px 12px rgba(18,33,59,.18)}
   .qn-tab:hover{background:#f7bb58}
@@ -9151,6 +9151,12 @@ loadBaseRates();
   .qn-pad textarea:focus{outline:2px solid #c69a3c;outline-offset:0}
   .qn-pad textarea::placeholder{color:#a8865a;font-style:italic}
   .qn-foot{font-size:11px;color:#854F0B;margin-top:6px;line-height:1.4}
+  /* Wide screen: both tabs hang off MyPopPro's own right edge like folder tabs - flush to it, the same width, rounded on
+     the outside (Jesse, 4 Nov: "needs to lay properly"). The save tab opens outward, into the empty band. */
+  html.qn-attached .qn-tab,html.qn-attached .fab-save{right:auto;left:var(--edge-left);border-left:none;border-right:1.5px solid #c69a3c;box-shadow:3px 4px 12px rgba(18,33,59,.18)}
+  html.qn-attached .qn-tab{width:44px;border-radius:0 12px 12px 0}
+  html.qn-attached .fab-save{border-radius:0 14px 14px 0;padding:9px 12px 9px 10px;max-width:44px}
+  html.qn-attached .fab-save:hover,html.qn-attached .fab-save:focus-visible{max-width:280px}
   @media print{.qn-tab,.qn-pad{display:none!important}}
 </style>
 <button type="button" class="qn-tab noprint hidein-client" id="qnTab" title="Quick notes — for the random stuff"><span class="qn-ico">🗒</span><span class="qn-lbl">Quick notes</span><span class="qn-dot"></span></button>
@@ -9186,10 +9192,11 @@ Not for anything important. Answers go in the Discovery questions or the Intake,
      when there is room for it; on a tight screen both sit on the window edge as before. */
   window.qnPlace=function(){ var w=document.querySelector('.wrap'); if(!w) return;
     var r=w.getBoundingClientRect(), edge=r.right-(parseFloat(getComputedStyle(w).paddingRight)||0), vw=document.documentElement.clientWidth,
-        room=Math.max(0,vw-edge), TAB=40, right=room>=TAB?Math.round(room-TAB):0;
-    document.documentElement.style.setProperty('--edge-right',right+'px');
-    if(room-TAB>=290){ pad.style.left=Math.round(edge+TAB+8)+'px'; pad.style.right='auto'; pad.style.width=Math.min(360,Math.round(room-TAB-20))+'px'; }
-    else { pad.style.left='auto'; pad.style.right=(right+TAB+6)+'px'; pad.style.width='300px'; } };
+        room=Math.max(0,vw-edge), TAB=44, on=room>=TAB+6, R=document.documentElement;
+    R.classList.toggle('qn-attached',on); R.style.setProperty('--edge-left',Math.round(edge)+'px');
+    if(on&&room-TAB>=290){ pad.style.left=Math.round(edge+TAB+8)+'px'; pad.style.right='auto'; pad.style.width=Math.min(360,Math.round(room-TAB-20))+'px'; }
+    else if(on){ pad.style.left=Math.round(edge-308)+'px'; pad.style.right='auto'; pad.style.width='300px'; }
+    else { pad.style.left='auto'; pad.style.right=(TAB+6)+'px'; pad.style.width='300px'; } };
   window.addEventListener('resize',qnPlace); qnPlace(); setTimeout(qnPlace,600);
   try{ if(localStorage.getItem('mpp_qn_open')) pad.classList.add('open'); }catch(e){}
   qnRefresh();
