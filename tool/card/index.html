@@ -230,7 +230,11 @@
     add('My agent','agent','agent_ph','agent'); return out; }
   function isML(){ return !P.pl||P.pl==='ml'; }
   function planName(){ return isML()?'ManhattanLife Affordable Choice':String(P.pl); }
-  function fixed(){ if(!isML()){ var m=[], n=val('mem'), ph=phone(val('mem_ph')); if(n||ph) m.push(['Member services',n,ph]); return m; } var f=FIXED.slice(); if($('has_dental').checked) f.push(['Dental network','Careington','800-290-0424']); return f; }
+  /* Cigna PPO through Triad (Jesse, 4 Nov): only what the 2026 plan summaries print - no member-services number is
+     held, so that line stays the client's own (it's on their card) */
+  function isCigna(){ return /^Cigna/.test(String(P.pl||'')); }
+  var CIGNA=[['Find a doctor','Cigna PPO network','hcpdirectory.cigna.com'],['Specialty drug approval','TrueScripts','844-257-1955'],['Plan contact','Acuity \u2014 terms of coverage','888-932-4365']];
+  function fixed(){ if(!isML()){ var m=[], n=val('mem'), ph=phone(val('mem_ph')); if(n||ph) m.push(['Member services',n,ph]); return isCigna()?m.concat(CIGNA):m; } var f=FIXED.slice(); if($('has_dental').checked) f.push(['Dental network','Careington','800-290-0424']); return f; }
 
   /* one short line: what isn't on the plan yet (or that levels can go up), who to ask, and the review month */
   var GAPNAME={dvh:'dental',lb:'life insurance',chas:'cancer & heart coverage'};
@@ -247,9 +251,9 @@
       +'<div class="ft">Confirm a provider is in network before your visit.</div></div>';
     var X=fixed(), back='<div class="wc'+(X.length>4?' dense':'')+'"><div class="hd"><span class="ag">'+esc(P.ag||'My plan')+'</span><span>'+esc(isML()?'ManhattanLife · Affordable Choice':planName())+'</span></div>'
       +X.map(function(x){ return '<div class="ln"><i>'+esc(x[0])+'</i><span>'+esc(x[1])+'</span><em>'+esc(x[2])+'</em></div>'; }).join('')
-      +(!isML()&&!X.length?'<div class="ln"><i>Member services</i><span>on the back of your ID card</span></div>':'')
+      +(!isML()&&!X.some(function(x){ return x[0]==='Member services'; })?'<div class="ln"><i>Member services</i><span>on the back of your ID card</span></div>':'')
       +(nudges().length?'<div class="nudge">'+nudges().map(esc).join('<br>')+'</div>':'')
-      +'<div class="ft">'+(isML()?'Front desk: “I have the ManhattanLife Affordable Choice plan on the First Health network.” ':'')+'Not an insurance ID card.</div></div>';
+      +'<div class="ft">'+(isML()?'Front desk: “I have the ManhattanLife Affordable Choice plan on the First Health network.” ':isCigna()?'Front desk: “My plan uses the Cigna PPO network.” ':'')+'Not an insurance ID card.</div></div>';
     return front+back; }
 
   function shareLink(){ var f={}; F.forEach(function(k){ var v=val(k); if(v) f[k]=v; }); var o={i:CID,f:f,t:Date.now()}; if(P.ag) o.ag=P.ag; if(!isML()) o.pl=P.pl; if($('has_dental').checked) o.d=1; if(X.g&&X.g.length) o.g=X.g; if(X.lw) o.lw=1; if(X.rm) o.rm=X.rm;
@@ -269,7 +273,7 @@
     sec('MY AGENT', by.agent?[pair(by.agent[1],by.agent[2])]:[]);
     var nums=[]; fixed().forEach(function(x){
       nums.push(x[0]==='Member services'?NUMLAB[x[0]]+': '+[x[1],x[2]].filter(Boolean).join(' \u00b7 '):(NUMLAB[x[0]]||x[0]+' \u2014 '+x[1])+': '+x[2]);
-      if(x[0]==='Find a doctor') nums.push('Find a doctor online: https://providerlocator.firsthealth.com/home/index');
+      if(x[0]==='Find a doctor') nums.push(isCigna()?'Find a doctor online: https://hcpdirectory.cigna.com/':'Find a doctor online: https://providerlocator.firsthealth.com/home/index');
     });
     sec('IMPORTANT NUMBERS',nums);
     var n=nudges(); if(n.length){ L.push(''); n.forEach(function(x){ L.push(x); }); }
