@@ -1418,9 +1418,11 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
       <div class="fld"><label>Primary annual income</label><input id="in_pincome" placeholder="$0"></div>
       <div class="fld"><label>Spouse annual income</label><input id="in_sincome" placeholder="$0"></div>
       <div class="fld"><label>Household income <small>auto-adds unless you type it</small></label><input id="in_income" class="keyfield" placeholder="$0"></div>
+      <div class="fld"><label>Household size — for ACA purposes <small>leave blank unless it's different</small></label><input id="in_hhsize" type="number" min="1" max="20" placeholder="1"></div>
       <div class="fld"><label>Target retirement age</label><input id="in_retage" type="number" placeholder="65"></div>
       <div class="fld"><label>Liquid savings</label><input id="in_savings" placeholder="$ total"></div>
     </div>
+    <div class="note" id="hhSizeNote" style="padding:6px 0 0;font-size:11px"><b>Household size: only fill this in if the household is a different size from the people we're insuring.</b> Left blank, the ACA estimate counts everyone on the plan (married with two kids = 4), and that's right almost every time. It's different when someone on their tax return isn't on the plan, e.g. a married couple where one is on Medicare is still a household of 2. Typed in, your number is the one used. On HealthSherpa you put in the income, the people we're insuring, and this household size.</div>
     <div class="fld" style="margin-top:10px"><label>Investment accounts</label>
       <div class="qnote"><input id="in_invest" placeholder="$ total" style="min-width:200px"><label class="chip tone-yellow"><input type="checkbox" id="in_invprot"> Protected *</label><label class="chip tone-green"><input type="checkbox" id="in_invsra"> Eligible for SRA</label></div>
       <div class="note" style="padding:5px 0 0;font-size:10.5px">* <b>Protected</b> means the money sits somewhere a market drop can't reduce it. <b>Most investment accounts are not</b> — 401(k)s, IRAs and brokerage accounts are exposed to the market, so leave this unchecked unless you've confirmed otherwise.</div>
@@ -2300,7 +2302,7 @@ function acaEstimateCore(o){
     if(mult==null) mult=charged.length; }
   else { var f40=acaAgeFactor(st,40); mult=charged.reduce(function(s,p){ return s+acaAgeFactor(st,p.age)/f40; },0); }
   var bronze=sd.bronze40*mult, silver=sd.silver40!=null?sd.silver40*mult:null;
-  var size=ppl.length, inc=+o.income||0, fpl=inc>0?inc/acaFplLine(st,size)*100:null;
+  var size=ppl.length, hh=Math.round(+o.taxSize||0)>0?Math.round(+o.taxSize):size, inc=+o.income||0, fpl=inc>0?inc/acaFplLine(st,hh)*100:null;   /* priced on who's insured, subsidy on the tax household */
   var expand=(ACA26.nonExpansionStates||[]).indexOf(st)<0, flags=[], subsidy=null, pct=null, contrib=null;
   if(fpl!=null){
     if(fpl<100){ subsidy=0; flags.push(expand?'medicaid':'gap'); }
@@ -2309,7 +2311,7 @@ function acaEstimateCore(o){
     else if(silver!=null){ pct=acaApplicablePct(fpl); contrib=inc*pct/100/12; subsidy=Math.max(0,silver-contrib); }
   }
   var fam=size>1, b=ACA26.bronze||{};
-  return {ok:true, st:st, size:size, charged:charged.length, community:community, bronze:bronze, silver:silver,
+  return {ok:true, st:st, size:size, hhSize:hh, charged:charged.length, community:community, bronze:bronze, silver:silver,
     income:inc, fpl:fpl, pct:pct, contrib:contrib, subsidy:subsidy, flags:flags, year:sd.year||2027,
     ded:b.avgDeductible!=null?b.avgDeductible*(fam?2:1):null,
     /* typical bronze out-of-pocket max, never above the legal limit for the plan year */
@@ -2582,12 +2584,16 @@ function acaPeople(){
   if(w.kids) kidsList().forEach(function(k){ p.push({age:(k.age===''||k.age==null)?(k.dob?ageFromDOB(k.dob):''):k.age,role:'k'}); });
   return p;
 }
-function acaEstimate(){ return acaEstimateCore({st:S.client.state, people:acaPeople(), income:householdIncome()}); }
+/* Household size for ACA purposes (Jesse, 4 Nov): everyone on the tax return, not only who we're insuring - a spouse on
+   Medicare still counts. Typed wins; empty means the people on the plan. */
+function acaHhSize(){ var I=S.intake||{}, n=acaPeople().length, t=Math.round(+I.hhSize||0); return (I.hhSizeManual&&t>0)?t:n; }
+function acaEstimate(){ return acaEstimateCore({st:S.client.state, people:acaPeople(), income:householdIncome(), taxSize:acaHhSize()}); }
 function acaIn(){ S.acaIn=S.acaIn||{status:'na',show:true,fullded:true,ov:{}}; S.acaIn.ov=S.acaIn.ov||{}; return S.acaIn; }
 function curIn(){ S.cur=S.cur||{}; return S.cur; }
 /* Resolve every ACA figure (typed > current ACA plan > estimate) into S.aca, the object the
    quote page and true cost already read. */
 function acaSync(){
+  var hs=$('in_hhsize'); if(hs) hs.placeholder=acaPeople().length+' — the people on the plan';   /* blank = this number; typed wins (Jesse, 4 Nov) */
   var A=acaIn(), C=curIn(), e=acaEstimate(), ov=A.ov, onAca=(A.status==='onaca'&&C.isAca);
   var curOr=function(v,est){ return (onAca&&+v>0)?{v:+v,src:'current'}:{v:est,src:'est'}; };
   var pick=function(k,fb){ var t=acaPick(ov[k],null); return t.src==='typed'?t:fb; };
@@ -2684,7 +2690,7 @@ function renderAca(){
     +calc('Doctor visits / year',(+I.visits||0)?'from Doctors':'<a class="jump" data-jump="in_visits">complete in the Doctors section ↑</a>',String(+I.visits||0))
     +calc('Medications / month',(+S.aca.med||0)?'ACA copay column, from Medications':'<a class="jump" data-jump="sec_meds">complete in the Medications section ↑</a>',fmt2(+S.aca.med||0));
   var yrLbl=e.ok?('<b class="est">Estimate</b> '+e.st+' '+e.year+' average for '+e.size+(e.size>1?' people':' person')
-      +(e.fpl!=null?' · income '+fmt(e.income)+' = '+Math.round(e.fpl)+'% of poverty level':' · add income to estimate the subsidy')
+      +(e.hhSize&&e.hhSize!==e.size?' · household of '+e.hhSize+' for ACA':'')+(e.fpl!=null?' · income '+fmt(e.income)+' = '+Math.round(e.fpl)+'% of poverty level':' · add income to estimate the subsidy')
       +'. Type the real numbers from HealthSherpa over any of them.'):('<b class="est">Estimate</b> '+e.why+'.');
   $('acaBasis').innerHTML=yrLbl;
   /* Their actual plan in one line (Jesse, 2 Nov): what they'd pay the marketplace carrier - not us - and what's still a guess. */
@@ -4049,6 +4055,7 @@ function applySuiteClient(c, live){ var sm=$('setupModal'); if(sm&&!live&&sm.cla
   if(h.incomeThis!=null)      I.pincome=suiteNum(h.incomeThis);
   if(h.incomeSpouse!=null)    I.sincome=suiteNum(h.incomeSpouse);
   if(h.incomeHousehold!=null) I.income=suiteNum(h.incomeHousehold);
+  if(h.hhSize&&Math.round(+h.hhSize)>0){ I.hhSize=String(Math.round(+h.hhSize)); I.hhSizeManual=true; }   /* asked on the call, for ACA purposes */
   if(!I.income && (I.pincome||I.sincome)) I.income=(I.pincome||0)+(I.sincome||0);
   if(h.retireAge)   I.retage=String(h.retireAge);
   if(h.liquid!=null)I.savings=suiteNum(h.liquid);
@@ -4877,7 +4884,7 @@ function suiteFromNavProfile(P){
       heightIn:inches(P.sp_height), weight:P.sp_weight||"", sex:P.sp_sex||"", tobacco:yn(P.sp_tobacco) },
     kids:kids.map(function(d){ return {name:d.n||"", dob:d.dob||"", age:d.age||"", sex:d.sex||""}; }),
     health:{
-      incomeThis:P.income_this||"", incomeSpouse:P.sp_income||"", incomeHousehold:P.hh_income||"",
+      incomeThis:P.income_this||"", incomeSpouse:P.sp_income||"", incomeHousehold:P.hh_income||"", hhSize:P.hh_size||"",
       retireAge:P.i_retire||"", spRetireAge:P.sp_retire||"", liquid:P.i_liquid||"", invest:P.asset_amt||"",
       protectable:P.asset_prot||"", invnote:P.asset_notes||"", budgetComfort:P.budget_comfort||"", budgetMax:P.budget_max||"",
       healthNotes:P.health_notes||"", healthOther:P.health_other||"", whyShop:P.why_note||"", whyMatters:P.why_matters||"", whyTags:P.why_tags||"", foundPlan:P.found_plan||"", effDate:P.start_when||"", lastDay:P.last_day||"",
@@ -6564,7 +6571,7 @@ function fillIntake(){
   $('in_cur_paying').checked=C.paying===false?false:(C.paying===true||+C.prem>0); $('in_visits').value=I.visits||'';
   var A=acaIn(); $('in_aca_status').value=A.status||'na'; $('in_aca_show').checked=A.show!==false; $('in_aca_fullded').checked=A.fullded!==false;
   $('in_pincome').value=I.pincome?fmtMoneyStr(String(I.pincome)):''; $('in_sincome').value=I.sincome?fmtMoneyStr(String(I.sincome)):'';
-  $('in_income').value=I.income?fmtMoneyStr(String(I.income)):''; $('in_retage').value=I.retage||''; $('in_savings').value=I.savings?fmtMoneyStr(String(I.savings)):''; $('in_invest').value=I.invest?fmtMoneyStr(String(I.invest)):''; $('in_invprot').checked=!!I.invprot; $('in_invsra').checked=!!I.invsra; $('in_invnote').value=I.invnote||'';
+  $('in_income').value=I.income?fmtMoneyStr(String(I.income)):''; if($('in_hhsize')) $('in_hhsize').value=I.hhSizeManual?(I.hhSize||''):''; $('in_retage').value=I.retage||''; $('in_savings').value=I.savings?fmtMoneyStr(String(I.savings)):''; $('in_invest').value=I.invest?fmtMoneyStr(String(I.invest)):''; $('in_invprot').checked=!!I.invprot; $('in_invsra').checked=!!I.invsra; $('in_invnote').value=I.invnote||'';
   $('in_budget').value=I.budget?fmtMoney2(I.budget):''; $('in_budget_comfort').value=I.budgetComfort?fmtMoney2(I.budgetComfort):''; $('in_anchor').value=I.anchor||'aca'; anchorNote(); $('in_priority').value=I.priority||'coverage'; $('in_notes').value=I.notes||'';
   renderMeds(); acaSync(); renderAca();
   $('in_aphone').value=fmtPhone($('in_aphone').value); $('in_phone').value=fmtPhone($('in_phone').value); $('in_date').value=fmtDate($('in_date').value); $('in_sdob').value=fmtDate($('in_sdob').value);
@@ -8187,6 +8194,7 @@ function bindInputs(){
       $('in_income').value=t?fmtMoneyStr(String(t)):'';
     }
     captureIntake(); }); });
+  if($('in_hhsize')){ $('in_hhsize').addEventListener('input',function(){ S.intake=S.intake||{}; S.intake.hhSizeManual=!!this.value; S.intake.hhSize=this.value; captureIntake(); }); }   /* cleared = count the plan again */
   $('in_income').addEventListener('input',function(){
     this.value=fmtMoneyStr(this.value);
     S.intake=S.intake||{};
