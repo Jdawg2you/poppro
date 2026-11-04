@@ -852,7 +852,7 @@
   .en-pol{display:inline-block;margin-left:6px;font-size:11.5px;font-weight:700;color:#17824a;background:#eaf7ef;border:1px solid #b9e3c9;border-radius:999px;padding:1px 8px}
   @keyframes enjust{0%{box-shadow:0 0 0 0 rgba(34,160,90,.6)}100%{box-shadow:0 0 0 8px rgba(34,160,90,0)}}
   .en-f.just input,.en-f.just select{border-color:#22a05a;animation:enjust .9s ease-out}
-  .fab-save{position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:60;display:flex;align-items:center;gap:8px;padding:9px 10px 9px 12px;border:1.5px solid #c69a3c;border-right:none;border-radius:14px 0 0 14px;background:#12213b;color:#fff;font:inherit;cursor:pointer;box-shadow:-2px 4px 14px rgba(18,33,59,.28);max-width:58px;overflow:hidden;transition:max-width .25s ease}
+  .fab-save{position:fixed;right:var(--edge-right,0px);top:50%;transform:translateY(-50%);z-index:60;display:flex;align-items:center;gap:8px;padding:9px 10px 9px 12px;border:1.5px solid #c69a3c;border-right:none;border-radius:14px 0 0 14px;background:#12213b;color:#fff;font:inherit;cursor:pointer;box-shadow:-2px 4px 14px rgba(18,33,59,.28);max-width:58px;overflow:hidden;transition:max-width .25s ease}
   .fab-save .fs-ico{font-size:20px;flex:none}
   .fab-save .fs-txt{display:flex;flex-direction:column;text-align:left;white-space:normal;width:200px;flex:none;opacity:0;transition:opacity .2s}
   .fab-save .fs-txt b{font-size:13.5px}.fab-save .fs-txt span{font-size:11.5px;color:#e9d6a6;line-height:1.35;margin-top:2px}
@@ -9132,7 +9132,7 @@ loadBaseRates();
 <!-- Quick notes, the floating Post-it (Jesse, 4 Nov): the same note as the Intake's Notes and the call's profile Notes,
      on screen on every step. For the random stuff only - answers belong in the Discovery questions or the Intake. -->
 <style>
-  .qn-tab{position:fixed;right:0;top:calc(50% - 150px);z-index:61;width:34px;padding:10px 0 9px;border:1.5px solid #c69a3c;border-right:none;
+  .qn-tab{position:fixed;right:var(--edge-right,0px);top:calc(50% - 150px);z-index:61;width:34px;padding:10px 0 9px;border:1.5px solid #c69a3c;border-right:none;
     border-radius:12px 0 0 12px;background:#FAC775;color:#633806;font:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;
     box-shadow:-2px 4px 12px rgba(18,33,59,.18)}
   .qn-tab:hover{background:#f7bb58}
@@ -9140,7 +9140,7 @@ loadBaseRates();
   .qn-tab .qn-lbl{writing-mode:vertical-rl;transform:rotate(180deg);font-size:11.5px;font-weight:700;letter-spacing:.04em}
   .qn-tab .qn-dot{width:8px;height:8px;border-radius:50%;background:#854F0B;display:none}
   .qn-tab.has .qn-dot{display:block}
-  .qn-pad{position:fixed;right:44px;top:calc(50% - 200px);z-index:62;width:300px;background:#FDF1D6;border:1.5px solid #E6A93A;border-radius:10px;
+  .qn-pad{position:fixed;right:44px;max-height:calc(100vh - 40px);overflow:auto;top:calc(50% - 200px);z-index:62;width:300px;background:#FDF1D6;border:1.5px solid #E6A93A;border-radius:10px;
     padding:9px 11px 10px;box-shadow:0 10px 28px rgba(18,33,59,.22);display:none;transform:rotate(-.4deg)}
   .qn-pad.open{display:block}
   .qn-head{display:flex;align-items:center;gap:7px;color:#633806;margin-bottom:6px;cursor:default}
@@ -9181,6 +9181,16 @@ Not for anything important. Answers go in the Discovery questions or the Intake,
     clearTimeout(sendT); sendT=setTimeout(function(){ toFrame(mine()); },300); });
   /* the Intake's own Notes box and the enroll page's: typing there shows here */
   ['in_notes','enNotes'].forEach(function(id){ document.addEventListener('input',function(e){ if(e.target&&e.target.id===id){ qnRefresh(); clearTimeout(sendT); sendT=setTimeout(function(){ toFrame(mine()); },300); } }); });
+  /* On a wide screen MyPopPro stops at its readable width and centres, and tabs on the window's edge were stranded in
+     the empty band (Jesse, 4 Nov). The tabs sit on MyPopPro's own right edge instead, and the Post-it opens into that band
+     when there is room for it; on a tight screen both sit on the window edge as before. */
+  window.qnPlace=function(){ var w=document.querySelector('.wrap'); if(!w) return;
+    var r=w.getBoundingClientRect(), edge=r.right-(parseFloat(getComputedStyle(w).paddingRight)||0), vw=document.documentElement.clientWidth,
+        room=Math.max(0,vw-edge), TAB=40, right=room>=TAB?Math.round(room-TAB):0;
+    document.documentElement.style.setProperty('--edge-right',right+'px');
+    if(room-TAB>=290){ pad.style.left=Math.round(edge+TAB+8)+'px'; pad.style.right='auto'; pad.style.width=Math.min(360,Math.round(room-TAB-20))+'px'; }
+    else { pad.style.left='auto'; pad.style.right=(right+TAB+6)+'px'; pad.style.width='300px'; } };
+  window.addEventListener('resize',qnPlace); qnPlace(); setTimeout(qnPlace,600);
   try{ if(localStorage.getItem('mpp_qn_open')) pad.classList.add('open'); }catch(e){}
   qnRefresh();
 })();
