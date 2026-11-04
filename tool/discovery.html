@@ -3010,12 +3010,6 @@ hs_why:{s:"2",pf:"why",t:"Why they're shopping",l:[
 {t:"pf",ks:["why_other"],when:["why_tags","~Other"]},
 {t:"do",x:"Type <b>their exact words, the way they said them</b> &mdash; &ldquo;healthcare has just gotten so flippin' expensive&rdquo;, &ldquo;I&rsquo;m paying way too much for what I get&rdquo; &mdash; not a note about them (&ldquo;wants cheaper&rdquo;): a note can&rsquo;t be quoted back as something they said. Then click what's behind it &mdash; <b>the questions for it open right here</b>. On the presentation you quote them: <i>&ldquo;Last time we talked, you said &hellip;&rdquo;</i>. Whatever they say, they're right. Agree."},
 
-{t:"covclock"},
-{t:"say",when:["why_tags","~Losing"],x:"<b>Losing coverage &mdash;</b> I understand."},
-{t:"ask",when:["why_tags","~Losing"],x:"When's your last day of coverage? ___(last day of cover) &mdash; and is it a done deal? {{losing}}"},
-{t:"ask",when:["why_tags","~Losing"],x:"What's happening &mdash; why are you losing it? ___(why they're losing it)"},
-{t:"warn",when:["why_tags","~Losing"],x:"<b>The date, not the month.</b> It sets the start date, and once it passes they are uninsured. Retiring early, starting a business, COBRA running out, a divorce, a buy-out &mdash; <b>starting a business is a business lead too.</b>"},
-
 {t:"ask",when:[["why_tags","~Too expensive"],["why_tags","~Deductible"],["why_tags","~Losing"],["why_tags","~Doctor"],["why_tags","~Other"]],x:"Got it. And how much are you paying right now? ___(they pay)"},
 {t:"ask",when:[["why_tags","~Too expensive"],["why_tags","~Deductible"],["why_tags","~Losing"],["why_tags","~Doctor"],["why_tags","~Other"]],x:"Is that through work, a plan you bought yourself, or the marketplace? {{cur_src}}"},
 
@@ -3031,6 +3025,12 @@ hs_why:{s:"2",pf:"why",t:"Why they're shopping",l:[
 
 {t:"ask",when:[["why_tags","~Too expensive"],["why_tags","~Deductible"],["why_tags","~Losing"],["why_tags","~Doctor"],["why_tags","~Other"]],x:"And what's the deductible on it? ___(deductible)"},
 {t:"do",when:["why_tags","~Deductible"],x:"<b>They said the deductible is the problem</b> &mdash; food for thought: you name it on the presentation, when they see a plan that pays from the first visit."},
+
+{t:"covclock"},
+{t:"say",when:["why_tags","~Losing"],x:"<b>Losing coverage &mdash;</b> I understand."},
+{t:"ask",when:["why_tags","~Losing"],x:"When's your last day of coverage? ___(last day of cover) &mdash; and is it a done deal? {{losing}}"},
+{t:"ask",when:["why_tags","~Losing"],x:"What's happening &mdash; why are you losing it? ___(why they're losing it)"},
+{t:"warn",when:["why_tags","~Losing"],x:"<b>The date, not the month.</b> It sets the start date, and once it passes they are uninsured. Retiring early, starting a business, COBRA running out, a divorce, a buy-out &mdash; <b>starting a business is a business lead too.</b>"},
 
 {t:"say",x:"<b>And your work &mdash;</b>"},
 {t:"ask",x:"What do you do for a living? ___(type of work) &mdash; how long have you been doing that? ___(how long)"},
@@ -8139,7 +8139,7 @@ if(want && LIB[want]){
    saved call and the agent's details ("call-init" - a framed page cannot see the stand-alone site's storage), and every
    answer typed here goes straight back to POP Pro, which fills its Intake and keeps the whole call in its save file. */
 var HOST = QS.get("host")==="poppro" && window.self!==window.top, HOST_ORIGIN="*", HOST_T=null, HOST_AFC=false, HOST_AFC_LOADING=false;
-function hostOk(o){ return ["https://mypoppro.com","https://www.mypoppro.com"].indexOf(o)>=0 || /^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?$/.test(o); }
+function hostOk(o){ return ["https://mypoppro.com","https://www.mypoppro.com","https://sandbox.mypoppro.com","http://sandbox.mypoppro.com"].indexOf(o)>=0 || /^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?$/.test(o); }
 function hostPush(){ if(!HOST || HOST_ORIGIN==="*") return;   /* nothing leaves until a page that passed hostOk has sent call-init */
   clearTimeout(HOST_T); HOST_T=setTimeout(function(){
   try{ parent.postMessage({source:"optimum-suite",type:"client",v:1,tool:"poppro",live:true,client:popClient(),profile:navOnly(P)},HOST_ORIGIN); }catch(e){} },350); }
