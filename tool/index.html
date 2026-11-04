@@ -4251,8 +4251,13 @@ function applySuiteClient(c, live){ var sm=$('setupModal'); if(sm&&!live&&sm.cla
   /* The call's notes box holds what MyPopPro handed it, so it comes back with our own lines in it. Our lines are
      dropped and only what is new is kept, as the agent typed it - otherwise every handoff wrapped the last one in
      another "From the discovery call" line and the notes grew a copy per push (Jesse, 16 Oct). */
-  String(h.notes||"").split("\n").forEach(function(l){ var t=l.replace(/\s+$/,""); if(!t.trim()||t.indexOf(TAG)===0) return;
-    if(kept.indexOf(t)<0) kept.push(t); });
+  /* The call pushes on every keystroke, so a note typed there arrived as "n", "no", "not"... each kept as a new line
+     (Jesse, 4 Nov). Lines the call sent last time and no longer has are its own earlier drafts: they go. */
+  var navNow=[]; String(h.notes||"").split("\n").forEach(function(l){ var t=l.replace(/\s+$/,""); if(t.trim()&&t.indexOf(TAG)!==0) navNow.push(t); });
+  if(h.notes!=null){ var navPrev=I.navNotesLast||[];
+    kept=kept.filter(function(t){ return !(navPrev.indexOf(t)>=0&&navNow.indexOf(t)<0); });
+    navNow.forEach(function(t){ if(kept.indexOf(t)<0) kept.push(t); });
+    I.navNotesLast=navNow; }
   if(extra.length) kept.push(TAG+extra.join(" · "));
   I.notes=kept.join("\n").replace(/^\n+|\n+$/g,"");
 
