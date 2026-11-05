@@ -3231,6 +3231,8 @@ function rxLineHTML(t){ var R=rxPlan(t); if(!(R.mo>0)) return '';
      :'<span>No Affordable Choice Rx benefit on this package — they pay the pharmacy price</span>')+'</div>'; }
 /* What "true cost" means, said under EVERY package column on the Quote and in Client View (team call, 3 Nov: it showed
    only under a package with a deductible, so a Manhattan column had no explanation). The anchor's side, then this one's. */
+/* A package built on the client's own marketplace plan, shown against that plan: the add-ons are what it adds (Kyle, 4 Nov). */
+function acaAddsOn(t,B){ return !!B&&B.k==='aca'&&effCfg(t).base==='aca'; }
 function trueCostNote(t,base){ var tt=tierTrue(t), out='True cost = premium + deductible ÷ 12';
   if(base){ var dm=base.mo-base.prem; out+='. '+base.your.charAt(0).toUpperCase()+base.your.slice(1)+': '+(base.ded>0&&dm>0.5?fmt(base.ded)+' deductible → '+fmt2(base.mo)+'/mo':'no deductible counted → '+fmt2(base.mo)+'/mo'); }
   out+='. This package: '+(tt.note?tt.note.replace(/^True cost includes /,'includes ').replace(/\.$/,''):'no deductible (fixed benefits), so it’s the premium'+(tt.extra>0.005&&!tt.glp?' + what prescriptions still cost':''));
@@ -4681,8 +4683,10 @@ function poGlanceHTML(tiers,labels,B){
   if(B) h+='<tr class="anc"><td>'+(B.k==='aca'?'ACA marketplace — bronze':'What you have now')+'<small>premium'+(B.copayMo>0?' + doctor copays':'')+'</small></td><td>'+fmt2(B.prem)+'</td><td>—</td><td>'+fmt2(B.yr)+'</td>'+(showPop?'<td>—</td>':'')+'</tr>';
   tiers.forEach(function(x){ var sv=B?anchorSavings(B,pkgPremMo(x.t),x.mo+tierTrue(x.t).extra):null, pop=showPop?computePop(x.t):null;
     var d=function(v,per){ return '<b class="'+(v>=0?'up':'dn')+'">'+(v>=0?'saves ':'costs ')+fmt2(Math.abs(v))+per+(v>=0?'':' more')+'</b>'; };
+    var adds=acaAddsOn(x.t,B);
     h+='<tr'+(ch===x.t?' class="ch"':'')+'><td>'+labels[x.t][0]+'<small>'+esc(labels[x.t][1])+(ch===x.t?' · your choice':'')+'</small></td><td>'+fmt2(x.mo)+'</td>'
-      +(sv?'<td>'+d(sv.actual,'/mo')+'</td><td>'+(sv.tru>=0?'<b class="up">ahead '+fmt2(sv.tru*12)+'</b>':'<b class="dn">behind '+fmt2(-sv.tru*12)+'</b>')+'</td>':'')
+      +(adds?'<td><b>adds '+fmt2(pkgPremMo(x.t)-B.prem)+'/mo</b></td><td>—</td>':'')
+      +(sv&&!adds?'<td>'+d(sv.actual,'/mo')+'</td><td>'+(sv.tru>=0?'<b class="up">ahead '+fmt2(sv.tru*12)+'</b>':'<b class="dn">behind '+fmt2(-sv.tru*12)+'</b>')+'</td>':'')
       +(pop?'<td><b>'+pop.score+'</b></td>':'')+'</tr>'; });
   return h+'</tbody></table></div>';
 }
@@ -4691,6 +4695,7 @@ function buildPrintout(){
   var a=S.aca, agency=S.agency||'HealthFirst', c=S.client;
   /* the client reads Essential / Complete / Comprehensive; Good / Better / Best stays on the agent's screens (Jesse, 2026-10-09) */
   var labels={good:[TIER_NAME.good.toUpperCase(),S.tabLabels.good],better:[TIER_NAME.better.toUpperCase(),S.tabLabels.better],best:[TIER_NAME.best.toUpperCase(),S.tabLabels.best]};
+  var LN=LINEUP_NAMES[S.lineup]; if(LN) ['good','better','best'].forEach(function(t){ labels[t]=[LN[t][0].toUpperCase(),LN[t][1]]; });
   var inc=S.include||{}; var tiers=['good','better','best'].map(function(t){var x=tierTotals(t);x.t=t;return x;}).filter(function(x){return x.mo>0 && inc[x.t]!==false;});
   var aca=acaTrue();
   var netPrem=acaNetPrem();
@@ -4748,7 +4753,8 @@ function buildPrintout(){
         html+='<div class="po-li'+(hi?' po-hist':'')+'"><span>'+esc(p.name)+(hi?htag:'')+'</span><span>'+fmt2(+p.monthly||0)+'</span></div>'; });
       if(+x.pk.lb>0) html+='<div class="po-li'+(HF.any?' po-hist':'')+'"><span>Living Benefits'+(x.pk.lbCarrier?' — '+esc(x.pk.lbCarrier):'')+(HF.any?htag:'')+'</span><span>'+fmt2(+x.pk.lb)+'</span></div>';
       html+='</div><div class="po-tot"><div class="m"><span>Monthly</span><b>'+fmt2(x.mo)+'</b></div><div class="a"><span>Annual</span><span>'+fmt2(x.yr)+'</span></div></div>'+rxLineHTML(x.t).replace('class="pbrx"','class="pbrx po-rx"');
-      if(base){ var ttx=tierTrue(x.t), sv=anchorSavings(base,pkgPremMo(x.t),x.mo+ttx.extra), cpn=copayNote(B,x.t), vs=base.k==='aca'?'your marketplace plan':'your current plan';
+      if(acaAddsOn(x.t,B)) html+='<div class="po-save"><div class="vs">On top of your marketplace plan</div><div class="ln"><span>Adds</span><b>'+fmt2(pkgPremMo(x.t)-B.prem)+'/mo</b></div><div class="tn">You keep the same marketplace plan and its deductible. These benefits pay you cash when the accident or hospital stay happens — the examples below show what they pay.</div></div>';
+      else if(base){ var ttx=tierTrue(x.t), sv=anchorSavings(base,pkgPremMo(x.t),x.mo+ttx.extra), cpn=copayNote(B,x.t), vs=base.k==='aca'?'your marketplace plan':'your current plan';
         var ln=function(lab,v){ return '<div class="ln"><span>'+lab+'</span><b class="'+(v>=0?'up':'dn')+'">'+(v>=0?'saves ':'costs ')+fmt2(Math.abs(v))+'/mo'+(v>=0?'':' more')+'</b></div>'; };
         html+='<div class="po-save"><div class="vs">Compared with '+vs+'</div>'+ln('Premium',sv.actual)+(cpn?'<div class="tn">'+cpn+'</div>':'')+ln('True cost',sv.tru)+'<div class="tn tcn">'+trueCostNote(x.t,base)+'</div>'
           +'<div class="yr '+(sv.tru>=0?'up':'dn')+'">'+(sv.tru>=0?'Ahead '+fmt2(sv.tru*12)+' a year':'Behind '+fmt2(-sv.tru*12)+' a year')+'<small>on true cost</small></div></div>'; }
@@ -4773,7 +4779,8 @@ function buildPrintout(){
 
   /* ---- additional programs (pension / TFRA) — omitted when the agent unchecks "Show on quote" ---- */
   var pen=+S.pension.monthly||0, main=html; html='';
-  if(S.showTfra!==false){
+  var atBase=effCfg(at).base, tfraOk=atBase!=='aca'&&!(atBase==='amaze'&&!(aMo>0));
+  if(S.showTfra!==false&&tfraOk){
   if(pen>0){
     var totMo=pMo+pen, totYr=pYr+pen*12;
     html+='<div class="po-green"><div class="band">INCLUDING ADDITIONAL PROGRAMS'+(S.pension.note?' <span style="font-weight:400;font-family:-apple-system,sans-serif;font-size:12px;color:#dff0e2">— '+esc(S.pension.note)+'</span>':'')+'</div>'
@@ -8502,7 +8509,7 @@ function evTierCarrier(t){ var c=effCfg(t);
   if(c.base==='brightlife') return {co:'Bright Life', plan:c.blPlan||BL_DEFAULT};
   if(c.base==='triad') return {co:'Cigna', plan:'$'+Number(c.triadPlan||3500).toLocaleString('en-US')};
   return {co:'ManhattanLife', plan:(LVLNAME&&LVLNAME[c.afc])||c.afc||''}; }
-function evTierName(t,mixed,fallback){ if(!mixed) return fallback;
+function evTierName(t,mixed,fallback){ var LN=LINEUP_NAMES[S.lineup]; if(LN&&LN[t]) return LN[t][0]; if(!mixed) return fallback;
   var x=evTierCarrier(t); return x.plan?x.co+' '+x.plan:x.co; }
 function evIncluded(){ var inc=S.include||{}, rows=EV_TIERS.filter(function(T){ return inc[T[0]]!==false&&tierTotals(T[0]).mo>0; });
   var cos=rows.map(function(T){ return evTierCarrier(T[0]).co; }), mixed=cos.some(function(c){ return c!==cos[0]; });
@@ -8524,7 +8531,15 @@ function evTierPack(t){ var c=effCfg(t), st=(S.client.state||'').toUpperCase(), 
     o.major={oop:lfam?LIFEX_OOP_BOUND.family:LIFEX_OOP_BOUND.self,ded:lxd*(lfam?2:1),copay:true,
       visit:LIFEX_PPO.visit,urgent:LIFEX_PPO.urgent,er:LIFEX_PPO.er,adm:LIFEX_PPO.adm,
       osurg:LIFEX_PPO.osurg,imaging:LIFEX_PPO.imaging}; }
+  /* An ACA package keeps the marketplace plan: it pays the bill past their share, and the add-ons pay cash on top (Kyle, 4 Nov). */
+  if(evHas(t,'base')&&c.base==='aca'){ var at=evAcaTerms(); o.major={oop:at.oop,ded:at.ded,coins:at.coins,visit:at.visit,urgent:0,aca:true}; }
   return o; }
+/* The ACA plan's cost sharing for one person's event - the anchor column, and every package built on the ACA plan. */
+function evAcaTerms(){ var fam=acaPeople().length>1, r=S.acaRes||{}, bz=ACA26.bronze||{}, cap=(ACA26.moop||{}).self||12000;
+    var oop=+S.aca.oop||0, ded=+S.aca.ded||0, estO=r.oop&&r.oop.src==='est', estD=r.ded&&r.ded.src==='est';
+    if(fam){ oop=estO?Math.min(bz.avgMoop||cap,cap):Math.min(oop,cap); ded=estD?(bz.avgDeductible||ded/2):0; }
+    var dPer=fam?ded:(+S.aca.ded||0), co=S.aca.coins;
+    return {fam:fam,oop:oop,ded:dPer||null,coins:co,visit:+S.aca.copay||0}; }
 function evAnchor(){ var B=anchorBase(); if(!B) return null;
   if(B.k==='aca'){ var fam=acaPeople().length>1, r=S.acaRes||{}, bz=ACA26.bronze||{}, cap=(ACA26.moop||{}).self||12000;
     /* An event happens to one person. ACA family plans must cap each person at the self-only limit
@@ -8546,9 +8561,9 @@ function evTableHTML(i,opt){ var O=opt||{}, tiers=O.tiers?EV_TIERS.filter(functi
     +(adds.length?(bb.main>0?' · plus ':'')+adds.join(', '):'');
   head=head.replace(/^ · /,'');
   tiers.forEach(function(T){ var o=evTierPack(T[0]); res.push({T:T,o:o,r:evEvent(sc,Object.assign({},o,{negotPct:negA(bill)?S.negot.pct:0}))}); });
-  var aOwe=A?evAnchorOweEv(sc,A):null;
-  var billed=(+sc.disc||0)>0&&!bb.extra?+sc.charge:0, negB=negA(bill)?Math.round(bill*(1-S.negot.pct/100)*100)/100:null;
-  var cols=(A?1:0)+res.length, h='<div class="evbill"><span>This event costs</span>'+(billed?'<b class="was">'+fmt2(billed)+'</b><i class="arr">→</i>':'')+'<b>'+fmt2(bill)+'</b>'+(billed?'<em>network price — every plan pays this, not the sticker price</em>':'')+(negB!=null?'<i class="arr">→</i><b class="neg">'+fmt2(negB)+'</b><em>with Medical Bill Saver (CareGuide), Manhattan packages</em>':'')+'<small>'+head+'</small>'+(negA(bill)?'<small class="printonly negfine">Medical Bill Saver (CareGuide): illustrated at '+S.negot.pct+'% off the network price on the Manhattan packages; CareGuide states savings are not guaranteed.</small>':'')+'</div>'+((O.neg||negOn(i))&&!negA(bill)?'<div class="evneg off">Medical Bill Saver is for bills over '+fmt(+S.negot.min||2500)+' — this one is not negotiated.</div>':'')+(negA(bill)?'<div class="evneg"><b>Medical Bill Saver (CareGuide) is on.</b><span class="ex"> On the Manhattan packages, ManhattanLife’s care-negotiation service (CareGuide) works the bill down before you pay it — illustrated here at '+S.negot.pct+'%. The plan still pays its full benefits, so more of that money stays with you.</span><span class="printonly" style="display:none"> CareGuide negotiates the bill down; the plan still pays in full.</span><small>Illustration: assumes a '+S.negot.pct+'% reduction. CareGuide states savings are not guaranteed.</small></div>':'')+'<div class="evtab'+((O.open||(S.evOpen||{})[i])?' open':'')+'" style="grid-template-columns:var(--evlab,minmax(120px,1.1fr)) repeat('+cols+',1fr)">';
+  var aOwe=A?evAnchorOweEv(sc,A):null, negAny=negA(bill)&&res.some(function(x){ return !x.o.major; });   /* Bill Saver is a Manhattan package's - none here, none shown */
+  var billed=(+sc.disc||0)>0&&!bb.extra?+sc.charge:0, negB=negAny?Math.round(bill*(1-S.negot.pct/100)*100)/100:null;
+  var cols=(A?1:0)+res.length, h='<div class="evbill"><span>This event costs</span>'+(billed?'<b class="was">'+fmt2(billed)+'</b><i class="arr">→</i>':'')+'<b>'+fmt2(bill)+'</b>'+(billed?'<em>network price — every plan pays this, not the sticker price</em>':'')+(negB!=null?'<i class="arr">→</i><b class="neg">'+fmt2(negB)+'</b><em>with Medical Bill Saver (CareGuide), Manhattan packages</em>':'')+'<small>'+head+'</small>'+(negAny?'<small class="printonly negfine">Medical Bill Saver (CareGuide): illustrated at '+S.negot.pct+'% off the network price on the Manhattan packages; CareGuide states savings are not guaranteed.</small>':'')+'</div>'+((O.neg||negOn(i))&&!negA(bill)&&res.some(function(x){ return !x.o.major; })?'<div class="evneg off">Medical Bill Saver is for bills over '+fmt(+S.negot.min||2500)+' — this one is not negotiated.</div>':'')+(negAny?'<div class="evneg"><b>Medical Bill Saver (CareGuide) is on.</b><span class="ex"> On the Manhattan packages, ManhattanLife’s care-negotiation service (CareGuide) works the bill down before you pay it — illustrated here at '+S.negot.pct+'%. The plan still pays its full benefits, so more of that money stays with you.</span><span class="printonly" style="display:none"> CareGuide negotiates the bill down; the plan still pays in full.</span><small>Illustration: assumes a '+S.negot.pct+'% reduction. CareGuide states savings are not guaranteed.</small></div>':'')+'<div class="evtab'+((O.open||(S.evOpen||{})[i])?' open':'')+'" style="grid-template-columns:var(--evlab,minmax(120px,1.1fr)) repeat('+cols+',1fr)">';
   /* the corner: on Quote it holds the picture button; in the picture itself it names the example instead */
   var exName=sc.desc||sc.label||(EV_SCENARIOS.filter(function(x){ return x.id===sc.id; })[0]||{}).desc||'';
   h+='<div class="c l evcorner">'+(O.pic?(exName?'<b class="evname">'+esc(exName)+'</b>':''):'')+'</div>'+(A?'<div class="c h anc">'+A.lab+'</div>':'')+res.map(function(x){ return '<div class="c h">'+x.T[1]+'</div>'; }).join('');
@@ -8563,7 +8578,7 @@ function evTableHTML(i,opt){ var O=opt||{}, tiers=O.tiers?EV_TIERS.filter(functi
       if(x.o.major&&x.r.oweParts&&x.r.oweParts.length) its=its.concat(x.r.oweParts.map(function(p){ return li('You pay — '+p.lab,p.v); }));
       if(x.o.unknown&&!x.r.pays) its=['<div class="why">'+esc(x.o.unknown)+'</div>'];
       return '<div class="c evit">'+(its.join('')||'<div class="why">No benefit applies to this event.</div>')+(x.o.afc&&(+sc.days||0)>0?'<div class="why surg">Surgery benefits (paid on the policy fee schedule) are extra and not counted here.</div>':'')+'</div>'; }).join('');
-  if(negA(bill)) h+='<div class="c l">Bill after Medical Bill Saver <small>'+S.negot.pct+'% average reduction</small></div>'+(A?'<div class="c anc">—<small>network price already</small></div>':'')
+  if(negAny) h+='<div class="c l">Bill after Medical Bill Saver <small>'+S.negot.pct+'% average reduction</small></div>'+(A?'<div class="c anc">—<small>network price already</small></div>':'')
     +res.map(function(x){ return '<div class="c">'+(x.r.negotiated!=null?fmt2(x.r.negotiated):'—<small>major medical</small>')+'</div>'; }).join('');
   h+='<div class="c l">You pay <small>(or net)</small></div>'+(A?'<div class="c anc big">'+fmt2(aOwe)+(A.note?'<small>'+A.note+'</small>':(A.how&&aOwe>=A.oop?'<small>'+A.how+'</small>':''))+'</div>':'')
     +res.map(function(x){ var n=x.r.net; return '<div class="c big '+(n<=0?'up':'dn')+'">'+(x.o.unknown&&!x.r.pays?'<small>'+x.o.unknown+'</small>':(n<=0?'You NET '+fmt2(-n):'You pay '+fmt2(n)))+'</div>'; }).join('');
@@ -8572,7 +8587,7 @@ function evTableHTML(i,opt){ var O=opt||{}, tiers=O.tiers?EV_TIERS.filter(functi
      the same as before - 12 x the premium difference + (their share of the event - the package's net). */
   if(A&&B){ var aYr=B.prem*12+aOwe;
     h+='<div class="c l">Monthly premium savings <small>vs '+esc(B.your)+'</small></div><div class="c anc">'+fmt2(B.prem)+'/mo<small>what '+esc(B.your)+' costs a month</small></div>'
-    +res.map(function(x){ var d=B.prem-pkgPremMo(x.T[0]); return '<div class="c evmo '+(d>=0?'up':'dn')+'">'+(d>=0?'Saves '+fmt2(d):'Costs '+fmt2(-d)+' more')+'/mo<small>'+fmt2(pkgPremMo(x.T[0]))+'/mo</small></div>'; }).join('');
+    +res.map(function(x){ var d=B.prem-pkgPremMo(x.T[0]); if(acaAddsOn(x.T[0],B)) return '<div class="c evmo">Adds '+fmt2(-d)+'/mo<small>'+fmt2(pkgPremMo(x.T[0]))+'/mo with the marketplace plan</small></div>'; return '<div class="c evmo '+(d>=0?'up':'dn')+'">'+(d>=0?'Saves '+fmt2(d):'Costs '+fmt2(-d)+' more')+'/mo<small>'+fmt2(pkgPremMo(x.T[0]))+'/mo</small></div>'; }).join('');
     h+='<div class="c l">This year, with this event <small>12 months of premium + what this event costs them</small></div>'
     +'<div class="c anc evyr">12 × '+fmt2(B.prem)+' + '+fmt2(aOwe)+'<small>premiums + their share of this event</small><b>= '+fmt(aYr)+'</b></div>'
     +res.map(function(x){ var pm=pkgPremMo(x.T[0]), n=x.r.net, y=pm*12+n, v=aYr-y;
@@ -8588,6 +8603,7 @@ function negApplies(i,bill){ return negOn(i)&&bill>(+((S.negot||{}).min)||2500);
 function negToggleHTML(i){ var n=S.negot||{}; if(!(+n.pct>0)||!n.on) return ''; var on=negOn(i);
   /* A bill at or under the minimum is never negotiated, so a button there would change nothing. */
   if(!(evScnBill(S.ev[i]).total>(+n.min||2500))) return '';
+  if(evIncluded().every(function(T){ return !!evTierPack(T[0]).major; })) return '';   /* no Manhattan package on this card */
   return '<button type="button" class="negtog noprint'+(on?' on':'')+'" data-negtog="'+i+'">Medical Bill Saver (CareGuide): '+(on?'On':'Off')+'</button>'; }
 /* The caret on 'Your plan pays' - one state per event, shared by the agent view and Client View. */
 function evBindToggles(root){ (root||document).querySelectorAll('[data-evtog]').forEach(function(el){ var go=function(){ S.evOpen=S.evOpen||{}; S.evOpen[el.dataset.evtog]=!S.evOpen[el.dataset.evtog]; compute(); };
@@ -8617,6 +8633,9 @@ function renderTfraHint(){ var el=$('tfraHint'); if(!el) return; var B=anchorBas
   el.querySelectorAll('.tfrause').forEach(function(b){ b.onclick=function(){ var inp=$('p_pension'); inp.value=b.dataset.amt; inp.dispatchEvent(new Event('input')); compute(); autosave(); }; }); }
 /* ===== The client's choice (builder + Client View -> Enroll) ===== */
 var TIER_NAME={good:'Essential',better:'Complete',best:'Comprehensive'};
+/* The ACA and Virtual Basic lineups aren't Essential / Complete / Comprehensive - the client reads what each column is (Kyle, 4 Nov). */
+var LINEUP_NAMES={aca:{good:['ACA + accident','24-Hour Accident'],better:['ACA + deductible buster','Hospital + Out-of-Pocket'],best:['ACA + buster + dental','Deductible buster + dental']},
+  vb:{good:['The ACA plan','The marketplace plan alone'],better:['Virtual Basic A','Real out-of-pocket protection'],best:['Virtual Basic B','Basic protection']}};
 /* "▶ Present Comprehensive Plan" - the plan's name in italics; one label for the builder's button and the one under Send the quote */
 function presentBtnLabel(){ var t=chosenTier(), N=tierNonMh(t); if(N) return 'ⓘ '+N.name+' plan — how to present it'; return '▶ Present '+(t?'<i>'+TIER_NAME[t]+'</i> Plan':'a plan'); }
 function chosenTier(){ return (S.chosen&&S.chosen.tier)||null; }
@@ -8668,7 +8687,7 @@ function pbColHTML(T,anc){ var t=T[0], act=(t==='actual'), st=(S.client.state||'
     var c=effCfg(t), pk=S.packages[t]||{products:[]}, dropped=pk.dropped||[];
     var built=buildTierProducts(c,null,[]), byK={}; built.forEach(function(p){ byK[p.k]=p; });
     var byKpk={}; (pk.products||[]).forEach(function(p){ if(p.k) byKpk[p.k]=p; });
-    var hdr=S.lineup==='aca'?({good:['ACA + accident','24-Hour Accident'],better:['ACA + deductible buster','Hospital + Out-of-Pocket'],best:['ACA + buster + dental','Deductible buster + dental']}[t]||[T[1],T[2]]):S.lineup==='vb'?({good:['ACA path','The marketplace plan alone'],better:['Virtual Basic A','Real out-of-pocket protection'],best:['Virtual Basic B','Basic protection']}[t]||[T[1],T[2]]):(S.lineup==='lx-mh-cg'||S.lineup==='custom')&&c.base&&c.base!=='afc'?[(c.base==='lifex'||c.base==='brightlife')?'Pivot down':'Pivot up',c.base==='lifex'?'LifeX':c.base==='brightlife'?'Bright Life':'Cigna']:(S.lineup==='lx-mh-cg'?['Lead','Manhattan']:[T[1],T[2]]);
+    var hdr=LINEUP_NAMES[S.lineup]?(LINEUP_NAMES[S.lineup][t]||[T[1],T[2]]):(S.lineup==='lx-mh-cg'||S.lineup==='custom')&&c.base&&c.base!=='afc'?[(c.base==='lifex'||c.base==='brightlife')?'Pivot down':'Pivot up',c.base==='lifex'?'LifeX':c.base==='brightlife'?'Bright Life':'Cigna']:(S.lineup==='lx-mh-cg'?['Lead','Manhattan']:[T[1],T[2]]);
     var incT=(S.include||{})[t]!==false;
     if(act) html+=pbActHead(); else html+='<div class="pbcol'+(S.recommended===t?' rec':'')+(rfBadge(t)?' dtpick':'')+(incT?'':' excl')+(chosenTier()===t?' chosen':'')+'" data-t="'+t+'"><div class="pbhd">'+rfBadge(t)+'<div class="r1"><span class="tt">'+hdr[0]+'</span><button type="button" class="pbreset" data-act="reset1" title="Put this package back to the recommendation">↺ Reset</button></div><div class="nm">'+hdr[1]+'</div><div class="r3"><label class="pbshow"><input type="checkbox" data-act="inc"'+(incT?' checked':'')+'> Show on quote</label></div></div>'
       +((S.lineup==='custom')?'':'<!--')+'<div style="padding:0 12px 4px"><select data-act="base" aria-label="Base plan" style="width:100%;font:inherit;font-size:13px;padding:6px 8px;border:1px solid #d6cdb4;border-radius:7px">'+pbOpts([['afc','Base: Manhattan — Affordable Choice']].concat(blOn()?(c.base==='lifex'?[['lifex','Base: LifeX (replaced by Bright Life)']]:[]).concat([['brightlife','Base: Bright Life']]):[['lifex','Base: LifeX']].concat(c.base==='brightlife'?[['brightlife','Base: Bright Life']]:[])).concat([['triad','Base: Cigna — Triad PPO']]),c.base||'afc')+'</select></div>'+((S.lineup==='custom')?'':'-->');
