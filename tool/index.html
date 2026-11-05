@@ -5862,7 +5862,7 @@ function reviewConfFold(pg){ approvedFold(pg); var cf=document.querySelector('#r
    Shown only in the sandbox (port 8767 or ?triad=1) until Jesse ships it. */
 /* Sandbox switches (Jesse, 1 Nov): on the local preview (port 8767) and on sandbox.mypoppro.com, which publishes this
    branch for the team to see. mypoppro.com never matches, so live users never see them. */
-var TRIAD_FLOW_ON=(location.port==='8767'||location.hostname==='sandbox.mypoppro.com')||/[?&]triad=1\b/.test(location.search);
+var TRIAD_FLOW_ON=true;   /* live with the launch (Jesse, 5 Nov); was sandbox-only since 22 Oct */
 function triadFlowOn(t){ return TRIAD_FLOW_ON&&!!t&&effCfg(t).base==='triad'&&popIsMajor(t); }
 /* Client-facing documents in the Carrier Library (Optimum Carrier Library/Triad Cigna/_all-states) */
 var TRIAD_SBC={'1000':'1IsUaoaOEElitukIQUYrAHFaFtgM-avdO','1500':'186pV59okJdncrf7zUrP54Wh9roXH8FiW','2500':'1HT8SuqRo1UFiaMYcZRMpD-PI36cCCnWA','3500':'1hHuKCkPIS1mBys4rS9DiEYmkFbaTFvCh',
@@ -5967,7 +5967,7 @@ function triadPresentHTML(t){ var first=triadFirst(), plan=triadPlanOf(t), ded=t
    {t:'Next steps',h:(function(){ var d=triadDates(); return triadSay('“Here’s how it goes: we apply by <b>'+d.submit+'</b>, they review your health, and if you’re approved you’ll get a final offer that has to be signed by <b>'+d.sign+'</b> — miss that and there’s no coverage. Your start date is usually the 1st of the next month — <b>'+d.start+'</b> — and the offer confirms it.”')
       +triadDo('Before you apply: <b>they must be self-employed with their own EIN</b> — no EIN, no Cigna plan. If they don’t have one, it’s free and instant on the <a href="'+TRIAD_EIN_URL+'" target="_blank" rel="noopener">IRS site ↗</a>.')
       +'<button type="button" class="btn-gold" onclick="goStep(\'enroll\')">Go to Enroll →</button>'; })()}];
-  return '<div class="pr-top"><div><h3>Presenting the <em class="pr-plan">Cigna PPO '+esc(plan)+'</em> to '+esc(first)+'</h3><small>Agent-only — Triad flow (sandbox). Figures come from the 2027 rate and benefit guide for the '+esc(plan)+' plan.</small></div>'
+  return '<div class="pr-top"><div><h3>Presenting the <em class="pr-plan">Cigna PPO '+esc(plan)+'</em> to '+esc(first)+'</h3><small>Agent-only. Figures come from the 2027 rate and benefit guide for the '+esc(plan)+' plan.</small></div>'
     +'<button type="button" data-pr="quote" style="font:inherit;font-weight:700;border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 13px;cursor:pointer">← Back to the Quote</button></div>'
     +'<div class="trd">'+triadSteps(pages,'prpg')+'</div>'; }
 
@@ -6346,7 +6346,7 @@ function triadEnrollEmail(t){ var L=brochList(t), first=triadFirst(), plan=triad
     +'Best,\n'+(agent||agency)+(agent&&agency?'\n'+agency:'')+(S.agentPhone?'\n'+S.agentPhone:'')+(S.agentEmail?'\n'+S.agentEmail:'')+(site?'\n'+site:'')+(String(S.agentNPN||'').trim()?'\nNational Producer Number: '+String(S.agentNPN).trim():'');
   return {to:(S.intake&&S.intake.email)||'',subject:'Your Cigna PPO application — what happens next',body:body,L:L,carrier:'Cigna'}; }
 function triadEnrollHTML(t){ var d=triadDates(), first=triadFirst(), plan=triadPlanOf(t), bus=triadBusters(t), ml=bus.some(function(x){ return /^(his|gap|acc|chas|hhc|dvh)$/.test(x.k); });
-  return '<div class="en-step"><span>★</span> Enrolling '+esc(first)+' in the Cigna PPO '+esc(plan)+' <small style="font-weight:600;color:var(--muted)">— Triad flow (sandbox)</small></div><div class="trd">'
+  return '<div class="en-step"><span>★</span> Enrolling '+esc(first)+' in the Cigna PPO '+esc(plan)+'</div><div class="trd">'
    +'<div class="trd-blk"><h5>1 · Can they have it?</h5>'+triadPick('ein','Self-employed with their own EIN?',['Yes — has an EIN','Self-employed, getting an EIN now','No — not self-employed'])
      +(triadState().ein==='No — not self-employed'?'<div class="trd-stop">✕ Not eligible for this plan — it’s for the self-employed only. Back to the Quote.</div>':'')
      +triadDo('No EIN yet? Free and instant on the <a href="'+TRIAD_EIN_URL+'" target="_blank" rel="noopener">IRS site ↗</a> — five minutes on the phone with them.')
@@ -6546,7 +6546,7 @@ function glp1FromSuite(h){ var one=function(pre){ var k=function(f){ return h[pr
    items the agent hasn't opened yet (localStorage pp_news_seen = newest date they've seen). */
 var NEWS_DAYS=30;
 var NEWS=[
- {d:'2026-11-04',t:'Bright Life, the Decision Tree, ACA + protection and Virtual Basic',h:[
+ {d:'2026-11-05',t:'Bright Life, Cigna, the Decision Tree, ACA + protection and Virtual Basic',h:[
   ['Bright Life is in','The Health Shield Copay PPO 1250 on the Cigna network, with Hospital Indemnity at $2,000 a stay + $1,500 outpatient, Humana dental and vision for members, its brochure, and its own presentation script. LifeX is off the lineup.'],
   ['Coverage Decision Tree','A step between Intake and Quote: the big picture of what they pay now, whether the ACA is their best fit, and which plans fit — with "Quote this" on every option.'],
   ['ACA + protection','Their own marketplace plan, plus 24-Hour Accident, or the deductible buster (Hospital Indemnity + Out-of-Pocket sized to their deductible), or the buster + dental. Its own script and close: they apply for the ACA, you write the protection.'],
@@ -6555,7 +6555,10 @@ var NEWS=[
   ['POP Score reads every plan','The ACA plan, Bright Life and Amaze now count. A big deductible with nothing to cover it costs points; the busters earn them back. Fully built Manhattan reaches 100.'],
   ['Present says what you’re presenting','"Present Manhattan Complete", "Present Bright Life plan", "Present ACA + deductible buster"… and the Enroll page and emails follow the plan they chose.'],
   ['Add your own links','In Setup: your HealthSherpa link and your Amaze sign-up link. They go on Enroll and in the ACA and Virtual Basic emails.'],
-  ['Care card in your agency’s name','The card is titled with your agency, and on any plan it carries the services you sold them — telehealth and Rx Valet with any ManhattanLife product.']],
+  ['Care card in your agency’s name','The card is titled with your agency, and on any plan it carries the services you sold them — telehealth and Rx Valet with any ManhattanLife product.'],
+  ['Cigna PPO script','The Cigna (Triad) column now has its own Present script and Enroll steps: who can have it, the health questions, the price range at approval, the documents, and the deadlines.'],
+  ['Key dates on Enroll','A Cigna or Bright Life plan shows its deadlines at the top of Enroll: when the application is due, when it must be signed, when coverage starts and the first draft (marked UNCONFIRMED until the carrier confirms it). Bright Life also shows the last day they can back out.'],
+  ['Amaze is their telehealth','A Virtual Basic client hears about Amaze’s virtual care, never EasyCare2go: the enrollment email describes what Amaze does, and the Benefits Review, its checklist, the recap and the care card talk Amaze. Rx Valet is told as part of Amaze.']],
   i:[
   ['Bright Life plan','Copay PPO 1250 only (a saved Visit Limit plan still opens). Benefits, prices and the brochure link come from the Health Shield PPO 1250 brochure.'],
   ['Bright Life script','Nine pages: what it is ("we represent Bright Life" — never sold, never guaranteed issue), copays, doctors on Cigna, prescriptions, the hospital, the health questions and CARES, the price and draft on the 15th, quick answers and next steps.'],
@@ -6571,8 +6574,6 @@ var NEWS=[
   ['Every Cigna rate is $14 higher','The 2027 Classic Triad guide is a flat +$14.00 a month on every rate: all age bands, all tiers, all plans. It applies to plans starting 12/1/26 or later. A start date before that on the Intake still quotes the 2026 rate, and a blank start date quotes 2027.'],
   ['HSA plans: higher out-of-pocket','Max out-of-pocket on the 3500 HSA and 5000 HSA went from $6,550 to $7,350 ($14,700 family). Deductibles are unchanged. Check any HSA recommendation again.'],
   ['HSA prescriptions corrected','On the HSA plans, prescriptions are $15 / $65 / $100 / 50% after the deductible, per the 2027 guide. Specialty drugs are 50% on every plan.'],
-  ['Key dates on Enroll','A Cigna or Bright Life plan shows its deadlines at the top of Enroll: when the application is due, when it must be signed, when coverage starts and the first draft (marked UNCONFIRMED until the carrier confirms it). Bright Life also shows the last day they can back out.'],
-  ['Amaze is their telehealth','A Virtual Basic client hears about Amaze’s virtual care, never EasyCare2go: the enrollment email describes what Amaze does, and the Benefits Review, its checklist, the recap and the care card talk Amaze. Rx Valet is told as part of Amaze.'],
   ['Plan summaries are still 2026','The 2027 plan summaries (SBCs) have not arrived yet. For a coverage question, the SBC still governs.']]},
  {d:'2026-10-23',t:'Benefits Review, care card, approval message and a cleaner Present',h:[
   ['Discovery lives in MyPopPro','The Discovery call now runs from MyPopPro itself — same call, same answers flowing into the Intake, nothing to open anywhere else.'],
