@@ -633,6 +633,10 @@
   .modal.wl-card{background:var(--cream,#faf6ec);border-radius:16px}
   .wl-body{max-height:calc(100vh - 230px);overflow:auto}
   .wl-you{margin:18px 20px 0;padding-top:14px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}.wl-you b{font-family:var(--serif);color:var(--navy);font-size:17px;margin-right:6px}.wl-you i{font-style:normal}.wl-you i.needfill-sum{color:#17824a;font-weight:700}
+  /* Setup file (Jesse, 5 Nov): the agent's details in one small file of their own - client files no longer carry them */
+  .wl-you{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 6px}.wl-you .sf-btns{margin-left:auto;display:flex;gap:8px;align-self:center}
+  .sf-btns button{padding:7px 14px;font-size:13px;font-weight:600;color:var(--navy);background:#fff;border:1.5px solid var(--navy);border-radius:8px;cursor:pointer}.sf-btns button:hover{background:var(--navy);color:#fff}
+  .setupfile{display:none;margin:10px 20px 0;padding:10px 12px;border:2px solid #2e9e5b;background:#eefaf2;border-radius:10px;font-size:14px;color:#17824a}.setupfile.empty{display:block}
   #agentSetup{padding:8px 20px 4px}
   #setupModal{z-index:2000}
   /* health history marks */
@@ -1761,7 +1765,8 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
   </details>
   <div class="wl-tip" id="wlTip"></div>
   <div id="wlDetails">
-  <div class="wl-you"><b>Your details</b> <span>set once &middot; on every page, email and text</span> <i id="agentSetupState"></i></div>
+  <div class="wl-you"><b>Your details</b> <span>enter them below</span> <i id="agentSetupState"></i><span class="sf-btns"><button type="button" id="setupLoadBtn" title="Puts your saved details back - after a cleared browser or on a new computer">&#11014; Load my Setup</button><button type="button" id="setupSaveBtn" title="Saves your details below to one small file. Keep it somewhere safe. Client files don&rsquo;t carry your details.">&#11015; Save my Setup</button></span></div>
+  <div class="setupfile" id="setupFile"><b>New computer, or cleared your browser?</b> Click <b>Load my Setup</b> and skip the typing. No file yet? Fill in below, then <b>Save my Setup</b> and keep the file.<input type="file" id="setupFileIn" accept="application/json,.json" style="display:none"></div>
   <div class="agentsetup" id="agentSetup">
     <div class="intakegrid agentgrid">
       <div class="fld"><label>Your agency</label><input id="in_agency" placeholder="HealthFirst"></div>
@@ -1773,10 +1778,10 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
       <div class="fld"><label>Your digital business card <a href="#goatGrab" class="setlink" data-goat="1">(set up)</a></label><input id="in_acard" placeholder="yourcard.com/you"></div>
       <div class="fld"><label>Your booking link <a href="#goatGrab" class="setlink" data-goat="1">(set up)</a></label><input id="in_abook" placeholder="calendly.com/you"></div>
       <div class="fld"><label>Your benefits page <small>for the Benefits Review</small></label><input id="in_abenefits" placeholder="yoursite.com/manhattanlife"></div>
-      <div class="fld agbio"><label>Your bio <small>who you are · read at the start of every discovery call (2.3) · empty = the default</small></label><textarea id="in_abio" rows="4" placeholder="Leave empty to use the default"></textarea><button type="button" class="picbtn" id="bioDefault">Use the default</button></div>
       <div class="fld"><label>Direction Rx link <small>GLP-1 discount, weight loss</small></label><input id="in_adrxlink" placeholder="https://bit.ly/4wf5B7V (used if blank)"><small class="fhint">Keep ManhattanLife’s tracking link — it’s how they count the engagement. A typed-in address isn’t counted.</small></div>
       <div class="fld"><label>Direction Rx code <small>the client enters it for 30% off</small></label><input id="in_adrxcode" placeholder="4-MEM-26-6 (used if blank)"></div>
       <div class="fld"><label>Amaze sign-up link <small>your own — where clients join Amaze</small></label><input id="in_aamazelink" placeholder="your Amaze member sign-up link"></div>
+      <div class="fld agbio"><label>Your bio <small>who you are · read at the start of every discovery call (2.3) · empty = the default</small></label><textarea id="in_abio" rows="4" placeholder="Leave empty to use the default"></textarea><button type="button" class="picbtn" id="bioDefault">Use the default</button></div>
     </div>
     <div class="goatgrab" id="goatGrab">
       <b>Don&rsquo;t have the last three yet? All three are free.</b> <span class="freetag">NO COST</span>
@@ -4946,7 +4951,7 @@ function fileName(){
   return 'POP_Pro_'+n+'_'+d+'.json';
 }
 function saveQuote(){
-  var data=currentQuote(); data.format='optimum-client'; data.formatV=1;   /* opens in the Script Navigator too */
+  var data=stripAgent(currentQuote()); data.format='optimum-client'; data.formatV=1;   /* opens in the Script Navigator too */
   var blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
   var url=URL.createObjectURL(blob);
   var a=document.createElement('a'); a.href=url; a.download=fileName(); document.body.appendChild(a); a.click(); a.remove();
@@ -5037,7 +5042,7 @@ function agentGlow(){ var empty=[]; AGENT_BOXES.forEach(function(b){ var el=$(b[
 /* No fold any more: the box lives in the Setup window. While anything is missing, the Setup button glows and counts it. */
 function agentSetupFold(){ var miss=agentSetupMissing(), b=$('setupBtn'), n=$('setupNeed'); if(b){ b.classList.toggle('need',!!miss.length); b.title=miss.length?'Still to fill in: '+miss.join(', '):'Your agency, name, phone, email, NPN and links'; } if(n) n.textContent=miss.length?String(miss.length):'';
   var ws=$('wlSetupState'); if(ws){ ws.textContent=miss.length?miss.length+' to fill in ↓':'✓ Done'; ws.className=miss.length?'todo':''; }
-  var d=$('agentSetup'); if(d) d.classList.toggle('goat-skipped',goatSkipped()); agentGlow(); }
+  var d=$('agentSetup'); if(d) d.classList.toggle('goat-skipped',goatSkipped()); var sf=$('setupFile'); if(sf) sf.classList.toggle('empty',setupEmpty()); agentGlow(); }
 function fillAgent(){ $('in_agency').value=S.agency||'HealthFirst'; $('in_agent').value=(S.client||{}).agent||''; $('in_aphone').value=S.agentPhone||''; $('in_aemail').value=S.agentEmail||''; $('in_anpn').value=S.agentNPN||''; $('in_aweb').value=S.agentWebsite||''; $('in_acard').value=S.agentCard||''; $('in_abook').value=S.agentBooking||''; $('in_abenefits').value=S.agentBenefits||''; $('in_adrxlink').value=S.agentDrxLink||''; $('in_adrxcode').value=S.agentDrxCode||''; if($('in_ahslink')) $('in_ahslink').value=S.agentHsLink||''; if($('in_aamazelink')) $('in_aamazelink').value=S.agentAmazeLink||''; $('in_abio').value=S.agentBio||''; agentSetupFold(); }
 /* Only the agent fields - captureIntake() would also read the client boxes, which are stale off the Intake step. */
 function readAgent(){ S.agency=($('in_agency').value||'').trim()||'HealthFirst'; S.client=S.client||{}; S.client.agent=$('in_agent').value; S.agentPhone=$('in_aphone').value; S.agentEmail=$('in_aemail').value; S.agentNPN=($('in_anpn').value||'').trim(); S.agentWebsite=($('in_aweb').value||'').trim(); S.agentCard=($('in_acard').value||'').trim(); S.agentBooking=($('in_abook').value||'').trim(); S.agentBenefits=($('in_abenefits').value||'').trim(); S.agentDrxLink=($('in_adrxlink').value||'').trim(); S.agentDrxCode=($('in_adrxcode').value||'').trim(); S.agentHsLink=(($('in_ahslink')||{}).value||'').trim(); S.agentAmazeLink=(($('in_aamazelink')||{}).value||'').trim(); S.agentBio=($('in_abio').value||'').trim(); agentSetupFold(); autosave(); }
@@ -6765,28 +6770,47 @@ function keepAgent(ag){
    carries the whole navigator call (S.nav); a navigator save carries the POP Pro quote it came with (_pop). Opening a
    navigator file: its POP Pro quote is the base and the navigator's answers - the newer save - go on top. */
 function navOnlyOf(p){ var o={}; Object.keys(p||{}).forEach(function(k){ if(k!=='_pop') o[k]=p[k]; }); return JSON.parse(JSON.stringify(o)); }
-/* Opening a file someone else saved (Jesse, 5 Nov): the client travels in the file, the agent does not. Whoever opens
-   it keeps their own Setup - name, agency, phone, email, links - so what they send the client carries their details;
-   the file's Setup only fills a field this browser has empty (your own file on a new computer). */
-function preferAgent(ag){   /* S already holds the file's values... */
-  var set={agency:function(v){ S.agency=v; },agent:function(v){ S.client=S.client||{}; S.client.agent=v; },phone:function(v){ S.agentPhone=v; },email:function(v){ S.agentEmail=v; },
-    npn:function(v){ S.agentNPN=v; },web:function(v){ S.agentWebsite=v; },card:function(v){ S.agentCard=v; },book:function(v){ S.agentBooking=v; },ben:function(v){ S.agentBenefits=v; },
-    drxl:function(v){ S.agentDrxLink=v; },drxc:function(v){ S.agentDrxCode=v; },hs:function(v){ S.agentHsLink=v; },amz:function(v){ S.agentAmazeLink=v; },bio:function(v){ S.agentBio=v; }};
-  Object.keys(set).forEach(function(k){ var v=ag[k]; if(k==='agency'&&v==='HealthFirst') return; if(v!=null&&String(v).trim()!=='') set[k](v); }); }   /* ...then this agent's own values win */
+/* Setup file vs client file (Jesse, 5 Nov): the client travels in a client file, the agent never does. A client file is
+   saved without the agent's details, and opening any client file - Kyle's, an assistant's, an old one that still carries
+   someone's Setup - leaves this browser's Setup exactly as it was. The agent's details live in their own Setup file
+   ("Save my Setup"), which puts them back after a cleared browser or on a new computer. */
+var AGENT_KEYS=['agency','agentPhone','agentEmail','agentNPN','agentWebsite','agentCard','agentBooking','agentBenefits','agentDrxLink','agentDrxCode','agentHsLink','agentAmazeLink','agentBio'];
+function stripAgent(d){ AGENT_KEYS.forEach(function(k){ delete d[k]; }); if(d.client) delete d.client.agent; return d; }
+function setAgent(ag){ ag=ag||{}; var t=function(v){ return v==null?'':String(v); };
+  S.agency=t(ag.agency).trim()||'HealthFirst'; S.client=S.client||{}; S.client.agent=t(ag.agent);
+  S.agentPhone=t(ag.phone); S.agentEmail=t(ag.email); S.agentNPN=t(ag.npn); S.agentWebsite=t(ag.web); S.agentCard=t(ag.card); S.agentBooking=t(ag.book);
+  S.agentBenefits=t(ag.ben); S.agentDrxLink=t(ag.drxl); S.agentDrxCode=t(ag.drxc); S.agentHsLink=t(ag.hs); S.agentAmazeLink=t(ag.amz); S.agentBio=t(ag.bio); }
+function setupEmpty(){ return !String((S.client||{}).agent||'').trim() && !String(S.agentPhone||'').trim() && !String(S.agentEmail||'').trim(); }
+function isSetupFile(o){ return !!o && o.format==='mypoppro-setup' && !!o.agent && typeof o.agent==='object'; }
+function saveSetup(){ if($('in_agent')) readAgent(); var ag=agentOf(S);
+  var data={format:'mypoppro-setup',formatV:1,saved:new Date().toISOString(),goatSkip:goatSkipped(),agent:ag};
+  var n=String(ag.agent||'agent').replace(/[^a-z0-9]+/gi,'_').replace(/^_|_$/g,'')||'agent';
+  var url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));
+  var a=document.createElement('a'); a.href=url; a.download='MyPopPro_Setup_'+n+'.json'; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(function(){ URL.revokeObjectURL(url); },1500); }
+function applySetupFile(o){ setAgent(o.agent); if(o.goatSkip){ try{ localStorage.setItem('pp_goat_skip','1'); }catch(e){} }
+  if(typeof fill==='function'){ fill(); compute(); } if($('in_agent')) fillAgent(); autosave(); }
+function loadSetupFile(file){ var rd=new FileReader();
+  rd.onload=function(){ var o=null; try{ o=JSON.parse(rd.result); }catch(e){}
+    if(!isSetupFile(o)){ alert(o&&typeof o==='object'?'That’s a client file, not a Setup file. Open clients with Load Quote; load your Setup here.':'Could not read that file — is it a MyPopPro Setup file (.json)?'); return; }
+    applySetupFile(o); alert('Your Setup is loaded'+(o.agent.agent?': '+o.agent.agent:'')+'.'); };
+  rd.readAsText(file); }
 function loadQuoteObject(obj){ var ag=agentOf(S);
   if(isNavProfile(obj)){ var pop=obj._pop&&typeof obj._pop==='object'?obj._pop:null;
-    if(pop){ S=deepMerge(blankState(),pop); preferAgent(ag); migrateAca(pop); migrateEvents(pop); if(!S.packages||!S.packages[S.activeTab]) S.packages=blankState().packages; if(!S.aca) S.aca=blankState().aca; }
-    else { S=blankState(); preferAgent(ag); }
+    if(pop){ S=deepMerge(blankState(),pop); setAgent(ag); migrateAca(pop); migrateEvents(pop); if(!S.packages||!S.packages[S.activeTab]) S.packages=blankState().packages; if(!S.aca) S.aca=blankState().aca; }
+    else { S=blankState(); setAgent(ag); }
     applySuiteClient(suiteFromNavProfile(obj)); S.nav=navOnlyOf(obj);
     return pop?'quote':'intake'; }
-  S=deepMerge(blankState(),obj); preferAgent(ag); migrateAca(obj); migrateEvents(obj);
+  S=deepMerge(blankState(),obj); setAgent(ag); migrateAca(obj); migrateEvents(obj);
   if(!S.packages||!S.packages[S.activeTab]) S.packages=blankState().packages;
   if(!S.aca) S.aca=blankState().aca;
   return 'quote'; }
 function loadFile(file){
   var rd=new FileReader();
   rd.onload=function(){
-    try{ var obj=JSON.parse(rd.result), nav=isNavProfile(obj), where=loadQuoteObject(obj);
+    try{ var obj=JSON.parse(rd.result);
+      if(isSetupFile(obj)){ applySetupFile(obj); alert('Your Setup is loaded'+(obj.agent.agent?': '+obj.agent.agent:'')+'. Your client is unchanged.'); return; }
+      var nav=isNavProfile(obj), where=loadQuoteObject(obj);
       fill(); compute(); goStep(where); autosave();
       alert((nav?'Script Navigator profile loaded':'Quote loaded')+(S.client&&S.client.pname?': '+S.client.pname:'')+'. '+(where==='intake'?'Check the intake, then build the packages.':'Edit and Save again to keep a new version.'));
     }catch(e){ alert('Could not read that file — is it a MyPopPro quote or a Script Navigator profile (.json)?'); }
@@ -8467,6 +8491,9 @@ function bindInputs(){
   $('in_aphone').addEventListener('input',function(){ this.value=fmtPhone(this.value); markValid(this,phoneOK(this.value)); captureIntake(); });
   $('in_aemail').addEventListener('input',function(){ markValid(this,emailOK(this.value)); captureIntake(); });
   ['in_anpn','in_aweb','in_acard','in_abook'].forEach(function(id){ $(id).addEventListener('input',function(){ captureIntake(); }); });
+  if($('setupSaveBtn')) $('setupSaveBtn').onclick=saveSetup;
+  if($('setupLoadBtn')) $('setupLoadBtn').onclick=function(){ $('setupFileIn').value=''; $('setupFileIn').click(); };
+  if($('setupFileIn')) $('setupFileIn').onchange=function(e){ var f=e.target.files&&e.target.files[0]; if(f) loadSetupFile(f); };
   if($('goatSkip')) $('goatSkip').onclick=function(){ try{ localStorage.setItem('pp_goat_skip','1'); }catch(e){} agentSetupFold(); };
   $('bioDefault').onclick=function(){ $('in_abio').value=DEFAULT_BIO; readAgent(); };
   /* (set up) beside the three link boxes: jump to the free GOAT how-to below, even if it was folded away */
