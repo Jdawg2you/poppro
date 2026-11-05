@@ -240,7 +240,7 @@
   function isAmaze(){ return /^Amaze/.test(String(P.pl||'')); }
   function fixed(){ if(!isML()){ var m=[], n=val('mem'), ph=phone(val('mem_ph')); if(n||ph) m.push(['Member services',n,ph]); if(isCigna()) m=m.concat(CIGNA);
       if(isAmaze()) m.push(['Everyday care','Amaze app \u2014 doctor by phone or video','720-575-6614']);
-      if(P.m) m=m.concat(FIXED.slice(2)); if(P.md&&$('has_dental').checked) m.push(['Dental network','Careington','800-290-0424']); return m; } var f=FIXED.slice(); if($('has_dental').checked) f.push(['Dental network','Careington','800-290-0424']); return f; }
+      if(P.m) m=m.concat(FIXED.slice(isAmaze()?3:2));   /* Amaze clients: Amaze is the telehealth, not EasyCare2go (Jesse, 5 Nov) */ if(P.md&&$('has_dental').checked) m.push(['Dental network','Careington','800-290-0424']); return m; } var f=FIXED.slice(); if($('has_dental').checked) f.push(['Dental network','Careington','800-290-0424']); return f; }
 
   /* one short line: what isn't on the plan yet (or that levels can go up), who to ask, and the review month */
   var GAPNAME={dvh:'dental',lb:'life insurance',chas:'cancer & heart coverage'};
