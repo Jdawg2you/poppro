@@ -1692,7 +1692,7 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
         <a class="portalbtn" id="lnkBrightlife" href="#" target="_blank" rel="noopener" style="display:none">Bright Life — client application &#8599;</a>
         <a class="portalbtn" id="lnkBrightlifeAgent" href="#" target="_blank" rel="noopener" style="display:none">Bright Life — agent contracting (not signed up yet?) &#8599;</a>
         <a class="portalbtn" id="lnkAmaze" href="#" target="_blank" rel="noopener">Amaze — client sign-up &#8599;</a>
-        <a class="portalbtn" id="lnkHealthSherpa" href="#" target="_blank" rel="noopener">ACA marketplace — HealthSherpa &#8599;</a>
+        <a class="portalbtn" id="lnkHealthSherpa" href="https://www.healthsherpa.com/sessions/new" target="_blank" rel="noopener">HealthSherpa — send the ACA application &#8599;</a>
         <div class="note" id="enLinkHint" style="padding:6px 0 0;display:none"></div>
       </div>
     </div>
@@ -1776,7 +1776,6 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
       <div class="fld agbio"><label>Your bio <small>who you are · read at the start of every discovery call (2.3) · empty = the default</small></label><textarea id="in_abio" rows="4" placeholder="Leave empty to use the default"></textarea><button type="button" class="picbtn" id="bioDefault">Use the default</button></div>
       <div class="fld"><label>Direction Rx link <small>GLP-1 discount, weight loss</small></label><input id="in_adrxlink" placeholder="https://bit.ly/4wf5B7V (used if blank)"><small class="fhint">Keep ManhattanLife’s tracking link — it’s how they count the engagement. A typed-in address isn’t counted.</small></div>
       <div class="fld"><label>Direction Rx code <small>the client enters it for 30% off</small></label><input id="in_adrxcode" placeholder="4-MEM-26-6 (used if blank)"></div>
-      <div class="fld"><label>HealthSherpa link <small>your own — where clients apply for the ACA plan</small></label><input id="in_ahslink" placeholder="your HealthSherpa agent link"></div>
       <div class="fld"><label>Amaze sign-up link <small>your own — where clients join Amaze</small></label><input id="in_aamazelink" placeholder="your Amaze member sign-up link"></div>
     </div>
     <div class="goatgrab" id="goatGrab">
@@ -2871,12 +2870,12 @@ function lbSummary(t){ if(!TIERCFG[t]&&t!=='actual') t=enrolledTier()||S.activeT
    Amaze sign-up instead. Both links are the agent's own (Setup); a missing one is a bracketed blank, never a guess. */
 function acaEnrollEmail(t){ var c=effCfg(t), pk=S.packages[t]||{}, A=acaIn(), aca=c.base==='aca', L=brochList(t), first=((S.client.pname||'').trim().split(/\s+/)[0])||'there';
   var agent=(S.client.agent||'').trim(), agency=(S.agency||'').trim(), fam=householdKey()!=='i', book=String(S.agentBooking||'').trim(), site=String(S.agentWebsite||'').trim();
-  var prods=(pk.products||[]).filter(function(p){ return (+p.monthly||0)>0&&p.k!=='base'&&p.k!=='lbp'&&p.k!=='lbs'; }), LB=lbSummary(t), hs=hsLink(), am=amazeLink();
+  var prods=(pk.products||[]).filter(function(p){ return (+p.monthly||0)>0&&p.k!=='base'&&p.k!=='lbp'&&p.k!=='lbs'; }), LB=lbSummary(t), am=amazeLink();
   var nm=function(p){ var sl=PB_SLOTS.filter(function(x){ return x.k===p.k; })[0]; return sl?sl.name:String(p.name||'').split(' — ')[0]; };
   var body='Hi '+first+',\n\n'
     +'Thank you for your time today — I’m so glad I could help get you'+(fam?' and your family':'')+' set up. Here’s everything in one place.\n\n'
-    +(aca?'YOUR MARKETPLACE PLAN\n'+(A.plan?A.plan+'. ':'')+'You’ll apply for this one yourself on the marketplace: '+(hs||'[your HealthSherpa link]')+'\nOnce you’re enrolled, you’ll be working with the marketplace and that plan’s insurance company on the plan itself — and I’m still here for anything you need.\n\n'
-         :'AMAZE — YOUR EVERYDAY CARE\nSign up here: '+(am||'[your Amaze sign-up link]')+'\nFor '+fmt2(AMAZE_MO)+' a month'+(fam?' — one price for the whole family':'')+'. It isn’t insurance; it’s everyday care:\n'+amazeLines(fam).map(function(s){ return '• '+s; }).join('\n')+'\n\n')
+    +(aca?'YOUR MARKETPLACE PLAN\n'+(A.plan?A.plan+'. ':'')+'I’ll send your marketplace application over separately — watch for it, and finish it as soon as it arrives.\nOnce you’re enrolled, you’ll be working with the marketplace and that plan’s insurance company on the plan itself — and I’m still here for anything you need.\n\n'
+         :'AMAZE — YOUR EVERYDAY CARE\n'+(am?'Sign up here: '+am:'I’ll send you the sign-up link separately.')+'\nFor '+fmt2(AMAZE_MO)+' a month'+(fam?' — one price for the whole family':'')+'. It isn’t insurance; it’s everyday care:\n'+amazeLines(fam).map(function(s){ return '• '+s; }).join('\n')+'\n\n')
     +((prods.length||LB.length)?'WHAT I SET UP FOR YOU\n'+prods.map(function(p){ return '• '+nm(p)+' — '+pbSummary(p.k,c); }).join('\n')
       +(LB.length?(prods.length?'\n':'')+LB.map(function(x){ return '• '+(x.face?'$'+x.face.toLocaleString('en-US')+' of ':'')+'Living Benefits coverage with Term Life Protection for '+x.who+' with '+x.carrier; }).join('\n'):'')
       +'\n'+(aca?'These pay you cash directly when something happens, on top of your marketplace plan — so its deductible isn’t all on you.':'These pay you cash directly when something happens — a hospital stay or an accident.')+'\n\n'
@@ -2919,7 +2918,7 @@ function enrollTextPlain(t){ t=t||chosenTier()||S.activeTab||'best'; var c=effCf
   LB.forEach(function(x){ lines.push((x.face?'$'+x.face.toLocaleString('en-US')+' ':'')+'Living Benefits'+(both?' for '+x.who:'')+' ('+x.carrier+')'); });
   var P=[];
   P.push('Hi '+first+(me?', it’s '+me:'')+'. Thank you again for trusting me today, you did something really good for yourself'+(fam?' and your family':'')+'! 🙌');
-  if(c.base==='aca') P.push('Your marketplace plan — you apply for that one yourself'+(hsLink()?': '+hsLink():', and I’m sending you the link')+'.');
+  if(c.base==='aca') P.push('Your marketplace plan — I’m sending you that application separately.');
   if(lines.length) P.push((c.base==='aca'?'And here’s what I set up for you:\n':'Quick recap of what we applied for:\n')+lines.map(function(x){ return '✅ '+x; }).join('\n')+(!N||pkHasMl(t)?'\n💊 Plus Rx Valet prescription discounts, '+RXVALET_HOW+': '+RXVALET_URL:''));   /* Rx Valet comes with a ManhattanLife plan, not with Cigna or Bright Life */
   P.push(N?'I’m emailing you the full details of your plan so you have everything in one place.':'I just emailed you the full details plus a brochure for every part of your plan. Look for “'+(acaFlowOn(t)?acaEnrollEmail(t).subject:'Your new coverage!')+'” in your inbox.');
   P.push(N&&c.base==='triad'?'The plan reviews your application next, and I’ll send you the final offer the moment it’s in — it has to be signed by the 25th, so keep an eye out.':'Approval typically takes 3–5 business days, but it can take up to 14 days depending on where you are. I’ll send your ID card the moment it comes through.');
@@ -5117,7 +5116,6 @@ var DRX_LINK_DEFAULT='https://bit.ly/4wf5B7V', DRX_CODE_DEFAULT='4-MEM-26-6';
 function drxCode(){ return String(S.agentDrxCode||'').trim()||DRX_CODE_DEFAULT; }
 function drxLink(){ var u=String(S.agentDrxLink||'').trim()||DRX_LINK_DEFAULT; return /^https?:\/\//i.test(u)?u:'https://'+u; }
 function linkOf(u){ u=String(u||'').trim(); return !u?'':(/^https?:\/\//i.test(u)?u:'https://'+u); }
-function hsLink(){ return linkOf(S.agentHsLink); }
 function amazeLink(){ return linkOf(S.agentAmazeLink); }
 /* The column's own name: Essential / Complete / Comprehensive, or the lineup's (ACA + deductible buster, Virtual Basic A) */
 function tierDisp(t){ var LN=LINEUP_NAMES[S.lineup]; return (LN&&LN[t]&&LN[t][0])||TIER_NAME[t]||''; }
@@ -6554,7 +6552,7 @@ var NEWS=[
   ['Would they take them?','Red / amber / green for ManhattanLife, Cigna and Bright Life at the top of the Intake and the Quote, from the health answers you already have.'],
   ['POP Score reads every plan','The ACA plan, Bright Life and Amaze now count. A big deductible with nothing to cover it costs points; the busters earn them back. Fully built Manhattan reaches 100.'],
   ['Present says what you’re presenting','"Present Manhattan Complete", "Present Bright Life plan", "Present ACA + deductible buster"… and the Enroll page and emails follow the plan they chose.'],
-  ['Add your own links','In Setup: your HealthSherpa link and your Amaze sign-up link. They go on Enroll and in the ACA and Virtual Basic emails.'],
+  ['Add your Amaze link','In Setup: your Amaze sign-up link. It goes on Enroll and in the Virtual Basic email. ACA applications you send yourself from HealthSherpa.'],
   ['Care card in your agency’s name','The card is titled with your agency, and on any plan it carries the services you sold them — telehealth and Rx Valet with any ManhattanLife product.'],
   ['Cigna PPO script','The Cigna (Triad) column now has its own Present script and Enroll steps: who can have it, the health questions, the price range at approval, the documents, and the deadlines.'],
   ['Key dates on Enroll','A Cigna or Bright Life plan shows its deadlines at the top of Enroll: when the application is due, when it must be signed, when coverage starts and the first draft (marked UNCONFIRMED until the carrier confirms it). Bright Life also shows the last day they can back out.'],
@@ -7352,7 +7350,7 @@ function renderEnroll(){
   /* the plan they're actually enrolling in: the card from the end of Present (as presented, or with plan edits) */
   var useA=actualOn()&&S.actual.from===t, pt=useA?'actual':t, pk=S.packages[pt]||{products:[]}, c=effCfg(pt);
   var name=S.client.pname||'Client'; if(S.client.sname) name+=' & '+S.client.sname;
-  var carrierOf=function(p){ if(p.k==='base') return c.base==='lifex'?'LifeX (E123 site)':c.base==='brightlife'?'Bright Life (hired as a Wellness Associate)':c.base==='aca'?'The marketplace — they apply on HealthSherpa':c.base==='amaze'?'Amaze — care access, not insurance':'Cigna — USA Health / Triad (1Enrollment)';
+  var carrierOf=function(p){ if(p.k==='base') return c.base==='lifex'?'LifeX (E123 site)':c.base==='brightlife'?'Bright Life (hired as a Wellness Associate)':c.base==='aca'?'The marketplace — you send the application from HealthSherpa':c.base==='amaze'?'Amaze — care access, not insurance':'Cigna — USA Health / Triad (1Enrollment)';
     if(p.k==='lbp'||p.k==='lbs'){ var lco=(c.lb||{})[p.k.slice(2)]||{}; if(lco.carrier==='other') return String(lco.otherName||'').trim()||'Other carrier';
       var nm=String(p.name||''); if(/americo/i.test(nm)) return 'Americo'; if(/mutual|omaha/i.test(nm)) return 'Mutual of Omaha';   // the policy actually priced
       var lc=(c.lb||{})[p.k.slice(2)]||{}; return lc.carrier==='americo'?'Americo':'Mutual of Omaha'; }
@@ -7380,8 +7378,9 @@ function renderEnroll(){
   ['lnkMutual','lnkNLG','lnkAmerico','lnkManhattan','lnkCigna'].forEach(function(id){ if($(id)) $(id).style.display=''; });
   /* Bright Life (sandbox): only when this package is built on it */
   (function(){ var on=blOn(), mine=c.base==='brightlife'; if($('lnkBrightlife')){ $('lnkBrightlife').href=BL_URL; $('lnkBrightlife').style.display=on?'':'none'; } if($('lnkBrightlifeAgent')){ $('lnkBrightlifeAgent').href=BL_AGENT_URL; $('lnkBrightlifeAgent').style.display=on&&mine?'':'none'; }
-    /* Amaze and HealthSherpa are the agent's own links (Setup); without one the button opens Setup instead */
-    var miss=[]; [['lnkAmaze',amazeLink(),'Amaze sign-up link'],['lnkHealthSherpa',hsLink(),'HealthSherpa link']].forEach(function(x){ var a=$(x[0]); if(!a) return; a.href=x[1]||'#'; a.target=x[1]?'_blank':''; a.onclick=x[1]?null:function(e){ e.preventDefault(); openSetup(); }; if(!x[1]) miss.push(x[2]); });
+    /* Amaze is the agent's own link (Setup); without one the button opens Setup instead. HealthSherpa is a plain button:
+       the agent sends the ACA application by hand (Jesse, 5 Nov) */
+    var miss=[]; [['lnkAmaze',amazeLink(),'Amaze sign-up link']].forEach(function(x){ var a=$(x[0]); if(!a) return; a.href=x[1]||'#'; a.target=x[1]?'_blank':''; a.onclick=x[1]?null:function(e){ e.preventDefault(); openSetup(); }; if(!x[1]) miss.push(x[2]); });
     var hn=$('enLinkHint'); if(hn){ hn.style.display=miss.length?'':'none'; hn.innerHTML=miss.length?'Add your '+miss.join(' and ')+' in <b>Setup</b> — each agent uses their own.':''; } })();
   enrollScript(); enrollPeople();
   /* Triad flow (sandbox): the Cigna enrollment steps up top; the ManhattanLife wrap-up script is not theirs */
