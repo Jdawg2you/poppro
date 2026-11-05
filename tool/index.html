@@ -1049,7 +1049,9 @@
 .pbhead input.pbprice{width:92px;font:inherit;font-weight:700;font-size:15px;color:var(--navy);text-align:right;padding:5px 6px;border:1.5px solid var(--gold);border-radius:7px;background:#fffdf7}
 .pbrow.edited{border-color:var(--gold)}
 .edtag{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;background:var(--gold);color:#12213b;border-radius:999px;padding:1px 7px;margin-left:4px;vertical-align:middle}
-.pbhead .nm .acahint{display:inline-block;margin-top:4px;padding:2px 7px;border-radius:5px;background:#fff4d6;border:1px solid #e8c770;color:#7a5600;font-size:11.5px;font-weight:500;line-height:1.35}
+.pbhead .nm .acaterms{display:block;margin-top:5px;padding:4px 8px;border-radius:6px;background:#fdecec;border:1px solid #e3a3a3;color:#8a1f1f;font-size:12.5px;font-weight:500;line-height:1.4}
+.pbhd .tfor{font-family:inherit;font-size:11px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--muted)}
+.acahint{display:inline-block;margin-top:4px;padding:2px 7px;border-radius:5px;background:#fff4d6;border:1px solid #e8c770;color:#7a5600;font-size:11.5px;font-weight:500;line-height:1.35}
 .pbhead .nm .cov{display:block;font-weight:500;font-size:12px;color:var(--muted);margin-top:2px;line-height:1.35}
 .pbhead .pr{margin-left:auto;font-weight:700;font-variant-numeric:tabular-nums;color:var(--navy);white-space:nowrap}
 .pbhead .pr.na{color:var(--muted);font-weight:500;font-size:12px}
@@ -2714,7 +2716,14 @@ function renderAca(){
   $('acaTrueHow').textContent='Annual = net premium × 12 + '+(S.aca.fullded?'deductible (brand drugs count toward it)':'brand drugs')+' + other medications × 12 + visits × cost per visit'+(t.capped?' — capped at the out-of-pocket max.':', never more than the out-of-pocket max.');
   var nm=host.querySelector('[data-acaname]'); if(nm) nm.oninput=function(){ A.plan=nm.value.trim(); nm.classList.toggle('typed',!!A.plan); autosave(); };
   host.querySelectorAll('[data-ov]').forEach(function(inp){ inp.oninput=function(){ if(/^\s*(zero|none|no|nil)\s*$/i.test(inp.value)) inp.value='0'; var v=inp.value.replace(/[^0-9.]/g,''); A.ov[inp.dataset.ov]=v===''?null:+v; acaSync(); autosave(); renderAcaTotalsOnly(); };
-    inp.onchange=function(){ renderAca(); }; });
+    /* Redraw after the click that left this box has landed, then put the cursor back where it went - redrawing during the
+       blur threw away the box being clicked, so every box took two clicks (Jesse, 4 Nov). */
+    inp.onchange=function(){ setTimeout(function(){ var a=document.activeElement, h=$('acaRows'), key='', pos=null;
+      if(a&&h&&h.contains(a)) ['ov','acaname','clr','jump'].some(function(d){ if(a.dataset[d]!=null){ key='[data-'+d+'="'+a.dataset[d]+'"]'; return true; } });
+      if(key){ try{ pos=a.selectionStart; }catch(e){} } renderAca();
+      if(key){ var n=$('acaRows').querySelector(key); if(n){ n.focus(); try{ if(pos!=null) n.setSelectionRange(pos,pos); }catch(e){} }
+        if(!n||document.activeElement!==n){   /* the clear button hides with the value: on to the next box */
+          var all=[].slice.call($('acaRows').querySelectorAll('[data-ov]')), nx=all[all.map(function(x){ return x.dataset.ov; }).indexOf(inp.dataset.ov)+1]; if(nx) nx.focus(); } } },0); }; });
   host.querySelectorAll('[data-jump]').forEach(function(a){ a.onclick=function(ev){ ev.preventDefault(); intakeJump(a.dataset.jump); }; });
   host.querySelectorAll('[data-clr]').forEach(function(b){ b.onclick=function(){ A.ov[b.dataset.clr]=null; acaSync(); autosave(); renderAca(); }; });
   var cn=$('curNote'); if(cn){ var C=curIn(), ct=curTrue();
@@ -8327,8 +8336,8 @@ function pbControls(k,c){
     return '<div class="f">Plan<select data-f="blPlan">'+pbOpts(opts.map(function(n){ return [n,n+' — '+((BLR&&BLR.plans[n]||{}).net||'')]; }),c.blPlan||BL_DEFAULT)+'</select></div>'
       +'<div class="f"><span style="display:flex;align-items:center">Humana dental<button type="button" class="pbinfo" data-blinfo="dental" title="What the Humana dental plan covers">i</button></span><i style="display:block;font-weight:400;text-transform:none;letter-spacing:0;font-size:11px;margin-bottom:3px">(Bright Life clients only)</i><select data-f="blDental">'+pbOpts([['','None'],['silver',dn('silver')],['gold',dn('gold')]],c.blDental||'')+'</select></div>'
       +'<div style="font-size:12.5px"><div style="display:flex;align-items:center"><label style="display:flex;gap:6px;align-items:center"><input type="checkbox" data-act="blx" data-x="blVision"'+(c.blVision?' checked':'')+'> Humana vision</label><button type="button" class="pbinfo" data-blinfo="vision" title="What Humana vision covers">i</button></div><i style="display:block;font-size:11px;margin-left:22px">(Bright Life clients only)</i></div>'
-      +'<div style="font-size:11.5px;color:var(--maroon)">'+(/^VL/.test(c.blPlan||BL_DEFAULT)?'<b>Visit Limit plan:</b> 10 office visits a year combined (PCP, specialist, urgent care and mental health), labs/X-rays/imaging 3 each, PHCS network only — nothing out of network, and no out-of-pocket cap past the visit limits. No ManhattanLife product buys an 11th visit.':/^PPO/.test(c.blPlan||'')?'<b>Copay PPO:</b> Cigna network, unlimited visits with copays before the deductible ($50 PCP · $75 specialist · $90 urgent care); out of network pays with 40% more. Hospital stays carry a $2,500 copay per admission.':'<b>Major Medical:</b> Cigna network, unlimited visits, in and out of network.')+'</div>'
-      +'<div style="font-size:11.5px;color:var(--muted)">The client is hired as a W-2 Wellness Associate of a research company and answers its health form first — nothing is guaranteed. Premium drafts on the 15th (no custom date). No GLP-1 for weight loss, no specialty drugs. Past $35,000 in bills a member can be moved to an ACA plan (CARES). Agent-only wording — Bright Life approves anything client-facing.</div>'; }
+      +'<div style="font-size:11.5px;color:var(--maroon)">'+(/^VL/.test(c.blPlan||BL_DEFAULT)?'<b>Visit Limit plan:</b> 10 office visits a year combined (PCP, specialist, urgent care and mental health), labs/X-rays/imaging 3 each, PHCS network only — nothing out of network, and no out-of-pocket cap past the visit limits. No ManhattanLife product buys an 11th visit.':/^PPO/.test(c.blPlan||'')?'<b>Health Shield Copay PPO 1250:</b> Cigna PPO, in and out of network. Before the deductible: $50 PCP · $75 specialist · $90 urgent care · $0 Our Live Doc telemedicine · $0 generics. After the $1,250 deductible: $2,500 a hospital admission or outpatient surgery, $1,000 ER, $500 MRI/CT. Out-of-pocket max $9,200 / $18,400 family. Out of network adds 40% and has its own $2,500 deductible. Brand-name and specialty drugs aren’t covered (patient assistance program instead); elective surgery waits 90 days.':'<b>Major Medical:</b> Cigna network, unlimited visits, in and out of network.')+'</div>'
+      +'<div style="font-size:11.5px;color:var(--muted)">The client is hired as a W-2 Wellness Associate of a research company and answers its health form first — nothing is guaranteed. Premium drafts on the 15th (no custom date). No GLP-1 for weight loss, no specialty drugs. Past $35,000 in bills a member can be moved to an ACA plan (CARES).</div>'; }
   if(k==='base'&&c.base==='triad') return '<div class="f">Deductible<select data-f="triadPlan">'+pbOpts(Object.keys(triadBook().plans).filter(function(n){ return !/HSA/.test(n)||(S.intake&&S.intake.hasHSA); }).map(function(n){ var d=n.replace('Triad Cigna ',''); return [d,'$'+d.replace(/(\d+)/,function(x){return Number(x).toLocaleString('en-US');})]; }),c.triadPlan||'7350')+'</select></div>'
     +'<label style="display:flex;gap:6px;align-items:center;font-size:12.5px;font-weight:600"><input type="checkbox" data-act="hsa"'+(S.intake&&S.intake.hasHSA?' checked':'')+'> Client already has an HSA (shows the HSA plans)</label>'
       +(S.intake&&S.intake.hasHSA?'<div style="font-size:12px;color:var(--muted);margin:2px 0 4px 22px">Still putting money into it? Only an HSA-qualifying plan allows new contributions — a non-HSA plan keeps the balance spendable but stops the yearly deduction. Say so before they choose.</div>':'')
@@ -8539,6 +8548,12 @@ function evTierPack(t){ var c=effCfg(t), st=(S.client.state||'').toUpperCase(), 
   if(evHas(t,'base')&&c.base==='aca'){ var at=evAcaTerms(); o.major={oop:at.oop,ded:at.ded,coins:at.coins,visit:at.visit,urgent:0,aca:true}; }
   return o; }
 /* The ACA plan's cost sharing for one person's event - the anchor column, and every package built on the ACA plan. */
+/* Kyle/Jesse, 4 Nov: the ACA plan's deductible comes from the Intake page, so say it here, loudly - the client compares
+   Virtual Basic A and B against what the marketplace plan really leaves them to pay, not against its premium. */
+function acaTermsTag(){ var a=S.aca||{}, m=function(v){ return '$'+Math.round(+v).toLocaleString('en-US'); };
+  if(!(+a.prem||0)) return '<span class="acahint">Enter price <b>+</b> subsidy in the Intake’s ACA section → net lands here</span>';
+  var p=[]; if(+a.ded||0) p.push('<b>'+m(a.ded)+' deductible</b>'); if(+a.oop||0) p.push('out-of-pocket max '+m(a.oop)); if(+a.coins||0) p.push(Math.round(+a.coins)+'% after the deductible');
+  return p.length?'<span class="acaterms">They pay first: '+p.join(' · ')+'</span>':'<span class="acahint">Enter the plan’s deductible in the Intake’s ACA section</span>'; }
 function evAcaTerms(){ var fam=acaPeople().length>1, r=S.acaRes||{}, bz=ACA26.bronze||{}, cap=(ACA26.moop||{}).self||12000;
     var oop=+S.aca.oop||0, ded=+S.aca.ded||0, estO=r.oop&&r.oop.src==='est', estD=r.ded&&r.ded.src==='est';
     if(fam){ oop=estO?Math.min(bz.avgMoop||cap,cap):Math.min(oop,cap); ded=estD?(bz.avgDeductible||ded/2):0; }
@@ -8639,7 +8654,7 @@ function renderTfraHint(){ var el=$('tfraHint'); if(!el) return; var B=anchorBas
 var TIER_NAME={good:'Essential',better:'Complete',best:'Comprehensive'};
 /* The ACA and Virtual Basic lineups aren't Essential / Complete / Comprehensive - the client reads what each column is (Kyle, 4 Nov). */
 var LINEUP_NAMES={aca:{good:['ACA + accident','24-Hour Accident'],better:['ACA + deductible buster','Hospital + Out-of-Pocket'],best:['ACA + buster + dental','Deductible buster + dental']},
-  vb:{good:['The ACA plan','The marketplace plan alone'],better:['Virtual Basic A','Real out-of-pocket protection'],best:['Virtual Basic B','Basic protection']}};
+  vb:{good:['The ACA plan','The marketplace plan alone'],better:['Virtual Basic A','Real out-of-pocket protection','healthy, but funds are tight'],best:['Virtual Basic B','Basic protection','unhealthy, and funds are very tight']}};
 /* "▶ Present Comprehensive Plan" - the plan's name in italics; one label for the builder's button and the one under Send the quote */
 function presentBtnLabel(){ var t=chosenTier(), N=tierNonMh(t); if(N) return 'ⓘ '+N.name+' plan — how to present it'; return '▶ Present '+(t?'<i>'+TIER_NAME[t]+'</i> Plan':'a plan'); }
 function chosenTier(){ return (S.chosen&&S.chosen.tier)||null; }
@@ -8693,7 +8708,7 @@ function pbColHTML(T,anc){ var t=T[0], act=(t==='actual'), st=(S.client.state||'
     var byKpk={}; (pk.products||[]).forEach(function(p){ if(p.k) byKpk[p.k]=p; });
     var hdr=LINEUP_NAMES[S.lineup]?(LINEUP_NAMES[S.lineup][t]||[T[1],T[2]]):(S.lineup==='lx-mh-cg'||S.lineup==='custom')&&c.base&&c.base!=='afc'?[(c.base==='lifex'||c.base==='brightlife')?'Pivot down':'Pivot up',c.base==='lifex'?'LifeX':c.base==='brightlife'?'Bright Life':'Cigna']:(S.lineup==='lx-mh-cg'?['Lead','Manhattan']:[T[1],T[2]]);
     var incT=(S.include||{})[t]!==false;
-    if(act) html+=pbActHead(); else html+='<div class="pbcol'+(S.recommended===t?' rec':'')+(rfBadge(t)?' dtpick':'')+(incT?'':' excl')+(chosenTier()===t?' chosen':'')+'" data-t="'+t+'"><div class="pbhd">'+rfBadge(t)+'<div class="r1"><span class="tt">'+hdr[0]+'</span><button type="button" class="pbreset" data-act="reset1" title="Put this package back to the recommendation">↺ Reset</button></div><div class="nm">'+hdr[1]+'</div><div class="r3"><label class="pbshow"><input type="checkbox" data-act="inc"'+(incT?' checked':'')+'> Show on quote</label></div></div>'
+    if(act) html+=pbActHead(); else html+='<div class="pbcol'+(S.recommended===t?' rec':'')+(rfBadge(t)?' dtpick':'')+(incT?'':' excl')+(chosenTier()===t?' chosen':'')+'" data-t="'+t+'"><div class="pbhd">'+rfBadge(t)+'<div class="r1"><span class="tt">'+hdr[0]+(hdr[2]?' <span class="tfor">('+hdr[2]+')</span>':'')+'</span><button type="button" class="pbreset" data-act="reset1" title="Put this package back to the recommendation">↺ Reset</button></div><div class="nm">'+hdr[1]+'</div><div class="r3"><label class="pbshow"><input type="checkbox" data-act="inc"'+(incT?' checked':'')+'> Show on quote</label></div></div>'
       +((S.lineup==='custom')?'':'<!--')+'<div style="padding:0 12px 4px"><select data-act="base" aria-label="Base plan" style="width:100%;font:inherit;font-size:13px;padding:6px 8px;border:1px solid #d6cdb4;border-radius:7px">'+pbOpts([['afc','Base: Manhattan — Affordable Choice']].concat(blOn()?(c.base==='lifex'?[['lifex','Base: LifeX (replaced by Bright Life)']]:[]).concat([['brightlife','Base: Bright Life']]):[['lifex','Base: LifeX']].concat(c.base==='brightlife'?[['brightlife','Base: Bright Life']]:[])).concat([['triad','Base: Cigna — Triad PPO']]),c.base||'afc')+'</select></div>'+((S.lineup==='custom')?'':'-->');
     var sum=0, addable=[], unavail=[];
     PB_SLOTS.forEach(function(sl){
@@ -8721,7 +8736,7 @@ function pbColHTML(T,anc){ var t=T[0], act=(t==='actual'), st=(S.client.state||'
       var mlTag=(blOn()&&c.base&&c.base!=='afc'&&k!=='base'&&k!=='lbp'&&k!=='lbs')?'<span class="mltag" title="This product is ManhattanLife’s, not '+(c.base==='brightlife'?'Bright Life':c.base==='triad'?'Cigna':'the base carrier')+'’s">ManhattanLife</span>':'';
       var info=benFileFor(k,c)?'<button type="button" class="pbinfo" data-ben="'+k+'" title="Benefits — '+sl.name+'" aria-label="Benefits for '+sl.name+'">i</button>':'';
       var hf=histFam(), hm=histSelf(), hiK=HIST_KEYS.indexOf(k)>=0, selfLB=(k==='lbp'||k==='lbs')&&hm.length;
-      html+='<div class="pbrow'+(edited?' edited':'')+(hf.any&&hiK?' hist':'')+(selfLB?' histself':'')+'"><div class="pbhead"><span class="nm">'+sl.name+mlTag+info+(edited?' <span class="edtag">edited</span>':'')+'<span class="cov">'+esc(pbSummary(k,c,live)||'')+'</span>'+(k==='base'&&c.base==='aca'&&!((+(S.aca||{}).prem||0)&&(+(S.aca||{}).subsidy||0))?'<span class="acahint">Enter price <b>+</b> subsidy in the Intake’s ACA section → net lands here</span>':'')+'</span>'+prHtml
+      html+='<div class="pbrow'+(edited?' edited':'')+(hf.any&&hiK?' hist':'')+(selfLB?' histself':'')+'"><div class="pbhead"><span class="nm">'+sl.name+mlTag+info+(edited?' <span class="edtag">edited</span>':'')+'<span class="cov">'+esc(pbSummary(k,c,live)||'')+'</span>'+(k==='base'&&c.base==='aca'?acaTermsTag():'')+'</span>'+prHtml
         +'<button class="pbib" data-act="tog" data-k="'+k+'" aria-label="Change '+sl.name+'">'+(open?'▴':'▾')+'</button>'
         +'<button class="pbib" data-act="rm" data-k="'+k+'" title="Remove" aria-label="Remove '+sl.name+'">✕</button></div>'
         +(selfLB?'<div class="histnote">They’ve had '+esc(hm.join(' and '))+' — term living benefits likely won’t be available. Look at whole life: add it as <b>Other</b>.</div>':'')
