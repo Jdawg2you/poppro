@@ -5879,6 +5879,82 @@ function triadPresentHTML(t){ var first=triadFirst(), plan=triadPlanOf(t), ded=t
     +'<button type="button" data-pr="quote" style="font:inherit;font-weight:700;border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 13px;cursor:pointer">← Back to the Quote</button></div>'
     +'<div class="trd">'+triadSteps(pages,'prpg')+'</div>'; }
 
+/* ---------- BRIGHT LIFE PRESENT (sandbox, Jesse 4 Nov: "create a script based on Bright Life") ----------
+   Built from the Health Shield PPO 1250 brochure (V1.110226), the Bright Life plan shelf and Bill Pauley's 22 Oct
+   webinar. Rules that bind every client-facing line: "we represent Bright Life", never "sell"; never "guaranteed issue";
+   don't call it MEC (no document says so). Open questions are agent notes to confirm, never things to say. */
+function blFlowOn(t){ return TRIAD_FLOW_ON&&!!t&&effCfg(t).base==='brightlife'; }
+function blDates(){ var n=new Date(), y=n.getFullYear(), mo=n.getMonth(); if(n.getDate()>20){ mo++; if(mo>11){ mo=0; y++; } }
+  var f=function(d){ return d.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'}); };
+  var st=new Date(y,mo+1,1);   /* from November a December start can choose 1 January instead (webinar, 22 Oct) */
+  return {sign:f(new Date(y,mo,20)), start:f(st), alt:st.getMonth()===11?f(new Date(y,mo+2,1)):''}; }
+function blBusters(t){ var c=effCfg(t), out=[];
+  ((S.packages[t]||{}).products||[]).forEach(function(p){ if(!(+p.monthly>0)||p.k==='base') return; var m=fmt2(+p.monthly)+'/mo', b='';
+    if(p.k==='his'&&c.his){ var ben=+c.his.ben||0; b='Pays <b>'+fmt(ben)+'</b> the day they’re admitted — toward the <b>$1,250</b> deductible and the <b>$2,500</b> admission copay that a hospital stay costs on this plan.'+(c.his.outp?' Plus up to <b>'+fmt(+c.his.outp)+'</b> for outpatient surgery, which carries its own $2,500 copay.':''); }
+    else if(p.k==='gap'&&c.gap) b='Pays <b>'+fmt(+c.gap.adm||0)+'</b> on admission and <b>$'+(c.gap.daily||0)+' a day</b> in hospital'+(+c.gap.outp?', and '+fmt(+c.gap.outp)+' for outpatient surgery':'')+' — cash toward the deductible and the copays.';
+    else if(p.k==='acc') b='Pays cash for an accident — the ER ($1,000 copay after the deductible on this plan), a fracture, follow-up care.';
+    else if(p.k==='chas') b='A lump sum on a cancer, heart attack or stroke diagnosis — for the out-of-pocket maximum and the bills the plan never sees (income, travel).';
+    else if(p.k==='lbp'||p.k==='lbs') b='Living benefits — life insurance they can draw on during a serious illness.';
+    else return;
+    out.push({k:p.k,name:p.name,m:m,b:b}); });
+  return out; }
+function blPresentHTML(t){ var first=triadFirst(), c=effCfg(t), prem=triadPremium(t), tot=pkMonthly(S.packages[t]||{}), bus=blBusters(t), x=blExtras(c), d=blDates();
+  var docs=[S.intake.docs1,S.intake.docs2,S.intake.docs3].filter(Boolean), meds=(S.intake.medList||[]).map(function(m){ return m.name; }).filter(Boolean);
+  var scr=typeof blScreen==='function'?blScreen():[], bad=scr.filter(function(z){ return z.l==='bad'; }), warn=scr.filter(function(z){ return z.l!=='bad'; });
+  var br=brochFor('brightlife',c), say=triadSay, todo=triadDo, qa=function(q,a){ return todo('<b>“'+q+'”</b><br>'+a); };
+  var pages=[
+   {t:'What it is',h:say('“'+esc(first)+', we represent a company called <b>Bright Life Health &amp; Wellness</b>. It works differently from insurance you buy on your own: you’re hired as a <b>part-time Wellness Associate</b> — a W-2 job doing short health and wellness activities each month — and the job comes with a health plan. The plan is the <b>Health Shield Copay PPO</b> on the <b>Cigna network</b>.”')
+      +say('“Because it’s a job, they look at your health <i>before</i> they hire you, not after you file a claim. If they say yes, you know where you stand from day one.”')
+      +todo('<b>Say it right:</b> “we <b>represent</b> Bright Life” — never “I sell Bright Life”. Never call it guaranteed issue: it isn’t, it’s a part-time job with a health plan. It’s a self-funded employer plan, not an insurance policy.')
+      +todo('<b>Don’t call it Minimum Essential Coverage.</b> No Bright Life document says it is. If they need MEC for an HRA, a visa or a court order, that’s a question for Bright Life first.')
+      +todo('<b>Activity pay:</b> the recruiter FAQ says $40 an hour; the 22 Oct webinar described about $10 for a monthly ~10-minute survey. Don’t quote a figure until Bright Life confirms which.')},
+   {t:'How it works',h:say('“Day to day you pay a flat copay, and you <b>don’t</b> have to meet the deductible first: <b>$50</b> for your regular doctor, <b>$75</b> for a specialist — no referral — and <b>$90</b> at urgent care. Preventive care is free, and so are virtual doctor visits through Our Live Doc.”')
+      +say('“For the big things you pay the <b>$1,250</b> deductible first'+(householdKey()==='i'?'':' (<b>$2,500</b> for the family)')+', then a copay: <b>$2,500</b> for a hospital stay or an outpatient surgery, <b>$1,000</b> for the ER, <b>$500</b> for an MRI or CT. The most you can pay in a year is <b>$9,200</b>'+(householdKey()==='i'?'':' each, <b>$18,400</b> for the family')+'.”')
+      +todo('Copays <b>don’t</b> count toward the deductible; they <b>do</b> count toward the out-of-pocket max. Copays still apply after the deductible is met.')
+      +todo('Elective surgery isn’t covered for the first <b>90 days</b>. Hospital admissions, imaging, outpatient surgery and therapies need pre-certification — missing it can cut the claim by 50%.')
+      +todo('The brochure’s coverage period runs <b>9/1/2026 – 12/31/2027</b>. Confirm with Bright Life whether the deductible resets on 1 January before telling a client it doesn’t.')},
+   {t:'Your doctors',h:(docs.length?say('“You mentioned '+docs.map(esc).join(', ')+'. Let’s check them on the Cigna list together.”'):say('“Who do you see now? Let’s check them on the Cigna list together.”'))
+      +todo('<a href="https://www.cigna.com/" target="_blank" rel="noopener">cigna.com ↗</a> → Provider Directory → <b>Employer or School</b> → enter the ZIP → search → <b>Continue as Guest</b> → Continue → <b>PPO, Choice Fund PPO</b>. These are the brochure’s own steps.')
+      +todo('Out of network still pays: the same copay <b>plus 40%</b>, with its own $2,500 deductible. Our Live Doc telemedicine is in network only.')
+      +todo('Their card will say <b>“AmeriBenefit Plan”</b>, not Cigna or Bright Life (from 1 November). Claims still go through Cigna. Tell them now so the card isn’t a surprise.')},
+   {t:'Prescriptions',h:say('“Generic drugs are <b>$0</b> — the first 30 days at a pharmacy, then by mail. Prescriptions run through Verus.”')
+      +say('“Brand-name and specialty drugs aren’t covered by the plan. For those there’s a <b>patient assistance program</b> that helps you get them from the drug maker.”')
+      +(meds.length?todo('Check each one now: '+meds.map(esc).join(', ')+'. Any brand-only or specialty drug goes through the patient assistance program, not the plan — say so before they sign. <b>GLP-1s aren’t covered.</b>'):todo('No medications on the Intake. Ask once more: brand-name and specialty drugs aren’t covered, and GLP-1s aren’t covered.'))
+      +todo('Verus: 1-800-838-0007 · verus-rx.com')},
+   {t:'The hospital and the busters',h:(bus.length?say('“The one thing to plan for is a hospital stay: the deductible plus a $2,500 copay. So we put cash plans next to it that pay <i>you</i> when that happens:”')
+      +'<ul class="trd-bus">'+bus.map(function(z){ return '<li><b>'+esc(z.name)+'</b> <small>'+z.m+'</small><br>'+z.b+'</li>'; }).join('')+'</ul>'
+      +todo('These are ManhattanLife plans: they pay the client directly, on top of Bright Life, with their own application and underwriting.')
+      :say('“The one thing to plan for is a hospital stay: the deductible plus a $2,500 copay.”')+todo('<b>No deductible buster in this package.</b> Hospital Indemnity Select at $2,000 a stay + $1,500 outpatient is the usual pairing — add it on the Quote.'))
+      +(x.names.length?todo('Humana '+esc(x.names.join(' + '))+' is in this package. It’s only sold to Bright Life members.'):todo('Humana dental and vision can be added on the Quote. They’re only sold to Bright Life members.'))},
+   {t:'The health questions',h:say('“Before they hire you there’s a health form, and they mean it — a computer reviews your history first and a person looks at anything it flags. Nothing is guaranteed until they say yes, and I’ll know before you pay a cent.”')
+      +say('“One more thing you should know up front: if your medical bills ever pass <b>$35,000</b>, Bright Life’s CARES team will offer to move you to a marketplace plan and help with its costs. It’s your choice, and you can come back when the bills come down.”')
+      +todo('<b>Ongoing care counts with no time limit</b> — a yearly visit to a cardiologist or oncologist about something years old can still be a Yes. A clean-looking file is not a prediction.')
+      +(bad.length?todo('<b style="color:#b42318">The Intake already checks Yes on the form:</b><ul style="margin:6px 0 0 18px">'+bad.map(function(z){ return '<li>'+esc(z.t)+(z.who?' — '+esc(z.who):'')+(z.why?': '+esc(z.why):'')+'</li>'; }).join('')+'</ul>'):'')
+      +(warn.length?todo('<b>Ask before they apply:</b><ul style="margin:6px 0 0 18px">'+warn.map(function(z){ return '<li>'+esc(z.t)+(z.who?' — '+esc(z.who):'')+(z.why?': '+esc(z.why):'')+'</li>'; }).join('')+'</ul>'):'')
+      +(!bad.length&&!warn.length?todo('Nothing on the Intake checks Yes. Still go through every question on the form with them.'):'')},
+   {t:'The price, honestly',h:say('“The plan is <b>'+fmt2(prem)+' a month</b>'+(tot>prem?' — <b>'+fmt2(tot)+'</b> with everything in your package':'')+'. It’s drafted on the <b>15th</b> of each month, and the first draft comes only after you’re accepted.”')
+      +say('“Bright Life has said the price isn’t changing next year, and there’s no re-enrollment each year.”')
+      +todo('The draft date is <b>always the 15th</b> — no custom date. For a client paid on Social Security, check the 15th lands after their deposit.')},
+   {t:'Quick answers',h:qa('Is this insurance?','It’s a health plan that comes with a part-time job. Bright Life runs it as a self-funded employer plan, on the Cigna network.')
+      +qa('Who is AmeriBenefit, and why is it on my card?','Every Wellness Associate is enrolled in the AmeriBenefit association at no cost. The networks lead with it on the card. Claims still go through Cigna.')
+      +qa('Is the deductible per person or for all of us?','$1,250 a person, $2,500 for the family, in network. Out of network has its own: $2,500 / $5,000.')
+      +qa('Can I see a doctor out of network?','Yes — the same copay plus 40%, with a separate deductible and out-of-pocket max.')
+      +qa('Can I pick my payment date?','No — it’s the 15th of each month, and the first one comes after you’re accepted.')
+      +qa('What happens if I have a really big claim?','Past $35,000 in bills, Bright Life’s CARES team will offer to move you to a marketplace plan and help with its deductibles and premiums. It’s your choice.')
+      +qa('Can I add my family later?','With a qualifying life event, using the form in the employee portal. Otherwise add them now.')
+      +qa('What about my son or daughter turning 26?','They come off your plan, and Bright Life can offer them their own Wellness Associate job.')
+      +qa('Can I get just the dental?','No — dental and vision are only for Bright Life members, so they have to be hired and answer the health form.')
+      +qa('Who do I call for a doctor tonight?','Our Live Doc, free: <b>940-LIVEDOC (940-548-3362)</b>. Behavioral health: <b>866-890-3741</b>.')
+      +qa('Who do I ask about my plan?','help@brightlifehw.com. Benefits, claims and providers are on provider.brightlifehw.com.')
+      +(br?todo('<a href="'+esc(br.url)+'" target="_blank" rel="noopener">📄 The Health Shield PPO 1250 brochure ↗</a> — the plan’s benefits and prices on these pages are from it.'):'')},
+   {t:'Next steps',h:say('“Here’s how it goes: we fill in your application together — it has a lot of signatures on purpose, so take your time on each one. Everything has to be signed by <b>'+d.sign+'</b>, and your start date is <b>'+d.start+'</b>'+(d.alt?' — or <b>'+d.alt+'</b> if that suits you better':'')+'. If they accept you, you’ll get the Employee Wellness Hub the day before you start, and your cards 10–14 days later.”')
+      +todo('Use <b>Chrome</b> — the Bright Life links don’t work in Safari. The <b>I-9</b> has to be done within 3 days of the hire date or they’re non-compliant.')
+      +todo('Back office: <b>Profiles → Member Pre-Qualification → Add a Member</b> to apply with them, or <b>Sites → Member Enroll</b> to send a self-enroll link.')
+      +'<button type="button" class="btn-gold" onclick="goStep(\'enroll\')">Go to Enroll →</button>'}];
+  return '<div class="pr-top"><div><h3>Presenting the <em class="pr-plan">Bright Life Health Shield PPO 1250</em> to '+esc(first)+'</h3><small>Agent-only — Bright Life flow (sandbox). Figures come from the Health Shield PPO 1250 brochure (V1.110226).</small></div>'
+    +'<button type="button" data-pr="quote" style="font:inherit;font-weight:700;border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 13px;cursor:pointer">← Back to the Quote</button></div>'
+    +'<div class="trd">'+triadSteps(pages,'blprpg')+'</div>'; }
+
 /* Cigna underwriting screen (Jesse, 27 Oct: incorporate the EBA underwriting guide). Reads what Intake already holds -
    height/weight, the medication list, conditions, the diabetic tick - against triad-rules.js. Keyword matching: it
    points at what to ask about, it doesn't decide. */
@@ -7362,7 +7438,7 @@ function nonMhNotice(t){ var N=tierNonMh(t); if(!N) return; var first=((S.client
     +'<li><b>Enroll them with '+esc(N.name)+'</b>: <a href="'+esc(N.url())+'" target="_blank" rel="noopener">'+esc(N.lab)+' ↗</a></li></ul>'
     +'<p style="margin:0;padding:10px 12px;background:#fff8e6;border:1px solid #e6d3a3;border-radius:8px"><b>💾 Save Quote/Package of Protection when you’re done.</b> It keeps everything you collected; <b>Load Quote</b> brings it all back later.</p>';
   $('nmhModal').classList.add('open'); }
-function presentOpen(){ if(triadFlowOn(chosenTier())){ recLock(chosenTier()); goStep('present'); return; } if(tierNonMh(chosenTier())){ nonMhNotice(chosenTier()); return; } if(!chosenTier()){ var t=S.activeTab||'best'; if(!confirm('No package is marked as their plan yet. Present '+TIER_NAME[t]+'?')) return; chooseTier(t); }
+function presentOpen(){ if(triadFlowOn(chosenTier())||blFlowOn(chosenTier())){ recLock(chosenTier()); goStep('present'); return; } if(tierNonMh(chosenTier())){ nonMhNotice(chosenTier()); return; } if(!chosenTier()){ var t=S.activeTab||'best'; if(!confirm('No package is marked as their plan yet. Present '+TIER_NAME[t]+'?')) return; chooseTier(t); }
   S.present=S.present||{}; S.present.pg=S.present.pg||0; recLock(chosenTier()); goStep('present'); }
 function presentHas(t,cond){ if(!cond) return true; var m=String(cond).match(/^(has|base):(\w+)$/); if(!m) return true;
   if(m[1]==='base') return (effCfg(t).base||'afc')===m[2];
@@ -7525,7 +7601,8 @@ function peCue(box){ var c=$('peCue'); if(!c){ c=document.createElement('button'
   var seen=function(){ var r=box.getBoundingClientRect(); return r.top<window.innerHeight*0.45; };
   var tm=null, off=function(){ c.classList.remove('on'); window.removeEventListener('scroll',chk); clearInterval(tm); }, chk=function(){ if(box.style.display==='none'||S.step!=='present'){ off(); return; } c.classList.toggle('on',box.getBoundingClientRect().top>window.innerHeight*0.6); };   /* back up the page while editing: the cue comes back */
   c.classList.add('on'); window.addEventListener('scroll',chk,{passive:true}); clearInterval(c._tm); tm=c._tm=setInterval(chk,400); }
-function renderPresent(){ var host=$('presentHost'); if(!host) return; if(triadFlowOn(presentTier())){ host.innerHTML=triadPresentHTML(presentTier()); triadBind(host); return; } var t=presentTier(), T=presentTokens(t), pages=presentPages();
+function renderPresent(){ var host=$('presentHost'); if(!host) return; if(triadFlowOn(presentTier())){ host.innerHTML=triadPresentHTML(presentTier()); triadBind(host); return; }
+  if(blFlowOn(presentTier())){ host.innerHTML=blPresentHTML(presentTier()); triadBind(host); return; } var t=presentTier(), T=presentTokens(t), pages=presentPages();
   S.present=S.present||{}; var pg=Math.max(0,Math.min(pages.length-1,+S.present.pg||0));
   var who=(T['client.first']||'the client')+(S.client&&S.client.sname?' & '+enSplit(S.client.sname)[0]:'');
   var h='<div class="pr-top"><div><h3>Presenting the <em class="pr-plan">'+esc(TIER_NAME[t])+'</em> plan to '+esc(who)+'</h3><small>Agent-only — never on Client View or the printout. Blue blanks fill from this quote; red ones are missing.</small></div>'
@@ -8662,7 +8739,7 @@ function chosenTier(){ return (S.chosen&&S.chosen.tier)||null; }
    package, otherwise the package itself. Enroll, its script and wrap-up text, the thank-you email and follow-ups read it. */
 function enrolledTier(){ var t=chosenTier(); return (t&&actualOn()&&S.actual.from===t)?'actual':t; }
 Object.defineProperty(TIER_NAME,'actual',{enumerable:false,get:function(){ return (S.actual&&TIER_NAME[S.actual.tier])||''; }});
-function chooseTier(t){ S.chosen=S.chosen||{}; S.chosen.tier=(S.chosen.tier===t)?null:t; if(S.step==='enroll'&&S.chosen.tier){ electedLock(); setTimeout(renderRecGap,0); } if(S.chosen.tier) celebrate('thumbs'); if(S.chosen.tier&&tierNonMh(t)&&!triadFlowOn(t)) setTimeout(function(){ nonMhNotice(t); },0);   /* the Triad flow (sandbox) presents it instead */ if(S.chosen.tier){ S.activeTab=t; S.include=S.include||{}; S.include[t]=true; } compute(); autosave(); }
+function chooseTier(t){ S.chosen=S.chosen||{}; S.chosen.tier=(S.chosen.tier===t)?null:t; if(S.step==='enroll'&&S.chosen.tier){ electedLock(); setTimeout(renderRecGap,0); } if(S.chosen.tier) celebrate('thumbs'); if(S.chosen.tier&&tierNonMh(t)&&!triadFlowOn(t)&&!blFlowOn(t)) setTimeout(function(){ nonMhNotice(t); },0);   /* the Triad flow (sandbox) presents it instead */ if(S.chosen.tier){ S.activeTab=t; S.include=S.include||{}; S.include[t]=true; } compute(); autosave(); }
 function tierHasDental(t){ return ((S.packages[t]||{}).products||[]).some(function(p){ return p.k==='dvh'&&(+p.monthly||0)>0; }); }
 function dentalPrice(t){ try{ var r=pDVH(HF_RATES,ratingAge(),householdKey(),effCfg(t).dvh,(S.client.state||'').toUpperCase()); return r&&r.price!=null?+r.price:null; }catch(e){ return null; } }
 /* Dental stays a yes/no after the choice: the three packages are compared without it, then the
