@@ -2829,8 +2829,17 @@ function renderBrochBox(){ var host=$('brochBox'); if(!host) return; if(!BROCH){
 var RXVALET_URL='https://manhattanlife.myeasycare2go.com/login', RXVALET_PHONE='1-855-798-2538', RXVALET_HOW='in your EasyCare2go login (Group ID mlins2023)';
 /* Amaze clients (Jesse, 5 Nov): Amaze is their virtual care. They don't get EasyCare2go pitched too - even when they also have
    ManhattanLife plans, we promote Amaze's virtual health, not EasyCare2go's. Rx Valet (pharmacy, not telehealth) stays. */
-function amazeIn(t){ return !!t&&(effCfg(t)||{}).base==='amaze'; }
-function mlExtrasEmail(t,lead){ return (lead||'Your plan also comes with:')+'\n'+(amazeIn(t)?'':'• EasyCare2go — '+AFC_PARTNER_EMAIL['EasyCare2go']+'\n')+'• Rx Valet — '+AFC_PARTNER_EMAIL['Rx Valet']+'\n\n'; }
+function amazeIn(t){ try{ return !!t&&!!(S.cfg||{})[t==='actual'?(S.actual||{}).from:t]&&(effCfg(t)||{}).base==='amaze'; }catch(e){ return false; } }
+/* Jesse, 5 Nov (clarity): with Amaze we describe Amaze's virtual care and say nothing about EasyCare2go at all - two
+   telehealth services would confuse them. Rx Valet comes in Amaze's own bundle ("Amaze Concierge TeleHealth with
+   RxValet"), so for an Amaze client it is told as part of Amaze, never as an EasyCare2go login. */
+var AMAZE_APP='https://app.amazepbc.com';
+function amazeSignup(){ return amazeLink()||AMAZE_APP; }
+function amazeLines(fam){ return ['You can reach a doctor any time, day or night, by phone, video or message. No appointment, and no fee per visit.',
+  'Their doctors can diagnose and treat you, prescribe, and order tests and referrals. They help with mental health and with managing ongoing conditions, and there’s virtual dental and orthopaedic support too.',
+  'Their patient advocates help you with medical bills and insurance questions.',
+  'Rx Valet prescription discounts come with your membership — check the price before you fill anything.'].concat(fam?['Your account covers your spouse or partner and your children up to 26 — add them in the app.']:[]); }
+function mlExtrasEmail(t,lead){ if(amazeIn(t)) return ''; return (lead||'Your plan also comes with:')+'\n• EasyCare2go — '+AFC_PARTNER_EMAIL['EasyCare2go']+'\n• Rx Valet — '+AFC_PARTNER_EMAIL['Rx Valet']+'\n\n'; }
 var AFC_PARTNER_EMAIL={'First Health Network':'nationwide PPO network: 810,000+ physicians and 5,900+ hospitals',
   'Green Imaging':'MRI, CT, ultrasound, mammography and other imaging at a discounted rate',
   'EasyCare2go':'24/7 telemedicine doctors, mental health and lifestyle savings — and Rx Valet, all in one login: '+RXVALET_URL+' (Group ID mlins2023)',
@@ -2859,7 +2868,7 @@ function acaEnrollEmail(t){ var c=effCfg(t), pk=S.packages[t]||{}, A=acaIn(), ac
   var body='Hi '+first+',\n\n'
     +'Thank you for your time today — I’m so glad I could help get you'+(fam?' and your family':'')+' set up. Here’s everything in one place.\n\n'
     +(aca?'YOUR MARKETPLACE PLAN\n'+(A.plan?A.plan+'. ':'')+'You’ll apply for this one yourself on the marketplace: '+(hs||'[your HealthSherpa link]')+'\nOnce you’re enrolled, you’ll be working with the marketplace and that plan’s insurance company on the plan itself — and I’m still here for anything you need.\n\n'
-         :'AMAZE — YOUR EVERYDAY CARE\nSign up here: '+(am||'[your Amaze sign-up link]')+'\nFor '+fmt2(AMAZE_MO)+' a month'+(fam?' — one price for the whole family —':'')+' you can reach a doctor any time, by phone, video or message, with no fee per visit. It isn’t insurance; it’s everyday care.\n\n')
+         :'AMAZE — YOUR EVERYDAY CARE\nSign up here: '+(am||'[your Amaze sign-up link]')+'\nFor '+fmt2(AMAZE_MO)+' a month'+(fam?' — one price for the whole family':'')+'. It isn’t insurance; it’s everyday care:\n'+amazeLines(fam).map(function(s){ return '• '+s; }).join('\n')+'\n\n')
     +((prods.length||LB.length)?'WHAT I SET UP FOR YOU\n'+prods.map(function(p){ return '• '+nm(p)+' — '+pbSummary(p.k,c); }).join('\n')
       +(LB.length?(prods.length?'\n':'')+LB.map(function(x){ return '• '+(x.face?'$'+x.face.toLocaleString('en-US')+' of ':'')+'Living Benefits coverage with Term Life Protection for '+x.who+' with '+x.carrier; }).join('\n'):'')
       +'\n'+(aca?'These pay you cash directly when something happens, on top of your marketplace plan — so its deductible isn’t all on you.':'These pay you cash directly when something happens — a hospital stay or an accident.')+'\n\n'
@@ -2880,7 +2889,7 @@ function enrollEmail(){ var tc=chosenTier(); if(triadFlowOn(tc)) return triadEnr
     +(L.list.length?'So you have everything in one place, here are the brochures for each part of your plan:\n'+brochLines(L)+'\n\n':'')
     +(function(){ var LB=lbSummary(L.t); if(!LB.length) return ''; return 'Your plan also includes living benefits:\n'+LB.map(function(x){ return '• '+x.who+' — '+(x.face?'$'+x.face.toLocaleString('en-US')+' of ':'')+(x.term?x.term+' ':'')+'Living Benefits coverage with Term Life Protection with '+x.carrier; }).join('\n')+'\n'+LB_BLURB+'\n\n'; })()
     +(afcInPk(S.packages[(TIERCFG[L.t]||L.t==='actual')?L.t:(enrolledTier()||S.activeTab||'best')])?'Your Affordable Choice plan also comes with these partner benefits built in, at no extra cost:\n'+afcPartnerLines()+'\n\n'
-      :mlExtrasEmail(L.t))   /* Rx Valet is a service for every client (Jesse, 23 Oct) */
+      :amazeIn(L.t)?'Your Amaze membership, your everyday care:\n'+amazeLines(householdKey()!=='i').map(function(s){ return '• '+s; }).join('\n')+'\nSign up: '+amazeSignup()+'\n\n':mlExtrasEmail(L.t))   /* Rx Valet is a service for every client (Jesse, 23 Oct) */
     +(drxWho().length?drxHowTo()+' I’ll walk you through it on our benefits review call.\n\n':'')
     +'I’ll be reaching out over the next few days with an update.'+(book?' If anything comes up before then, you can book a time to reconnect here: '+book+' — or just call or text me.':' If anything comes up before then, just call or text me.')+'\n\n'
     +'And know that I’m your agent for life. Insurance can be a lot to navigate, and that’s my job — whenever you have a question, a claim or a change in your life, I’m the person to call.\n\n'
@@ -5557,7 +5566,7 @@ function reviewTokens(t){ t=reviewT()||t; var C=S.client||{}, R=reviewState(), T
   var RP=reviewProducts(t); T['plan.network_product']=RP.afc?'Affordable Choice':RP.his?'Hospital Indemnity Select':'';
   T['review.month']=R.month||(R.eff?MONTHS[+String(R.eff).slice(5,7)-1]:'');
   return T; }
-var REVIEW_CSS='.pp-prodoff{display:none!important}.pp-cardbox{margin:8px 0 14px;padding:10px 14px;border:2px dashed #2f7d4a;border-radius:10px;background:#f2fbf5;font-size:14px}.pp-cardbox b{display:block;color:#17824a;margin-bottom:4px}'
+var REVIEW_CSS='.pp-prodoff{display:none!important}.amz-off{display:none!important}.pp-cardbox{margin:8px 0 14px;padding:10px 14px;border:2px dashed #2f7d4a;border-radius:10px;background:#f2fbf5;font-size:14px}.pp-cardbox b{display:block;color:#17824a;margin-bottom:4px}'
  +'.pp-cardtxt{background:#fff;border:1px solid #cfe7d8;border-radius:8px;padding:7px 10px;margin:0 0 8px;font-size:13.5px}.pp-copy,.pp-sms{font:inherit;font-size:13px;font-weight:700;border:1px solid #2f7d4a;color:#17824a;background:#fff;border-radius:7px;padding:5px 12px;cursor:pointer;text-decoration:none}'
  +'.rv-tick{margin:10px 0 4px;padding:10px 14px;border:2px dashed #2f7d4a;border-radius:10px;background:#f2fbf5;font:inherit;font-size:14px;display:flex;align-items:center;gap:10px;cursor:pointer}'
  +'.rv-tick input{width:20px;height:20px}.rv-tick.on{border-style:solid;background:#e3f4e8}.rv-tick b{color:#17824a}'
@@ -5586,6 +5595,19 @@ function scriptClean(doc){ try{ if(!doc||!doc.head||doc.getElementById('ppClean'
       +'.tip:before{content:"\\1F4A1  TOP TIP \\2014  NOT SPOKEN"!important;color:#8a6d1f!important}'; doc.head.appendChild(st);
     /* author labels ("KYLE — verbatim", "MIKE — never asks, just starts") never show to agents (Jesse, 23 Oct) */
     Array.prototype.forEach.call(doc.querySelectorAll('p,h4,h5,div'),function(x){ if(x.children.length>2) return; if(/^(KYLE|MIKE|JESSE|DAWN|TREY|GAYLAN)\s+(—|&mdash;|-)\s/.test((x.textContent||'').trim())) x.style.display='none'; }); }catch(e){} }
+/* Amaze client (Jesse, 5 Nov): telehealth is Amaze, never EasyCare2go. Swap the spoken lines; keep originals to swap back. */
+function reviewAmaze(doc,on){ var fam=householdKey()!=='i';
+  var SW=[['say',/register with EasyCare2go/,'Next: let’s get your <b>Amaze</b> app set up — I’m texting you the link now too, open it while we’re talking. '+amazeLines(fam).slice(0,3).join(' ')+(fam?' Your account covers your spouse or partner and your kids up to 26 — add them in the app.':'')+' If you get the flu or strep at two in the morning, open Amaze before you sit in an urgent care. Go ahead and set it up now so it’s ready before you need it.'],
+    ['say',/opens from the same EasyCare2go login/,'Before you fill anything, check the price — the same drug can be $5 at one pharmacy and $20 at another. Your prescription savings come through <b>Rx Valet</b>, which comes with your Amaze membership.'],
+    ['do',/Text them the EasyCare2go link/,'<span class="lab">DO IT NOW</span>Make sure the Amaze app is set up, and check it off when it’s done. The Direction Rx code is not texted any more — it goes in the recap email and sits on their resources page.'],
+    ['do',/open the link from their benefits page, or send it/,'<span class="lab">DO IT NOW</span>Text them the Amaze link and stay on while they set it up. Done on this call, it’s there for that 2 a.m. doctor’s call.']];
+  SW.forEach(function(s,i){ Array.prototype.forEach.call(doc.querySelectorAll('.'+s[0]),function(el){   /* each block is claimed by one swap only */
+      if(el.dataset.amzK!=null){ if(+el.dataset.amzK!==i) return; } else { if(!s[1].test(el.textContent)) return; el.dataset.amzK=String(i); el.dataset.amzOrig=el.innerHTML; el.dataset.amzOn='0'; }
+      if((el.dataset.amzOn==='1')===on) return; el.dataset.amzOn=on?'1':'0'; el.innerHTML=on?s[2]:el.dataset.amzOrig; }); });   /* rewrite only on a flip: other passes mark spans inside */
+  Array.prototype.forEach.call(doc.querySelectorAll('.tip'),function(el){ if(/inside the EasyCare2go login|Telehealth, First Health and Rx Valet come/.test(el.textContent)) el.classList.toggle('amz-off',on); });
+  var ec=doc.querySelector('.rv-tick[data-tick="ecg"],.rv-tick[data-tick="amz"]'); if(ec){ var k=on?'amz':'ecg', tk=on?{t:'Amaze app set up'}:REVIEW_TICKS.filter(function(x){ return x.k==='ecg'; })[0];
+    ec.dataset.tick=k; ec.querySelector('span').innerHTML='<b>Done on the call:</b> '+esc(tk.t); ec.querySelector('input').onchange=function(){ reviewTick(k,this.checked); }; }
+  var rx=doc.querySelector('.rv-tick[data-tick="rxv"]'); if(rx) rx.classList.toggle('amz-off',on); }
 function reviewWire(doc,t){ if(!doc||!doc.body) return; scriptClean(doc);
   /* First Health is Affordable Choice's network: without it the prep note about saying 'First Health' doesn't apply (Jesse, 4 Nov) */
   try{ var hasAfc=afcInPk(S.packages[t==='actual'?(S.actual||{}).from:t]||{}); Array.prototype.forEach.call(doc.querySelectorAll('.prep li'),function(li){ if(/First Health/.test(li.textContent)) li.style.display=hasAfc?'':'none'; });
@@ -5608,8 +5630,9 @@ function reviewWire(doc,t){ if(!doc||!doc.body) return; scriptClean(doc);
   var lg=doc.querySelector('p.legend'); if(lg&&!lg.dataset.rvLg){ lg.dataset.rvLg='1'; var cut=false;
     Array.prototype.slice.call(lg.childNodes).forEach(function(nd){ if(nd.nodeName==='B'&&/Provenance/.test(nd.textContent)) cut=true; if(cut) nd.remove(); });
     var last=lg.lastChild; if(last&&last.nodeName==='BR') last.remove(); }
+  try{ reviewAmaze(doc,amazeIn(t==='actual'?(S.actual||{}).from:t)); }catch(e){}
   /* the button row: real links; the last is the agent's own resource page from Setup */
-  Array.prototype.forEach.call(doc.querySelectorAll('.btnrow a'),function(a,i){ var u=REVIEW_LINKS[i]; if(u===null) u=reviewLink();
+  Array.prototype.forEach.call(doc.querySelectorAll('.btnrow a'),function(a,i){ var u=REVIEW_LINKS[i]; if(u===null) u=reviewLink(); if(i===3){ if(a.dataset.amzOrig==null) a.dataset.amzOrig=a.textContent; var az=amazeIn(t==='actual'?(S.actual||{}).from:t); a.textContent=az?'Amaze':a.dataset.amzOrig; if(az) u=amazeSignup(); }
     if(u){ a.href=u; a.target='_blank'; a.rel='noopener'; a.removeAttribute('data-rv-off'); a.removeAttribute('title'); }
     else { a.setAttribute('data-rv-off','1'); a.title='Add your benefits page in ⚙ Setup'; } });
   var R=reviewState(); Array.prototype.forEach.call(doc.querySelectorAll('.rv-tick'),function(l){ var on=!!R.ticks[l.dataset.tick]; l.querySelector('input').checked=on; l.classList.toggle('on',on); }); }
@@ -5697,6 +5720,7 @@ function reviewEmail(){ var t=reviewT()||chosenTier(), R=reviewState(), C=S.clie
   var LINE={portal:'Member portal (ID card and claims): https://clients.manhattanlife.com',
     ecg:'EasyCare2go, your 24/7 telehealth: https://manhattanlife.myeasycare2go.com/login · Group ID mlins2023',
     rxv:'Rx Valet, your prescription discounts — inside your EasyCare2go login · '+RXVALET_PHONE,
+    amz:'Amaze, your doctor any time by phone, video or message — Rx Valet prescription discounts come with it: '+amazeSignup(),
     upload:'Easy Upload app, for sending in receipts: https://easyupload.manhattanlife.com/',
     cg:'CareGuide — call before you pay any medical bill over $2,500: 469-902-2267',
     drx:drxForAll()?'Direction Rx member pricing — weight loss and hormone therapy: code '+drxCode()+' · '+drxLink():''};
@@ -5726,7 +5750,7 @@ function approvedMsgs(){ var R=reviewState(), C=S.client||{}, first=((C.pname||'
   L.push('','Your temporary ID card is in the member portal from day one: https://clients.manhattanlife.com — your physical ManhattanLife ID cards come in the mail about 10 days after your start date.');
   /* every registration link is in the approval email, so the review call can say so (Jesse, 24 Oct) */
   var RP=reviewProducts(chosenTier()), reg=['Member portal (your ID card and claims): https://clients.manhattanlife.com',
-    amazeIn(chosenTier())?'Rx Valet, your prescription discounts — in your EasyCare2go login: https://manhattanlife.myeasycare2go.com/login · Group ID mlins2023':'EasyCare2go — 24/7 telehealth, and your Rx Valet prescription savings inside the same login: https://manhattanlife.myeasycare2go.com/login · Group ID mlins2023',
+    amazeIn(chosenTier())?'Amaze — your doctor any time by phone, video or message, with Rx Valet prescription discounts: '+amazeSignup():'EasyCare2go — 24/7 telehealth, and your Rx Valet prescription savings inside the same login: https://manhattanlife.myeasycare2go.com/login · Group ID mlins2023',
     'Easy Upload app, for sending in receipts: https://easyupload.manhattanlife.com/'];
   if(RP.afc) reg.push('CareGuide — call before you pay any medical bill over $2,500: 469-902-2267');
   L.push('','The links we’ll set up together on our call (no need to do them before):'); reg.forEach(function(x){ L.push('• '+x); });
@@ -5775,7 +5799,8 @@ function reviewEmailPaint(){ var sm=$('rvMailSms'); if(sm){ var ph=String((S.int
 /* Direction Rx is open to every ManhattanLife member - weight loss and hormone therapy (Jesse, 23 Oct); the GLP-1 wording stays for GLP-1 clients */
 function drxForAll(){ var ct=chosenTier(); return !(ct&&tierNonMh(ct)); }
 function drxGeneral(){ return 'As a ManhattanLife member you also get Direction Rx member pricing, for weight loss and hormone therapy. Your member code: '+drxCode()+' — start here: '+drxLink(); }
-function reviewTicks(){ var L=REVIEW_TICKS.filter(function(x){ return (x.k!=='cg'||reviewProducts(chosenTier()).afc)&&!(x.k==='ecg'&&amazeIn(chosenTier())); }); if(!drxWho().length&&drxForAll()) L.push({k:'drx',t:'Direction Rx offered (weight loss, hormone therapy)',open:'Open Direction Rx',url:drxLink()||'#',copy:drxCode()||drxLink(),copyLabel:drxCode()?'Copy code':'Copy link',sms:function(f){ return 'Hi '+f+'! '+drxGeneral(); }});
+function reviewTicks(){ var L=REVIEW_TICKS.filter(function(x){ return (x.k!=='cg'||reviewProducts(chosenTier()).afc)&&!((x.k==='ecg'||x.k==='rxv')&&amazeIn(chosenTier())); });
+  if(amazeIn(chosenTier())) L.splice(1,0,{k:'amz',t:'Amaze app set up',open:'Open Amaze',url:amazeSignup(),sms:function(f){ return 'Hi '+f+'! Here’s Amaze, your doctor any time by phone, video or message — no appointment and no fee per visit. Set it up now so it’s ready at 2am: '+amazeSignup(); }}); if(!drxWho().length&&drxForAll()) L.push({k:'drx',t:'Direction Rx offered (weight loss, hormone therapy)',open:'Open Direction Rx',url:drxLink()||'#',copy:drxCode()||drxLink(),copyLabel:drxCode()?'Copy code':'Copy link',sms:function(f){ return 'Hi '+f+'! '+drxGeneral(); }});
   if(drxWho().length) L.push({k:'drx',t:'Direction Rx code sent (GLP-1)',open:'Open Direction Rx',url:drxLink()||'#',copy:drxCode()||drxLink(),copyLabel:drxCode()?'Copy code':'Copy link',sms:function(f){ return 'Hi '+f+'! '+drxHowTo(); }});
   L.push({k:'card',t:'Care card sent',open:'Open their care card',url:careCardLink(),copy:careCardLink(),copyLabel:'Copy link',
     sms:function(f){ return 'Hi '+f+'! Here’s your care card — your doctors and the numbers you need, ready to print a card for each adult on the plan or save to your phone: '+careCardLink(); }});
@@ -6042,7 +6067,7 @@ function acaPresentHTML(t){ var first=triadFirst(), a=S.aca||{}, A=acaIn(), base
      triadSay('“Their doctors can diagnose you, treat you, prescribe, and order tests and referrals. They help with mental health and with managing ongoing conditions, and there’s virtual dental and orthopaedic support too. And their patient advocates help you with medical bills and insurance questions.”'),
      triadSay('“If you ever pull into an emergency room parking lot, the app may send you a notification — so you can check whether a virtual visit would do before you sit in the ER.”'),
      triadDo('<b>Never call Amaze coverage or insurance</b> — it’s care access. It doesn’t pay a hospital bill. Don’t quote Amaze’s own utilisation or ER-reduction percentages; they’re company claims.'),
-     triadDo('Amaze is their virtual care. Don’t pitch EasyCare2go’s telehealth to an Amaze client, even with ManhattanLife plans — promote Amaze. Amaze’s RxValet: a client with a ManhattanLife plan already has RxValet free through EasyCare2go — don’t sell it to them as part of Amaze.')].join('');
+     triadDo('Amaze is their virtual care. Don’t mention EasyCare2go to an Amaze client at all — two telehealth services is confusing. Amaze’s RxValet: a client with a ManhattanLife plan already has RxValet free through EasyCare2go — don’t sell it to them as part of Amaze.')].join('');
   var pages=[];
   if(!vb){
     pages.push({t:'The ACA plan',h:acaSay+acaDo});
@@ -6538,7 +6563,7 @@ var NEWS=[
   ['Every Cigna rate is $14 higher','The 2027 Classic Triad guide is a flat +$14.00 a month on every rate: all age bands, all tiers, all plans. It applies to plans starting 12/1/26 or later. A start date before that on the Intake still quotes the 2026 rate, and a blank start date quotes 2027.'],
   ['HSA plans: higher out-of-pocket','Max out-of-pocket on the 3500 HSA and 5000 HSA went from $6,550 to $7,350 ($14,700 family). Deductibles are unchanged. Check any HSA recommendation again.'],
   ['HSA prescriptions corrected','On the HSA plans, prescriptions are $15 / $65 / $100 / 50% after the deductible, per the 2027 guide. Specialty drugs are 50% on every plan.'],
-  ['Amaze is their telehealth','A Virtual Basic client’s virtual care is Amaze: EasyCare2go’s telehealth is left out of the email, the Benefits Review and the care card, even when they have ManhattanLife plans. Rx Valet stays.'],
+  ['Amaze is their telehealth','A Virtual Basic client hears about Amaze’s virtual care, never EasyCare2go: the enrollment email describes what Amaze does, and the Benefits Review, its checklist, the recap and the care card talk Amaze. Rx Valet is told as part of Amaze.'],
   ['Plan summaries are still 2026','The 2027 plan summaries (SBCs) have not arrived yet. For a coverage question, the SBC still governs.']]},
  {d:'2026-10-23',t:'Benefits Review, care card, approval message and a cleaner Present',h:[
   ['Discovery lives in MyPopPro','The Discovery call now runs from MyPopPro itself — same call, same answers flowing into the Intake, nothing to open anywhere else.'],
