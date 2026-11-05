@@ -6326,8 +6326,8 @@ function renderCarrierStrip(){ var hosts=['carrierStrip','carrierStripQ'].map($)
    lineup: HI Select sized to the deductible, cancer only with a family history). Anything else leaves the lineup alone,
    except undoing a Cigna start the strip made on an earlier build. */
 function csRouteQuote(){ var was=S.csRouted; S.csRouted=false; if(!CARRIER_STRIP_ON) return; var v=csVerdicts();
-  if(v.ml.lvl==='red'&&v.cg.lvl!=='red'&&v.cg.lvl!=='none'){ S.lineup='cg'; ['good','better','best'].forEach(pbResetTier); S.csRouted=true; }
-  else if(was&&S.lineup==='cg'){ S.lineup='mh'; ['good','better','best'].forEach(pbResetTier); } }
+  if(v.ml.lvl==='red'&&v.cg.lvl!=='red'&&v.cg.lvl!=='none'){ chosenKeep(); S.lineup='cg'; ['good','better','best'].forEach(pbResetTier); S.csRouted=true; }
+  else if(was&&S.lineup==='cg'){ chosenKeep(); S.lineup='mh'; ['good','better','best'].forEach(pbResetTier); } }
 (function(){ var host=$('step-intake'), tmr=null; if(!host||!CARRIER_STRIP_ON) return;
   var go=function(){ clearTimeout(tmr); tmr=setTimeout(function(){ try{ readIntake(); ['state','page','pname','sname'].forEach(function(k){ var el=$('in_'+k); if(el) S.client[k]=el.value; }); }catch(e){} renderCarrierStrip(); },250); };
   ['input','change','click'].forEach(function(ev){ host.addEventListener(ev,go,true); }); })();
@@ -7861,8 +7861,8 @@ function renderPresent(){ var host=$('presentHost'); if(!host) return; if(triadF
     +'</div></div><div id="prPop" style="display:none"></div>'
     +'<div id="prEdit" class="pr-edit" style="display:none"><div class="rv-ch">Enrolling with plan edits <small>make the changes with them — the price and the side-by-side follow — then enroll.</small></div>'+PE_GO+'<div id="prEditBody"></div>'+PE_GO+'</div>';
   host.innerHTML=h; presentWhyBox(t); presentDrxBox();
-  host.querySelectorAll('[data-pe]').forEach(function(b){ b.onclick=function(){ if(b.dataset.pe==='cancel'){ var pt=presentTier(); S.chosen={tier:pt}; actualSeed(pt); S.actual.how='presented'; S.elected=actualSnap(); S.elected.locked=1; autosave(); celebrate('confetti',enrollCheer()); goStep('enroll'); return; }
-    S.chosen={tier:S.actual.from}; S.actual.how='edited'; S.elected=actualSnap(); S.elected.locked=1; autosave(); celebrate('confetti',enrollCheer()); goStep('enroll'); }; });
+  host.querySelectorAll('[data-pe]').forEach(function(b){ b.onclick=function(){ if(b.dataset.pe==='cancel'){ var pt=presentTier(); chosenSet(pt); actualSeed(pt); S.actual.how='presented'; S.elected=actualSnap(); S.elected.locked=1; autosave(); celebrate('confetti',enrollCheer()); goStep('enroll'); return; }
+    chosenSet(S.actual.from); S.actual.how='edited'; S.elected=actualSnap(); S.elected.locked=1; autosave(); celebrate('confetti',enrollCheer()); goStep('enroll'); }; });
   var fr=$('prFrame');
   fr.onload=function(){ try{ var doc=fr.contentDocument; scriptClean(doc); presentPaginate(doc);
       benLoadSafe('afc').then(function(){ presentWire(doc,t); presentGo(+S.present.pg||0); });
@@ -7891,7 +7891,7 @@ function presentGo(pg){ var pages=presentPages(), nav=presentNav(), t=presentTie
     +(nx?'<button type="button" class="go" data-go="1">Next: '+esc(nx.next||nx.t)+' →</button>'
         :'<span style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" data-go="quote">Not today — send the quote ↩</button><button type="button" data-go="edits">Enrolling with plan edits ▾</button><button type="button" class="go" data-go="enroll">✓ Enrolling as presented →</button></span>');
   $('prNav').querySelectorAll('[data-go]').forEach(function(b){ b.onclick=function(){ var g=b.dataset.go;
-    if(g==='enroll'){ S.chosen={tier:presentTier()}; actualSeed(presentTier()); S.actual.how='presented'; S.elected=actualSnap(); S.elected.locked=1; autosave(); celebrate('confetti',enrollCheer()); goStep('enroll'); }
+    if(g==='enroll'){ chosenSet(presentTier()); actualSeed(presentTier()); S.actual.how='presented'; S.elected=actualSnap(); S.elected.locked=1; autosave(); celebrate('confetti',enrollCheer()); goStep('enroll'); }
     else if(g==='edits'){ presentEditsOpen(); }
     else if(g==='quote'){ goStep('quote'); setTimeout(function(){ var q=$('sendQuote'); if(q) q.scrollIntoView({behavior:'smooth',block:'start'}); },60); }
     else presentGo(nav[pos+(+g)]); }; });
@@ -8996,12 +8996,25 @@ function presentBtnLabel(){ var t=chosenTier(); if(!t) return '▶ Present a pla
   var LN=LINEUP_NAMES[S.lineup]; if(LN&&LN[t]&&acaFlowOn(t)) return '▶ Present <i>'+LN[t][0].replace(/^The /,'the ')+'</i>';
   if(S.lineup==='lx-mh-cg') return '▶ Present <i>Manhattan</i> plan';
   return '▶ Present <i>Manhattan '+TIER_NAME[t]+'</i>'; }
-function chosenTier(){ return (S.chosen&&S.chosen.tier)||null; }
+/* Jesse, 5 Nov: the client's choice is a plan, not a column. It remembers the lineup it was made on (and that lineup's
+   packages), so flipping to Manhattan only / ACA / Virtual Basic never says they chose whatever sits in the same spot. */
+function chosenTier(){ var c=S.chosen; if(!c||!c.tier) return null; if(!c.lineup) c.lineup=S.lineup||'mh';   /* older files: the lineup they were saved on */
+  if(c.lineup!==(S.lineup||'mh')) return null; if(!c.name) c.name=choiceName(c.tier); return c.tier; }
+function chosenSet(t){ S.chosen={tier:t||null}; if(t){ S.chosen.lineup=S.lineup||'mh'; S.chosen.name=choiceName(t); } }
+function choiceName(t){ var LN=LINEUP_NAMES[S.lineup], b=(effCfg(t)||{}).base;
+  if(LN&&LN[t]) return LN[t][0]; if(b==='brightlife') return 'Bright Life plan'; if(b==='triad') return 'Cigna plan'; if(b==='lifex') return 'LifeX plan';
+  return 'Manhattan '+(TIER_NAME[t]||''); }
+function lineupLabel(id){ return ({mh:'Manhattan only','lx-mh-cg':blOn()?'Bright Life · Manhattan · Cigna':'LifeX · Manhattan · Cigna',aca:'ACA + protection',vb:'Virtual Basic',custom:blOn()?'Create your custom plan':'Custom',cg:'Cigna base · Manhattan add-ons'})[id]||id; }
+/* Leaving the lineup the choice was made on: keep its three packages as built, so coming back shows exactly what they chose. */
+function chosenKeep(){ var c=S.chosen; if(!c||!c.tier) return; if(!c.lineup) c.lineup=S.lineup||'mh'; if(c.lineup!==(S.lineup||'mh')) return; if(!c.name) c.name=choiceName(c.tier);
+  var P={},C={}; ['good','better','best'].forEach(function(t){ if(S.packages[t]) P[t]=cfgClone(S.packages[t]); if(S.cfg&&S.cfg[t]) C[t]=cfgClone(S.cfg[t]); }); c.keep={packages:P,cfg:C}; }
+function chosenRestore(id){ var c=S.chosen, k=c&&c.tier&&c.lineup===id&&c.keep; if(!k) return false; S.cfg=S.cfg||{};
+  ['good','better','best'].forEach(function(t){ if(k.packages[t]) S.packages[t]=cfgClone(k.packages[t]); if(k.cfg[t]) S.cfg[t]=cfgClone(k.cfg[t]); }); return true; }
 /* What they're actually enrolling in: the plan card from the end of Present ('actual') when it belongs to the chosen
    package, otherwise the package itself. Enroll, its script and wrap-up text, the thank-you email and follow-ups read it. */
 function enrolledTier(){ var t=chosenTier(); return (t&&actualOn()&&S.actual.from===t)?'actual':t; }
 Object.defineProperty(TIER_NAME,'actual',{enumerable:false,get:function(){ return (S.actual&&TIER_NAME[S.actual.tier])||''; }});
-function chooseTier(t){ S.chosen=S.chosen||{}; S.chosen.tier=(S.chosen.tier===t)?null:t; if(S.step==='enroll'&&S.chosen.tier){ electedLock(); setTimeout(renderRecGap,0); } if(S.chosen.tier) celebrate('thumbs'); if(S.chosen.tier&&tierNonMh(t)&&!triadFlowOn(t)&&!blFlowOn(t)) setTimeout(function(){ nonMhNotice(t); },0);   /* the Triad flow (sandbox) presents it instead */ if(S.chosen.tier){ S.activeTab=t; S.include=S.include||{}; S.include[t]=true; } compute(); autosave(); }
+function chooseTier(t){ chosenSet(chosenTier()===t?null:t); if(S.step==='enroll'&&S.chosen.tier){ electedLock(); setTimeout(renderRecGap,0); } if(S.chosen.tier) celebrate('thumbs'); if(S.chosen.tier&&tierNonMh(t)&&!triadFlowOn(t)&&!blFlowOn(t)) setTimeout(function(){ nonMhNotice(t); },0);   /* the Triad flow (sandbox) presents it instead */ if(S.chosen.tier){ S.activeTab=t; S.include=S.include||{}; S.include[t]=true; } compute(); autosave(); }
 function tierHasDental(t){ return ((S.packages[t]||{}).products||[]).some(function(p){ return p.k==='dvh'&&(+p.monthly||0)>0; }); }
 function dentalPrice(t){ try{ var r=pDVH(HF_RATES,ratingAge(),householdKey(),effCfg(t).dvh,(S.client.state||'').toUpperCase()); return r&&r.price!=null?+r.price:null; }catch(e){ return null; } }
 /* Dental stays a yes/no after the choice: the three packages are compared without it, then the
@@ -9189,6 +9202,7 @@ function renderBuilder(){
     +'<button type="button" data-act="reload" title="Put all three packages back to MyPopPro’s recommendation" style="font:inherit;font-size:13px;font-weight:700;border-radius:999px;padding:7px 14px;cursor:pointer;border:1.5px solid var(--gold);background:#fffdf7;color:#8a6a1f;margin-right:6px">↺ Reload our recommendation</button>'
     +LINEUPS.map(function(L){ var on=(S.lineup||'mh')===L[0]; return '<button type="button" data-lineup="'+L[0]+'" style="font:inherit;font-size:13px;font-weight:600;border-radius:999px;padding:7px 14px;cursor:pointer;border:1px solid '+(on?'var(--navy)':'#d6cdb4')+';background:'+(on?'var(--navy)':'#fff')+';color:'+(on?'#fff':'var(--ink)')+'">'+L[1]+'</button>'; }).join('')+'</div>';
   lineupBar=lineupBar.replace(/<\/div>$/,presentBtn+'</div>');
+  var CH=S.chosen; if(CH&&CH.tier&&CH.lineup&&CH.lineup!==(S.lineup||'mh')) lineupBar+='<div class="hidein-client noprint" style="margin:-4px 0 12px;padding:8px 12px;border:1px solid #b7dfc6;background:#effaf3;border-radius:9px;font-size:13px">✓ <b>Client’s choice: '+esc(CH.name||TIER_NAME[CH.tier]||'')+'</b> on the <b>'+esc(lineupLabel(CH.lineup))+'</b> lineup — this lineup is for comparing. <button type="button" data-lineup="'+esc(CH.lineup)+'" style="font:inherit;font-size:12.5px;font-weight:700;margin-left:6px;padding:4px 10px;border-radius:999px;border:1px solid #17824a;background:#fff;color:#17824a;cursor:pointer">Back to their choice</button></div>';
   var html=(PR_STATE==='failed'?'<div class="hidein-client noprint" style="margin:0 0 10px;padding:10px 14px;border:1px solid #f1b4ad;background:#fdecea;color:#b42318;border-radius:10px;font-weight:700">The full ManhattanLife rate file didn’t load, so some products (Out-of-Pocket, dental, Cancer/Heart/Stroke) can’t be priced in many states. <a href="#" onclick="location.reload();return false" style="color:#b42318">Refresh the page</a> before you quote.</div>':'')
     +lineupBar+anchorStrip+covClockBar()+(S.lineup==='aca'?'<div class="pbacanote hidein-client noprint"><b>Only use this lineup when ACA is their best option</b> (step 02 of the Decision Tree). The marketplace plan stays — these packages add the protection on top so they still get the full POP.</div>':'')+'<div class="bh" style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap"><h3>Package builder</h3><small>'+st+' · age '+age+' · '+({i:'Individual',s:'Individual + Spouse',c:'Individual + Children',f:'Family'}[householdKey()])+' · prices from the ManhattanLife rate tables</small><button type="button" class="picbtn hidein-client noprint" data-copypic="plans" style="margin-left:auto">📋 Copy plans</button></div><div class="pb3">';
   tiers.forEach(function(T){ var r=pbColHTML(T,anc); html+=r.html; totals[T[0]]=r.sum; });
@@ -9276,7 +9290,8 @@ function pbResetTier(t){
   Object.keys(PB_OPEN).forEach(function(k){ if(k.indexOf(t+'|')===0) delete PB_OPEN[k]; });
 }
 function pbApplyLineup(id){
-  S.lineup=id;
+  chosenKeep(); S.lineup=id;
+  if(chosenRestore(id)){ pbReprice(); return; }
   if(id==='custom'){ pbReprice(); return; }            // keep what's there; the Base pickers appear on each package
   ['good','better','best'].forEach(pbResetTier); pbReprice();
 }
