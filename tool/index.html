@@ -8985,13 +8985,22 @@ function rfTags(){ var B=anchorBase(), lu=S.lineup||'mh', out={}; if(!B||lu==='v
 function rfBadge(t){ var r=rfTags()[t], pick=S.treePick&&S.treePick.tab===t&&S.treePick.lineup===(S.lineup||'mh');
   if(!r&&!pick) return '';
   return '<div class="dtbadge">★ '+esc(r?r.l:'Right fit')+'</div>'+(r?'<div class="rfsub">'+esc(r.s)+(pick&&r.l!=='Right fit'?' · the decision tree’s pick':'')+'</div>'+(r.warn?'<div class="rfwarn">'+esc(r.warn)+'</div>':''):(pick?'<div class="rfsub">the decision tree’s pick</div>':'')); }
+/* Plan names sit on one straight line across the row (Jesse, 5 Nov): the Right-fit badge slot and the small label row
+   take the height of the tallest in that row; a column without a badge gets the same white space above its name. */
+function pbLevel(host){ if(!host) return; var cols=[].slice.call(host.querySelectorAll('.pbcol'));
+  ['.pbbadge','.pbhd .r1'].forEach(function(sel){ var els=cols.map(function(c){ return c.querySelector(sel); });
+    els.forEach(function(e){ if(e) e.style.minHeight=''; });
+    var rows={}; cols.forEach(function(c,i){ var e=els[i]; if(!e) return; var k=Math.round(c.getBoundingClientRect().top); (rows[k]=rows[k]||[]).push(e); });
+    Object.keys(rows).forEach(function(k){ var R=rows[k]; if(R.length<2) return; var m=Math.max.apply(null,R.map(function(e){ return e.getBoundingClientRect().height; }));
+      R.forEach(function(e){ e.style.minHeight=m+'px'; }); }); }); }
+window.addEventListener('resize',function(){ clearTimeout(window._pbLv); window._pbLv=setTimeout(function(){ document.querySelectorAll('.pbcol').forEach(function(c){ var h=c.parentElement; if(h&&!h._lv){ h._lv=1; pbLevel(h); setTimeout(function(){ h._lv=0; },0); } }); },120); });
 function pbColHTML(T,anc){ var t=T[0], act=(t==='actual'), st=(S.client.state||'').toUpperCase(), age=ratingAge(), html='';
     var c=effCfg(t), pk=S.packages[t]||{products:[]}, dropped=pk.dropped||[];
     var built=buildTierProducts(c,null,[]), byK={}; built.forEach(function(p){ byK[p.k]=p; });
     var byKpk={}; (pk.products||[]).forEach(function(p){ if(p.k) byKpk[p.k]=p; });
     var hdr=LINEUP_NAMES[S.lineup]?(LINEUP_NAMES[S.lineup][t]||[T[1],T[2]]):(S.lineup==='lx-mh-cg'||S.lineup==='custom')&&c.base&&c.base!=='afc'?['',c.base==='lifex'?'LifeX':c.base==='brightlife'?'Bright Life':'Cigna']:(S.lineup==='lx-mh-cg'?['','Manhattan']:[T[1],T[2]]);   /* no Pivot down / Lead / Pivot up over the columns (Jesse, 5 Nov) */
     var incT=(S.include||{})[t]!==false;
-    if(act) html+=pbActHead(); else html+='<div class="pbcol'+(S.recommended===t?' rec':'')+(rfBadge(t)?' dtpick':'')+(incT?'':' excl')+(chosenTier()===t?' chosen':'')+'" data-t="'+t+'"><div class="pbhd">'+rfBadge(t)+''+(hdr[0]||hdr[2]?'<div class="r1"><span class="tt">'+hdr[0]+(hdr[2]?' <span class="tfor">('+hdr[2]+')</span>':'')+'</span></div>':'')+'<div class="r2"><div class="nm">'+hdr[1]+'</div><button type="button" class="pbreset" data-act="reset1" title="Put this package back to the recommendation">↺ Reset</button></div><div class="r3"><label class="pbshow"><input type="checkbox" data-act="inc"'+(incT?' checked':'')+'> Show on quote</label></div></div>'
+    if(act) html+=pbActHead(); else html+='<div class="pbcol'+(S.recommended===t?' rec':'')+(rfBadge(t)?' dtpick':'')+(incT?'':' excl')+(chosenTier()===t?' chosen':'')+'" data-t="'+t+'"><div class="pbhd"><div class="pbbadge">'+rfBadge(t)+'</div>'+(hdr[0]||hdr[2]?'<div class="r1"><span class="tt">'+hdr[0]+(hdr[2]?' <span class="tfor">('+hdr[2]+')</span>':'')+'</span></div>':'')+'<div class="r2"><div class="nm">'+hdr[1]+'</div><button type="button" class="pbreset" data-act="reset1" title="Put this package back to the recommendation">↺ Reset</button></div><div class="r3"><label class="pbshow"><input type="checkbox" data-act="inc"'+(incT?' checked':'')+'> Show on quote</label></div></div>'
       +((S.lineup==='custom')?'':'<!--')+'<div style="padding:0 12px 4px"><select data-act="base" aria-label="Base plan" style="width:100%;font:inherit;font-size:13px;padding:6px 8px;border:1px solid #d6cdb4;border-radius:7px">'+pbOpts([['afc','Base: Manhattan — Affordable Choice']].concat(blOn()?(c.base==='lifex'?[['lifex','Base: LifeX (replaced by Bright Life)']]:[]).concat([['brightlife','Base: Bright Life']]):[['lifex','Base: LifeX']].concat(c.base==='brightlife'?[['brightlife','Base: Bright Life']]:[])).concat([['triad','Base: Cigna — Triad PPO']]),c.base||'afc')+'</select></div>'+((S.lineup==='custom')?'':'-->');
     var sum=0, addable=[], unavail=[];
     PB_SLOTS.forEach(function(sl){
@@ -9147,7 +9156,7 @@ function renderBuilder(){
     +'<span style="flex:1"></span><b>'+(dv.price!=null?pbMoney(dv.price)+'/mo':'<span style="color:var(--muted);font-weight:500">'+(dv.note||'not available')+'</span>')+'</b>'
     +'<label style="display:flex;gap:6px;align-items:center;font-size:13px"><input type="checkbox" data-act="dvhinc"'+(inAll?' checked':'')+'> Add to all three packages</label></div>';
   (function(){ var F=histFam(); if(F.any) html+='<div class="histkey"><span class="histsw"></span> Outlined in gold: speaks to their family history of '+esc(F.label)+(F.who?' ('+esc(F.who)+')':'')+'.</div>'; html=histStrip('quote')+html; })();
-  host.innerHTML=html;
+  host.innerHTML=html; pbLevel(host);
   host.querySelectorAll('[data-jumpto]').forEach(function(a){ a.onclick=function(e){ e.preventDefault(); goStep('intake'); setTimeout(function(){ intakeJump(a.dataset.jumpto); },80); }; });
   host.querySelectorAll('.pbinfo').forEach(function(b){ b.onclick=function(e){ e.stopPropagation(); var col=b.closest('.pbcol'); benOpen(col?col.dataset.t:(b.dataset.bt||'best'),b.dataset.ben); }; });
   benRefresh();
