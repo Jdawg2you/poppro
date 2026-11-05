@@ -4712,7 +4712,7 @@ function updateTfraVisibility(){
 
 function tierTotals(t){
   var pk=S.packages[t]||{products:[],lb:0,med:0};
-  var prod=(pk.products||[]).reduce(function(s,p){return s+(+p.monthly||0);},0)+(+pk.lb||0);
+  var dr=pk.dropped||[], prod=(pk.products||[]).reduce(function(s,p){return s+((p.k&&dr.indexOf(p.k)>=0)?0:(+p.monthly||0));},0)+(+pk.lb||0);   /* a dropped line never reaches a total, even in a file loaded without repricing (5 Nov) */
   var mo=prod;   /* premium only - prescriptions are shown under the total, never in it (Jesse, 19 Oct) */
   return {mo:mo,yr:mo*12,pk:pk};
 }
