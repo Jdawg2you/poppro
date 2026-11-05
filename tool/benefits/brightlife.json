@@ -11,12 +11,12 @@
  },
  "brochures": [
   {
-   "code": "BrightLife VL 1500 V3.101526 / PPO 1250 V3.102126",
-   "file": "Bright Life Docs/03_Plan Sheets/BrightLife_VL_1500_V3.101526.pdf + BrightLife_PPO_1250_V3.102126.pdf; Humana: 05_Humana Ancillary",
+   "code": "Health Shield PPO 1250 V1.110226 / BrightLife VL 1500 V3.101526",
+   "file": "Bright Life Docs/03_Plan Sheets/Health Shield PPO 1250 V1.110226.pdf (Drive: Optimum Carrier Library/Bright Life/_all-states) + BrightLife_VL_1500_V3.101526.pdf; Humana: 05_Humana Ancillary",
    "states": [
     "*"
    ],
-   "page": "1-6",
+   "page": "1-7",
    "sections": [
     {
      "title": "Deductible & out-of-pocket",
@@ -77,6 +77,13 @@
        "values": {
         "VL 1500": "$50 copay, no referral needed",
         "PPO 1250": "$75 copay, no referral needed (out of network: $75 + 40%)"
+       }
+      },
+      {
+       "label": "Mental health office visit",
+       "values": {
+        "VL 1500": "$50 copay, same as a specialist; counts toward the 10-visit limit",
+        "PPO 1250": "$75 copay, same as a specialist"
        }
       },
       {
@@ -267,6 +274,13 @@
         "VL 1500": "$2,500 an admission after the deductible (hospital limits apply)",
         "PPO 1250": "$2,500 an admission after the deductible"
        }
+      },
+      {
+       "label": "Mental health / substance use — partial hospital, intensive outpatient, residential",
+       "values": {
+        "VL 1500": "Not listed on the VL sheet",
+        "PPO 1250": "$125 a day after the deductible; residential 21 days a year"
+       }
       }
      ]
     },
@@ -357,7 +371,14 @@
        "label": "Allergy shots / testing",
        "values": {
         "VL 1500": "$50 after the deductible (24 shot visits, 2 testing visits a year)",
-        "PPO 1250": "Shots $25 / testing $50 after the deductible"
+        "PPO 1250": "Shots $25 after the deductible (12 visits a year) / testing $50 a visit after the deductible (1 visit a year)"
+       }
+      },
+      {
+       "label": "Nutritional counseling",
+       "values": {
+        "VL 1500": "1 visit a year",
+        "PPO 1250": "$0, 1 visit a year"
        }
       },
       {
@@ -515,9 +536,11 @@
    ],
    "notes": [
     "The client joins the Bright Life program and is covered by its Health Shield Plan. Bright Life’s own underwriting decides — nothing is guaranteed until they accept the client.",
-    "Precertification is required for hospital admissions, imaging, home health, skilled nursing, hospice, DME over $500, chemo/radiation, sleep studies, prosthetics, therapies and outpatient surgery. Missing it can cut the allowed charge by 50% or deny the claim.",
+    "Precertification is required for hospital admissions, imaging (CT/PET/MRI/MRA), home health, skilled nursing, hospice, DME over $750 ($500 on VL 1500), chemo/radiation, sleep studies, prosthetics/orthotics, therapies (chiropractic, cardiac, PT/OT/ST) and outpatient surgery. Missing it can cut the allowed charge by 50% or deny the claim. After an emergency admission, Marpai must be told within 48 hours or by the next business day.",
     "Copays still apply after the deductible is met.",
     "A true emergency can go to the nearest ER with no out-of-network penalty.",
+    "Not covered on PPO 1250: acupuncture, biofeedback, bariatric surgery, cosmetic surgery, adult dental, children’s dental check-ups, children’s glasses, children’s eye exams (unless preventive), routine adult eye care, hearing aids, infertility, long-term care, private-duty nursing, routine foot care, weight-loss programs, non-emergency care outside the U.S.",
+    "PPO 1250: in-network and out-of-network deductibles and out-of-pocket limits are separate and don’t cross over. Coverage period 9/1/2026 – 12/31/2027; rates effective 1 November 2026.",
     "Not covered on VL 1500: organ transplant, dialysis, out-of-network care (except emergencies), adult dental, hearing aids, infertility, long-term care, cosmetic surgery, bariatric surgery, routine foot care, weight-loss programs, care outside the U.S.",
     "Humana dental: “TRP” is Humana’s Traditional Preferred network, sold in AK, GA, LA, SD, TX and WV instead of the PPO plans. The dental summaries on file are Humana’s Florida filings — confirm state details with Humana.",
     "Bright Life marketing must approve anything client-facing. This panel is for the agent."

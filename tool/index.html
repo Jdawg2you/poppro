@@ -2747,13 +2747,17 @@ function brochLoad(){ if(BROCH||brochTried) return Promise.resolve(BROCH); broch
   return fetch('brochures.json',{cache:'no-cache'}).then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); })
     .then(function(d){ BROCH=d.states||{}; return BROCH; },function(){ BROCH=null; return null; }); }
 brochLoad();   /* fetch once at start, so the email and the drawer have the links when they're built */
-function brochFor(f){ var st=(S.client.state||'').toUpperCase(); if(f==='sdr') f='afc';   /* the rider is described in the Affordable Choice brochure */
+/* Bright Life's own brochure, one for every state (Kyle, 4 Nov: "Health Shield", same pricing). Filed in
+   Optimum Carrier Library/Bright Life/_all-states. Only the PPO 1250 has one: a saved VL plan lists no brochure. */
+var BL_BROCHURE={'PPO 1250':{id:'1Y33ehroKRCJhO_oN3_jswXybOeUVVihf',form:'Health Shield PPO 1250 · V1.110226'}};
+function brochFor(f,c){ var st=(S.client.state||'').toUpperCase(); if(f==='sdr') f='afc';   /* the rider is described in the Affordable Choice brochure */
+  if(f==='brightlife'){ var bl=BL_BROCHURE[(c&&c.blPlan)||BL_DEFAULT]; return bl&&bl.id?{name:'Bright Life — Health Shield PPO 1250',form:bl.form,url:'https://drive.google.com/file/d/'+bl.id+'/view'}:null; }
   return (BROCH&&BROCH[st]&&BROCH[st][f])||null; }
 /* Jesse, 9 Oct: a marked plan -> that plan's brochures; nothing marked -> every plan shown (t is then 'all') */
 function brochList(t){ t=t||enrolledTier()||'all'; var tiers=t==='all'?['good','better','best'].filter(function(x){ return (S.include||{})[x]!==false&&((S.packages||{})[x]||{}).products; }):[t], seen={}, out=[], none=[];
   tiers.forEach(function(tt){ var pk=(S.packages||{})[tt]||{}, c=effCfg(tt);
-  (pk.products||[]).forEach(function(p){ if(!((+p.monthly||0)>0)) return; var f=benFileFor(p.k,c), b=f&&brochFor(f), nm=(p.k==='base'&&tierNonMh(tt))?tierNonMh(tt).full:((PB_SLOTS.filter(function(x){ return x.k===p.k; })[0]||{}).name||p.name||'');
-    if(b){ if(!seen[b.url]){ seen[b.url]=1; out.push({name:nm||b.name,form:b.form,url:b.url}); } } else if(nm&&none.indexOf(nm)<0) none.push(nm); }); });
+  (pk.products||[]).forEach(function(p){ if(!((+p.monthly||0)>0)) return; var f=benFileFor(p.k,c), b=f&&brochFor(f,c), nm=(p.k==='base'&&tierNonMh(tt))?tierNonMh(tt).full:((PB_SLOTS.filter(function(x){ return x.k===p.k; })[0]||{}).name||p.name||'');
+    if(b){ if(!seen[b.url]){ seen[b.url]=1; out.push({name:f==='brightlife'?b.name:(nm||b.name),form:b.form,url:b.url}); } } else if(nm&&none.indexOf(nm)<0) none.push(nm); }); });
   return {t:t,st:(S.client.state||'').toUpperCase(),list:out,none:none}; }
 function brochLines(L){ return L.list.map(function(b){ return '• '+b.name+': '+b.url; }).join('\n'); }
 function brochCopy(text,btn){ var lab=btn.innerHTML; var done=function(m){ btn.innerHTML=m; setTimeout(function(){ btn.innerHTML=lab; },2200); };
@@ -2794,7 +2798,7 @@ function sqSync(){ var d=$('sqDate'), tm=$('sqTime'), p=$('sqPdf'), zs=$('sqZone
 function renderBrochBox(){ var host=$('brochBox'); if(!host) return; if(!BROCH){ brochLoad().then(function(d){ if(d) renderBrochBox(); }); host.style.display='none'; return; }
   var L=brochList(); if(!L.list.length){ host.style.display='none'; return; } host.style.display='';
   host.innerHTML='<div class="bh" style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap"><div class="sectitle" style="margin:0"><span class="dot">●</span> Brochures for this plan</div>'
-    +'<small style="color:var(--muted)">ManhattanLife brochures for '+(L.t==='all'?'all the plans shown (none marked yet)':'the <i>'+esc(TIER_NAME[L.t]||'')+'</i> plan')+' in '+esc(L.st)+' — click to open, or copy them all.</small>'
+    +'<small style="color:var(--muted)">Brochures for '+(L.t==='all'?'all the plans shown (none marked yet)':'the <i>'+esc(TIER_NAME[L.t]||'')+'</i> plan')+' in '+esc(L.st)+' — click to open, or copy them all.</small>'
     +'<button type="button" class="picbtn" id="brochCopyAll" style="margin-left:auto">📋 Copy all links</button></div>'+brochListHTML(L);
   $('brochCopyAll').onclick=function(){ brochCopy(brochLines(L),this); }; wireBroch(host); }
 /* the email that goes after an enrollment - a draft for Jesse to make his own (9 Oct); the brochure links fill in */
@@ -2871,7 +2875,7 @@ function renderEnText(){ var host=$('enTextHost'); if(!host) return; var hasEmai
 function renderEnBroch(){ var host=$('enBrochHost'); if(!host) return; if(!BROCH){ brochLoad().then(function(d){ if(d) renderEnBroch(); }); return; }
   var m=enrollEmail(); if(!m.L.list.length&&!m.carrier){ host.innerHTML=''; return; }
   host.innerHTML='<div class="sectitle" style="margin:14px 0 4px">Enrollment email — with their plan brochures</div>'
-    +'<div class="note" style="padding:0 0 8px">A draft: edit it to sound like you. '+(m.carrier?'Written for the '+esc(m.carrier)+' plan — its plan summary and prescription list'+(m.L.list.length?', plus the ManhattanLife add-ons’ brochures':'')+'.</div>':'The links are '+(m.L.t==='all'?'every shown plan’s':'the <i>'+esc(TIER_NAME[m.L.t]||'')+'</i> plan’s')+' ManhattanLife brochures for '+esc(m.L.st)+'.</div>')
+    +'<div class="note" style="padding:0 0 8px">A draft: edit it to sound like you. '+(m.carrier?'Written for the '+esc(m.carrier)+' plan — its plan summary and prescription list'+(m.L.list.length?', plus the ManhattanLife add-ons’ brochures':'')+'.</div>':'The links are '+(m.L.t==='all'?'every shown plan’s':'the <i>'+esc(TIER_NAME[m.L.t]||'')+'</i> plan’s')+' brochures for '+esc(m.L.st)+'.</div>')
     +'<textarea id="enEmailTxt" rows="26" style="width:100%;font:inherit;font-size:13px;line-height:1.45;padding:10px;border:1px solid var(--line);border-radius:8px">'+esc('Subject: '+m.subject+'\n\n'+m.body)+'</textarea>'
     +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button type="button" class="picbtn" id="enEmailCopy">📋 Copy the email</button>'
     +'<button type="button" class="picbtn" id="enEmailGmail">Open in Gmail ↗</button><button type="button" class="picbtn" id="enEmailOutlook">Open in Outlook ↗</button>'+(afcInPk(S.packages[TIERCFG[m.L.t]?m.L.t:(chosenTier()||S.activeTab||'best')])?'<button type="button" class="picbtn noprint" data-copypic="partners" title="Paste it into the email under the partner benefits">📋 Copy partner benefits picture</button>':'')+sentTick('enMail')+enTextBtns()+'</div>'
@@ -8442,7 +8446,7 @@ function benRender(){ var dr=$('benDrawer'); if(!dr) return;
       A.m.sections.forEach(function(s){ h+='<details class="bdmore"><summary>'+benEsc(s.title)+' <span>'+s.rows.length+'</span></summary>'+s.rows.map(function(r){ return '<div class="bdrow"><span>'+benEsc(r.label)+(r.note?'<i>'+benEsc(r.note)+'</i>':'')+'</span><b>'+benEsc(r.value)+'</b></div>'; }).join('')+'</details>'; });
       if(A.m.notes.length) h+='<details class="bdmore"><summary>Limitations &amp; waiting periods <span>'+A.m.notes.length+'</span></summary><ul class="bdnotes">'+A.m.notes.map(function(n){ return '<li>'+benEsc(n)+'</li>'; }).join('')+'</ul></details>';
       h+='<div class="bdsrc">From '+benEsc(A.m.code)+(A.m.page?' · p. '+benEsc(A.m.page):'')+'. Confirm exact benefits in the policy.</div>';
-      var brA=brochFor(A.f); if(brA) h+='<a class="bdbroch" href="'+benEsc(brA.url)+'" target="_blank" rel="noopener">📄 Open the full brochure ('+benEsc(brA.form)+') ↗</a>';
+      var brA=brochFor(A.f,A.cfg?JSON.parse(A.cfg):null); if(brA) h+='<a class="bdbroch" href="'+benEsc(brA.url)+'" target="_blank" rel="noopener">📄 Open the full brochure ('+benEsc(brA.form)+') ↗</a>';
       if(!/^humana-/.test(A.f)) h+='<div class="bdtip">Tip: open ⓘ on another level of this product to see the two side by side.</div>'; }
   } else {
     if(!A.m||!B.m){ h+='<div class="bdempty">One of these plans has no brochure on file for '+(A.st||'this state')+'.</div>'; }
