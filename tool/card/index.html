@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>My Care Card</title>
+<title>Care Card</title>
 <meta name="description" content="Write down your in-network doctor, urgent care, hospital and pharmacy, then print a wallet card, copy it to your notes, or text it to your family.">
 <meta property="og:type" content="website">
-<meta property="og:title" content="My Care Card — where to go, who to call">
+<meta property="og:title" content="Care Card — where to go, who to call">
 <meta property="og:description" content="Your in-network doctor, urgent care, hospital and the numbers you need, on one wallet card.">
 <meta name="theme-color" content="#ffffff">
 <link rel="icon" type="image/png" href="favicon.png">
@@ -112,7 +112,7 @@
   <div class="wrap">
     <div class="agency" id="agencyName" hidden></div>
     <div class="carrier" id="planLine">ManhattanLife Affordable Choice members</div>
-    <h1>My Care Card</h1>
+    <h1 id="cardTitle">Care Card</h1>
     <p>Where to go and who to call — on one card for your wallet, your phone, or your family. Fill in what you have; blanks are left off.</p>
   </div>
 </header>
@@ -234,7 +234,13 @@
      held, so that line stays the client's own (it's on their card) */
   function isCigna(){ return /^Cigna/.test(String(P.pl||'')); }
   var CIGNA=[['Find a doctor','Cigna PPO network','hcpdirectory.cigna.com'],['Specialty drug approval','TrueScripts','844-257-1955'],['Plan contact','Acuity \u2014 terms of coverage','888-932-4365']];
-  function fixed(){ if(!isML()){ var m=[], n=val('mem'), ph=phone(val('mem_ph')); if(n||ph) m.push(['Member services',n,ph]); return isCigna()?m.concat(CIGNA):m; } var f=FIXED.slice(); if($('has_dental').checked) f.push(['Dental network','Careington','800-290-0424']); return f; }
+  /* Another base plan with ManhattanLife add-ons (Jesse, 4 Nov): the card is for what we sold them, under the agent's own
+     agency - EasyCare2go and Rx Valet come with every ManhattanLife product; Careington only with ManhattanLife dental.
+     Amaze's member line is from Amaze's own site. Numbers are the ones this card already prints - never new ones. */
+  function isAmaze(){ return /^Amaze/.test(String(P.pl||'')); }
+  function fixed(){ if(!isML()){ var m=[], n=val('mem'), ph=phone(val('mem_ph')); if(n||ph) m.push(['Member services',n,ph]); if(isCigna()) m=m.concat(CIGNA);
+      if(isAmaze()) m.push(['Everyday care','Amaze app \u2014 doctor by phone or video','720-575-6614']);
+      if(P.m) m=m.concat(FIXED.slice(2)); if(P.md&&$('has_dental').checked) m.push(['Dental network','Careington','800-290-0424']); return m; } var f=FIXED.slice(); if($('has_dental').checked) f.push(['Dental network','Careington','800-290-0424']); return f; }
 
   /* one short line: what isn't on the plan yet (or that levels can go up), who to ask, and the review month */
   var GAPNAME={dvh:'dental',lb:'life insurance',chas:'cancer & heart coverage'};
@@ -245,18 +251,18 @@
     if(X.rm) L.push('Your plan review: '+X.rm);
     return L; }
   function cardsHTML(){ var E=entries(), dense=E.length>7?' dense':'';
-    var front='<div class="wc'+dense+'"><div class="hd">'+(P.ag?'<span class="ag">'+esc(P.ag)+'</span>':'')+'<b class="grow">My care card</b><span>'+esc(isML()?'First Health network':planName())+'</span></div>'
+    var front='<div class="wc'+dense+'"><div class="hd">'+(P.ag?'<span class="ag">'+esc(P.ag)+'</span>':'')+'<b class="grow">Care card</b><span>'+esc(isML()?'First Health network':planName())+'</span></div>'
       +(E.length?E.map(function(e){ return '<div class="ln"><i>'+esc(e[0])+'</i><span>'+esc(e[1])+'</span><em>'+esc(e[2])+'</em></div>'; }).join('')
         :'<div class="empty">Fill in your doctor, urgent care and hospital above — they print here.</div>')
       +'<div class="ft">Confirm a provider is in network before your visit.</div></div>';
     var X=fixed(), back='<div class="wc'+(X.length>4?' dense':'')+'"><div class="hd"><span class="ag">'+esc(P.ag||'My plan')+'</span><span>'+esc(isML()?'ManhattanLife · Affordable Choice':planName())+'</span></div>'
       +X.map(function(x){ return '<div class="ln"><i>'+esc(x[0])+'</i><span>'+esc(x[1])+'</span><em>'+esc(x[2])+'</em></div>'; }).join('')
-      +(!isML()&&!X.some(function(x){ return x[0]==='Member services'; })?'<div class="ln"><i>Member services</i><span>on the back of your ID card</span></div>':'')
+      +(!isML()&&!isAmaze()&&!X.some(function(x){ return x[0]==='Member services'; })?'<div class="ln"><i>Member services</i><span>on the back of your ID card</span></div>':'')
       +(nudges().length?'<div class="nudge">'+nudges().map(esc).join('<br>')+'</div>':'')
       +'<div class="ft">'+(isML()?'Front desk: “I have the ManhattanLife Affordable Choice plan on the First Health network.” ':isCigna()?'Front desk: “My plan uses the Cigna PPO network.” ':'')+'Not an insurance ID card.</div></div>';
     return front+back; }
 
-  function shareLink(){ var f={}; F.forEach(function(k){ var v=val(k); if(v) f[k]=v; }); var o={i:CID,f:f,t:Date.now()}; if(P.ag) o.ag=P.ag; if(!isML()) o.pl=P.pl; if($('has_dental').checked) o.d=1; if(X.g&&X.g.length) o.g=X.g; if(X.lw) o.lw=1; if(X.rm) o.rm=X.rm;
+  function shareLink(){ var f={}; F.forEach(function(k){ var v=val(k); if(v) f[k]=v; }); var o={i:CID,f:f,t:Date.now()}; if(P.ag) o.ag=P.ag; if(!isML()){ o.pl=P.pl; if(P.m) o.m=1; if(P.md) o.md=1; } if($('has_dental').checked) o.d=1; if(X.g&&X.g.length) o.g=X.g; if(X.lw) o.lw=1; if(X.rm) o.rm=X.rm;
     return location.origin+location.pathname+'#c='+b64e(o); }
   /* client-facing text: only what's filled in, grouped like the card, no share link (it has its own buttons) */
   var TXTLAB={me:'My doctor',sp:'My spouse\u2019s doctor',kid:'My kids\u2019 doctor',urgent:'Urgent care',hosp:'Hospital / ER',pharm:'Pharmacy',dent:'My dentist'};
@@ -282,8 +288,8 @@
   /* one card per adult on the plan (18 and over), plus a spare (Jesse, 18 Oct); capped so a typo can't print 50 pages */
   function copies(){ var n=parseInt(val('people'),10); if(!(n>0)) n=1; return Math.min(n,10)+1; }
   function brand(){ document.body.classList.toggle('is-ml',isML());
-    $('agencyName').textContent=P.ag; $('agencyName').hidden=!P.ag; $('planLine').textContent=planName()+' members';
-    $('ftAgency').textContent=P.ag?' at '+P.ag:''; document.title='My Care Card'+(P.ag?' \u2014 '+P.ag:''); }
+    $('agencyName').textContent=P.ag; $('agencyName').hidden=true;   /* the agency is the title now (Jesse, 4 Nov) */ $('cardTitle').textContent=(P.ag?P.ag+' ':'')+'Care Card'; $('planLine').textContent=planName()+' members';
+    $('ftAgency').textContent=P.ag?' at '+P.ag:''; document.title=(P.ag?P.ag+' ':'')+'Care Card'; }
   function render(){ brand(); $('dentalBox').hidden=!$('has_dental').checked; $('dentNum').hidden=!($('has_dental').checked&&isML());
     var h=cardsHTML(), n=copies(); $('preview').innerHTML=h; $('printCount').textContent=n+' card'+(n===1?'':'s');
     $('printCards').innerHTML=new Array(n+1).join('<div class="pair">'+h+'</div>');
@@ -292,8 +298,8 @@
 
   function save(){ try{ var o={has_dental:$('has_dental').checked,_t:LINK_T,x:X,p:P}; F.forEach(function(k){ o[k]=val(k); }); localStorage.setItem(KEY,JSON.stringify(o)); }catch(e){} }
   function load(){ var o=null; try{ o=JSON.parse(localStorage.getItem(KEY)||'null'); }catch(e){}
-    if(o){ F.forEach(function(k){ if(o[k]!=null&&$(k)) $(k).value=o[k]; }); $('has_dental').checked=!!o.has_dental; if(o.x) X=o.x; if(o.p) P={ag:o.p.ag||'',pl:o.p.pl||'ml'}; }
-    if(J&&(J.ag||J.pl)) P={ag:J.ag?String(J.ag).slice(0,60):P.ag,pl:J.pl?String(J.pl).slice(0,60):'ml'};
+    if(o){ F.forEach(function(k){ if(o[k]!=null&&$(k)) $(k).value=o[k]; }); $('has_dental').checked=!!o.has_dental; if(o.x) X=o.x; if(o.p) P={ag:o.p.ag||'',pl:o.p.pl||'ml',m:o.p.m?1:0,md:o.p.md?1:0}; }
+    if(J&&(J.ag||J.pl)) P={ag:J.ag?String(J.ag).slice(0,60):P.ag,pl:J.pl?String(J.pl).slice(0,60):'ml',m:J.m?1:0,md:J.md?1:0};
     if(J&&(J.g||J.lw||J.rm)) X={g:J.g||[],lw:J.lw?1:0,rm:J.rm||''};
     /* keep the address on this card's link, so a bookmark or a refresh opens the same card */
     try{ if(!J||!J.i) history.replaceState(null,'',location.pathname+location.search+'#c='+b64e({i:CID})); }catch(e){}

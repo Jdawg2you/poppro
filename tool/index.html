@@ -1681,9 +1681,11 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
         <a class="portalbtn" id="lnkManhattan" href="#" target="_blank" rel="noopener">Manhattan Life Producer Portal &#8599;</a>
         <a class="portalbtn cigna" id="lnkCigna" href="#" target="_blank" rel="noopener">Cigna PPO (USA Health / Triad) — 1Enrollment &#8599;</a>
         <a class="portalbtn cigna" id="lnkSparkle" href="#" target="_blank" rel="noopener" style="display:none">Sparkle Care Dental — 1Enrollment &#8599;</a>
-        <a class="portalbtn lifex" id="lnkLifex" href="#" target="_blank" rel="noopener" style="display:none">LifeX — 1Enrollment client enrollment &#8599;</a>
         <a class="portalbtn" id="lnkBrightlife" href="#" target="_blank" rel="noopener" style="display:none">Bright Life — client application &#8599;</a>
         <a class="portalbtn" id="lnkBrightlifeAgent" href="#" target="_blank" rel="noopener" style="display:none">Bright Life — agent contracting (not signed up yet?) &#8599;</a>
+        <a class="portalbtn" id="lnkAmaze" href="#" target="_blank" rel="noopener">Amaze — client sign-up &#8599;</a>
+        <a class="portalbtn" id="lnkHealthSherpa" href="#" target="_blank" rel="noopener">ACA marketplace — HealthSherpa &#8599;</a>
+        <div class="note" id="enLinkHint" style="padding:6px 0 0;display:none"></div>
       </div>
     </div>
     <div class="enroll-card">
@@ -1740,7 +1742,7 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
     <div class="wl-arrow">→</div>
     <div class="wl-step" data-tour="2"><span class="wl-n">2</span><b>Intake</b><span>Check and fill in their details: doctors in network, medications, health, current plan.</span></div>
     <div class="wl-arrow">→</div>
-    <div class="wl-step" data-tour="3"><span class="wl-n">3</span><b>Quote</b><span>Build and customize the packages: ManhattanLife, LifeX and Cigna. Set the follow-up time.</span></div>
+    <div class="wl-step" data-tour="3"><span class="wl-n">3</span><b>Quote</b><span>Build and customize the packages: ManhattanLife, Cigna, Bright Life and more. Set the follow-up time.</span></div>
     <div class="wl-arrow">→</div>
     <div class="wl-step" data-tour="4"><span class="wl-n">4</span><b>Present</b><span>Walk the client through it on screen. MyPopPro remembers what you presented.</span></div>
     <div class="wl-arrow">→</div>
@@ -1766,6 +1768,8 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
       <div class="fld agbio"><label>Your bio <small>who you are · read at the start of every discovery call (2.3) · empty = the default</small></label><textarea id="in_abio" rows="4" placeholder="Leave empty to use the default"></textarea><button type="button" class="picbtn" id="bioDefault">Use the default</button></div>
       <div class="fld"><label>Direction Rx link <small>GLP-1 discount, weight loss</small></label><input id="in_adrxlink" placeholder="https://bit.ly/4wf5B7V (used if blank)"><small class="fhint">Keep ManhattanLife’s tracking link — it’s how they count the engagement. A typed-in address isn’t counted.</small></div>
       <div class="fld"><label>Direction Rx code <small>the client enters it for 30% off</small></label><input id="in_adrxcode" placeholder="4-MEM-26-6 (used if blank)"></div>
+      <div class="fld"><label>HealthSherpa link <small>your own — where clients apply for the ACA plan</small></label><input id="in_ahslink" placeholder="your HealthSherpa agent link"></div>
+      <div class="fld"><label>Amaze sign-up link <small>your own — where clients join Amaze</small></label><input id="in_aamazelink" placeholder="your Amaze member sign-up link"></div>
     </div>
     <div class="goatgrab" id="goatGrab">
       <b>Don&rsquo;t have the last three yet? All three are free.</b> <span class="freetag">NO COST</span>
@@ -2840,7 +2844,29 @@ function lbSummary(t){ if(!TIERCFG[t]&&t!=='actual') t=enrolledTier()||S.activeT
     var who=w==='s'?(enSplit(S.client.sname)[0]||'your spouse'):(enSplit(S.client.pname)[0]||'you'), face=+String(lc.face||'').replace(/[^\d.]/g,'')||0;
     out.push({who:who,face:face,term:lc.carrier==='other'?'':'20-year',carrier:car}); });
   return out; }
-function enrollEmail(){ var tc=chosenTier(); if(triadFlowOn(tc)) return triadEnrollEmail(tc);
+/* ACA + protection and Virtual Basic (Jesse, 4 Nov): the client applies for the marketplace plan themselves - we send
+   the link while we write the ManhattanLife applications with them - so the email says "glad I could help you get set
+   up on the marketplace plan, you'll work with them on it, and here's what I set up for you". Virtual Basic sends the
+   Amaze sign-up instead. Both links are the agent's own (Setup); a missing one is a bracketed blank, never a guess. */
+function acaEnrollEmail(t){ var c=effCfg(t), pk=S.packages[t]||{}, A=acaIn(), aca=c.base==='aca', L=brochList(t), first=((S.client.pname||'').trim().split(/\s+/)[0])||'there';
+  var agent=(S.client.agent||'').trim(), agency=(S.agency||'').trim(), fam=householdKey()!=='i', book=String(S.agentBooking||'').trim(), site=String(S.agentWebsite||'').trim();
+  var prods=(pk.products||[]).filter(function(p){ return (+p.monthly||0)>0&&p.k!=='base'&&p.k!=='lbp'&&p.k!=='lbs'; }), LB=lbSummary(t), hs=hsLink(), am=amazeLink();
+  var nm=function(p){ var sl=PB_SLOTS.filter(function(x){ return x.k===p.k; })[0]; return sl?sl.name:String(p.name||'').split(' — ')[0]; };
+  var body='Hi '+first+',\n\n'
+    +'Thank you for your time today — I’m so glad I could help get you'+(fam?' and your family':'')+' set up. Here’s everything in one place.\n\n'
+    +(aca?'YOUR MARKETPLACE PLAN\n'+(A.plan?A.plan+'. ':'')+'You’ll apply for this one yourself on the marketplace: '+(hs||'[your HealthSherpa link]')+'\nOnce you’re enrolled, you’ll be working with the marketplace and that plan’s insurance company on the plan itself — and I’m still here for anything you need.\n\n'
+         :'AMAZE — YOUR EVERYDAY CARE\nSign up here: '+(am||'[your Amaze sign-up link]')+'\nFor '+fmt2(AMAZE_MO)+' a month'+(fam?' — one price for the whole family —':'')+' you can reach a doctor any time, by phone, video or message, with no fee per visit. It isn’t insurance; it’s everyday care.\n\n')
+    +((prods.length||LB.length)?'WHAT I SET UP FOR YOU\n'+prods.map(function(p){ return '• '+nm(p)+' — '+pbSummary(p.k,c); }).join('\n')
+      +(LB.length?(prods.length?'\n':'')+LB.map(function(x){ return '• '+(x.face?'$'+x.face.toLocaleString('en-US')+' of ':'')+'Living Benefits coverage with Term Life Protection for '+x.who+' with '+x.carrier; }).join('\n'):'')
+      +'\n'+(aca?'These pay you cash directly when something happens, on top of your marketplace plan — so its deductible isn’t all on you.':'These pay you cash directly when something happens — a hospital stay or an accident.')+'\n\n'
+      +'Here’s what happens next. These are underwritten plans, which just means the carrier reviews your application to confirm you qualify. The review typically takes 3–5 business days, but it can take up to 14 days depending on where you are. The moment it’s approved, I’ll email you your temporary ID card and your benefit book.\n\n':'')
+    +(L.list.length?'Here are the brochures for each part of your plan:\n'+brochLines(L)+'\n\n':'')
+    +(prods.length?'Your plan also comes with:\n• EasyCare2go — '+AFC_PARTNER_EMAIL['EasyCare2go']+'\n• Rx Valet — '+AFC_PARTNER_EMAIL['Rx Valet']+'\n\n':'')
+    +'I’ll be reaching out over the next few days with an update.'+(book?' If anything comes up before then, you can book a time to reconnect here: '+book+' — or just call or text me.':' If anything comes up before then, just call or text me.')+'\n\n'
+    +'And know that I’m your agent for life. Insurance can be a lot to navigate, and that’s my job — whenever you have a question, a claim or a change in your life, I’m the person to call.\n\n'
+    +'Best,\n'+(agent||agency)+(agent&&agency?'\n'+agency:'')+(S.agentPhone?'\n'+S.agentPhone:'')+(S.agentEmail?'\n'+S.agentEmail:'')+(site?'\n'+site:'')+(String(S.agentNPN||'').trim()?'\nNational Producer Number: '+String(S.agentNPN).trim():'');
+  return {to:(S.intake&&S.intake.email)||'',subject:aca?(prods.length?'Your marketplace plan + the protection I set up for you':'Your marketplace plan'):'Your new coverage! (+ your Amaze sign-up)',body:body,L:L}; }
+function enrollEmail(){ var tc=chosenTier(); if(triadFlowOn(tc)) return triadEnrollEmail(tc); if(acaFlowOn(tc)) return acaEnrollEmail(tc);
   var L=brochList(), first=((S.client.pname||'').trim().split(/\s+/)[0])||'there', agent=(S.client.agent||'').trim(), agency=(S.agency||'').trim();
   var fam=householdKey()!=='i', book=String(S.agentBooking||'').trim(), site=String(S.agentWebsite||'').trim();
   var hasLife=((S.packages[L.t]||{}).products||[]).some(function(p){ return (p.k==='lbp'||p.k==='lbs')&&(+p.monthly||0)>0; });
@@ -2865,13 +2891,16 @@ function enrollTextPlain(t){ t=t||chosenTier()||S.activeTab||'best'; var c=effCf
   var lines=[], LB=lbSummary(t), both=LB.length>1;
   (pk.products||[]).forEach(function(p){ if(!((+p.monthly||0)>0)||p.k==='lbp'||p.k==='lbs') return; var sl=PB_SLOTS.filter(function(x){ return x.k===p.k; })[0];
     if(p.k==='afc') lines.push('Affordable Choice (your core health plan)');
+    else if(p.k==='base'&&c.base==='aca') return;   /* they apply for the marketplace plan themselves - it's its own line below */
+    else if(p.k==='base'&&c.base==='amaze') lines.push('Amaze telehealth (your everyday care)'+(amazeLink()?' — sign up: '+amazeLink():''));
     else if(p.k==='base') lines.push((c.base==='triad'?'Cigna PPO '+(c.triadPlan||'7350'):c.base==='lifex'?'LifeX PPO':c.base==='brightlife'?blPlanName(c):'Health plan')+' (your core health plan)');
     else lines.push(sl?sl.name:String(p.name||'').split(' — ')[0]); });
   LB.forEach(function(x){ lines.push((x.face?'$'+x.face.toLocaleString('en-US')+' ':'')+'Living Benefits'+(both?' for '+x.who:'')+' ('+x.carrier+')'); });
   var P=[];
   P.push('Hi '+first+(me?', it’s '+me:'')+'. Thank you again for trusting me today, you did something really good for yourself'+(fam?' and your family':'')+'! 🙌');
-  if(lines.length) P.push('Quick recap of what we applied for:\n'+lines.map(function(x){ return '✅ '+x; }).join('\n')+(!N||pkHasMl(t)?'\n💊 Plus Rx Valet prescription discounts, '+RXVALET_HOW+': '+RXVALET_URL:''));   /* Rx Valet comes with a ManhattanLife plan, not with Cigna or Bright Life */
-  P.push(N?'I’m emailing you the full details of your plan so you have everything in one place.':'I just emailed you the full details plus a brochure for every part of your plan. Look for “Your new coverage!” in your inbox.');
+  if(c.base==='aca') P.push('Your marketplace plan — you apply for that one yourself'+(hsLink()?': '+hsLink():', and I’m sending you the link')+'.');
+  if(lines.length) P.push((c.base==='aca'?'And here’s what I set up for you:\n':'Quick recap of what we applied for:\n')+lines.map(function(x){ return '✅ '+x; }).join('\n')+(!N||pkHasMl(t)?'\n💊 Plus Rx Valet prescription discounts, '+RXVALET_HOW+': '+RXVALET_URL:''));   /* Rx Valet comes with a ManhattanLife plan, not with Cigna or Bright Life */
+  P.push(N?'I’m emailing you the full details of your plan so you have everything in one place.':'I just emailed you the full details plus a brochure for every part of your plan. Look for “'+(acaFlowOn(t)?acaEnrollEmail(t).subject:'Your new coverage!')+'” in your inbox.');
   P.push(N&&c.base==='triad'?'The plan reviews your application next, and I’ll send you the final offer the moment it’s in — it has to be signed by the 25th, so keep an eye out.':'Approval typically takes 3–5 business days, but it can take up to 14 days depending on where you are. I’ll send your ID card the moment it comes through.');
   if(String(S.agentCard||'').trim()) P.push('Here’s my digital business card so you have me saved: '+String(S.agentCard).trim());
   P.push('Any questions, just text me. I’m your agent for life!');
@@ -4962,7 +4991,7 @@ function suiteFromNavProfile(P){
 }
 /* The agent's own details (agency, name, phone, email) belong to whoever is running the tool, not to a
    file. A loaded file keeps them unless it carries its own - loading a client never wipes the agent. */
-function agentOf(st){ return {agency:st.agency, agent:(st.client||{}).agent, phone:st.agentPhone, email:st.agentEmail, npn:st.agentNPN, web:st.agentWebsite, card:st.agentCard, book:st.agentBooking, ben:st.agentBenefits, drxl:st.agentDrxLink, drxc:st.agentDrxCode, bio:st.agentBio}; }
+function agentOf(st){ return {agency:st.agency, agent:(st.client||{}).agent, phone:st.agentPhone, email:st.agentEmail, npn:st.agentNPN, web:st.agentWebsite, card:st.agentCard, book:st.agentBooking, ben:st.agentBenefits, drxl:st.agentDrxLink, drxc:st.agentDrxCode, hs:st.agentHsLink, amz:st.agentAmazeLink, bio:st.agentBio}; }
 /* Agent setup folds closed once agency, name, phone and email are all in; it opens again if any of those four is
    missing. NPN, website and booking are optional and never hold it open. (Jesse, 2026-10-08) */
 /* Jesse, 2026-10-09: the fold now waits for ALL of them, not the four the tool cannot run without.
@@ -4989,9 +5018,9 @@ function agentGlow(){ var empty=[]; AGENT_BOXES.forEach(function(b){ var el=$(b[
 function agentSetupFold(){ var miss=agentSetupMissing(), b=$('setupBtn'), n=$('setupNeed'); if(b){ b.classList.toggle('need',!!miss.length); b.title=miss.length?'Still to fill in: '+miss.join(', '):'Your agency, name, phone, email, NPN and links'; } if(n) n.textContent=miss.length?String(miss.length):'';
   var ws=$('wlSetupState'); if(ws){ ws.textContent=miss.length?miss.length+' to fill in ↓':'✓ Done'; ws.className=miss.length?'todo':''; }
   var d=$('agentSetup'); if(d) d.classList.toggle('goat-skipped',goatSkipped()); agentGlow(); }
-function fillAgent(){ $('in_agency').value=S.agency||'HealthFirst'; $('in_agent').value=(S.client||{}).agent||''; $('in_aphone').value=S.agentPhone||''; $('in_aemail').value=S.agentEmail||''; $('in_anpn').value=S.agentNPN||''; $('in_aweb').value=S.agentWebsite||''; $('in_acard').value=S.agentCard||''; $('in_abook').value=S.agentBooking||''; $('in_abenefits').value=S.agentBenefits||''; $('in_adrxlink').value=S.agentDrxLink||''; $('in_adrxcode').value=S.agentDrxCode||''; $('in_abio').value=S.agentBio||''; agentSetupFold(); }
+function fillAgent(){ $('in_agency').value=S.agency||'HealthFirst'; $('in_agent').value=(S.client||{}).agent||''; $('in_aphone').value=S.agentPhone||''; $('in_aemail').value=S.agentEmail||''; $('in_anpn').value=S.agentNPN||''; $('in_aweb').value=S.agentWebsite||''; $('in_acard').value=S.agentCard||''; $('in_abook').value=S.agentBooking||''; $('in_abenefits').value=S.agentBenefits||''; $('in_adrxlink').value=S.agentDrxLink||''; $('in_adrxcode').value=S.agentDrxCode||''; if($('in_ahslink')) $('in_ahslink').value=S.agentHsLink||''; if($('in_aamazelink')) $('in_aamazelink').value=S.agentAmazeLink||''; $('in_abio').value=S.agentBio||''; agentSetupFold(); }
 /* Only the agent fields - captureIntake() would also read the client boxes, which are stale off the Intake step. */
-function readAgent(){ S.agency=($('in_agency').value||'').trim()||'HealthFirst'; S.client=S.client||{}; S.client.agent=$('in_agent').value; S.agentPhone=$('in_aphone').value; S.agentEmail=$('in_aemail').value; S.agentNPN=($('in_anpn').value||'').trim(); S.agentWebsite=($('in_aweb').value||'').trim(); S.agentCard=($('in_acard').value||'').trim(); S.agentBooking=($('in_abook').value||'').trim(); S.agentBenefits=($('in_abenefits').value||'').trim(); S.agentDrxLink=($('in_adrxlink').value||'').trim(); S.agentDrxCode=($('in_adrxcode').value||'').trim(); S.agentBio=($('in_abio').value||'').trim(); agentSetupFold(); autosave(); }
+function readAgent(){ S.agency=($('in_agency').value||'').trim()||'HealthFirst'; S.client=S.client||{}; S.client.agent=$('in_agent').value; S.agentPhone=$('in_aphone').value; S.agentEmail=$('in_aemail').value; S.agentNPN=($('in_anpn').value||'').trim(); S.agentWebsite=($('in_aweb').value||'').trim(); S.agentCard=($('in_acard').value||'').trim(); S.agentBooking=($('in_abook').value||'').trim(); S.agentBenefits=($('in_abenefits').value||'').trim(); S.agentDrxLink=($('in_adrxlink').value||'').trim(); S.agentDrxCode=($('in_adrxcode').value||'').trim(); S.agentHsLink=(($('in_ahslink')||{}).value||'').trim(); S.agentAmazeLink=(($('in_aamazelink')||{}).value||'').trim(); S.agentBio=($('in_abio').value||'').trim(); agentSetupFold(); autosave(); }
 /* a saved navigator profile's life-insurance answers as one note line - the same as the navigator's lifeNowLine() */
 function navLifeNow(P){ if(P.life_has==="No") return "None"; if(P.life_has!=="Yes") return P.life_now||"";
   var bits=[P.life_src?(P.life_src==="Work"?"through work":P.life_src==="Private"?"private":"work and private"):"", (P.life_type&&P.life_type!=="Not sure")?String(P.life_type).toLowerCase():"",
@@ -5066,6 +5095,11 @@ function drxWho(){ var G=(S.intake&&S.intake.glp1)||{}, C=S.client||{}, out=[];
 var DRX_LINK_DEFAULT='https://bit.ly/4wf5B7V', DRX_CODE_DEFAULT='4-MEM-26-6';
 function drxCode(){ return String(S.agentDrxCode||'').trim()||DRX_CODE_DEFAULT; }
 function drxLink(){ var u=String(S.agentDrxLink||'').trim()||DRX_LINK_DEFAULT; return /^https?:\/\//i.test(u)?u:'https://'+u; }
+function linkOf(u){ u=String(u||'').trim(); return !u?'':(/^https?:\/\//i.test(u)?u:'https://'+u); }
+function hsLink(){ return linkOf(S.agentHsLink); }
+function amazeLink(){ return linkOf(S.agentAmazeLink); }
+/* The column's own name: Essential / Complete / Comprehensive, or the lineup's (ACA + deductible buster, Virtual Basic A) */
+function tierDisp(t){ var LN=LINEUP_NAMES[S.lineup]; return (LN&&LN[t]&&LN[t][0])||TIER_NAME[t]||''; }
 function drxOn(){ var P=S.present||{}; return P.drx==null?true:!!P.drx; }
 /* Health ZONE owns the wording (gated); MyPopPro serves the parts. drx.drug empty = the block drops out. */
 function drxParts(){ var W=drxWho(), on=drxOn(); if(!W.length||!on) return {drug:'',pct:'',cost:''};
@@ -5302,7 +5336,7 @@ function actualSeed(t){ if(!t||!S.packages[t]) return; S.cfg=S.cfg||{}; S.cfg.ac
   S.packages.actual=JSON.parse(JSON.stringify(S.packages[t])); S.actual={tier:t,from:t,at:new Date().toISOString().slice(0,10)};
   Object.keys(PB_OPEN).forEach(function(k){ if(k.indexOf('actual|')===0) delete PB_OPEN[k]; }); priceTier('actual'); }
 function actualSnap(){ var s=pkSnap('actual')||{products:[]}, b=effCfg('actual').base; s.tier=S.actual.tier;
-  s.name=b==='lifex'?'LifeX':b==='triad'?'Cigna':b==='brightlife'?'Bright Life':(TIER_NAME[s.tier]||''); return s; }
+  s.name=b==='lifex'?'LifeX':b==='triad'?'Cigna':b==='brightlife'?'Bright Life':(tierDisp(s.tier)||''); return s; }
 /* Recommended vs what they have, side by side (Jesse, 17 Oct): every product's level, then what the plan pays on a few
    real events - small ones usually match, the big ones show the difference. Built for the clarity / declination page too.
    The recommendation is priced from its own saved settings (S.rec.cfg/pk); one saved before those existed uses the
@@ -5548,7 +5582,10 @@ function scriptClean(doc){ try{ if(!doc||!doc.head||doc.getElementById('ppClean'
       +'.tip:before{content:"\\1F4A1  TOP TIP \\2014  NOT SPOKEN"!important;color:#8a6d1f!important}'; doc.head.appendChild(st);
     /* author labels ("KYLE — verbatim", "MIKE — never asks, just starts") never show to agents (Jesse, 23 Oct) */
     Array.prototype.forEach.call(doc.querySelectorAll('p,h4,h5,div'),function(x){ if(x.children.length>2) return; if(/^(KYLE|MIKE|JESSE|DAWN|TREY|GAYLAN)\s+(—|&mdash;|-)\s/.test((x.textContent||'').trim())) x.style.display='none'; }); }catch(e){} }
-function reviewWire(doc,t){ if(!doc||!doc.body) return; scriptClean(doc); reviewPendingEdits(doc); reviewCardBox(doc); var T=reviewTokens(t), X=reviewRx(t), I=S.intake||{};
+function reviewWire(doc,t){ if(!doc||!doc.body) return; scriptClean(doc);
+  /* First Health is Affordable Choice's network: without it the prep note about saying 'First Health' doesn't apply (Jesse, 4 Nov) */
+  try{ var hasAfc=afcInPk(S.packages[t==='actual'?(S.actual||{}).from:t]||{}); Array.prototype.forEach.call(doc.querySelectorAll('.prep li'),function(li){ if(/First Health/.test(li.textContent)) li.style.display=hasAfc?'':'none'; });
+    Array.prototype.forEach.call(doc.querySelectorAll('a'),function(a){ if(/^\s*First Health locator/.test(a.textContent)) a.style.display=hasAfc?'':'none'; }); }catch(e){} reviewPendingEdits(doc); reviewCardBox(doc); var T=reviewTokens(t), X=reviewRx(t), I=S.intake||{};
   if(!doc.getElementById('ppcss')){ var st=doc.createElement('style'); st.id='ppcss'; st.textContent=PRESENT_CSS+REVIEW_CSS; doc.head.appendChild(st); }
   Array.prototype.forEach.call(doc.querySelectorAll('var[data-k]'),function(v){ var k=v.getAttribute('data-k');
     if(v.dataset.ex==null) v.dataset.ex=v.textContent; var val=T[k]; v.classList.remove('pp-ok','pp-miss');
@@ -5596,6 +5633,7 @@ function careCardData(){ var I=S.intake||{}, C=S.client||{}, R=reviewState(), sl
     var RB=S.rec||(S.recommended&&pkSnap(S.recommended)), recChas=RB&&(RB.products||[]).some(function(p){ return p.k==='chas'; });
     if(!has('chas')&&(recChas||histFam().any)) g.push('chas');
     if(RB&&actualOn()&&gapSpoken(RB,actualSnap()).lowered) o.lw=1; }
+  if(pl!=='ml'&&et){ if(['his','gap','acc','chas','hhc','dvh'].some(has)) o.m=1; if(has('dvh')&&dentalCo(st)!=='sparkle'&&effCfg(et).base!=='brightlife') o.md=1; }   /* ManhattanLife add-ons on another base: the card carries their services (Jesse, 4 Nov) */
   if(g.length) o.g=g;
   var rm=R.month||(R.eff?MONTHS[+String(R.eff).slice(5,7)-1]:''); if(rm) o.rm=rm;
   /* The care card's own fields (Jesse, 23 Oct): whatever was filled on the review call rides in the link, so the card
@@ -5900,7 +5938,7 @@ function triadPresentHTML(t){ var first=triadFirst(), plan=triadPlanOf(t), ded=t
    Built from the Health Shield PPO 1250 brochure (V1.110226), the Bright Life plan shelf and Bill Pauley's 22 Oct
    webinar. Rules that bind every client-facing line: "we represent Bright Life", never "sell"; never "guaranteed issue";
    don't call it MEC (no document says so). Open questions are agent notes to confirm, never things to say. */
-function blFlowOn(t){ return TRIAD_FLOW_ON&&!!t&&effCfg(t).base==='brightlife'; }
+function blFlowOn(t){ return blOn()&&!!t&&effCfg(t).base==='brightlife'; }   /* live with Bright Life; the Cigna flow keeps its own sandbox switch */
 function blDates(){ var n=new Date(), y=n.getFullYear(), mo=n.getMonth(); if(n.getDate()>20){ mo++; if(mo>11){ mo=0; y++; } }
   var f=function(d){ return d.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'}); };
   var st=new Date(y,mo+1,1);   /* from November a December start can choose 1 January instead (webinar, 22 Oct) */
@@ -5969,7 +6007,7 @@ function blPresentHTML(t){ var first=triadFirst(), c=effCfg(t), prem=triadPremiu
       +todo('Use <b>Chrome</b> — the Bright Life links don’t work in Safari. The <b>I-9</b> has to be done within 3 days of the hire date or they’re non-compliant.')
       +todo('Back office: <b>Profiles → Member Pre-Qualification → Add a Member</b> to apply with them, or <b>Sites → Member Enroll</b> to send a self-enroll link.')
       +'<button type="button" class="btn-gold" onclick="goStep(\'enroll\')">Go to Enroll →</button>'}];
-  return '<div class="pr-top"><div><h3>Presenting the <em class="pr-plan">Bright Life Health Shield PPO 1250</em> to '+esc(first)+'</h3><small>Agent-only — Bright Life flow (sandbox). Figures come from the Health Shield PPO 1250 brochure (V1.110226).</small></div>'
+  return '<div class="pr-top"><div><h3>Presenting the <em class="pr-plan">Bright Life Health Shield PPO 1250</em> to '+esc(first)+'</h3><small>Agent-only. Figures come from the Health Shield PPO 1250 brochure (V1.110226).</small></div>'
     +'<button type="button" data-pr="quote" style="font:inherit;font-weight:700;border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 13px;cursor:pointer">← Back to the Quote</button></div>'
     +'<div class="trd">'+triadSteps(pages,'blprpg')+'</div>'; }
 
@@ -5981,7 +6019,7 @@ function blPresentHTML(t){ var first=triadFirst(), c=effCfg(t), prem=triadPremiu
    tight); B = Amaze + accident (unhealthy, funds very tight). Amaze lines are from Amaze's own site and FAQ
    (AMAZE-HEALTH.md): never call it insurance, never repeat its utilisation claims, and don't sell RxValet to a
    ManhattanLife client - they already have it through EasyCare2go. */
-function acaFlowOn(t){ return TRIAD_FLOW_ON&&!!t&&t!=='actual'&&(S.lineup==='aca'||S.lineup==='vb'); }
+function acaFlowOn(t){ return DT_ON&&!!t&&t!=='actual'&&(S.lineup==='aca'||S.lineup==='vb'); }
 function acaProt(t){ var c=effCfg(t), out=[];
   ((S.packages[t]||{}).products||[]).forEach(function(p){ if(!(+p.monthly>0)||p.k==='base') return;
     out.push({k:p.k,name:(PB_SLOTS.filter(function(x){ return x.k===p.k; })[0]||{}).name||p.name,mo:+p.monthly,sum:pbSummary(p.k,c)||''}); });
@@ -6032,7 +6070,7 @@ function acaPresentHTML(t){ var first=triadFirst(), a=S.aca||{}, A=acaIn(), base
         +triadDo('Amaze: use your Amaze member sign-up link. The ManhattanLife application is on Enroll.')
         +'<button type="button" class="btn-gold" onclick="goStep(\'enroll\')">Go to Enroll →</button>'});
   }
-  return '<div class="pr-top"><div><h3>Presenting <em class="pr-plan">'+esc(LN[0])+'</em> to '+esc(first)+'</h3><small>Agent-only — '+(vb?'Virtual Basic':'ACA + protection')+' (sandbox). The ACA figures come from the Intake.</small></div>'
+  return '<div class="pr-top"><div><h3>Presenting <em class="pr-plan">'+esc(LN[0])+'</em> to '+esc(first)+'</h3><small>Agent-only — '+(vb?'Virtual Basic':'ACA + protection')+'. The ACA figures come from the Intake.</small></div>'
     +'<button type="button" data-pr="quote" style="font:inherit;font-weight:700;border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 13px;cursor:pointer">← Back to the Quote</button></div>'
     +'<div class="trd">'+triadSteps(pages,'acapg_'+S.lineup+'_'+t)+'</div>'; }
 
@@ -6089,7 +6127,7 @@ function triadScreenHTML(){ var L=triadScreen(), bad=L.filter(function(x){ retur
    item ManhattanLife already flags at least as hard is listed once, under ManhattanLife; Cigna lists in full only what
    is Cigna-only or what Cigna would take when ManhattanLife won't. Build Quote follows it: ManhattanLife red and Cigna
    not red starts every package on the Cigna PPO. Shown only on port 8767 or with ?cs=1 until Jesse ships it. */
-var CARRIER_STRIP_ON=(location.port==='8767'||location.hostname==='sandbox.mypoppro.com')||/[?&]cs=1\b/.test(location.search);
+var CARRIER_STRIP_ON=true   /* live from the 4 Nov ship (Jesse: everything but the Cigna flow) */;
 var CS_OPEN='';
 function csCfg(){ var c=cfgClone(TIERCFG.best); c.sdr=cfgClone(PB_DEFAULT.sdr); c.hhc=PB_DEFAULT.hhc; c.chas=cfgClone(PB_DEFAULT.chas); return c; }
 function csStateGaps(st,age){ if(typeof HF_RATES==='undefined'||!HF_RATES||!st) return []; var c=csCfg(), out=[];
@@ -6374,7 +6412,7 @@ function renderReview(){ var host=$('reviewHost'); if(!host) return; var t=chose
    +'<div class="pr-rail"><div class="box rv-ticks" id="rvTicks"></div>'
    +'<div class="box"><b>Open before you dial</b>'
    +(reviewLink()?'<a class="rv-a" href="'+esc(reviewLink())+'" target="_blank" rel="noopener">Their resource page ↗</a>':'<span class="rv-miss">No resource page yet — add yours in ⚙ Setup</span>')
-   +'<a class="rv-a" href="https://clients.manhattanlife.com" target="_blank" rel="noopener">ManhattanLife portal ↗</a><a class="rv-a" href="https://providerlocator.firsthealth.com/home/index" target="_blank" rel="noopener">First Health locator ↗</a><a class="rv-a" href="'+RXVALET_URL+'" target="_blank" rel="noopener">Rx Valet — via EasyCare2go ↗</a></div>'
+   +'<a class="rv-a" href="https://clients.manhattanlife.com" target="_blank" rel="noopener">ManhattanLife portal ↗</a>'+(afcInPk(S.packages[enrolledTier()==='actual'?(S.actual||{}).from:enrolledTier()]||{})?'<a class="rv-a" href="https://providerlocator.firsthealth.com/home/index" target="_blank" rel="noopener">First Health locator ↗</a>':'')+'<a class="rv-a" href="'+RXVALET_URL+'" target="_blank" rel="noopener">Rx Valet — via EasyCare2go ↗</a></div>'
    +'</div></div>'
    +'<div class="rv-mail"><div class="rv-ch">Recap email + text <small>— the last step: send it within the hour, the call promised it. It builds itself from the call: the plan, their care card link, what was set up and what’s still to do. Then text them that it’s on its way.</small></div>'
    +'<textarea id="rvEmailTxt" rows="22"></textarea><div class="rv-cbtns"><button type="button" class="picbtn" id="rvMailCopy">📋 Copy the email</button><button type="button" class="picbtn" id="rvMailOpen">✉️ Open in my email</button><button type="button" class="picbtn" id="rvMailGmail">Open in Gmail ↗</button><button type="button" class="picbtn" id="rvMailOutlook">Open in Outlook ↗</button><button type="button" class="picbtn" id="rvMailReset" hidden>↺ Rebuild from the page</button><a class="picbtn" id="rvMailSms" href="#">💬 Text: recap sent</a>'+sentTick('rvMail')+sentTick('rvText')+((S.intake||{}).email?'':'<span class="rv-miss">No email on the Intake — the To line will be blank.</span>')+'</div></div>';
@@ -6471,6 +6509,27 @@ function glp1FromSuite(h){ var one=function(pre){ var k=function(f){ return h[pr
    items the agent hasn't opened yet (localStorage pp_news_seen = newest date they've seen). */
 var NEWS_DAYS=30;
 var NEWS=[
+ {d:'2026-11-04',t:'Bright Life, the Decision Tree, ACA + protection and Virtual Basic',h:[
+  ['Bright Life is in','The Health Shield Copay PPO 1250 on the Cigna network, with Hospital Indemnity at $2,000 a stay + $1,500 outpatient, Humana dental and vision for members, its brochure, and its own presentation script. LifeX is off the lineup.'],
+  ['Coverage Decision Tree','A step between Intake and Quote: the big picture of what they pay now, whether the ACA is their best fit, and which plans fit — with "Quote this" on every option.'],
+  ['ACA + protection','Their own marketplace plan, plus 24-Hour Accident, or the deductible buster (Hospital Indemnity + Out-of-Pocket sized to their deductible), or the buster + dental. Its own script and close: they apply for the ACA, you write the protection.'],
+  ['Virtual Basic','The ACA plan alone as the anchor, then Virtual Basic A (healthy, funds tight) and B (unhealthy, funds very tight) built on Amaze telehealth, with its own script.'],
+  ['Would they take them?','Red / amber / green for ManhattanLife, Cigna and Bright Life at the top of the Intake and the Quote, from the health answers you already have.'],
+  ['POP Score reads every plan','The ACA plan, Bright Life and Amaze now count. A big deductible with nothing to cover it costs points; the busters earn them back. Fully built Manhattan reaches 100.'],
+  ['Present says what you’re presenting','"Present Manhattan Complete", "Present Bright Life plan", "Present ACA + deductible buster"… and the Enroll page and emails follow the plan they chose.'],
+  ['Add your own links','In Setup: your HealthSherpa link and your Amaze sign-up link. They go on Enroll and in the ACA and Virtual Basic emails.'],
+  ['Care card in your agency’s name','The card is titled with your agency, and on any plan it carries the services you sold them — telehealth and Rx Valet with any ManhattanLife product.']],
+  i:[
+  ['Bright Life plan','Copay PPO 1250 only (a saved Visit Limit plan still opens). Benefits, prices and the brochure link come from the Health Shield PPO 1250 brochure.'],
+  ['Bright Life script','Nine pages: what it is ("we represent Bright Life" — never sold, never guaranteed issue), copays, doctors on Cigna, prescriptions, the hospital, the health questions and CARES, the price and draft on the 15th, quick answers and next steps.'],
+  ['ACA deductible on the Quote','The ACA plan’s deductible, out-of-pocket max and coinsurance show in a red box on its column, so Virtual Basic A and B are compared against what the marketplace plan really costs.'],
+  ['ACA client view','Columns named for what they are, "adds $X/mo" on top of the marketplace plan, the event examples with the ACA plan paying first and the add-ons paying cash on top, no Medical Bill Saver and no TFRA on an ACA package.'],
+  ['Dental on ACA + protection','A line in the dental column only, at $1,500 with no deductible — no more adding it to all three.'],
+  ['ACA boxes take one click','The ACA plan name, premium, subsidy and the rest on the Intake no longer need a second click.'],
+  ['Enroll','ACA + protection shows the marketplace plan as theirs to apply for; Bright Life, Amaze and HealthSherpa buttons under health carriers; LifeX gone.'],
+  ['Emails and texts','The ACA enrollment email: "glad I could help get you set up" with the marketplace link, then what you set up for them. Virtual Basic sends the Amaze sign-up.'],
+  ['Benefits Review','First Health only appears when they have Affordable Choice.'],
+  ['Discovery and more','Discovery reworked from the 3–4 Nov calls, Quick notes on every step, Direction Rx GLP-1 savings in the math, and many smaller fixes.']]},
  {d:'2026-10-27',t:'Cigna (Triad) 2027 rates are in',h:[
   ['Every Cigna rate is $14 higher','The 2027 Classic Triad guide is a flat +$14.00 a month on every rate: all age bands, all tiers, all plans. It applies to plans starting 12/1/26 or later. A start date before that on the Intake still quotes the 2026 rate, and a blank start date quotes 2027.'],
   ['HSA plans: higher out-of-pocket','Max out-of-pocket on the 3500 HSA and 5000 HSA went from $6,550 to $7,350 ($14,700 family). Deductibles are unchanged. Check any HSA recommendation again.'],
@@ -6623,7 +6682,7 @@ var TOUR=[null,
  {t:'Quote',d:['MyPopPro builds three packages. You see Good / Better / Best; the client sees Essential / Complete / Comprehensive.',
    'Open a row to change a level or add a product; <b>ⓘ</b> shows that product&rsquo;s benefits for their state. Click <b>Choose this plan</b> on the one they lean toward.',
    'Pick an example (a hospital stay, a broken arm) to show what each plan pays. Not today? <b>Send the quote</b> is at the bottom.',
-   'Customize any package with ManhattanLife, LifeX or Cigna plans. Coming soon: a decision tree linked to the Intake that points you to the right plans across carriers.']},
+   'Customize any package with ManhattanLife, Cigna or Bright Life plans, or build on their own ACA plan. The Decision Tree, between Intake and Quote, points you to the right plans from what the Intake knows.']},
  {t:'Present',d:['Click <b>▶ Present</b>. The script plays screen by screen with their name, numbers, doctors and medications filled in.',
    '<b>Back</b> / <b>Next</b> move through it; objections and stories sit at the side.',
    'It ends at <b>Pick your close</b>. Enrolling → Enroll. Not today → Send the quote.',
@@ -6663,7 +6722,7 @@ function keepAgent(ag){
   S.client=S.client||{}; if(ag.agent && !S.client.agent) S.client.agent=ag.agent;
   if(ag.phone && !S.agentPhone) S.agentPhone=ag.phone;
   if(ag.email && !S.agentEmail) S.agentEmail=ag.email;
-  if(ag.npn && !S.agentNPN) S.agentNPN=ag.npn; if(ag.web && !S.agentWebsite) S.agentWebsite=ag.web; if(ag.card && !S.agentCard) S.agentCard=ag.card; if(ag.book && !S.agentBooking) S.agentBooking=ag.book; if(ag.ben && !S.agentBenefits) S.agentBenefits=ag.ben; if(ag.drxl && !S.agentDrxLink) S.agentDrxLink=ag.drxl; if(ag.drxc && !S.agentDrxCode) S.agentDrxCode=ag.drxc; if(ag.bio && !S.agentBio) S.agentBio=ag.bio; }
+  if(ag.npn && !S.agentNPN) S.agentNPN=ag.npn; if(ag.web && !S.agentWebsite) S.agentWebsite=ag.web; if(ag.card && !S.agentCard) S.agentCard=ag.card; if(ag.book && !S.agentBooking) S.agentBooking=ag.book; if(ag.ben && !S.agentBenefits) S.agentBenefits=ag.ben; if(ag.drxl && !S.agentDrxLink) S.agentDrxLink=ag.drxl; if(ag.drxc && !S.agentDrxCode) S.agentDrxCode=ag.drxc; if(ag.hs && !S.agentHsLink) S.agentHsLink=ag.hs; if(ag.amz && !S.agentAmazeLink) S.agentAmazeLink=ag.amz; if(ag.bio && !S.agentBio) S.agentBio=ag.bio; }
 /* Portable client file (Jesse, 14 Oct): one file per client opens in POP Pro or the Script Navigator. A POP Pro save
    carries the whole navigator call (S.nav); a navigator save carries the POP Pro quote it came with (_pop). Opening a
    navigator file: its POP Pro quote is the base and the navigator's answers - the newer save - go on top. */
@@ -6721,7 +6780,7 @@ function restore(){ try{ var s=localStorage.getItem('hf_pop_last'); if(s){ var r
 /* ========== INTAKE + RECOMMENDATION ENGINE ========== */
 function readIntake(){
   S.intake=S.intake||{};
-  S.agency=($('in_agency').value||'').trim()||'HealthFirst'; S.agentPhone=$('in_aphone').value; S.agentEmail=$('in_aemail').value; S.agentNPN=($('in_anpn').value||'').trim(); S.agentWebsite=($('in_aweb').value||'').trim(); S.agentCard=($('in_acard').value||'').trim(); S.agentBooking=($('in_abook').value||'').trim(); S.agentBenefits=($('in_abenefits').value||'').trim(); S.agentDrxLink=($('in_adrxlink').value||'').trim(); S.agentDrxCode=($('in_adrxcode').value||'').trim(); S.agentBio=($('in_abio').value||'').trim(); agentSetupFold();
+  S.agency=($('in_agency').value||'').trim()||'HealthFirst'; S.agentPhone=$('in_aphone').value; S.agentEmail=$('in_aemail').value; S.agentNPN=($('in_anpn').value||'').trim(); S.agentWebsite=($('in_aweb').value||'').trim(); S.agentCard=($('in_acard').value||'').trim(); S.agentBooking=($('in_abook').value||'').trim(); S.agentBenefits=($('in_abenefits').value||'').trim(); S.agentDrxLink=($('in_adrxlink').value||'').trim(); S.agentDrxCode=($('in_adrxcode').value||'').trim(); S.agentHsLink=(($('in_ahslink')||{}).value||'').trim(); S.agentAmazeLink=(($('in_aamazelink')||{}).value||'').trim(); S.agentBio=($('in_abio').value||'').trim(); agentSetupFold();
   S.intake.who={app:$('in_who_app').checked,spouse:$('in_who_spouse').checked,kids:$('in_who_kids').checked};
   S.intake.phone=$('in_phone').value; S.intake.email=$('in_email').value;
   S.intake.tobaccoP=$('in_tobacco_p').checked; S.intake.tobaccoS=$('in_tobacco_s').checked;
@@ -6764,7 +6823,7 @@ function fillIntake(){
   if(typeof renderKids==='function') setTimeout(renderKids,0); setTimeout(uwWatch,50); setTimeout(pendFill,0); setTimeout(r12Fill,0);
   var I=S.intake||{}; var w=I.who||{app:true};
   $('in_who_app').checked=w.app!==false; $('in_who_spouse').checked=!!w.spouse; $('in_who_kids').checked=!!w.kids;
-  $('in_agency').value=S.agency||'HealthFirst'; $('in_aphone').value=S.agentPhone||''; $('in_aemail').value=S.agentEmail||''; $('in_anpn').value=S.agentNPN||''; $('in_aweb').value=S.agentWebsite||''; $('in_acard').value=S.agentCard||''; $('in_abook').value=S.agentBooking||''; $('in_abenefits').value=S.agentBenefits||''; $('in_adrxlink').value=S.agentDrxLink||''; $('in_adrxcode').value=S.agentDrxCode||''; $('in_abio').value=S.agentBio||''; agentSetupFold();
+  $('in_agency').value=S.agency||'HealthFirst'; $('in_aphone').value=S.agentPhone||''; $('in_aemail').value=S.agentEmail||''; $('in_anpn').value=S.agentNPN||''; $('in_aweb').value=S.agentWebsite||''; $('in_acard').value=S.agentCard||''; $('in_abook').value=S.agentBooking||''; $('in_abenefits').value=S.agentBenefits||''; $('in_adrxlink').value=S.agentDrxLink||''; $('in_adrxcode').value=S.agentDrxCode||''; if($('in_ahslink')) $('in_ahslink').value=S.agentHsLink||''; if($('in_aamazelink')) $('in_aamazelink').value=S.agentAmazeLink||''; $('in_abio').value=S.agentBio||''; agentSetupFold();
   $('in_pname').value=S.client.pname||''; $('in_sname').value=S.client.sname||''; $('in_agent').value=S.client.agent||'';
   $('in_state').value=S.client.state||''; $('in_zip').value=S.client.zip||''; $('in_page').value=S.client.page||''; $('in_sage').value=S.client.sage||''; $('in_date').value=S.client.date||''; $('in_sdob').value=S.client.sdob||''; $('in_address').value=S.client.address||'';
   $('in_phone').value=I.phone||''; $('in_email').value=I.email||'';
@@ -6955,7 +7014,7 @@ function rightFitFacts(){ var I=S.intake||{}, C=S.client||{}, e={ok:false};
   return f; }
 function rightFitPath(f){ if(f.aca.length) return 'aca'; if(f.uwHard) return 'gi'; if(f.overBudget) return 'budget'; if(f.mm.length) return 'triad'; return 'pop'; }
 /* Not live yet (Jesse, 21 Oct: everything ships but the routing tree) - shown only in the sandbox, or with ?rf=1 */
-var RIGHT_FIT_ON=(location.port==='8767'||location.hostname==='sandbox.mypoppro.com')||/[?&]rf=1\b/.test(location.search);
+var RIGHT_FIT_ON=true   /* live from the 4 Nov ship */;
 function renderRightFit(){ var el=$('rightFit'); if(!el) return; if(!RIGHT_FIT_ON){ el.style.display='none'; el.innerHTML=''; return; } S.rightFit=S.rightFit||{};
   if(DT_ON){ var tp=S.treePick; el.outerHTML='<div id="rightFit" class="rfit dt-link hidein-client"><span>Coverage Decision Tree</span> '+(tp?'picked <b>'+esc(tp.label)+'</b> · ':'')+'<a href="#" onclick="goStep(\'tree\');return false">'+(tp?'open it':'open it — who takes them, what each costs against now, and what to lead with')+' →</a></div>'; return; }
   var f=rightFitFacts(), path=rightFitPath(f), ul=function(a){ return a.length?'<ul>'+a.map(function(x){ return '<li>'+x+'</li>'; }).join('')+'</ul>':''; };
@@ -7123,8 +7182,8 @@ function renderTree(){ var host=$('dtHost'); if(!host) return; var C=S.client||{
   var big='<div class="dt-card dt-big"><div class="dt-h">The big picture</div>'+now
     +(F.f.e&&F.f.e.ok?'<div class="dt-aca">ACA checked first: about <b>'+fmt(F.acaNet)+'/mo</b> after subsidy'+(F.acaDed?' with a '+fmt(F.acaDed)+' deductible':'')+'. '+(F.f.aca.length?'<b>It’s the strongest fit.</b>':'Not the strongest fit on what we know.')+'</div>':'')
     +'<table class="dt-tab"><thead><tr><th>Option</th><th>Will they take them?</th><th class="r">Price</th><th class="r">Monthly vs '+(BB?esc(BB.short):'now')+'</th><th class="r">True cost vs '+(BB?esc(BB.short):'now')+'</th></tr></thead><tbody>'
-    +row('Manhattan — '+TIER_NAME.good,'ml',P.ess)+row('Manhattan — '+TIER_NAME.better,'ml',P.core,'Kyle’s core package')+row('Manhattan — '+TIER_NAME.best,'ml',P.comp)
-    +row('Cigna (USA Health Triad)','cg',P.cg,'major medical · Triad '+(P.cg.c&&P.cg.c.triadPlan||'7350'))+row('Bright Life','bl',P.bl,'limited-benefit PPO · no specialty drugs')
+    +row('Manhattan — '+TIER_NAME.good,'ml',P.ess)+row('Manhattan — '+TIER_NAME.better,'ml',P.core,'the core package')+row('Manhattan — '+TIER_NAME.best,'ml',P.comp)
+    +row('Cigna (USA Health Triad)','cg',P.cg,'major medical · Triad '+(P.cg.c&&P.cg.c.triadPlan||'7350'))+row('Bright Life','bl',P.bl,'Cigna PPO · no brand or specialty drugs')
     +'</tbody></table>'
     +'<div class="dt-why3">'+['ml','cg','bl'].map(function(k){ var L=v[k].L; if(!L.length) return ''; return '<div><b>'+{ml:'Manhattan',cg:'Cigna',bl:'Bright Life'}[k]+'</b><ul>'+dtWhy(L,3)+'</ul></div>'; }).join('')+'</div>'
     +(F.budget?'<div class="dt-bud">Budget: <b>'+fmt(F.budget)+'/mo</b></div>':'<div class="dt-bud">No budget on the Intake — add their max monthly to test it.</div>')+'</div>';
@@ -7182,7 +7241,7 @@ function renderTree(){ var host=$('dtHost'); if(!host) return; var C=S.client||{
           +(intakeMM.length?'<div class="dtf-auto">On the Intake: '+intakeMM.map(esc).join(' · ')+'</div>':'')+'</div></div>'
         +'<div class="dtf-split"><div class="dtf-lab'+lit(!isACA&&!F.mm)+'">FIXED BENEFITS → MANHATTAN POP ▼</div><div class="dtf-lab r'+lit(!isACA&&F.mm)+'">MAJOR MEDICAL → CIGNA OR BRIGHT LIFE ▼</div></div>'
         +'<div class="dtf-pair">'
-          +node(st('ml',['ml','mlE']),'BETTER · CORE','t-ml','ManhattanLife POP','The default private recommendation. Kyle’s seven: Affordable Choice, hospital, out-of-pocket, accident, dental, home health (pays for itself on 3+ meds), living benefits. Start in the middle; go up or down by what they pay now.','ml',/^ml/.test(id)?R.price:P.core.sum,/^ml/.test(id)?id:'ml')
+          +node(st('ml',['ml','mlE']),'BETTER · CORE','t-ml','ManhattanLife POP','The default private recommendation. The core seven: Affordable Choice, hospital, out-of-pocket, accident, dental, home health (pays for itself on 3+ meds), living benefits. Start in the middle; go up or down by what they pay now.','ml',/^ml/.test(id)?R.price:P.core.sum,/^ml/.test(id)?id:'ml')
           +'<div class="dtf-mid">WANTS MAJOR MEDICAL ▶</div>'
           +node(st('cg',['cg']),'BEST · MAJOR MEDICAL','t-cg','USA Health Triad (Cigna)',(F.cgDear&&c.cg?'<b class="dt-no">Over their likely budget.</b> ':'')+'The 7350 plan, paired with the deductible buster. Traditional co-pays and a Cigna network. “Typically uninsurable” isn’t no — but a drug on Cigna’s auto-decline list is.','cg',P.cg.sum,'cg')
         +'</div>'
@@ -7238,7 +7297,7 @@ function renderEnroll(){
   /* the plan they're actually enrolling in: the card from the end of Present (as presented, or with plan edits) */
   var useA=actualOn()&&S.actual.from===t, pt=useA?'actual':t, pk=S.packages[pt]||{products:[]}, c=effCfg(pt);
   var name=S.client.pname||'Client'; if(S.client.sname) name+=' & '+S.client.sname;
-  var carrierOf=function(p){ if(p.k==='base') return c.base==='lifex'?'LifeX (E123 site)':c.base==='brightlife'?'Bright Life (hired as a Wellness Associate)':'Cigna — USA Health / Triad (1Enrollment)';
+  var carrierOf=function(p){ if(p.k==='base') return c.base==='lifex'?'LifeX (E123 site)':c.base==='brightlife'?'Bright Life (hired as a Wellness Associate)':c.base==='aca'?'The marketplace — they apply on HealthSherpa':c.base==='amaze'?'Amaze — care access, not insurance':'Cigna — USA Health / Triad (1Enrollment)';
     if(p.k==='lbp'||p.k==='lbs'){ var lco=(c.lb||{})[p.k.slice(2)]||{}; if(lco.carrier==='other') return String(lco.otherName||'').trim()||'Other carrier';
       var nm=String(p.name||''); if(/americo/i.test(nm)) return 'Americo'; if(/mutual|omaha/i.test(nm)) return 'Mutual of Omaha';   // the policy actually priced
       var lc=(c.lb||{})[p.k.slice(2)]||{}; return lc.carrier==='americo'?'Americo':'Mutual of Omaha'; }
@@ -7246,9 +7305,9 @@ function renderEnroll(){
   var rows=(pk.products||[]).filter(function(p){ return (+p.monthly||0)>0; }), groups={}, order=[];
   rows.forEach(function(p){ var g=carrierOf(p); if(!groups[g]){ groups[g]=[]; order.push(g); } groups[g].push(p); });
   var total=rows.reduce(function(s2,p){ return s2+(+p.monthly||0); },0);
-  var sname=function(p){ var sl=PB_SLOTS.filter(function(x){ return x.k===p.k; })[0]; return p.k==='base'?(c.base==='lifex'?'LifeX health plan':c.base==='brightlife'?blPlanName(c):'Cigna PPO'):(sl?sl.name:p.name); };
+  var sname=function(p){ var sl=PB_SLOTS.filter(function(x){ return x.k===p.k; })[0]; return p.k==='base'?(c.base==='lifex'?'LifeX health plan':c.base==='brightlife'?blPlanName(c):c.base==='aca'?'Their ACA plan'+(acaIn().plan?' — '+acaIn().plan:''):c.base==='amaze'?'Amaze telehealth':'Cigna PPO'):(sl?sl.name:p.name); };
   var h='<div class="enroll-card">'
-    +'<div class="en-hd"><div><div class="en-nm">'+esc(name)+'</div><div class="en-pk">Enrolling: <b>'+(useA?esc(actualSnap().name):TIER_NAME[t])+'</b>'+(useA&&S.actual.how==='edited'?' <i>with plan edits</i>':'')+(chosenTier()?'':' <span class="en-warn">— no package chosen yet; showing '+TIER_NAME[t]+'. Mark the client’s choice on the builder or in Client View.</span>')+'</div></div>'
+    +'<div class="en-hd"><div><div class="en-nm">'+esc(name)+'</div><div class="en-pk">Enrolling: <b>'+(useA?esc(actualSnap().name):esc(tierDisp(t)))+'</b>'+(useA&&S.actual.how==='edited'?' <i>with plan edits</i>':'')+(chosenTier()?'':' <span class="en-warn">— no package chosen yet; showing '+esc(tierDisp(t))+'. Mark the client’s choice on the builder or in Client View.</span>')+'</div></div>'
     +'<div class="en-tot"><span>Monthly</span><b>'+fmt2(total)+'</b></div></div>';
   order.forEach(function(g){ h+='<div class="en-grp"><div class="en-car">'+esc(g)+'</div>'
     +groups[g].map(function(p){ var pol=(p.k==='lbp'||p.k==='lbs')?String((S.intake||{})['lbPolicy'+p.k.slice(2).toUpperCase()]||'').trim():'';
@@ -7261,12 +7320,14 @@ function renderEnroll(){
   $('lnkAmerico').href=AMERICO_URL;
   $('lnkCigna').href=CIGNA_URL;
   if($('lnkSparkle')){ $('lnkSparkle').href=SPARKLE.enroll; $('lnkSparkle').style.display=rows.some(function(p){ return p.k==='dvh'&&/Sparkle/.test(String(p.name||'')); })?'':'none'; }
-  if(LIFEX_URL){ $('lnkLifex').href=LIFEX_URL; }
   /* the standards are always on the page (Jesse, 2026-10-08): life - Mutual of Omaha, National Life Group, Americo;
      health - Manhattan, Cigna, LifeX. Sparkle dental only when this package has it. */
-  ['lnkMutual','lnkNLG','lnkAmerico','lnkManhattan','lnkCigna','lnkLifex'].forEach(function(id){ if($(id)) $(id).style.display=''; });
+  ['lnkMutual','lnkNLG','lnkAmerico','lnkManhattan','lnkCigna'].forEach(function(id){ if($(id)) $(id).style.display=''; });
   /* Bright Life (sandbox): only when this package is built on it */
-  (function(){ var on=c.base==='brightlife'; if($('lnkBrightlife')){ $('lnkBrightlife').href=BL_URL; $('lnkBrightlife').style.display=on?'':'none'; } if($('lnkBrightlifeAgent')){ $('lnkBrightlifeAgent').href=BL_AGENT_URL; $('lnkBrightlifeAgent').style.display=on?'':'none'; } })();
+  (function(){ var on=blOn(), mine=c.base==='brightlife'; if($('lnkBrightlife')){ $('lnkBrightlife').href=BL_URL; $('lnkBrightlife').style.display=on?'':'none'; } if($('lnkBrightlifeAgent')){ $('lnkBrightlifeAgent').href=BL_AGENT_URL; $('lnkBrightlifeAgent').style.display=on&&mine?'':'none'; }
+    /* Amaze and HealthSherpa are the agent's own links (Setup); without one the button opens Setup instead */
+    var miss=[]; [['lnkAmaze',amazeLink(),'Amaze sign-up link'],['lnkHealthSherpa',hsLink(),'HealthSherpa link']].forEach(function(x){ var a=$(x[0]); if(!a) return; a.href=x[1]||'#'; a.target=x[1]?'_blank':''; a.onclick=x[1]?null:function(e){ e.preventDefault(); openSetup(); }; if(!x[1]) miss.push(x[2]); });
+    var hn=$('enLinkHint'); if(hn){ hn.style.display=miss.length?'':'none'; hn.innerHTML=miss.length?'Add your '+miss.join(' and ')+' in <b>Setup</b> — each agent uses their own.':''; } })();
   enrollScript(); enrollPeople();
   /* Triad flow (sandbox): the Cigna enrollment steps up top; the ManhattanLife wrap-up script is not theirs */
   (function(){ var tt=chosenTier(), on=triadFlowOn(tt), box=$('enTriad'), se=$('enScriptEnd');
@@ -7459,7 +7520,7 @@ function celebrateOnReturn(kind,label){ var done=false, fire=function(){ if(done
 /* Enroll step 1 (Jesse, 10 Oct): opening a living-benefits application earns a thumbs-up */
 document.addEventListener('click',function(e){ var a=e.target.closest&&e.target.closest('#lnkMutual,#lnkNLG,#lnkAmerico'); if(a) celebrateOnReturn('thumbs'); });
 /* Enroll step 4 (Jesse, 10 Oct): the health application - "Let's go — almost there!" */
-document.addEventListener('click',function(e){ var a=e.target.closest&&e.target.closest('#lnkManhattan,#lnkCigna,#lnkLifex,#lnkSparkle'); if(a) celebrateOnReturn('go'); });
+document.addEventListener('click',function(e){ var a=e.target.closest&&e.target.closest('#lnkManhattan,#lnkCigna,#lnkSparkle,#lnkBrightlife,#lnkAmaze,#lnkHealthSherpa'); if(a) celebrateOnReturn('go'); });
 function goldFinale(){ if(CELE_GOLD_PENDING) return; CELE_GOLD_PENDING=true;
   var fire=function(){ if(!CELE_GOLD_PENDING) return; CELE_GOLD_PENDING=false; document.removeEventListener('visibilitychange',vis); window.removeEventListener('focus',fire);
     celebrate('gold','<span class="cele-l1">🏆 Another one for the books!</span><span class="cele-l2" style="font-size:.62em;color:#f3d48a">Now make your follow-up tight ↓</span>');
@@ -8764,12 +8825,13 @@ function evTableHTML(i,opt){ var O=opt||{}, tiers=O.tiers?EV_TIERS.filter(functi
      the monthly premium saving against the anchor, then the year with this event, each side worked out. The total is
      the same as before - 12 x the premium difference + (their share of the event - the package's net). */
   if(A&&B){ var aYr=B.prem*12+aOwe;
-    h+='<div class="c l">Monthly premium savings <small>vs '+esc(B.your)+'</small></div><div class="c anc">'+fmt2(B.prem)+'/mo<small>what '+esc(B.your)+' costs a month</small></div>'
+    var allAdd=res.every(function(x){ return acaAddsOn(x.T[0],B); });   /* ACA + protection: the columns add to the marketplace plan, they don't save on it */
+    h+='<div class="c l">'+(allAdd?'Monthly cost <small>with '+esc(B.your)+'</small>':'Monthly premium savings <small>vs '+esc(B.your)+'</small>')+'</div><div class="c anc">'+fmt2(B.prem)+'/mo<small>what '+esc(B.your)+' costs a month</small></div>'
     +res.map(function(x){ var d=B.prem-pkgPremMo(x.T[0]); if(acaAddsOn(x.T[0],B)) return '<div class="c evmo">Adds '+fmt2(-d)+'/mo<small>'+fmt2(pkgPremMo(x.T[0]))+'/mo with the marketplace plan</small></div>'; return '<div class="c evmo '+(d>=0?'up':'dn')+'">'+(d>=0?'Saves '+fmt2(d):'Costs '+fmt2(-d)+' more')+'/mo<small>'+fmt2(pkgPremMo(x.T[0]))+'/mo</small></div>'; }).join('');
     h+='<div class="c l">This year, with this event <small>12 months of premium + what this event costs them</small></div>'
     +'<div class="c anc evyr">12 × '+fmt2(B.prem)+' + '+fmt2(aOwe)+'<small>premiums + their share of this event</small><b>= '+fmt(aYr)+'</b></div>'
     +res.map(function(x){ var pm=pkgPremMo(x.T[0]), n=x.r.net, y=pm*12+n, v=aYr-y;
-      return '<div class="c evyr '+(v>=0?'up':'dn')+'">12 × '+fmt2(pm)+(n>=0?' + '+fmt2(n):' − '+fmt2(-n))+'<small>premiums '+(n>=0?'+ what they still pay for this event':'− what the benefits pay them beyond the bill')+'</small><b>= '+(y>=0?fmt(y):fmt(-y)+' back to them')+'</b><em>'+(v>=0?'Ahead ':'Behind ')+fmt(Math.abs(v))+'</em></div>'; }).join(''); }
+      return '<div class="c evyr '+(v>=0?'up':'dn')+'">12 × '+fmt2(pm)+(n>=0?' + '+fmt2(n):' − '+fmt2(-n))+'<small>premiums '+(n>=0?'+ what they still pay for this event':'− what the benefits pay them beyond the bill')+'</small><b>= '+(y>=0?fmt(y):fmt(-y)+' back to them')+'</b><em>'+(v>=0?'Ahead '+fmt(v):(acaAddsOn(x.T[0],B)?fmt(-v)+' more this year':'Behind '+fmt(-v)))+'</em></div>'; }).join(''); }   /* no "Behind" on an ACA + protection column (Jesse, 4 Nov) */
   h+='</div>';
   if(res.some(function(x){ return !x.o.major; })) h+='<div class="evhow"><b>How the money reaches you:</b> the Manhattan benefits are fixed amounts paid for the event, not a share of the bill. In network, show the card and the provider bills ManhattanLife directly; whatever the benefits pay beyond the bill comes back to you. Out of network, you pay the provider and the benefits are paid to you.</div>';
   if((+sc.days||0)>0&&res.some(function(x){ return x.o.afc; })) h+='<div class="evsrc printonly">Affordable Choice surgery benefits (paid on the policy fee schedule) are extra and not counted above.</div>';
@@ -9014,7 +9076,7 @@ function renderBuilder(){
   html+='</div>';
   var ladder=!S.lineup||S.lineup==='mh';   // the step-up check only means something on a Good/Better/Best ladder
   var ok=!ladder||(totals.good<=totals.better&&totals.better<=totals.best);
-  html+='<div class="pborder" style="color:'+(ok?'var(--green)':'var(--maroon)')+'">'+(ok?(ladder?'✓ Prices step up Good → Better → Best.':'Pivot view — LifeX below, Manhattan leads, Cigna above. Not a price ladder.'):'⚠ The packages no longer step up in price (Good $'+totals.good.toFixed(2)+' · Better $'+totals.better.toFixed(2)+' · Best $'+totals.best.toFixed(2)+'). Clients read the middle as the value choice — fix the order before presenting.')+'</div>';
+  html+='<div class="pborder" style="color:'+(ok?'var(--green)':'var(--maroon)')+'">'+(ok?(ladder?'✓ Prices step up Good → Better → Best.':'Pivot view — '+(blOn()?'Bright Life':'LifeX')+' below, Manhattan leads, Cigna above. Not a price ladder.'):'⚠ The packages no longer step up in price (Good $'+totals.good.toFixed(2)+' · Better $'+totals.better.toFixed(2)+' · Best $'+totals.best.toFixed(2)+'). Clients read the middle as the value choice — fix the order before presenting.')+'</div>';
   // Dental add-on
   var cB=effCfg('best'), dv=pDVH(HF_RATES,age,householdKey(),cB.dvh,st), inAll=['good','better','best'].every(function(t){ return (S.packages[t].dropped||[]).indexOf('dvh')<0; });
   if(S.lineup!=='aca') html+='<div class="pbaddon"><div style="min-width:220px"><div style="font-size:11px;font-weight:700;letter-spacing:.06em;color:#8a6a1f;text-transform:uppercase">Add-on</div><div style="font-weight:700">'+(dentalCo(st)==='sparkle'?'Sparkle Care Dental':dvhIs7016(st)?'Dental, Vision &amp; Hearing (7016)':'Dental · Vision · Hearing Select')+'<button type="button" class="pbinfo" data-ben="dvh" data-bt="best" title="Benefits — Dental, Vision & Hearing" aria-label="Benefits for Dental, Vision and Hearing">i</button></div></div>'

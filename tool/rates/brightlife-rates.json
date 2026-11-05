@@ -12,7 +12,7 @@
   "EC",
   "FAM"
  ],
- "notes": "Self-funded ERISA employee plans: \"Pricing of plans does not vary from state to state\" (Recruiter FAQ). ES = employee + spouse (ESP), EC = employee + children (ECH). HSA plans are offered only to a client who already has an HSA and wants to use it (Jesse, 28 Oct).",
+ "notes": "Self-funded ERISA employee plans: \"Pricing of plans does not vary from state to state\" (Recruiter FAQ). ES = employee + spouse (ESP), EC = employee + children (ECH). HSA plans are offered only to a client who already has an HSA and wants to use it.",
  "lineup": [
   "VL 1500",
   "PPO 1250"
@@ -349,7 +349,7 @@
    }
   }
  },
- "lineup_note": "Kyle: the Visit Limit 1500 and the Copay PPO 1250 (Jesse, 28 Oct). The other plans are kept for reference only.",
+ "lineup_note": "The Visit Limit 1500 and the Copay PPO 1250. The other plans are kept for reference only.",
  "humana": {
   "source": "Humana_BrightLife_Overview_2026-10-01.pdf (V2.10126), Bright Life Docs/05_Humana Ancillary, read by eye",
   "trp_states": [

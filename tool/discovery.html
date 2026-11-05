@@ -1660,7 +1660,7 @@ app_auth1:{s:"10",pf:"who",t:"First authorization &mdash; the MIB pull",l:[
 {t:"do",x:"Some carriers make them click a link or press a button instead of reading a code. Know how yours works before you dial."},
 {t:"do",x:"If you're on an iPhone, you can start a screen share mid-call and physically show them where to look &mdash; point right at it on their screen instead of describing it. Works even if they're not on an iPhone. Practice it once before you need it on a live call."}
 ,{t:"say",x:"And just so you know exactly what you're doing when you give me that code. By providing it back to me, you understand and intend to be a party on an insurance application. You also understand that I won't have access to any of your medical or personal information, but the senior underwriting team may. If that's all fair and true, go ahead and read me those six digits."},
-{t:"dobig",x:"Say what the code actually authorises, every time, before they read it out to you. It takes nine seconds, it is the correct thing to do, and it sounds like a professional running a regulated process &mdash; which is exactly what &ldquo;just read me the code&rdquo; does not sound like when the client thinks about it afterwards. Marisa says it before both codes, every call."}
+{t:"dobig",x:"Say what the code actually authorises, every time, before they read it out to you. It takes nine seconds, it is the correct thing to do, and it sounds like a professional running a regulated process &mdash; which is exactly what &ldquo;just read me the code&rdquo; does not sound like when the client thinks about it afterwards. Say it before both codes, every call."}
 ],b:[{k:"Got the code",to:"app_draft",c:"go"}]},
 
 app_draft:{s:"10",pf:"wrap",t:"Draft date",l:[
@@ -2025,7 +2025,7 @@ i_review_bad:{s:"1",t:"It's not built the way they thought",l:[
 {k:"Book a full review and restructure",to:"i_appt"}]},
 
 i_obj_forgot:{s:"1",t:"&ldquo;I don't remember filling out anything like that&rdquo;",l:[
-{t:"note",x:"<b>Draft language &mdash; not locked.</b> Needs Jesse's version."},
+{t:"note",x:"<b>Draft language &mdash; not locked.</b>"},
 {t:"say",x:"No worries, it was a while back."},
 {t:"say",x:"It's the one about building tax-free cash value &mdash; where you can be your own bank, get to the money later, and it has living benefits if you ever got sick or injured."},
 {t:"ask",x:"Ringing a bell?"}
@@ -2647,7 +2647,7 @@ i_app_auth1:{s:"14",t:"First authorization &mdash; the MIB pull",l:[
 {t:"do",x:"Some carriers make them click a link or press a button instead of reading a code. Know how yours works before you dial."},
 {t:"do",x:"If you're on an iPhone, you can start a screen share mid-call and physically show them where to look. Practice it once before you need it on a live call."}
 ,{t:"say",x:"And just so you know exactly what you're doing when you give me that code. By providing it back to me, you understand and intend to be a party on an insurance application. You also understand that I won't have access to any of your medical or personal information, but the senior underwriting team may. If that's all fair and true, go ahead and read me those six digits."},
-{t:"dobig",x:"Say what the code actually authorises, every time, before they read it out to you. It takes nine seconds, it is the correct thing to do, and it sounds like a professional running a regulated process &mdash; which is exactly what &ldquo;just read me the code&rdquo; does not sound like when the client thinks about it afterwards. Marisa says it before both codes, every call."}
+{t:"dobig",x:"Say what the code actually authorises, every time, before they read it out to you. It takes nine seconds, it is the correct thing to do, and it sounds like a professional running a regulated process &mdash; which is exactly what &ldquo;just read me the code&rdquo; does not sound like when the client thinks about it afterwards. Say it before both codes, every call."}
 ],b:[{k:"Got the code",to:"i_app_ben",c:"go"}]},
 
 i_app_ben:{s:"14",pf:"bendetail",t:"Beneficiaries",l:[
@@ -2927,7 +2927,7 @@ hs_book_lock:{s:"1",t:"Lock it in",l:[
 {t:"do",x:"Wait for the yes. That yes is the appointment."},
 {t:"say",x:"And just so you know, we won't be paying for anything on that call. What I'll do is break it all down so you're completely clear, and then you'll tell me which direction you'd like to go from there."},
 {t:"say",x:"And so nothing surprises you later &mdash; here's how it works from there. When we find the one that fits you and your budget, we apply for it together, right on the phone. It goes to the carrier for their final approval &mdash; that's their call, not mine. Once it's approved, <b>the carrier takes the first payment</b>, so have that ready in the account. Then I call you and we go through exactly what you've got, line by line.",when:["did_discovery","Yes"]},
-{t:"warn",x:"<b>Say the draft out loud on this call.</b> Most of what looks like a lapse in this book is a <b>failed first draft</b> &mdash; a termination one to seventeen days after issue, because the money was not there. One sentence now prevents it. &ldquo;Be ready, have the money in the bank, because that's always a surprise when all of a sudden you have $500, $800 getting drafted out of your account.&rdquo; (Kara DeNardo, 2 Nov.)",when:["did_discovery","Yes"]},
+{t:"warn",x:"<b>Say the draft out loud on this call.</b> Most of what looks like a lapse in this book is a <b>failed first draft</b> &mdash; a termination one to seventeen days after issue, because the money was not there. One sentence now prevents it. &ldquo;Be ready, have the money in the bank, because that's always a surprise when all of a sudden you have $500, $800 getting drafted out of your account.&rdquo;",when:["did_discovery","Yes"]},
 {t:"ask",x:"<span class=\"optpill\">Read the room</span> Real quick &mdash; what time do you have us down for?"},
 {t:"tip",x:"Match it to when you&rsquo;re meeting. <b>Within the next 15 minutes:</b> you aren&rsquo;t really setting anything &mdash; skip it. <b>Later today:</b> a light confirm is enough. <b>Another day:</b> this is the one you really lock in &mdash; make them say the day and the time back to you."},
 {t:"appt"},
@@ -2958,7 +2958,7 @@ hs_role:{s:"2",t:"Role & purpose",l:[
 {t:"say",x:"Sound fair?"},
 {t:"do",x:"Fifteen seconds, and it is the only thing a self-booked client has to go on. They clicked a calendar link and now a stranger is on the phone &mdash; <b>say who you are before you ask them anything.</b> <b>Type their state into the sentence from the lead card before you dial</b> &mdash; it fills State on their profile; the ZIP in Part 4 confirms it."},
 {t:"tip",x:"<b>How much to read, by call type.</b> <b>They booked it themselves:</b> all of it. <b>Your setter booked it:</b> all of it &mdash; they heard this in someone else's voice, not yours. <b>You booked it yourself:</b> you already said it, so skip to &ldquo;Sound fair?&rdquo; or skip the card. <b>Warm call:</b> first paragraph only &mdash; you have not earned more yet."},
-{t:"train",x:"<b>&ldquo;Licensed underwriter&rdquo; is doing work that &ldquo;agent&rdquo; does not.</b> It says you are permitted to represent all of them, which is the premise the whole call rests on. The phrase already exists further down the script, but only as an SSN objection-handler &mdash; by then it is a defence rather than a frame. (Kara DeNardo, 2 Nov.)"}
+{t:"train",x:"<b>&ldquo;Licensed underwriter&rdquo; is doing work that &ldquo;agent&rdquo; does not.</b> It says you are permitted to represent all of them, which is the premise the whole call rests on. The phrase already exists further down the script, but only as an SSN objection-handler &mdash; by then it is a defence rather than a frame."}
 ],b:[{k:"Next",to:"hs_qualify_first",c:"go"}]},
 
 hs_qualify_first:{s:"2",t:"Qualify first",l:[
@@ -3096,7 +3096,7 @@ hs_family:{s:"2",pf:"who",t:"Who we're covering",l:[
 hs_income:{s:"3",pf:"income",t:"Income",l:[
 {t:"say",x:"Okay &mdash; this is the part I mentioned, and here's why I ask it. The marketplace and work plans are guaranteed issue; private plans ask some health questions, so I'll get to those. But I also look at the money, because I'll be looking at several plans for you. Some carry a deductible and some don't. If I recommend one with a $10,000 deductible and it turns out you don't have $10,000 sitting spare, I've just put you somewhere that could throw you into a financial spiral &mdash; and that would be my fault, not yours."},
 {t:"say",x:"So this isn't to sell you any more insurance. It's so what I recommend actually fits. Does that make sense?"},
-{t:"train",x:"<b>Position it right before you ask it.</b> Said at the top of the call it is forgotten; said here, they answer the 401(k) question without blinking. Keep the $10,000 a <i>plan</i> figure &mdash; the moment it sounds like you think <i>they</i> have a $10,000 problem, the sentence changes character. (Jesse's bootcamp framing, 17 Oct; the placement from the team call, 3 Nov.)"},
+{t:"train",x:"<b>Position it right before you ask it.</b> Said at the top of the call it is forgotten; said here, they answer the 401(k) question without blinking. Keep the $10,000 a <i>plan</i> figure &mdash; the moment it sounds like you think <i>they</i> have a $10,000 problem, the sentence changes character."},
 {t:"ask",x:"So let's start with income &mdash; roughly what will your income be this year? ___(your income)"},
 {t:"ask",when:["married",["Married","Partnered"]],x:"And [[sp_name|your spouse]]&rsquo;s income? ___(spouse income)"},
 {t:"pf",ks:["hh_income"]},
