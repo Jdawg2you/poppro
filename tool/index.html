@@ -2421,7 +2421,9 @@ function evMajorOwe(m,bill,ev){ var cap=+m.oop>0?+m.oop:bill;
       if(ev.days>0) pc('Hospital admission copay',m.adm);
       if(ev.er) pc('Emergency room copay',m.er);
       if(ev.type==='osurg') pc('Outpatient surgery copay',m.osurg);
-      if(ev.type==='imaging') pc('Advanced imaging copay',m.imaging); }
+      if(ev.type==='imaging') pc('Advanced imaging copay',m.imaging);
+      /* No copay fits the bill (a year of cancer treatment): the plan's 'all other covered services' coinsurance applies. */
+      if(owe===ded&&m.coins!=null) pc('Coinsurance '+m.coins+'% after the deductible',(+m.coins)/100*(bill-ded)); }
     var fin=Math.round(Math.min(cap,bill,owe)*100)/100;
     if(out&&fin<owe) out.push({lab:'Capped at the out-of-pocket maximum',v:fin-owe});
     return fin; }
@@ -6563,7 +6565,8 @@ var NEWS=[
   ['Key dates on Enroll','A Cigna or Bright Life plan shows its deadlines at the top of Enroll: when the application is due, when it must be signed, when coverage starts and the first draft (marked UNCONFIRMED until the carrier confirms it). Bright Life also shows the last day they can back out.'],
   ['Amaze is their telehealth','A Virtual Basic client hears about Amaze’s virtual care, never EasyCare2go: the enrollment email describes what Amaze does, and the Benefits Review, its checklist, the recap and the care card talk Amaze. Rx Valet is told as part of Amaze.'],
   ['Save my Setup','In Setup: Save my Setup puts your details in one small file, and Load my Setup brings them back after a cleared browser or on a new computer. Client files no longer carry your details — open a file from anyone and your own name, agency, email and links stay on everything you send.'],
-  ['Cigna doctor lookup','Preferred Doctors on the Intake now has a Look up Cigna network link beside First Health, for clients going on a Cigna plan.']],
+  ['Cigna doctor lookup','Preferred Doctors on the Intake now has a Look up Cigna network link beside First Health, for clients going on a Cigna plan.'],
+  ['Bright Life on the event cards','The event examples now run Bright Life through its plan: the deductible, then its copays ($2,500 a hospital stay, $1,000 for the ER), never past its $9,200 out-of-pocket max. Before, a hospital stay showed the whole bill owed. Medical Bill Saver only ever applies to the ManhattanLife packages.']],
   i:[
   ['Bright Life plan','Copay PPO 1250 only (a saved Visit Limit plan still opens). Benefits, prices and the brochure link come from the Health Shield PPO 1250 brochure.'],
   ['Bright Life script','Nine pages: what it is ("we represent Bright Life" — never sold, never guaranteed issue), copays, doctors on Cigna, prescriptions, the hospital, the health questions and CARES, the price and draft on the 15th, quick answers and next steps.'],
@@ -8855,6 +8858,13 @@ function evTierPack(t){ var c=effCfg(t), st=(S.client.state||'').toUpperCase(), 
     o.major={oop:lfam?LIFEX_OOP_BOUND.family:LIFEX_OOP_BOUND.self,ded:lxd*(lfam?2:1),copay:true,
       visit:LIFEX_PPO.visit,urgent:LIFEX_PPO.urgent,er:LIFEX_PPO.er,adm:LIFEX_PPO.adm,
       osurg:LIFEX_PPO.osurg,imaging:LIFEX_PPO.imaging}; }
+  /* Bright Life is major medical too (Jesse, 5 Nov: the cards had no Bright Life terms, so a hospital stay showed the whole bill
+     owed). One person's event, so the individual deductible and out-of-pocket max. Health Shield PPO brochure V1.110226: $50 PCP,
+     $90 urgent, $1,000 ER, $2,500 per admission, $2,500 outpatient surgery facility, $500 imaging, all after the deductible;
+     all other covered services 20% after the deductible. VL plans from their own sheets, as in popInputsFor. */
+  if(evHas(t,'base')&&c.base==='brightlife'){ var bp=(typeof BLR!=='undefined'&&BLR&&BLR.plans[c.blPlan||BL_DEFAULT])||{}, bd=parseFloat(bp.deductible)||1250, bvl=/^VL/.test(c.blPlan||BL_DEFAULT);
+    o.major=bvl?{oop:10600,ded:bd,copay:true,coins:20,visit:50,urgent:50,er:750,adm:2500,osurg:500,imaging:350}
+               :{oop:9200,ded:bd,copay:true,coins:20,visit:50,urgent:90,er:1000,adm:2500,osurg:2500,imaging:500}; }
   /* An ACA package keeps the marketplace plan: it pays the bill past their share, and the add-ons pay cash on top (Kyle, 4 Nov). */
   if(evHas(t,'base')&&c.base==='aca'){ var at=evAcaTerms(); o.major={oop:at.oop,ded:at.ded,coins:at.coins,visit:at.visit,urgent:0,aca:true}; }
   return o; }
