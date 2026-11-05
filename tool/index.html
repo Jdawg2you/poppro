@@ -602,6 +602,12 @@
   .en-step{font-family:var(--serif);font-weight:700;color:var(--navy);margin-bottom:10px;font-size:17px}
   .en-step span{display:inline-block;background:var(--navy);color:#fff;border-radius:6px;min-width:24px;text-align:center;margin-right:6px;font-family:inherit;font-size:14px}
   .enroll-card+.enroll-card{margin-top:12px}
+  .kd{margin:12px 0 4px;border:2px solid #d9a521;background:#fff8e1;border-radius:12px;padding:12px 16px}
+  .kd h4{margin:0 0 6px;font-family:var(--serif);color:var(--navy);font-size:16px}
+  .kd-row{display:flex;gap:12px;align-items:baseline;padding:5px 0;border-top:1px dotted #e6cf8a;font-size:14px}.kd-row:first-of-type{border-top:0}
+  .kd-row span{min-width:150px;color:#6b5a1e;font-weight:600}.kd-row b{color:var(--navy)}.kd-row small{color:var(--muted);margin-left:6px}
+  .kd-un{display:inline-block;background:#a3372e;color:#fff;border-radius:5px;padding:0 6px;font-size:11px;font-weight:700;letter-spacing:.04em;margin-left:6px}
+  .kd-ok{display:inline-block;background:#17824a;color:#fff;border-radius:5px;padding:0 6px;font-size:11px;font-weight:700;margin-left:6px}
   .en-person{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-top:10px;background:#fff}
   .en-person h5{margin:0;font-size:14px;color:var(--navy);display:inline}
   .agentsetup summary{cursor:pointer;list-style:revert}
@@ -1660,6 +1666,7 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
    <div class="card pad">
     <div class="sectitle"><span class="dot">●</span> Enroll</div>
     <div class="note" style="padding-top:2px">In call order: the life application first (it has the health questions), each person’s details, the finish — then the health carriers after the call.</div>
+    <div id="enKeyDates"></div>
     <div id="enDiff" class="hidein-client"></div>
     <div id="enrollSummary" style="margin:14px 0"></div>
     <div class="enroll-card hidein-client" id="enTriad" style="display:none"></div>
@@ -6563,6 +6570,7 @@ var NEWS=[
   ['Every Cigna rate is $14 higher','The 2027 Classic Triad guide is a flat +$14.00 a month on every rate: all age bands, all tiers, all plans. It applies to plans starting 12/1/26 or later. A start date before that on the Intake still quotes the 2026 rate, and a blank start date quotes 2027.'],
   ['HSA plans: higher out-of-pocket','Max out-of-pocket on the 3500 HSA and 5000 HSA went from $6,550 to $7,350 ($14,700 family). Deductibles are unchanged. Check any HSA recommendation again.'],
   ['HSA prescriptions corrected','On the HSA plans, prescriptions are $15 / $65 / $100 / 50% after the deductible, per the 2027 guide. Specialty drugs are 50% on every plan.'],
+  ['Key dates on Enroll','A Cigna or Bright Life plan shows its deadlines at the top of Enroll: when the application is due, when it must be signed, when coverage starts and the first draft (marked UNCONFIRMED until the carrier confirms it). Bright Life also shows the last day they can back out.'],
   ['Amaze is their telehealth','A Virtual Basic client hears about Amaze’s virtual care, never EasyCare2go: the enrollment email describes what Amaze does, and the Benefits Review, its checklist, the recap and the care card talk Amaze. Rx Valet is told as part of Amaze.'],
   ['Plan summaries are still 2026','The 2027 plan summaries (SBCs) have not arrived yet. For a coverage question, the SBC still governs.']]},
  {d:'2026-10-23',t:'Benefits Review, care card, approval message and a cleaner Present',h:[
@@ -7318,12 +7326,27 @@ function renderFlags(){
   var f=S.recFlags||[];
   el.innerHTML=f.length? f.map(function(t){return '<div class="flagbox">⚠ '+esc(t)+'</div>';}).join('') : '';
 }
+/* Key dates (Jesse, 5 Nov; Health ZONE's rule): at the top of Enroll, highlighted, for the plans that live or die on a date.
+   Cigna: application in by the 15th, signed by the 25th, first draft on the 20th. Bright Life: signed by the 20th, first
+   draft on the 15th, and they can still back out up to 3 days before the start date. The draft date is never filled in:
+   it shows UNCONFIRMED until the carrier's confirmed date is entered on the Benefits Review setup. */
+function keyDatesHTML(t){ if(!t) return ''; var c=effCfg(t), b=c&&c.base; if(b!=='triad'&&b!=='brightlife') return '';
+  var R=reviewState(), row=function(l,v,n){ return '<div class="kd-row"><span>'+l+'</span><div><b>'+v+'</b>'+(n?'<small>'+n+'</small>':'')+'</div></div>'; };
+  var draft=R.draft?row('First draft','<span>'+esc(reviewDate(R.draft))+'</span><i class="kd-ok">CONFIRMED</i>','from the carrier'):null;
+  if(b==='triad'){ var d=triadDates();
+    return '<div class="kd"><h4>📅 Key dates — Cigna PPO</h4>'+row('Application in by',esc(d.submit),'the 15th')+row('Signed by',esc(d.sign),'the 25th — no signature, no coverage')
+      +row('Coverage starts',esc(d.start))+(draft||row('First draft','the 20th<i class="kd-un">UNCONFIRMED</i>','until the carrier confirms it'))+'</div>'; }
+  var n=new Date(), y=n.getFullYear(), mo=n.getMonth(); if(n.getDate()>20){ mo++; if(mo>11){ mo=0; y++; } }
+  var st=new Date(y,mo+1,1), out=new Date(y,mo+1,1-3), f=function(x){ return x.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'}); }, D=blDates();
+  return '<div class="kd"><h4>📅 Key dates — Bright Life</h4>'+row('Signed by',esc(D.sign),'the 20th')+row('Coverage starts',esc(D.start),D.alt?'or '+esc(D.alt)+' if they choose':'')
+    +(draft||row('First draft','the 15th<i class="kd-un">UNCONFIRMED</i>','until the carrier confirms it'))+row('Can still back out until',esc(f(out)),'3 days before the start date'+(D.alt?' — '+esc(f(new Date(y,mo+2,1-3)))+' if they start '+esc(D.alt):''))+'</div>'; }
 function renderEnroll(){
   if($('followList')) renderFollowUps();
   renderEnText();
   /* the separate "Other follow-up notes" box is gone - anything typed there joins the one Notes field, once */
   if(S.follow&&String(S.follow.note||'').trim()){ S.intake=S.intake||{}; S.intake.notes=(String(S.intake.notes||'').replace(/\s+$/,'')+(S.intake.notes?'\n':'')+'Follow-up: '+S.follow.note.trim()); S.follow.note=''; autosave(); }
   var t=chosenTier()||S.activeTab;
+  if($('enKeyDates')) $('enKeyDates').innerHTML=keyDatesHTML(t);   /* the column's base: plan edits never change the carrier */
   /* the plan they're actually enrolling in: the card from the end of Present (as presented, or with plan edits) */
   var useA=actualOn()&&S.actual.from===t, pt=useA?'actual':t, pk=S.packages[pt]||{products:[]}, c=effCfg(pt);
   var name=S.client.pname||'Client'; if(S.client.sname) name+=' & '+S.client.sname;
