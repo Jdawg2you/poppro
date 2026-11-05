@@ -315,7 +315,7 @@ if (mode === 'engine') {
   const cigBase = { major: cigna, base: 'triad', his: { ben: 4000, amb: 1 }, chas: { cancer: 20000, hs: 10000 }, lb: two(50000), best: best('TX'), avail: { sdr: true, hhc: true, dvh: true } };
   const cig = sc(cigBase, { major: true }), cigFull = sc(Object.assign({}, cigBase, { hisOutp: 1500, dvhMax: '3000' }), { major: true });
   console.log('   cigna + HIS + LB + CHAS ' + cig + ' · fully built ' + cigFull);
-  ok(cig >= 84, 'Cigna + HI Select + LB + CHAS is strong (' + cig + ')');
+  ok(cig >= 82, 'Cigna + HI Select + LB + CHAS is strong (' + cig + ')');   // 4 Nov: a typical stay is graded in dollars owed; $4,000 HI against a $3,500 deductible + 20% leaves a little
   ok(cigFull >= 88 && cigFull > cig, 'Cigna with outpatient rider + dental scores high (' + cigFull + ')');
   for (const k of ['his', 'gap', 'accU', 'chas', 'dvhMax', 'lb', 'hhc']) { const x = maxed('TX'); delete x[k]; ok(sc(x) <= M, 'removing ' + k + ' never raises the score'); }
   if (!fails) console.log('pop score checks passed');
