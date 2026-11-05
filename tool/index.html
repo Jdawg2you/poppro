@@ -6765,13 +6765,21 @@ function keepAgent(ag){
    carries the whole navigator call (S.nav); a navigator save carries the POP Pro quote it came with (_pop). Opening a
    navigator file: its POP Pro quote is the base and the navigator's answers - the newer save - go on top. */
 function navOnlyOf(p){ var o={}; Object.keys(p||{}).forEach(function(k){ if(k!=='_pop') o[k]=p[k]; }); return JSON.parse(JSON.stringify(o)); }
+/* Opening a file someone else saved (Jesse, 5 Nov): the client travels in the file, the agent does not. Whoever opens
+   it keeps their own Setup - name, agency, phone, email, links - so what they send the client carries their details;
+   the file's Setup only fills a field this browser has empty (your own file on a new computer). */
+function preferAgent(ag){   /* S already holds the file's values... */
+  var set={agency:function(v){ S.agency=v; },agent:function(v){ S.client=S.client||{}; S.client.agent=v; },phone:function(v){ S.agentPhone=v; },email:function(v){ S.agentEmail=v; },
+    npn:function(v){ S.agentNPN=v; },web:function(v){ S.agentWebsite=v; },card:function(v){ S.agentCard=v; },book:function(v){ S.agentBooking=v; },ben:function(v){ S.agentBenefits=v; },
+    drxl:function(v){ S.agentDrxLink=v; },drxc:function(v){ S.agentDrxCode=v; },hs:function(v){ S.agentHsLink=v; },amz:function(v){ S.agentAmazeLink=v; },bio:function(v){ S.agentBio=v; }};
+  Object.keys(set).forEach(function(k){ var v=ag[k]; if(k==='agency'&&v==='HealthFirst') return; if(v!=null&&String(v).trim()!=='') set[k](v); }); }   /* ...then this agent's own values win */
 function loadQuoteObject(obj){ var ag=agentOf(S);
   if(isNavProfile(obj)){ var pop=obj._pop&&typeof obj._pop==='object'?obj._pop:null;
-    if(pop){ S=deepMerge(blankState(),pop); keepAgent(ag); migrateAca(pop); migrateEvents(pop); if(!S.packages||!S.packages[S.activeTab]) S.packages=blankState().packages; if(!S.aca) S.aca=blankState().aca; }
-    else { S=blankState(); keepAgent(ag); }
+    if(pop){ S=deepMerge(blankState(),pop); preferAgent(ag); migrateAca(pop); migrateEvents(pop); if(!S.packages||!S.packages[S.activeTab]) S.packages=blankState().packages; if(!S.aca) S.aca=blankState().aca; }
+    else { S=blankState(); preferAgent(ag); }
     applySuiteClient(suiteFromNavProfile(obj)); S.nav=navOnlyOf(obj);
     return pop?'quote':'intake'; }
-  S=deepMerge(blankState(),obj); keepAgent(ag); migrateAca(obj); migrateEvents(obj);
+  S=deepMerge(blankState(),obj); preferAgent(ag); migrateAca(obj); migrateEvents(obj);
   if(!S.packages||!S.packages[S.activeTab]) S.packages=blankState().packages;
   if(!S.aca) S.aca=blankState().aca;
   return 'quote'; }
