@@ -8130,7 +8130,7 @@ function presentEvCss(doc){ if(doc.getElementById('ppevcss')) return; var css=''
   var st=doc.createElement('style'); st.id='ppevcss'; st.textContent=css; doc.head.appendChild(st);
   Array.prototype.forEach.call(document.querySelectorAll('link[rel="stylesheet"][href*="fonts.googleapis"]'),function(l){ var c=doc.createElement('link'); c.rel='stylesheet'; c.href=l.href; doc.head.appendChild(c); }); }
 /* refit the script frames after their content changes height */
-function presentFit(){ ['prFrame','enFrame','enFrame2'].forEach(function(id){ var fr=$(id); if(fr&&fr.contentDocument&&fr.offsetParent){ fr.style.height='60px'; fr.style.height=(fr.contentDocument.documentElement.scrollHeight+8)+'px'; } }); }
+function presentFit(){ ['prFrame','enFrame','enFrame2'].forEach(function(id){ var fr=$(id); if(fr&&fr.contentDocument&&fr.contentDocument.documentElement&&fr.offsetParent){ fr.style.height='60px'; fr.style.height=(fr.contentDocument.documentElement.scrollHeight+8)+'px'; } }); }
 /* More than one medication: the same words for each, one after another, before the sentence goes on to the plan's
    prescription benefit. A [data-repeat="meds"] block in the script (if Health ZONE adds one) is cloned per medication;
    until then the 2nd..nth are listed right after the first one's coupon sentence. */
