@@ -585,7 +585,13 @@
   .pr-nav button.go{background:var(--navy);color:#fff;border-color:var(--navy)}
   .pr-branch{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
   .pr-branch button{background:#fff7e0;border-color:#e2c27a}
-  .pr-rail{position:sticky;top:12px;display:flex;flex-direction:column;gap:12px}
+  .pr-rail{position:sticky;top:12px;display:flex;flex-direction:column;gap:12px;max-height:calc(100vh - 24px);overflow-y:auto;scroll-padding-top:4px}
+  .pr-bubs{display:flex;gap:10px;flex-wrap:wrap;margin-left:auto;margin-right:12px;align-self:center}
+  .pr-bub{font:inherit;font-size:13px;font-weight:700;padding:8px 15px;border-radius:999px;border:1px solid #d6cdb4;background:#fff;color:var(--navy);cursor:pointer;display:inline-flex;align-items:center;gap:7px;box-shadow:0 1px 2px rgba(18,33,59,.06);transition:border-color .15s,background .15s}
+  .pr-bub:hover{border-color:var(--gold);background:#fffdf7}.pr-bub .ic{font-size:14px;line-height:1}.pr-bub .tg{font-size:10.5px;font-weight:800;letter-spacing:.06em;color:#8a6a1f;background:#f7efd9;border-radius:999px;padding:2px 7px}
+  .pr-flash{animation:prflash 1.8s ease-out}@keyframes prflash{0%,45%{box-shadow:0 0 0 3px var(--gold)}100%{box-shadow:0 0 0 0 rgba(201,154,63,0)}}
+  #objPop .pr-pop{position:fixed;right:18px;top:90px;width:min(460px,calc(100vw - 36px));max-height:calc(100vh - 110px);overflow-y:auto;z-index:9997;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,.2);padding:16px 18px;font-size:14px}
+  #objPop .x{position:absolute;right:10px;top:8px;border:none;background:none;font-size:22px;cursor:pointer;color:var(--muted)}#objPop .pr-pop>b{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:4px 0 6px}#objPop .pr-qah{margin-top:14px}
   .pr-rail .box{border:1px solid var(--line);border-radius:12px;background:#faf7ef;padding:12px}
   .pr-rail .box b{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
   .pr-rail .box button{display:block;width:100%;text-align:left;margin-top:6px;font-weight:600}
@@ -5985,7 +5991,7 @@ function triadPresentHTML(t){ var first=triadFirst(), plan=triadPlanOf(t), ded=t
       +triadDo('Before you apply: <b>they must be self-employed with their own EIN</b> — no EIN, no Cigna plan. If they don’t have one, it’s free and instant on the <a href="'+TRIAD_EIN_URL+'" target="_blank" rel="noopener">IRS site ↗</a>.')
       +'<button type="button" class="btn-gold" onclick="goStep(\'enroll\')">Go to Enroll →</button>'; })()}];
   return '<div class="pr-top"><div><h3>Presenting the <em class="pr-plan">Cigna PPO '+esc(plan)+'</em> to '+esc(first)+'</h3><small>Agent-only. Figures come from the 2027 rate and benefit guide for the '+esc(plan)+' plan.</small></div>'
-    +'<button type="button" data-pr="quote" style="font:inherit;font-weight:700;border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 13px;cursor:pointer">← Back to the Quote</button></div>'
+    +presentBubbles(t)+'<button type="button" data-pr="quote" style="font:inherit;font-weight:700;border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 13px;cursor:pointer">← Back to the Quote</button></div>'
     +'<div class="trd">'+triadSteps(pages,'prpg')+'</div>'; }
 
 /* ---------- BRIGHT LIFE PRESENT (sandbox, Jesse 4 Nov: "create a script based on Bright Life") ----------
@@ -6062,7 +6068,7 @@ function blPresentHTML(t){ var first=triadFirst(), c=effCfg(t), prem=triadPremiu
       +todo('Back office: <b>Profiles → Member Pre-Qualification → Add a Member</b> to apply with them, or <b>Sites → Member Enroll</b> to send a self-enroll link.')
       +'<button type="button" class="btn-gold" onclick="goStep(\'enroll\')">Go to Enroll →</button>'}];
   return '<div class="pr-top"><div><h3>Presenting the <em class="pr-plan">Bright Life Health Shield PPO 1250</em> to '+esc(first)+'</h3><small>Agent-only. Figures come from the Health Shield PPO 1250 brochure (V1.110226).</small></div>'
-    +'<button type="button" data-pr="quote" style="font:inherit;font-weight:700;border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 13px;cursor:pointer">← Back to the Quote</button></div>'
+    +presentBubbles(t)+'<button type="button" data-pr="quote" style="font:inherit;font-weight:700;border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 13px;cursor:pointer">← Back to the Quote</button></div>'
     +'<div class="trd">'+triadSteps(pages,'blprpg')+'</div>'; }
 
 /* ---------- ACA + PROTECTION and VIRTUAL BASIC PRESENT (sandbox, Jesse 4 Nov) ----------
@@ -6126,7 +6132,7 @@ function acaPresentHTML(t){ var first=triadFirst(), a=S.aca||{}, A=acaIn(), base
         +'<button type="button" class="btn-gold" onclick="goStep(\'enroll\')">Go to Enroll →</button>'});
   }
   return '<div class="pr-top"><div><h3>Presenting <em class="pr-plan">'+esc(LN[0])+'</em> to '+esc(first)+'</h3><small>Agent-only — '+(vb?'Virtual Basic':'ACA + protection')+'. The ACA figures come from the Intake.</small></div>'
-    +'<button type="button" data-pr="quote" style="font:inherit;font-weight:700;border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 13px;cursor:pointer">← Back to the Quote</button></div>'
+    +presentBubbles(t)+'<button type="button" data-pr="quote" style="font:inherit;font-weight:700;border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 13px;cursor:pointer">← Back to the Quote</button></div>'
     +'<div class="trd">'+triadSteps(pages,'acapg_'+S.lineup+'_'+t)+'</div>'; }
 
 /* Cigna underwriting screen (Jesse, 27 Oct: incorporate the EBA underwriting guide). Reads what Intake already holds -
@@ -7783,7 +7789,7 @@ function presentPageIx(title){ return presentPages().map(function(p){ return p.t
 /* Jesse's objection rewordings (10 Oct) - applied before the rail reads the answers, and again on every wire */
 function presentObjEdits(doc){ Array.prototype.forEach.call(doc.querySelectorAll('p.q'),function(q){ var a=q.nextElementSibling; if(!a||!a.classList.contains('fff')||a.dataset.ppObj) return;
     if(/That sounds expensive/.test(q.textContent)&&/comparing it to the \$0 plans/.test(a.textContent)){ a.dataset.ppObj='1';
-      a.innerHTML='I totally understand how you feel — most people say that when they’re comparing it to the $0 plans in the ads out there. What they end up finding is that these plans save money over a year because they pay from day one. There’s no $8,000 deductible to get through first. <span class="ask">Let me show you how it pays you back on the visits you actually make.</span>'; }
+      a.innerHTML=objExpensive('mh'); }
     if(/already have something through work or my spouse/.test(q.textContent)&&/Glad you.re already covered/.test(a.textContent)){ a.dataset.ppObj='1';
       a.innerHTML='I’m glad you already have general coverage. I’ve had people say that before, and found that their work plan left gaps — dental, accident, income protection — and a plan that pays them directly filled those gaps. <span class="ask">Are you open to seeing how this backs up what you’ve got, so you’d be in a much better spot?</span>'; }
     if(/I want to think about it/.test(q.textContent)&&/it.s a real decision/.test(a.textContent)){ a.dataset.ppObj='1';
@@ -7836,6 +7842,59 @@ var PR_FOLLOWUP=[
  ['“Does the prescription part only work at the big chains? I like my local pharmacy.”','Use whichever pharmacy you like. The prescription benefit pays you back per fill, wherever you fill it: you take a picture of the receipt in the app. The discount card prices are usually best at the big chains, so check both and pick.'],
  ['“Does the living benefit cover the kids too?”','It covers the two of you. For the kids I’d look at something permanent rather than a short-term policy, and we go through that on your Benefits Review call.'],
  ['“Let me talk to my husband and I’ll get back to you.”','Of course, it’s a decision for both of you. What time tomorrow works? I’ll put it on both our calendars, and if he has questions, have him on the call so he hears it from me. Approval is based on your health today, so the sooner we apply, the better.']];
+/* Jesse, 7 Nov: the objections and follow-ups answer for the plan being presented. Manhattan (MH) keeps the
+   script's ten (Health ZONE's source) and the follow-ups above; Bright Life (BL) and Cigna get their own versions, with
+   no Manhattan-only facts (First Health, ManhattanLife's rate history, the per-fill Rx benefit, AFC underwriting).
+   Their facts come only from what their own Present pages already source (BL brochure V1.110226, Triad's 2027 guide);
+   anything not sourced is left out rather than guessed - e.g. when Bright Life's deductible resets. */
+function presentProd(t){ var b=(effCfg(t)||{}).base; return b==='brightlife'?'bl':b==='triad'?'cg':(!b||b==='afc')?'mh':null; }   /* ACA + protection and Virtual Basic: not yet */
+var PROD_TAG={mh:'MH',bl:'BL',cg:'Cigna'};
+function blDeductible(t){ var c=effCfg(t)||{}, bp=(typeof BLR!=='undefined'&&BLR&&BLR.plans[c.blPlan||BL_DEFAULT])||{}; return parseFloat(bp.deductible)||1250; }
+/* "That sounds expensive" compares with whatever the Quote is anchored against (Jesse, 7 Nov). */
+function objUsd(x){ return '$'+Math.round(+x||0).toLocaleString('en-US'); }
+function objExpensive(p,t){ var A=anchorBase(), cmp=A?A.your+' at '+fmt2(A.premOnly)+' a month':'the $0 plans in the ads out there', ask=function(x){ return ' <span class="ask">'+x+'</span>'; };
+  if(p==='mh') return 'I totally understand how you feel — most people say that when they’re comparing it to '+cmp+'. What they end up finding is that these plans save money over a year because they pay from day one. There’s no '+(A&&A.ded>0?objUsd(A.ded):'$8,000')+' deductible to get through first.'+ask('Let me show you how it pays you back on the visits you actually make.');
+  var bd=p==='bl'?blDeductible(t):0;
+  return 'I understand — most people say that when they’re comparing it to '+cmp+'. What they find is that the real cost is what you pay when you use it. This is a PPO on the Cigna network'+(bd?', with a '+objUsd(bd)+' deductible'+(A&&A.ded>bd?' instead of '+objUsd(A.ded):'')+' and a cap':', with a cap')+' on what you can pay in a year.'+ask('Let me show you what a hospital stay would cost you on each.'); }
+function objList(p,t){ var ask=function(x){ return ' <span class="ask">'+x+'</span>'; }, bl=p==='bl', bd=bl?blDeductible(t):0;
+  var aca='People feel that way, especially when they’re getting a subsidy. What they’ve found is narrow networks, high deductibles and a rate rise every year. And this year most people on a subsidy saw it shrink — the extra help ran out, and on average people’s premiums more than doubled to keep the same plan. On top of that, if your income comes in higher than you estimated, you can owe that subsidy back at tax time. This plan is on the Cigna PPO network'+(((S.intake||{}).docs||[]).length?', and we’ve already looked your doctors up on it':'')+'.'+ask('Why don’t we do a side-by-side comparison, so you’re making an educated choice?');
+  return [
+   ['“That sounds expensive.”',objExpensive(p,t)],
+   ['“I already have something through work or my spouse.”','I’m glad you already have coverage. People in that spot usually compare two things: what the work plan costs them each month, and what they’d pay out of pocket if they actually used it. If this does better on both, it’s worth a look.'+ask('Can we put yours side by side?')],
+   ['“I want to think about it.”','I understand, it’s a real decision. What a lot of my clients like is having it in writing and knowing they’re approved and can actually get this coverage, since approval is based on your health today, not in a month.'+ask('Let’s reserve your approval while you think it over. No harm done if you end up passing on getting covered. Sound fair?')],
+   ['“I need to talk to my spouse.”','Smart — it’s a household decision. Clients found it worked better to get the spouse on a short call so you both hear it from me.'+ask('Tomorrow evening, or Saturday morning for ten minutes?')],
+   ['“I can’t afford that right now.”','Budgeting is real, and I’m glad you’re acknowledging that. You’re exactly like a lot of people looking over their budget — until they price one ER visit: three to five thousand dollars just to say hello.'+ask('If I build something that fits your budget and still protects you — worth looking at together?')],
+   ['“I want something with no deductible.”','Most people do. This plan has a deductible'+(bd?' of '+objUsd(bd)+' a person':'')+', so here’s how we handle it: we pair it with a plan that pays you cash if something big happens. Either way you pay something — a little each month so a big deductible never lands on you, or you keep that money and take the chance. That’s what insurance is: we pick whichever you and your family are most comfortable with.'+ask('Want to see both ways side by side?')],
+   ['“Why not just stick with the ACA plan?”',aca],
+   [bl?'“I’ve never heard of Bright Life.”':'“I’ve never heard of USA Health Plans.”','Fair — there are thousands of insurance companies. What matters is the network you’re on and what your plan covers. '+(bl?'This one is on the Cigna network':'Your plan is run by Triad through USA Health Plans, on the Cigna network')+', and that’s what we’ve just been through together.'+ask('Anything in there you want me to go over again?')],
+   ['“I’m healthy, I don’t need insurance.”','That’s exactly why now is the time. People felt that way until an accident or a surprise bill. Being healthy is what gets you approved — approval is based on your health when you apply.'+ask('Makes sense to protect your good health while it’s working for you, right?')],
+   ['“Can you just send me some information?”','Absolutely. What clients found is that reading it alone didn’t show them what they personally qualify for. I’ll send it and walk you through it in five minutes.'+ask('This evening or tomorrow morning?')]]; }
+/* Follow-ups for BL and Cigna: the same questions, answered from their own Present pages; the pharmacy one is Cigna
+   only (Bright Life's pharmacy rules aren't in its brochure), the marketplace one drops Manhattan's Rx and no-deductible points. */
+function objFollowups(p){ var bl=p==='bl';
+  return [
+   ['“Is that per person, or for all of us together?”',bl?'The deductible is $1,250 a person and $2,500 for the family, in network.':'There’s an individual amount and a family amount, and they reset every January 1. Both are on page 1 of the plan summary — show it rather than guess.'],
+   ['“Do I have to do a blood or urine test?”','No exam, no blood, no urine. It’s health questions on the application. I’ll call you as soon as they come back with a decision.'],
+   ['“Do I pay it all up front? What if we’re not approved?”',bl?'Nothing comes out today. Payments are on the 15th of each month, and the first one comes after you’re accepted.':'Nothing comes out today. The final rate is set when you’re approved, and you see it before you sign. If you’re not approved, nothing is charged.'],
+   ['“My husband has had tests they never found a cause for. Will that get us declined?”','Every plan asks its own health questions, and honestly, we only know when we apply. Nothing is paid unless you’re accepted.'],
+   ['“It’s about the same as the marketplace. I wish it was a little less.”','The monthly number can look close. The difference is what happens when you use it: your doctors on the Cigna network, and a cap on what you pay in a year.'],
+   bl?null:['“Can I use my own pharmacy?”','If it’s in network, yes. Out-of-network pharmacies aren’t covered.'],
+   ['“Does the living benefit cover the kids too?”','It covers the two of you. For the kids I’d look at something permanent rather than a short-term policy, and we go through that on your Benefits Review call.'],
+   ['“Let me talk to my husband and I’ll get back to you.”','Of course, it’s a decision for both of you. What time tomorrow works? I’ll put it on both our calendars, and if he has questions, have him on the call so he hears it from me. Approval is based on your health today, so the sooner we apply, the better.']].filter(Boolean); }
+/* The Objections bubble on the Bright Life and Cigna presentations: their pages have no side panel, so it opens one. */
+function objPanelOpen(t){ var p=presentProd(t), tag=PROD_TAG[p], d=document.getElementById('objPop');
+  if(!d){ d=document.createElement('div'); d.id='objPop'; document.body.appendChild(d); }
+  var row=function(q){ return '<details><summary>'+esc(q[0].replace(/[“”]/g,''))+'</summary><p>'+q[1]+'</p></details>'; };
+  d.innerHTML='<div class="pr-pop pr-qa"><button type="button" class="x" aria-label="Close">×</button><b>Quick answers — objections ('+tag+')</b>'+objList(p,t).map(row).join('')+'<b class="pr-qah">Follow-up questions ('+tag+')</b>'+objFollowups(p).map(row).join('')+'</div>';
+  d.style.display='block'; d.querySelector('.x').onclick=function(){ d.style.display='none'; }; }
+/* Header bubbles (Jesse, 7 Nov): the side panel is below the fold, so the header jumps to it. Manhattan gets all three;
+   Bright Life and Cigna only Objections (claims and stories are Manhattan's). */
+function presentBubbles(t){ var p=presentProd(t); if(!p) return ''; var b=function(k,ic,l,tg){ return '<button type="button" class="pr-bub hidein-client noprint" data-bub="'+k+'"><span class="ic">'+ic+'</span>'+l+(tg?'<span class="tg">'+tg+'</span>':'')+'</button>'; };
+  return '<div class="pr-bubs">'+b('obj','💬','Objections',PROD_TAG[p])+(p==='mh'?b('claims','🧾','Real claims')+b('stories','📖','Real stories'):'')+'</div>'; }
+document.addEventListener('click',function(e){ var btn=e.target.closest&&e.target.closest('[data-bub]'); if(!btn) return; var k=btn.dataset.bub, t=presentTier();
+    if(presentProd(t)!=='mh'){ objPanelOpen(t); return; }
+    var el=$({obj:'prQA',claims:'prClaims',stories:'prStories'}[k]); if(!el) return;
+    el.scrollIntoView({behavior:'smooth',block:'start'}); el.classList.remove('pr-flash'); void el.offsetWidth; el.classList.add('pr-flash'); });
 var PR_STORY_HEAD='<b>Story repository (who to tell)</b>';
 /* Jesse, 7 Nov: real ManhattanLife claims as pictures an agent can open, copy and text. The only three on record
    (Health ZONE checked the whole project): all outpatient, all on one client's plan, client details removed.
@@ -7883,7 +7942,7 @@ function renderPresent(){ var host=$('presentHost'); if(!host) return; if(triadF
   S.present=S.present||{}; var pg=Math.max(0,Math.min(pages.length-1,+S.present.pg||0));
   var who=(T['client.first']||'the client')+(S.client&&S.client.sname?' & '+enSplit(S.client.sname)[0]:'');
   var h='<div class="pr-top"><div><h3>Presenting the <em class="pr-plan">'+esc(TIER_NAME[t])+'</em> plan to '+esc(who)+'</h3><small>Agent-only — never on Client View or the printout. Blue blanks fill from this quote; red ones are missing.</small></div>'
-    +'<button type="button" data-pr="quote" style="font:inherit;font-weight:700;border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 13px;cursor:pointer">← Back to the Quote</button></div>';
+    +presentBubbles(t)+'<button type="button" data-pr="quote" style="font:inherit;font-weight:700;border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 13px;cursor:pointer">← Back to the Quote</button></div>';
   h+=histStrip('present')+covClockBar();
   h+='<div class="pr-prog" id="prChips"></div><div class="pr-grid"><div>'
     +'<iframe id="prFrame" src="presentation.html" title="Presentation script" style="width:100%;border:1px solid var(--line);border-radius:12px;background:#fff;min-height:200px"></iframe>'
@@ -7893,7 +7952,7 @@ function renderPresent(){ var host=$('presentHost'); if(!host) return; if(triadF
     +'<div class="box"><b>Benefits in this plan</b>'+(S.packages[t].products||[]).filter(function(p){ return (+p.monthly||0)>0&&benFileFor(p.k,effCfg(t)); }).map(function(p){ return '<button type="button" data-ben="'+p.k+'">ⓘ '+esc(String(p.name).split(' — ')[0])+'</button>'; }).join('')+'</div>'
     +'<div class="box pw-box" id="prWhy"></div>'
     +'<div class="box pw-box" id="prDrx" style="display:none"></div>'
-    +'<div class="box pr-qa" id="prQA"><b>Quick answers — objections</b></div>'
+    +'<div class="box pr-qa" id="prQA"><b>Quick answers — objections (MH)</b></div>'
     +((effCfg(t).base||'afc')==='afc'?'<div class="box" id="prClaims">'+prClaimsHTML()+'</div>':'')
     +'<div class="box" id="prStories">'+PR_STORY_HEAD+'</div>'
     +'</div></div><div id="prPop" style="display:none"></div>'
@@ -7906,7 +7965,7 @@ function renderPresent(){ var host=$('presentHost'); if(!host) return; if(triadF
       benLoadSafe('afc').then(function(){ presentWire(doc,t); presentGo(+S.present.pg||0); });
       var R=presentRailFromScript(doc);
       var qaRow=function(q){ return '<details><summary>'+esc(q[0])+'</summary><p>'+esc(q[1])+'</p></details>'; };
-      $('prQA').innerHTML='<b>Quick answers — objections</b>'+R.qa.map(qaRow).join('')+'<b class="pr-qah">Follow-up questions</b>'+PR_FOLLOWUP.map(qaRow).join('');
+      $('prQA').innerHTML='<b>Quick answers — objections (MH)</b>'+R.qa.map(qaRow).join('')+'<b class="pr-qah">Follow-up questions (MH)</b>'+PR_FOLLOWUP.map(qaRow).join('');
       $('prStories').innerHTML=PR_STORY_HEAD+(R.stories.length?R.stories.map(function(x,i){ return '<button type="button" data-story="'+i+'">📖 '+esc(x.story)+(x.html?' <em class="st-ready">Ready</em>':'')+'</button>'; }).join(''):'<p style="font-size:13px;color:var(--muted);margin:4px 0 0">No stories yet.</p>');
       $('prStories').querySelectorAll('[data-story]').forEach(function(b){ b.onclick=function(){ var x=R.stories[+b.dataset.story], pop=$('prPop');
         pop.innerHTML='<div class="pr-pop"><button type="button" class="x" aria-label="Close">×</button><div class="sec">Story</div><h4>'+esc(x.title||x.story)+'</h4><p><b>When to tell it:</b> '+esc(x.at)+'</p>'+(x.html?'<p style="font-size:12.5px;color:var(--muted);margin:0 0 6px">Asked: '+esc(x.story)+'</p>'+x.html:'<p style="font-style:italic;color:var(--muted)">Story coming soon.</p>')+'<p class="rule">Never a client’s name — “a buddy of mine”, “a coworker of mine”.</p></div>';
