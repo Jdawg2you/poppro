@@ -7542,8 +7542,9 @@ function enrollPeople(){ var host=$('enPeople'); if(!host) return; var C=S.clien
       +notesBlock(id)+'</div>'; };
   var h='<div class="en-step"><span>2</span> Information for your life application <small class="en-hint">(complete below and copy into the application — it’s all stored on the client profile and goes into your follow-up system / CRM)</small></div>';
   h+=person('p',(C.pname||'Primary applicant')+' — applicant',true);
-  if(w.spouse||C.sname) h+=person('s',(C.sname||'Spouse')+' — spouse',true);
-  (I.kids||[]).forEach(function(k,i){ if(k&&(k.n||k.dob||k.age)) h+=person('k'+i,(k.n||('Child '+(i+1)))+' — child',false); });
+  /* the Intake's Spouse / Children switches decide who applies; switched off, their details stay saved but no app shows (Jesse, 7 Nov). Files from before the switches have no false, so they show as before. */
+  if(w.spouse!==false&&(w.spouse||C.sname)) h+=person('s',(C.sname||'Spouse')+' — spouse',true);
+  if(w.kids!==false) (I.kids||[]).forEach(function(k,i){ if(k&&(k.n||k.dob||k.age)) h+=person('k'+i,(k.n||('Child '+(i+1)))+' — child',false); });
   h+='<div class="en-prof"><button type="button" class="btn-gold" data-enprof="save">Save profile</button><button type="button" class="btn-ghost" data-enprof="print">Print profile</button></div>';
   h+='<p class="note" style="margin:10px 0 0">SSN and bank details never go in MyPopPro — enter them directly on the carrier’s application. The mother’s maiden name (or code word) saves with the quote.</p>';
   host.innerHTML=h;
