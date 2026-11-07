@@ -7450,6 +7450,18 @@ function renderEnroll(){
        the agent sends the ACA application by hand (Jesse, 5 Nov) */
     var miss=[]; [['lnkAmaze',amazeLink(),'Amaze sign-up link']].forEach(function(x){ var a=$(x[0]); if(!a) return; a.href=x[1]||'#'; a.target=x[1]?'_blank':''; a.onclick=x[1]?null:function(e){ e.preventDefault(); openSetup(); }; if(!x[1]) miss.push(x[2]); });
     var hn=$('enLinkHint'); if(hn){ hn.style.display=miss.length?'':'none'; hn.innerHTML=miss.length?'Add your '+miss.join(' and ')+' in <b>Setup</b> — each agent uses their own.':''; } })();
+  /* Health carriers - after the call: only the carriers in the plan they're enrolling in (Jesse, 7 Nov: "it junks up the
+     page"). Nothing chosen yet = everything, as before. The Amaze PDFs go out in the email and text, not here. */
+  (function(){ var any=order.length>0&&!!chosenTier(), has=function(re){ return order.some(function(g){ return re.test(g); }); },
+      show=function(id,on){ var a=$(id); if(a&&on===false) a.style.display='none'; };
+    show('lnkManhattan',!any||has(/^ManhattanLife/));
+    show('lnkCigna',!any||has(/^Cigna/));
+    show('lnkBrightlife',!any||has(/^Bright Life/)); show('lnkBrightlifeAgent',!any||has(/^Bright Life/));
+    show('lnkAmaze',!any||has(/^Amaze/));
+    show('lnkHealthSherpa',!any||has(/marketplace/i));
+    show('lnkAmazeDoc',false); show('lnkAmazeSetup',false);
+    ['lnkManhattan','lnkCigna','lnkAmaze','lnkHealthSherpa'].forEach(function(id){ var a=$(id); if(a&&((id==='lnkManhattan'&&(!any||has(/^ManhattanLife/)))||(id==='lnkCigna'&&(!any||has(/^Cigna/)))||(id==='lnkAmaze'&&(!any||has(/^Amaze/)))||(id==='lnkHealthSherpa'&&(!any||has(/marketplace/i))))) a.style.display=''; });
+    var hn=$('enLinkHint'); if(hn&&any&&!has(/^Amaze/)) hn.style.display='none'; })();
   enrollScript(); enrollPeople();
   /* Triad flow (sandbox): the Cigna enrollment steps up top; the ManhattanLife wrap-up script is not theirs */
   (function(){ var tt=chosenTier(), on=triadFlowOn(tt), box=$('enTriad'), se=$('enScriptEnd');
