@@ -381,6 +381,14 @@ const TEST = `(async function(){
   var nOk=d.querySelectorAll('var.pp-ok').length;
   applySuiteClient({first:'Pat',last:'Present',state:'TX',age:'45',health:{curPrem:'900',curPaying:'No'}}); ok(curIn().paying===false,'navigator "No" lands as not paying');
   applySuiteClient({first:'Pat',last:'Present',state:'TX',age:'45',health:{curPrem:'900',curPaying:'Yes'}}); ok(curIn().paying===true,'navigator "Yes" lands as paying');
+  /* Jesse, 7 Nov: Manhattan's best enrolled, then Cigna's best presented - Enroll must hold Cigna, not the old Manhattan plan
+     (same tier name, different lineup). Both ways in: the presentation's Enroll button, and straight from the sidebar. */
+  window.celebrate=function(){}; S.chosen={}; pbApplyLineup('mh'); chooseTier('best'); enrollAsPresented(); await wait(300);
+  var mhBase=effCfg('actual').base||'afc';
+  pbApplyLineup('cg'); chooseTier('best'); enrollAsPresented(); await wait(300);
+  ok(mhBase==='afc'&&S.actual.lineup==='cg'&&effCfg('actual').base==='triad'&&/Cigna/.test($('enrollSummary').innerText),'presenting another lineup re-starts the enrollment from it (Enroll button)');
+  pbApplyLineup('mh'); chooseTier('best'); goStep('enroll'); await wait(300);
+  ok(S.actual.lineup==='mh'&&(effCfg('actual').base||'afc')==='afc'&&!/Cigna PPO/.test($('enrollSummary').querySelector('.en-pk').innerText),'and straight from the sidebar: Enroll follows the chosen lineup');
   return {n:nOk, fails:fails};
 })()`;
 

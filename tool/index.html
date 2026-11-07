@@ -5285,9 +5285,12 @@ function recLock(t){ var cur=S.rec, snap=pkSnap(t); if(!snap) return;
   if(!cur||(TIER_ORDER[t]!=null&&TIER_ORDER[cur.tier]!=null&&TIER_ORDER[t]>TIER_ORDER[cur.tier])){ snap.by='presented'; S.rec=snap; autosave(); } }
 /* What they chose is locked when it's decided: by the end-of-Present buttons, or here the first time (and again only
    if the package changes on Enroll). The Benefits Review's carrier edits to the card never rewrite it (gut check, 18 Oct). */
-function electedLock(){ var t=chosenTier(); if(!t) return; if(actualOn()&&S.actual.from!==t) actualSeed(t);   /* they changed the package: start the card again from it */
+/* same tier name, different lineup (Manhattan Comprehensive vs Cigna's best) is a different plan. Older saves have no lineup: left alone. */
+function lineupMoved(rec){ var now=(S.chosen&&S.chosen.lineup)||S.lineup; return !!(rec&&rec.lineup&&now&&rec.lineup!==now); }
+function electedLock(){ var t=chosenTier(); if(!t) return; var moved=actualOn()&&lineupMoved(S.actual); if(actualOn()&&(S.actual.from!==t||moved)) actualSeed(t);   /* they changed the package: start the card again from it */
+  if(S.elected&&S.elected.tier===t&&lineupMoved(S.elected)){ S.elected=actualOn()?actualSnap():pkSnap(t); S.elected.locked=1; autosave(); return; }
   if(S.elected&&S.elected.tier===t){ if(!S.elected.locked){ S.elected.locked=1; autosave(); } return; }   /* older files: lock what's there, never rewrite it */
-  S.elected=actualOn()?actualSnap():pkSnap(t); S.elected.locked=1; autosave(); }
+  S.elected=actualOn()?actualSnap():pkSnap(t); if(S.elected&&!S.elected.lineup) S.elected.lineup=S.lineup||'mh'; S.elected.locked=1; autosave(); }
 var LB_K={lbp:1,lbs:1};
 /* every way what they bought falls short of what was recommended, each with a stable key for its acknowledgment */
 function recGap(){ return gapOf(S.rec,S.elected); }
@@ -5380,9 +5383,9 @@ Object.defineProperty(TIER_ORDER,'actual',{enumerable:false,get:function(){ retu
 function actualOn(){ return !!(S.actual&&S.packages&&S.packages.actual&&S.cfg&&S.cfg.actual); }
 function reviewT(){ return enrolledTier(); }
 function actualSeed(t){ if(!t||!S.packages[t]) return; S.cfg=S.cfg||{}; S.cfg.actual=cfgClone(effCfg(t));
-  S.packages.actual=JSON.parse(JSON.stringify(S.packages[t])); S.actual={tier:t,from:t,at:new Date().toISOString().slice(0,10)};
+  S.packages.actual=JSON.parse(JSON.stringify(S.packages[t])); S.actual={tier:t,from:t,lineup:S.lineup||'mh',at:new Date().toISOString().slice(0,10)};
   Object.keys(PB_OPEN).forEach(function(k){ if(k.indexOf('actual|')===0) delete PB_OPEN[k]; }); priceTier('actual'); }
-function actualSnap(){ var s=pkSnap('actual')||{products:[]}, b=effCfg('actual').base; s.tier=S.actual.tier;
+function actualSnap(){ var s=pkSnap('actual')||{products:[]}, b=effCfg('actual').base; s.tier=S.actual.tier; if(S.actual.lineup) s.lineup=S.actual.lineup;
   s.name=b==='lifex'?'LifeX':b==='triad'?'Cigna':b==='brightlife'?'Bright Life':(tierDisp(s.tier)||''); return s; }
 /* Recommended vs what they have, side by side (Jesse, 17 Oct): every product's level, then what the plan pays on a few
    real events - small ones usually match, the big ones show the difference. Built for the clarity / declination page too.
@@ -5992,7 +5995,7 @@ function triadPresentHTML(t){ var first=triadFirst(), plan=triadPlanOf(t), ded=t
        +qa('Is this real coverage?','Yes — it’s Minimum Essential Coverage and meets Minimum Value. It isn’t a marketplace plan, so there’s no subsidy on it.'); })()},
    {t:'Next steps',h:(function(){ var d=triadDates(); return triadSay('“Here’s how it goes: we apply by <b>'+d.submit+'</b>, they review your health, and if you’re approved you’ll get a final offer that has to be signed by <b>'+d.sign+'</b> — miss that and there’s no coverage. Your start date is usually the 1st of the next month — <b>'+d.start+'</b> — and the offer confirms it.”')
       +triadDo('Before you apply: <b>they must be self-employed with their own EIN</b> — no EIN, no Cigna plan. If they don’t have one, it’s free and instant on the <a href="'+TRIAD_EIN_URL+'" target="_blank" rel="noopener">IRS site ↗</a>.')
-      +'<button type="button" class="btn-gold" onclick="goStep(\'enroll\')">Go to Enroll →</button>'; })()}];
+      +'<button type="button" class="btn-gold" onclick="enrollAsPresented()">Go to Enroll →</button>'; })()}];
   return '<div class="pr-top"><div><h3>Presenting the <em class="pr-plan">Cigna PPO '+esc(plan)+'</em> to '+esc(first)+'</h3><small>Agent-only. Figures come from the 2027 rate and benefit guide for the '+esc(plan)+' plan.</small></div>'
     +presentBubbles(t)+'<button type="button" data-pr="quote" style="font:inherit;font-weight:700;border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 13px;cursor:pointer">← Back to the Quote</button></div>'
     +'<div class="trd">'+triadSteps(pages,'prpg')+'</div>'; }
@@ -6069,7 +6072,7 @@ function blPresentHTML(t){ var first=triadFirst(), c=effCfg(t), prem=triadPremiu
       +todo('<b>“Approved” isn’t final:</b> Bright Life can still decline up to <b>3 days before the start date</b>. Don’t tell them they’re covered before then.')
       +todo('Use <b>Chrome</b> — the Bright Life links don’t work in Safari. The <b>I-9</b> has to be done within 3 days of the hire date or they’re non-compliant.')
       +todo('Back office: <b>Profiles → Member Pre-Qualification → Add a Member</b> to apply with them, or <b>Sites → Member Enroll</b> to send a self-enroll link.')
-      +'<button type="button" class="btn-gold" onclick="goStep(\'enroll\')">Go to Enroll →</button>'}];
+      +'<button type="button" class="btn-gold" onclick="enrollAsPresented()">Go to Enroll →</button>'}];
   return '<div class="pr-top"><div><h3>Presenting the <em class="pr-plan">Bright Life Health Shield PPO 1250</em> to '+esc(first)+'</h3><small>Agent-only. Figures come from the Health Shield PPO 1250 brochure (V1.110226).</small></div>'
     +presentBubbles(t)+'<button type="button" data-pr="quote" style="font:inherit;font-weight:700;border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 13px;cursor:pointer">← Back to the Quote</button></div>'
     +'<div class="trd">'+triadSteps(pages,'blprpg')+'</div>'; }
@@ -6117,7 +6120,7 @@ function acaPresentHTML(t){ var first=triadFirst(), a=S.aca||{}, A=acaIn(), base
         +triadDo('These are ManhattanLife plans — they pay the client directly, on top of the ACA plan, with their own application. The Client View shows what a hospital stay costs with and without them.')});
     pages.push({t:'The close',h:triadSay('“So here’s what we’ll do. I’m going to send you the application for the ACA plan so you can apply for that, and I’ll take care of your application for the Manhattan '+(t==='good'?'accident plan — so an accident doesn’t leave you scrambling.”':'hospital plan and out-of-pocket protection'+(t==='best'&&has('dvh')?', and the dental':'')+' — so you’re not stuck with that deductible.”'))
         +triadDo('Send them the marketplace application (HealthSherpa). The ManhattanLife application is on Enroll.')
-        +'<button type="button" class="btn-gold" onclick="goStep(\'enroll\')">Go to Enroll →</button>'});
+        +'<button type="button" class="btn-gold" onclick="enrollAsPresented()">Go to Enroll →</button>'});
   } else if(t==='good'){
     pages.push({t:'The ACA plan',h:acaSay+acaDo+triadDo('This column is the <b>anchor</b>: the marketplace plan on its own, so they see what it really costs them. Virtual Basic A and B are what it’s compared with.')});
     pages.push({t:'The close',h:triadSay('“If the marketplace plan is the one for you, I’ll send you the application so you can apply.”')+triadDo('Send them the marketplace application (HealthSherpa).')});
@@ -6132,7 +6135,7 @@ function acaPresentHTML(t){ var first=triadFirst(), a=S.aca||{}, A=acaIn(), base
         +triadDo('Be clear what this is: everyday care plus cash for the big things — <b>not</b> major medical. A big bill still lands on them; these plans put money in their hands toward it.')});
     pages.push({t:'The close',h:triadSay('“So here’s what we’ll do: I’ll get you signed up with Amaze, and I’ll take care of your Manhattan application'+(t==='better'?'s':'')+'.”')
         +triadDo('Amaze: use your Amaze member sign-up link'+(amazeLink()?', and send the <a href="'+amazeDoc('setup')+'" target="_blank" rel="noopener">setup steps ↗</a> with it':' (add it in Setup first — the setup steps start with “use the link your agent sent”)')+'. The ManhattanLife application is on Enroll.')
-        +'<button type="button" class="btn-gold" onclick="goStep(\'enroll\')">Go to Enroll →</button>'});
+        +'<button type="button" class="btn-gold" onclick="enrollAsPresented()">Go to Enroll →</button>'});
   }
   return '<div class="pr-top"><div><h3>Presenting <em class="pr-plan">'+esc(LN[0])+'</em> to '+esc(first)+'</h3><small>Agent-only — '+(vb?'Virtual Basic':'ACA + protection')+'. The ACA figures come from the Intake.</small></div>'
     +presentBubbles(t)+'<button type="button" data-pr="quote" style="font:inherit;font-weight:700;border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 13px;cursor:pointer">← Back to the Quote</button></div>'
@@ -7639,6 +7642,10 @@ function renderEstimate(){
 function mmnV(){ return String(((S||{}).intake||{}).mmn||''); }
 
 function presentTier(){ return chosenTier()||S.activeTab||'best'; }
+/* "Enrolling as presented": the enrollment starts fresh from the plan just presented - every presentation's Enroll button
+   (Manhattan's script close, and Cigna / Bright Life / ACA / Amaze's "Go to Enroll"). Jesse, 7 Nov: presenting Cigna after
+   Manhattan went to Enroll still holding the Manhattan plan. */
+function enrollAsPresented(){ var pt=presentTier(); chosenSet(pt); actualSeed(pt); S.actual.how='presented'; S.elected=actualSnap(); S.elected.locked=1; autosave(); celebrate('confetti',enrollCheer()); goStep('enroll'); }
 /* ===== Celebrations (Jesse, 9 Oct) ===== the wins get a moment: "They're enrolling" sets off a full-page confetti storm,
    choosing a plan floats a thumbs-up. Drawn on a throwaway canvas that ignores clicks and removes itself; reduced
    motion gets a short, still version. Never on the printout. */
@@ -8020,7 +8027,7 @@ function presentGo(pg){ var pages=presentPages(), nav=presentNav(), t=presentTie
     +(nx?'<button type="button" class="go" data-go="1">Next: '+esc(nx.next||nx.t)+' →</button>'
         :'<span style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" data-go="quote">Not today — send the quote ↩</button><button type="button" data-go="edits">Enrolling with plan edits ▾</button><button type="button" class="go" data-go="enroll">✓ Enrolling as presented →</button></span>');
   $('prNav').querySelectorAll('[data-go]').forEach(function(b){ b.onclick=function(){ var g=b.dataset.go;
-    if(g==='enroll'){ chosenSet(presentTier()); actualSeed(presentTier()); S.actual.how='presented'; S.elected=actualSnap(); S.elected.locked=1; autosave(); celebrate('confetti',enrollCheer()); goStep('enroll'); }
+    if(g==='enroll'){ enrollAsPresented(); }
     else if(g==='edits'){ presentEditsOpen(); }
     else if(g==='quote'){ goStep('quote'); setTimeout(function(){ var q=$('sendQuote'); if(q) q.scrollIntoView({behavior:'smooth',block:'start'}); },60); }
     else presentGo(nav[pos+(+g)]); }; });
@@ -9141,7 +9148,7 @@ function chosenRestore(id){ var c=S.chosen, k=c&&c.tier&&c.lineup===id&&c.keep; 
   ['good','better','best'].forEach(function(t){ if(k.packages[t]) S.packages[t]=cfgClone(k.packages[t]); if(k.cfg[t]) S.cfg[t]=cfgClone(k.cfg[t]); }); return true; }
 /* What they're actually enrolling in: the plan card from the end of Present ('actual') when it belongs to the chosen
    package, otherwise the package itself. Enroll, its script and wrap-up text, the thank-you email and follow-ups read it. */
-function enrolledTier(){ var t=chosenTier(); return (t&&actualOn()&&S.actual.from===t)?'actual':t; }
+function enrolledTier(){ var t=chosenTier(); return (t&&actualOn()&&S.actual.from===t&&!lineupMoved(S.actual))?'actual':t; }
 Object.defineProperty(TIER_NAME,'actual',{enumerable:false,get:function(){ return (S.actual&&TIER_NAME[S.actual.tier])||''; }});
 function chooseTier(t){ chosenSet(chosenTier()===t?null:t); if(S.step==='enroll'&&S.chosen.tier){ electedLock(); setTimeout(renderRecGap,0); } if(S.chosen.tier) celebrate('thumbs'); if(S.chosen.tier&&tierNonMh(t)&&!triadFlowOn(t)&&!blFlowOn(t)) setTimeout(function(){ nonMhNotice(t); },0);   /* the Triad flow (sandbox) presents it instead */ if(S.chosen.tier){ S.activeTab=t; S.include=S.include||{}; S.include[t]=true; } compute(); autosave(); }
 function tierHasDental(t){ return ((S.packages[t]||{}).products||[]).some(function(p){ return p.k==='dvh'&&(+p.monthly||0)>0; }); }
