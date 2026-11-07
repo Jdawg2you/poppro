@@ -8634,7 +8634,7 @@ function presentBack(){ var b=$('presentBack'); if(b) b.style.display='none'; if
 /* ===== On this page (Jesse, 7 Nov): under the steps, jumps to the parts of the page you're on. Quote: his list. Present:
    the side panel's own boxes (so a Bright Life, Cigna or ACA panel lists what it actually has) plus Objections, Real
    claims and Real stories. Intake: its sections. A part that isn't showing for this client isn't listed. ===== */
-var ONPAGE_QUOTE=[['Package builder','#sec_builder'],['POP Score / TFRA','#popScoreCard'],['Example 1','#ev0_editor'],['Example 2','#ev1_editor'],['Plan benefits','#afcPartners'],['Send the quote','#sendQuote'],['Brochures','#brochBox']];
+var ONPAGE_QUOTE=[['Package builder','#sec_builder'],['POP Score / TFRA','#popScoreCard'],['Coverage example 1','#ev0_editor'],['Coverage example 2','#ev1_editor'],['Plan benefits','#afcPartners'],['Send quote / Brochures','#sendQuote']];
 function onpVisible(el){ return !!(el&&el.offsetParent!==null&&el.getClientRects().length); }
 function onpLabel(el){ var t=''; el.childNodes.forEach(function(n){ if(!t&&n.nodeType===3&&n.textContent.trim()) t=n.textContent.trim(); }); if(!t){ var b=el.querySelector('b,h3'); t=b?b.textContent.trim():el.textContent.trim(); } return t.replace(/^●\s*/,'').replace(/\s+/g,' ').slice(0,38); }
 function onpPresentLabel(t){ t=String(t||'').replace(/\s+/g,' ').trim(); if(!t) return '';
@@ -8649,18 +8649,33 @@ function railOnPageRender(){ var box=$('railOnPage'); if(!box) return; var st=S.
     document.querySelectorAll('#step-present .pr-rail > .box').forEach(function(b){ if(!onpVisible(b)) return;
       [].filter.call(b.querySelectorAll('b'),function(h){ return !h.closest('summary,details,button,li,p,small')&&(h.parentElement===b||h.parentElement.parentElement===b); }).forEach(function(h,k){
         var l=onpPresentLabel(h.textContent); if(l) items.push({l:l,el:k?h:b,rail:1}); }); }); }
-  else if(st==='intake') document.querySelectorAll('#step-intake .intake-sec').forEach(function(el){ if(onpVisible(el)) items.push({l:onpLabel(el),el:el}); });
+  else if(st==='intake'){ var W=(S.intake||{}).who||{};
+    document.querySelectorAll('#step-intake .intake-sec').forEach(function(el){ if(!onpVisible(el)) return; var l=onpLabel(el);
+      if(/^who needs coverage/i.test(l)||/^GLP-1/i.test(l)) return; if(/^spouse/i.test(l)&&!W.spouse) return; if(/^children/i.test(l)&&!W.kids) return; items.push({l:l,el:el}); }); }
+  else if(st==='enroll'){ var add=function(l,el){ if(onpVisible(el)) items.push({l:l,el:el}); };
+    add('Their plan',$('enrollSummary')); add('Life application',$('enLife'));
+    var ppl=[].slice.call(document.querySelectorAll('#enPeople .en-person')), kidsN=ppl.filter(function(x){ return /—\s*child/i.test(x.innerText.split('\n')[0]); }).length;
+    ppl.forEach(function(x){ var h=x.innerText.split('\n')[0], nm=h.split(' — ')[0].trim().split(/\s+/)[0];
+      add(/—\s*applicant/i.test(h)?'Primary app':/—\s*spouse/i.test(h)?'Spouse app':/—\s*child/i.test(h)?(kidsN>1?'Child app — '+nm:'Child app'):h.slice(0,30),x); });
+    add('Wrap up',$('enScriptEnd')); add('Health carriers',$('enHealth'));
+    [].forEach.call(document.querySelectorAll('#step-enroll .sectitle'),function(t){ if(/items to follow up/i.test(t.innerText)) add('Agent follow-ups',t); });
+    add('Enrollment email & text',$('enBrochHost')); }
+  else if(st==='review'){ var conf=document.querySelector('#step-review .rv-conf'); if(onpVisible(conf)) items.push({l:'Approval',el:conf});
+    [].forEach.call(document.querySelectorAll('#step-review .rv-ch'),function(h){ if(/client care card/i.test(h.innerText)&&onpVisible(h)) items.push({l:'Client care card',el:h.parentElement&&h.parentElement!==conf?h.parentElement:h}); });
+    var ch=$('rvChips'); if(onpVisible(ch)) items.push({l:'Benefits review',el:ch}); }
   box._items=items;
   box.innerHTML=items.length?'<div class="onp-h">On this page</div>'+items.map(function(it,i){ return '<button type="button" data-onp="'+i+'"'+(it.bub?' data-bub="'+it.bub+'"':'')+'>'+esc(it.l)+'</button>'; }).join(''):'';
   box.querySelectorAll('button[data-onp]').forEach(function(b){ if(b.dataset.bub) return; b.onclick=function(){ var want=box._items[+b.dataset.onp], at=+b.dataset.onp;
     if(want&&!document.contains(want.el)){ railOnPageRender(); var fresh=(box._items||[]).filter(function(x){ return x.l===want.l; })[0]; if(fresh) want=fresh; }   /* the page rebuilt itself since the list was drawn */
     var it=want; if(!it||!it.el) return;
-    if(it.rail){ var rl=it.el.closest('.pr-rail'); if(rl) rl.scrollTo({top:Math.max(0,rl.scrollTop+it.el.getBoundingClientRect().top-rl.getBoundingClientRect().top-6),behavior:'smooth'}); }
+    if(it.rail){ var rl=it.el.closest('.pr-rail'); if(rl){ var top=Math.max(0,rl.scrollTop+it.el.getBoundingClientRect().top-rl.getBoundingClientRect().top-6);
+      var room=top-(rl.scrollHeight-rl.clientHeight); if(room>0) rl.style.paddingBottom=(parseFloat(getComputedStyle(rl).paddingBottom)||0)+room+'px';
+      rl.scrollTo({top:top,behavior:'smooth'}); } }
     else window.scrollTo({top:Math.max(0,it.el.getBoundingClientRect().top+window.scrollY-48),behavior:'smooth'});
     it.el.classList.remove('pr-flash'); void it.el.offsetWidth; it.el.classList.add('pr-flash'); setTimeout(function(){ it.el.classList.remove('pr-flash'); },2200); }; });
   onpSpy(); }
 /* the part you're looking at is highlighted as you scroll (Quote and Intake) */
-function onpSpy(){ var box=$('railOnPage'); if(!box||!box._items) return; var cur=-1; box._items.forEach(function(it,i){ if(!it.el||it.rail) return; if(it.el.getBoundingClientRect().top<160) cur=i; });
+function onpSpy(){ var box=$('railOnPage'); if(!box||!box._items) return; var cur=-1, best=-1e9; box._items.forEach(function(it,i){ if(!it.el||it.rail) return; var t=it.el.getBoundingClientRect().top; if(t<160&&t>best){ best=t; cur=i; } });   /* the heading nearest above the line, by position on the page */
   if(cur<0&&box._items.length&&!box._items[0].rail&&!box._items[0].bub) cur=0;
   box.querySelectorAll('button[data-onp]').forEach(function(b){ b.classList.toggle('on',+b.dataset.onp===cur); }); }
 window.addEventListener('scroll',function(){ if(window._onpT) return; window._onpT=setTimeout(function(){ window._onpT=0; onpSpy(); },120); },{passive:true});
