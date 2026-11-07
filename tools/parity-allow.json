@@ -1,0 +1,21 @@
+{
+  "why": "Wording the redesign changes on purpose. Each rewrite is a decision Jesse made, applied word for word to the live text before comparing; nothing else may differ.",
+  "rewrites": [
+    [
+      "Save Quote/Package of Protection when you’re done",
+      "Save client when you’re done"
+    ],
+    [
+      "Load Quote brings it all back later",
+      "Load client brings it all back later"
+    ],
+    [
+      "💾 Save Quote now",
+      "💾 Save client now"
+    ]
+  ],
+  "lines": [],
+  "decisions": {
+    "Save Quote / Load Quote -> Save client / Load client": "Jesse, 7 Nov 2026: 'It'll be like save client. And then load client.'"
+  }
+}

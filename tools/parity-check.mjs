@@ -11,9 +11,9 @@
 // STRICT (any difference fails): every package total, the client's chosen plan and lineup, the saved client file,
 //   save -> reload round trip, the enroll email, the enroll text, the Benefits Review email, the follow-up email, the
 //   post-call text, the plan extras email, page errors.
-// CONTENT (fails when A's words go missing in B): the visible text of every step, agent view and client view. A line
-//   the redesign deliberately rewords goes in tools/parity-allow.json ({"lines":["exact old line", ...]}) - each one
-//   is a decision Jesse can see, never a silent drop. Lines B adds are listed for review, not failed.
+// CONTENT (fails when A's words go missing in B): the visible text of every step, agent view and client view. Wording
+//   the redesign changes on purpose goes in tools/parity-allow.json as "rewrites": [[old, new], ...] - each one is a
+//   decision Jesse made, applied word for word; everything else must match. Never a silent drop. Lines B adds are listed for review, not failed.
 // CLIENT VIEW (fails on any): an agent-only element (.hidein-client) showing while the client view is on.
 // LOAD: time until the tool is usable, both sides, reported.
 import { spawn } from 'node:child_process';
@@ -25,7 +25,10 @@ const A = process.argv[2] || 'https://mypoppro.com/tool/';
 const B = process.argv[3] || 'http://127.0.0.1:8795/tool/';
 const CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 const sleep = ms => new Promise(r => setTimeout(r, ms));
-const ALLOW = (() => { try { return new Set(JSON.parse(fs.readFileSync(new URL('./parity-allow.json', import.meta.url))).lines || []); } catch { return new Set(); } })();
+const ALLOWF = (() => { try { return JSON.parse(fs.readFileSync(new URL('./parity-allow.json', import.meta.url))); } catch { return {}; } })();
+const ALLOW = new Set(ALLOWF.lines || []);
+/* deliberate rewordings: [old wording, new wording] - applied to A's step text before the comparison, so only these words may differ */
+const REWRITE = s => (ALLOWF.rewrites || []).reduce((t, [a, b]) => t.split(a).join(b), s);
 
 /* Clients built in the page with the tool's own functions - no real client data in this file. */
 const CAPTURE = `(async function(){
@@ -59,10 +62,12 @@ const CAPTURE = `(async function(){
     R.postText=T(function(){ return textFromHTML(postTextHTML(sc.pick)); });
     R.extrasEmail=T(function(){ return mlExtrasEmail(sc.pick); });
     R.steps={}; R.leaks=[];
+    /* a step can fill in after it opens (Enroll pulls its script from presentation.html) - read it once it stops changing */
+    var settle=async function(el){ var prev=null, cur=el?el.innerText:''; for(var k=0;k<20&&cur!==prev;k++){ await wait(300); prev=cur; cur=el?el.innerText:''; } return cur; };
     for(var j=0;j<STEPS.length;j++){ var s=STEPS[j]; goStep(s); await wait(450);
-      var el=document.getElementById('step-'+s); R.steps[s+'/agent']=el?el.innerText:'(no step element)';
+      var el=document.getElementById('step-'+s); R.steps[s+'/agent']=el?await settle(el):'(no step element)';
       setView('client'); await wait(250);
-      R.steps[s+'/client']=el?el.innerText:'(no step element)';
+      R.steps[s+'/client']=el?await settle(el):'(no step element)';
       document.querySelectorAll('.hidein-client').forEach(function(x){ if(vis(x)) R.leaks.push(s+': '+(x.id||x.className)+' "'+(x.innerText||'').slice(0,60)+'"'); });
       setView('agent'); }
     out[sc.id]=R; }
@@ -118,9 +123,9 @@ try {
     for (const k of STRICT) { checks++; const x = norm(a[k]), y = norm(b[k]); if (x !== y) fails.push(`${sc} ${k} differs ${firstDiff(x, y)}`); }
     if (norm(a.roundtrip) !== 'same') notes.push(`${sc}: save→reload changes the file on A too (${a.roundtrip})`);
     for (const st of Object.keys(a.steps)) { checks++;
-      const lb = new Set(lines(b.steps[st] || '')), la = new Set(lines(a.steps[st]));
+      const lb = new Set(lines(b.steps[st] || '')), la = new Set(lines(REWRITE(a.steps[st])));
       const lost = [...la].filter(x => !lb.has(x) && !ALLOW.has(x)), added = [...lb].filter(x => !la.has(x));
-      if (lost.length) fails.push(`${sc} ${st}: ${lost.length} line(s) of A missing in B: ` + lost.slice(0, 4).map(x => JSON.stringify(x.slice(0, 80))).join(', ') + (lost.length > 4 ? ' …' : ''));
+      if (lost.length) fails.push(`${sc} ${st}: ${lost.length} line(s) of A missing in B: ` + lost.slice(0, 4).map(x => JSON.stringify(process.env.PARITY_FULL ? x : x.slice(0, 80))).join(', ') + (lost.length > 4 ? ' …' : ''));
       if (added.length) notes.push(`${sc} ${st}: B adds ${added.length} line(s): ` + added.slice(0, 3).map(x => JSON.stringify(x.slice(0, 60))).join(', '));
     }
     b.leaks.forEach(l => fails.push(`${sc} CLIENT VIEW shows agent-only: ${l}`)); checks++;

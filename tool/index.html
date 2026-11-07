@@ -1190,6 +1190,11 @@ body.client #classicWrap>summary{display:none}
   .clientbar{border-radius:0 0 12px 12px}
   .sectitle{font-size:19px;letter-spacing:.1px}
   .rail-x{display:none}body.client #rail{display:none}
+  .cs-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.cs-top .seg{margin-left:auto}
+  .cs-lbl{display:none}
+  @media screen and (min-width:1000px) and (max-width:1349px){html body:not(.client) .brandbar{grid-template-columns:auto 1fr}html body:not(.client) .brandbar .goatpill{justify-self:end}html body:not(.client) .brandbar .toolbar{grid-column:1/-1;justify-content:flex-end}}
+  @media screen and (min-width:1000px) and (max-width:1599px){body:not(.client) .goatpill .glong{display:none}body:not(.client) .goatpill .gshort{display:inline}}@media screen and (min-width:1000px){body:not(.client) .cs-lbl{display:inline}}
+  body.client .cs-top{margin-bottom:8px}
   @media screen and (min-width:1000px){body:not(.client) .rail-x{display:flex}}
   /* the workflow rail: the stepper becomes a fixed navy column on a laptop or bigger; phones and tablets keep the strip */
   @media screen and (min-width:1000px){
@@ -1217,6 +1222,26 @@ body.client #classicWrap>summary{display:none}
     body:not(.client).rail-min .rail-x em{display:none}
     body:not(.client).rail-min .rail-x .rl{display:none}
     body:not(.client).rail-min .stepper .lgl,body:not(.client).rail-min .stepper .sml{display:none}
+    /* the top bar (Jesse 7 Nov, from the design): brand left, the free-website offer in the middle, the actions right - one row */
+    body:not(.client) .brandbar{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:16px;padding:12px 18px}
+    body:not(.client) .brandbar .toolbar{flex-basis:auto;grid-column:3;display:flex;flex-wrap:nowrap;gap:8px;align-items:center}
+    body:not(.client) .brandbar .goatpill{grid-column:2;justify-self:center;margin:0;white-space:nowrap}
+    body:not(.client) .brand{flex-wrap:nowrap;white-space:nowrap}
+    body:not(.client) .brand span{display:none}
+    body:not(.client) .brandbar{min-width:0}body:not(.client) .brandbar>*{min-width:0}
+    body:not(.client) .toolbar button{white-space:nowrap}
+    /* the household strip: white, the family on the left, Client details and the view switch on the right */
+    body:not(.client) .clientbar{background:#fff;border:1px solid var(--line);border-top:none}
+    body:not(.client) .cs-sum{color:var(--ink);font-size:13.5px;flex:1;min-width:0}
+    body:not(.client) #csCaret{width:auto;height:auto;white-space:nowrap;text-transform:none;letter-spacing:0;flex:none;background:#fff;color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:6px 12px;font:600 12.5px -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;cursor:pointer}
+    body:not(.client) #csCaret:hover{border-color:var(--gold)}
+    body:not(.client) .clientbar.pinned #csCaret{transform:none}
+    body:not(.client) .clientbar .fld label{color:var(--muted)}
+    body:not(.client) .clientbar .fld input{background:var(--paper);border-color:var(--line);color:var(--ink)}
+    body:not(.client) .clientbar .note{color:var(--muted)!important}
+    body:not(.client) .clientbar .seg{background:#f1f0eb;border-color:var(--line)}
+    body:not(.client) .clientbar .seg button{color:var(--muted)}
+    body:not(.client) .clientbar .seg button.on{background:var(--navy);color:#fff}
     body:not(.client):not(.rail-min) .stepper .lgl{display:inline}body:not(.client):not(.rail-min) .stepper .sml{display:none}
 
     /* the household strip: one line ("Dana Reyes · FL · …"), details on hover or the ▾ - Present's behaviour, now on every step */
@@ -1224,12 +1249,11 @@ body.client #classicWrap>summary{display:none}
     body:not(.client) .cs-sum{display:flex}
     body:not(.client) .clientbar:not(.pinned) .grid8,body:not(.client) .clientbar:not(.pinned) .note{display:none}
     body:not(.client) .brandbar:hover + .clientbar .grid8,body:not(.client) .clientbar:hover .grid8,body:not(.client) .clientbar.pinned .grid8{display:grid;margin-top:8px}
-    body:not(.client) .clientbar.pinned #csCaret{transform:rotate(180deg)}
   }
 </style>
 </head>
 <body>
-<button type="button" id="fabSave" class="fab-save noprint hidein-client" onclick="saveQuote()" title="Save Quote — downloads this quote as a file you can load later"><span class="fs-ico">💾</span><span class="fs-txt"><b>Save any time</b><span>Each save makes a new file — when you load later, pick the newest one.</span><small id="fabSaved"></small></span></button>
+<button type="button" id="fabSave" class="fab-save noprint hidein-client" onclick="saveQuote()" title="Save client — downloads this client as a file you can load later"><span class="fs-ico">💾</span><span class="fs-txt"><b>Save any time</b><span>Each save makes a new file — when you load later, pick the newest one.</span><small id="fabSaved"></small></span></button>
 <!-- Local compare label: shows only when served on 127.0.0.1:8766 (version B). Never appears on mypoppro.com. -->
 <button type="button" id="presentBack" onclick="presentBack()">← Back to the script</button>
 <div id="verBanner" style="display:none;position:sticky;top:0;z-index:9999;background:#9c3b2f;color:#fff;font:600 13px -apple-system,sans-serif;text-align:center;padding:6px 10px">VERSION B — in progress · compare with A at 127.0.0.1:8765</div>
@@ -1249,19 +1273,19 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
       <button type="button" class="btn-ghost setupbtn hidein-client" id="setupBtn" title="Your details, and how MyPopPro works step by step">⚙ Setup / How to use<em id="setupNeed"></em></button>
       <button type="button" class="btn-ghost newsbtn hidein-client" id="newsBtn" title="What’s new in MyPopPro">✨ What’s new<em id="newsCount"></em></button>
       <button class="btn-ghost" id="newBtn">New client</button>
-      <button class="btn-ghost" id="loadBtn">Load Quote</button>
-      <button class="btn-gold" id="saveBtn">Save Quote</button>
+      <button class="btn-ghost" id="loadBtn">Load client</button>
+      <button class="btn-gold" id="saveBtn">Save client</button>
       <button class="btn-gold" id="printBtn">Print Quote</button>
-      <div class="seg" id="viewseg">
-        <button data-view="agent" class="on">Agent Setup</button>
-        <button data-view="client">Client View</button>
-      </div>
       <input type="file" id="fileInput" accept="application/json" style="display:none">
     </div>
   </div>
 
   <div class="clientbar" id="clientStrip">
-    <div class="cs-sum noprint"><span id="csSum"></span><button type="button" id="csCaret" aria-expanded="false" title="Show the client details (or hover the header)">▾</button></div>
+    <div class="cs-top"><div class="cs-sum noprint"><span id="csSum"></span><button type="button" id="csCaret" aria-expanded="false" title="Show the client details (or hover the header)"><span class="cs-lbl">Client details </span>▾</button></div>
+      <div class="seg noprint" id="viewseg">
+        <button data-view="agent" class="on">Agent workspace</button>
+        <button data-view="client">Client view</button>
+      </div></div>
     <div class="grid8">
       <div class="fld"><label>Primary name</label><input id="c_pname" readonly></div>
       <div class="fld"><label>Spouse name</label><input id="c_sname" readonly></div>
@@ -1737,7 +1761,7 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
   </div>
 
   <div id="step-enroll" class="step">
-    <div class="ensave hidein-client noprint" id="enSaveBar"><span><b>💾 Save Quote/Package of Protection when you’re done</b> — it keeps everything collected here; <b>Load Quote</b> brings it all back later.</span><span id="enNmh"></span><button type="button" class="picbtn" onclick="document.getElementById('saveBtn').click()">💾 Save Quote now</button></div>
+    <div class="ensave hidein-client noprint" id="enSaveBar"><span><b>💾 Save client when you’re done</b> — it keeps everything collected here; <b>Load client</b> brings it all back later.</span><span id="enNmh"></span><button type="button" class="picbtn" onclick="document.getElementById('saveBtn').click()">💾 Save client now</button></div>
    <div class="card pad">
     <div class="sectitle"><span class="dot">●</span> Enroll</div>
     <div class="note" style="padding-top:2px">In call order: the life application first (it has the health questions), each person’s details, the finish — then the health carriers after the call.</div>
@@ -6779,7 +6803,7 @@ var NEWS=[
   ['Savings and TFRA','Savings against their ACA or current plan, and TFRA sized from the real monthly savings.'],
   ['Four-page printout','A recap, the plans, the examples and the partner benefits.'],
   ['Intake in script order','Children, medication type-ahead and conditions for each person.'],
-  ['Load a Script Navigator profile','Load Quote opens a navigator profile file, and your agent details stay put.']]},
+  ['Load a Script Navigator profile','Load client opens a navigator profile file, and your agent details stay put.']]},
  {d:'2026-09-24',t:'Script Navigator handoff',i:[
   ['Push from the Script Navigator','Send the client from the navigator’s discovery call straight into the Intake.'],
   ['ZIP fills the state','Type the ZIP code and the state is filled in for you.']]},
@@ -6886,7 +6910,7 @@ function applySetupFile(o){ setAgent(o.agent); if(o.goatSkip){ try{ localStorage
   if(typeof fill==='function'){ fill(); compute(); } if($('in_agent')) fillAgent(); autosave(); }
 function loadSetupFile(file){ var rd=new FileReader();
   rd.onload=function(){ var o=null; try{ o=JSON.parse(rd.result); }catch(e){}
-    if(!isSetupFile(o)){ alert(o&&typeof o==='object'?'That’s a client file, not a Setup file. Open clients with Load Quote; load your Setup here.':'Could not read that file — is it a MyPopPro Setup file (.json)?'); return; }
+    if(!isSetupFile(o)){ alert(o&&typeof o==='object'?'That’s a client file, not a Setup file. Open clients with Load client; load your Setup here.':'Could not read that file — is it a MyPopPro Setup file (.json)?'); return; }
     applySetupFile(o); alert('Your Setup is loaded'+(o.agent.agent?': '+o.agent.agent:'')+'.'); };
   rd.readAsText(file); }
 function loadQuoteObject(obj){ var ag=agentOf(S);
@@ -7758,7 +7782,7 @@ function nonMhNotice(t){ var N=tierNonMh(t); if(!N) return; var first=((S.client
     +'<li><b>Send the quote</b> — the three steps at the bottom of Quote work for any lineup, Manhattan and '+esc(N.name)+' side by side included.</li>'
     +'<li><b>Use Enroll to collect their details</b> — names, beneficiaries and notes, all in one place. The Manhattan and life steps are there if you need them.</li>'
     +'<li><b>Enroll them with '+esc(N.name)+'</b>: <a href="'+esc(N.url())+'" target="_blank" rel="noopener">'+esc(N.lab)+' ↗</a></li></ul>'
-    +'<p style="margin:0;padding:10px 12px;background:#fff8e6;border:1px solid #e6d3a3;border-radius:8px"><b>💾 Save Quote/Package of Protection when you’re done.</b> It keeps everything you collected; <b>Load Quote</b> brings it all back later.</p>';
+    +'<p style="margin:0;padding:10px 12px;background:#fff8e6;border:1px solid #e6d3a3;border-radius:8px"><b>💾 Save client when you’re done.</b> It keeps everything you collected; <b>Load client</b> brings it all back later.</p>';
   $('nmhModal').classList.add('open'); }
 function presentOpen(){ if(triadFlowOn(chosenTier())||blFlowOn(chosenTier())||acaFlowOn(chosenTier())){ recLock(chosenTier()); goStep('present'); return; } if(tierNonMh(chosenTier())){ nonMhNotice(chosenTier()); return; } if(!chosenTier()){ var t=S.activeTab||'best'; if(!confirm('No package is marked as their plan yet. Present '+TIER_NAME[t]+'?')) return; chooseTier(t); }
   S.present=S.present||{}; S.present.pg=S.present.pg||0; recLock(chosenTier()); goStep('present'); }
