@@ -7834,7 +7834,10 @@ var STORY_KYLE='<p class="st-act"><b>1 · Why the big number is never the real n
    never promise an approval (AFC agent guide p.20: tests in the last 12 months that were not normal, still pending, or
    advised and not done). */
 var PR_FOLLOWUP=[
- ['“Is that per person, or for all of us together?”','Per person. Each of you gets your own visits and your own benefits, and the counts reset every January 1st.'],
+ /* Jesse, 7 Nov asked about the policy year. ManhattanLife's documents: Affordable Choice and Hospital Indemnity Select count per
+    calendar year (AFC7010-BR_1025 p4, AGT-AFC7010_0926 p6, HIS-BR_0126 p3); the dental plan's maximum and deductible, Home Health
+    Care and Short-Term Care run per policy year (DVH7016-BR_0425 p2), as does AFC's five-visit rollover. */
+ ['“Is that per person, or for all of us together?”','Per person. Each of you gets your own visits and your own benefits. The health plan’s visits and limits reset every January 1st. The dental plan is different: its yearly maximum and deductible run on your policy year, from the day your coverage starts.'],
  ['“Do I have to do a blood or urine test?”','No exam, no blood, no urine. It’s health questions on the application, and the carrier checks your prescription and medical records itself. I’ll call you as soon as they come back with a decision.'],
  ['“Do I pay it all up front? What if we’re not approved?”','Nothing comes out today. We pick the day your coverage starts, and the first payment comes out on that day, only once you’re approved. If you’re not approved, nothing is charged. We usually set the start a week or two out so there’s time for the approval.'],
  ['“My husband has had tests they never found a cause for. Will that get us declined?”','Health underwriting looks at different things from life insurance. The question it asks is about the last 12 months: any test that came back other than normal, is still waiting on a result, or a test a doctor recommended that wasn’t done. If his came back normal and nothing is outstanding, that is in his favor. Honestly, we only know when we apply. It only affects his application, not yours or the kids’, and nothing is paid unless a policy is issued.'],
@@ -7847,8 +7850,8 @@ var PR_FOLLOWUP=[
    no Manhattan-only facts (First Health, ManhattanLife's rate history, the per-fill Rx benefit, AFC underwriting).
    Their facts come only from what their own Present pages already source (BL brochure V1.110226, Triad's 2027 guide);
    anything not sourced is left out rather than guessed - e.g. when Bright Life's deductible resets. */
-function presentProd(t){ var b=(effCfg(t)||{}).base; return b==='brightlife'?'bl':b==='triad'?'cg':(!b||b==='afc')?'mh':null; }   /* ACA + protection and Virtual Basic: not yet */
-var PROD_TAG={mh:'MH',bl:'BL',cg:'Cigna'};
+function presentProd(t){ var b=(effCfg(t)||{}).base; return b==='brightlife'?'bl':b==='triad'?'cg':b==='aca'?'aca':(!b||b==='afc')?'mh':null; }   /* Virtual Basic: explained on its own pages (Jesse, 7 Nov) */
+var PROD_TAG={mh:'MH',bl:'BL',cg:'Cigna',aca:'ACA'};
 function blDeductible(t){ var c=effCfg(t)||{}, bp=(typeof BLR!=='undefined'&&BLR&&BLR.plans[c.blPlan||BL_DEFAULT])||{}; return parseFloat(bp.deductible)||1250; }
 /* "That sounds expensive" compares with whatever the Quote is anchored against (Jesse, 7 Nov). */
 function objUsd(x){ return '$'+Math.round(+x||0).toLocaleString('en-US'); }
@@ -7857,6 +7860,10 @@ function objExpensive(p,t){ var A=anchorBase(), cmp=A?A.your+' at '+fmt2(A.premO
   var bd=p==='bl'?blDeductible(t):0;
   return 'I understand — most people say that when they’re comparing it to '+cmp+'. What they find is that the real cost is what you pay when you use it. This is a PPO on the Cigna network'+(bd?', with a '+objUsd(bd)+' deductible'+(A&&A.ded>bd?' instead of '+objUsd(A.ded):'')+' and a cap':', with a cap')+' on what you can pay in a year.'+ask('Let me show you what a hospital stay would cost you on each.'); }
 function objList(p,t){ var ask=function(x){ return ' <span class="ask">'+x+'</span>'; }, bl=p==='bl', bd=bl?blDeductible(t):0;
+  /* ACA + protection (Jesse, 7 Nov): the marketplace plan stays; the objection is paying for protection on top of it. */
+  if(p==='aca'){ var Ad=+((S.aca||{}).ded)||0, U=function(i){ return objList('bl',t)[i]; };
+    return [['“Why do I need to pay extra for these if I’m getting the marketplace plan?”','Because the marketplace plan comes with a big deductible'+(Ad?' — '+objUsd(Ad)+' on yours —':'')+' and coinsurance on top, and you pay all of that before it pays much. These pay you cash when something happens, so that money isn’t coming out of your pocket. That’s why we call it the deductible buster.'+ask('Want to see what a hospital stay costs you with it and without it?')],
+      U(2),U(3),U(4),U(8),U(9)]; }
   var aca='People feel that way, especially when they’re getting a subsidy. What they’ve found is narrow networks, high deductibles and a rate rise every year. And this year most people on a subsidy saw it shrink — the extra help ran out, and on average people’s premiums more than doubled to keep the same plan. On top of that, if your income comes in higher than you estimated, you can owe that subsidy back at tax time. This plan is on the Cigna PPO network'+(((S.intake||{}).docs||[]).length?', and we’ve already looked your doctors up on it':'')+'.'+ask('Why don’t we do a side-by-side comparison, so you’re making an educated choice?');
   return [
    ['“That sounds expensive.”',objExpensive(p,t)],
@@ -7872,6 +7879,7 @@ function objList(p,t){ var ask=function(x){ return ' <span class="ask">'+x+'</sp
 /* Follow-ups for BL and Cigna: the same questions, answered from their own Present pages; the pharmacy one is Cigna
    only (Bright Life's pharmacy rules aren't in its brochure), the marketplace one drops Manhattan's Rx and no-deductible points. */
 function objFollowups(p){ var bl=p==='bl';
+  if(p==='aca') return PR_FOLLOWUP.filter(function(q){ return /blood or urine|pay it all up front|talk to my husband/.test(q[0]); });   /* the protection plans are Manhattan's */
   return [
    ['“Is that per person, or for all of us together?”',bl?'The deductible is $1,250 a person and $2,500 for the family, in network.':'There’s an individual amount and a family amount, and they reset every January 1. Both are on page 1 of the plan summary — show it rather than guess.'],
    ['“Do I have to do a blood or urine test?”','No exam, no blood, no urine. It’s health questions on the application. I’ll call you as soon as they come back with a decision.'],
