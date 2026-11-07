@@ -7926,16 +7926,17 @@ function prClaimsHTML(){ return PR_CLAIMS_HEAD+PR_CLAIMS.map(function(c,i){ retu
 function prClaimCopy(c,btn){ var src='claims/'+c.f+'.jpg';
   var png=fetch(src).then(function(r){ return r.blob(); }).then(function(b){ return createImageBitmap(b); }).then(function(bm){ var cv=document.createElement('canvas'); cv.width=bm.width; cv.height=bm.height; cv.getContext('2d').drawImage(bm,0,0);
     return new Promise(function(res){ cv.toBlob(res,'image/png'); }); });
-  try{ navigator.clipboard.write([new ClipboardItem({'image/png':png})]).then(function(){ btn.textContent='✓ Copied — paste it into your text'; },function(){ btn.textContent='Couldn’t copy — use Download'; }); }
-  catch(e){ btn.textContent='Couldn’t copy — use Download'; } }
+  try{ navigator.clipboard.write([new ClipboardItem({'image/png':png})]).then(function(){ btn.textContent='✓ Copied — paste it into your text'; },function(){ btn.textContent='Couldn’t copy — use Open to view, then Copy image'; }); }
+  catch(e){ btn.textContent='Couldn’t copy — use Open to view, then Copy image'; } }
 function prClaimOpen(i){ var c=PR_CLAIMS[i], pop=$('prPop'), src='claims/'+c.f;
   pop.innerHTML='<div class="pr-pop"><button type="button" class="x" aria-label="Close">×</button><div class="sec">Real claim</div><h4>'+esc(c.t)+'</h4>'
     +'<a href="'+src+'.jpg" target="_blank" rel="noopener"><img src="'+src+'.jpg" alt="'+esc(c.t)+': '+esc(c.sum)+'" style="width:100%;border:1px solid var(--line);border-radius:8px;display:block"></a>'
     /* Copying a picture and downloading need a secure (https) page - mypoppro.com is; the http sandbox isn't, so there
        the buttons open the picture or PDF instead (Jesse, 7 Nov: both did nothing on the sandbox). */
     +(window.isSecureContext&&navigator.clipboard&&window.ClipboardItem
-      ?'<p class="pr-clact"><button type="button" data-cc="1">📋 Copy picture</button><a href="'+src+'.pdf" download>⬇ Download PDF</a><a href="'+src+'.jpg" target="_blank" rel="noopener">Open full size ↗</a></p>'
-      :'<p class="pr-clact"><a href="'+src+'.jpg" target="_blank" rel="noopener">📋 Open picture to copy</a><a href="'+src+'.pdf" target="_blank" rel="noopener">⬇ Open PDF</a></p><p style="font-size:12.5px;color:var(--muted);margin:-4px 0 8px">On the picture: press and hold (phone) or right-click (computer) → Copy image. Save the PDF from its page.</p>')
+      /* Jesse, 7 Nov: three plain choices - Copy (to the clipboard, ready to paste), Open to view, Open / download PDF */
+      ?'<p class="pr-clact"><button type="button" data-cc="1">📋 Copy</button><a href="'+src+'.jpg" target="_blank" rel="noopener">Open to view ↗</a><a href="'+src+'.pdf" target="_blank" rel="noopener">⬇ Open / download PDF</a></p>'
+      :'<p class="pr-clact"><a href="'+src+'.jpg" target="_blank" rel="noopener">Open to view ↗</a><a href="'+src+'.pdf" target="_blank" rel="noopener">⬇ Open / download PDF</a></p><p style="font-size:12.5px;color:var(--muted);margin:-4px 0 8px">📋 Copy works on mypoppro.com. On this preview: right-click the picture (or press and hold on a phone) → Copy image.</p>')
     +'<p><b>What happened:</b> '+esc(c.how)+'</p>'
     +'<p style="font-size:13px;color:var(--muted)"><b>Why they come out ahead:</b> the First Health network shrinks the bill first, the plan pays a fixed dollar amount, and the difference goes to the client.</p>'
     +'<p class="rule">This client’s plan paid $175 per office visit and $250 per X-ray. What a plan pays depends on the level they choose — quote the figures in their plan. All three are outpatient: don’t apply these discounts to a hospital stay. Never a client’s name.</p></div>';
