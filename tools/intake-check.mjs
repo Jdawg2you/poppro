@@ -46,7 +46,7 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  ok(R.notInIntake,'agent setup lives in the Setup window, not the intake'); ok(R.modalOpens&&R.modalCloses,'Setup button opens and Done closes it');
  ok(R.billSaverOnOldSave,'Bill Saver ticked on an older quote'); ok(R.npnToSetup,'NPN goes to setup, out of the notes');
  ok(/^true · fill in: your name, phone, email/.test(R.setupOpenWhenMissing),'setup open while basics are missing: '+R.setupOpenWhenMissing);
- ok(/^true · fill in: (NPN, )?website, digital business card, booking link, benefits page$/.test(R.stillOpenOnFourOfEight),'setup stays open on four of eight: '+R.stillOpenOnFourOfEight);
+ ok(/^true · fill in: (NPN, )?website, digital business card, booking link$/.test(R.stillOpenOnFourOfEight),'setup stays open on four of eight: '+R.stillOpenOnFourOfEight);
  ok(/^true · complete$/.test(R.setupFoldedWhenComplete),'setup folds when all eight are in: '+R.setupFoldedWhenComplete);
  ok(R.reopensWhenLinksGone,'setup reopens when the links go');
  ok(R.foldsAfterGoatSkip,'setup folds after the GOAT opt-out');

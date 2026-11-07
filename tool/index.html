@@ -1788,7 +1788,7 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
       <div class="fld"><label>Your website <a href="#goatGrab" class="setlink" data-goat="1">(set up)</a></label><input id="in_aweb" placeholder="yourwebsite.com"></div>
       <div class="fld"><label>Your digital business card <a href="#goatGrab" class="setlink" data-goat="1">(set up)</a></label><input id="in_acard" placeholder="yourcard.com/you"></div>
       <div class="fld"><label>Your booking link <a href="#goatGrab" class="setlink" data-goat="1">(set up)</a></label><input id="in_abook" placeholder="calendly.com/you"></div>
-      <div class="fld"><label>Your benefits page <small>for the Benefits Review</small></label><input id="in_abenefits" placeholder="yoursite.com/manhattanlife"></div>
+      <div class="fld"><label>Your benefits page <small>for the Benefits Review</small></label><input id="in_abenefits" placeholder="healthfirstquotes.netlify.app (used if blank)"><small class="fhint">Blank uses HealthFirst’s ManhattanLife page. Have your own custom page? Put it here and it’s used instead.</small></div>
       <div class="fld"><label>Direction Rx link <small>GLP-1 discount, weight loss</small></label><input id="in_adrxlink" placeholder="https://bit.ly/4wf5B7V (used if blank)"><small class="fhint">Keep ManhattanLife’s tracking link — it’s how they count the engagement. A typed-in address isn’t counted.</small></div>
       <div class="fld"><label>Direction Rx code <small>the client enters it for 30% off</small></label><input id="in_adrxcode" placeholder="4-MEM-26-6 (used if blank)"></div>
       <div class="fld"><label>Amaze sign-up link <small>your own — where clients join Amaze</small></label><input id="in_aamazelink" placeholder="your Amaze member sign-up link"></div>
@@ -5050,13 +5050,13 @@ function agentSetupMissing(){
   var links=[['website',S.agentWebsite],['digital business card',S.agentCard],['booking link',S.agentBooking]];
   /* the agent's own client resource page (their ManhattanLife benefits page, flipbook, whatever they send) - the
      Benefits Review call runs off it, so it counts whether or not they use GOAT (Jesse, 2026-10-16) */
-  core.push(['benefits page',S.agentBenefits]);
+  /* not counted since 7 Nov: a blank box uses HealthFirst's page (BEN_LINK_DEFAULT) */
   var a=goatSkipped()?core:core.concat(links);
   return a.filter(function(x){ return !String(x[1]||'').trim(); }).map(function(x){ return x[0]; }); }
 /* Every empty agent box glows green until it's filled (Jesse, 9 Oct) - they all end up in the emails, the text and the
    signature, so "optional" is not how an agent should read them. The fold rule is unchanged: open until the four the
    tool can't work without are in; the summary line keeps glowing while any of the seven is still empty. */
-var AGENT_BOXES=[['in_agency','agency'],['in_agent','your name'],['in_aphone','phone'],['in_aemail','email'],['in_anpn','NPN'],['in_aweb','website'],['in_acard','digital business card'],['in_abook','booking link'],['in_abenefits','benefits page']];
+var AGENT_BOXES=[['in_agency','agency'],['in_agent','your name'],['in_aphone','phone'],['in_aemail','email'],['in_anpn','NPN'],['in_aweb','website'],['in_acard','digital business card'],['in_abook','booking link']];   /* the benefits page box no longer glows: blank = HealthFirst's page (7 Nov) */
 function agentGlow(){ var empty=[]; AGENT_BOXES.forEach(function(b){ var el=$(b[0]); if(!el) return; var f=el.closest('.fld'), e=!String(el.value||'').trim(); if(f) f.classList.toggle('needfill',e); if(e) empty.push(b[1]); });
   var st=$('agentSetupState'); if(st){ st.textContent=empty.length?'· fill in: '+empty.join(', '):'· complete'; st.classList.toggle('needfill-sum',!!empty.length); } return empty; }
 /* No fold any more: the box lives in the Setup window. While anything is missing, the Setup button glows and counts it. */
@@ -5366,7 +5366,10 @@ var REVIEW_LINKS=['https://clients.manhattanlife.com','https://providerlocator.f
 var MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
 function reviewState(){ S.review=S.review||{}; S.review.ticks=S.review.ticks||{}; return S.review; }
 function reviewUrl(u){ u=String(u||'').trim(); if(!u) return ''; return /^https?:\/\//i.test(u)?u:'https://'+u; }
-function reviewLink(){ var R=reviewState(); return reviewUrl(R.link||S.agentBenefits); }
+/* HealthFirst's ManhattanLife client page is the default benefits page; an agent with their own page puts it in Setup (Jesse, 7 Nov) */
+var BEN_LINK_DEFAULT='https://healthfirstquotes.netlify.app/';
+function agentBenLink(){ return String(S.agentBenefits||'').trim()||BEN_LINK_DEFAULT; }
+function reviewLink(){ var R=reviewState(); return reviewUrl(R.link||agentBenLink()); }
 function reviewDate(v){ var m=String(v||'').match(/^(\d{4})-(\d{2})-(\d{2})$/); if(!m) return ''; return new Date(+m[1],+m[2]-1,+m[3]).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}); }
 var TIER_ORDER={good:0,better:1,best:2};
 Object.defineProperty(TIER_ORDER,'actual',{enumerable:false,get:function(){ return S.actual?TIER_ORDER[S.actual.tier]:undefined; }});
@@ -6454,7 +6457,7 @@ function renderReview(){ var host=$('reviewHost'); if(!host) return; var t=chose
   if(triadFlowOn(t)){ host.innerHTML=head+triadReviewHTML(t)+reviewCareHTML(); triadBind(host); reviewCareWire(); return; }   /* the care card too (Jesse, 4 Nov) */
   if(tierNonMh(t)){ host.innerHTML=head+'<p class="note">This Benefits Review is the ManhattanLife call — portal, EasyCare2go, Easy Upload and CareGuide. '+esc(tierNonMh(t).name)+' clients get their onboarding from the carrier.</p>'; return; }
   var mo=MONTHS.map(function(m){ return '<option'+(R.month===m?' selected':'')+'>'+m+'</option>'; }).join('');
-  var ownLink=reviewUrl(S.agentBenefits);
+  var ownLink=reviewUrl(agentBenLink()), ownIsDefault=!String(S.agentBenefits||'').trim();
   host.innerHTML=head
    +'<div class="rv-conf"><div class="rv-confbar" id="rvConfBar" role="button" tabindex="0"></div><div class="rv-ch">From the carrier’s confirmation <small>typed once, off the approval — not the quote. Saved with this client.</small></div>'
    +'<div class="rv-grid">'
@@ -6463,7 +6466,7 @@ function renderReview(){ var host=$('reviewHost'); if(!host) return; var t=chose
    +'<div class="fld"><label>Monthly premium <small>'+(+R.prem>0?'typed in — the plan below adds up to '+fmt2(reviewPremTool()):'from the plan below — type over it if the carrier’s differs')+'</small></label><input id="rv_prem" class="money2" inputmode="decimal" placeholder="from the confirmation" value="'+(reviewPrem()>0?fmtMoney2(reviewPrem()):'')+'"></div>'
    +'<div class="fld"><label>Draft date <small>from the carrier — never assumed</small></label><input type="date" id="rv_draft" value="'+esc(R.draft||'')+'"></div>'
    +'<div class="fld"><label>Annual review month</label><select id="rv_month"><option value="">'+(R.eff?'— '+MONTHS[+String(R.eff).slice(5,7)-1]+' (effective month)':'—')+'</option>'+mo+'</select></div>'
-   +'<div class="fld rv-wide"><label>Your client’s resource page <small>'+(ownLink?'(this link pulls over from your agent Setup page)':'(add yours in ⚙ Setup and it pulls over here)')+'</small></label><input id="rv_link" placeholder="'+esc(ownLink||'yoursite.com/manhattanlife')+'" value="'+esc(R.link||'')+'"></div>'
+   +'<div class="fld rv-wide"><label>Your client’s resource page <small>'+(ownIsDefault?'(HealthFirst’s ManhattanLife page — have your own? put it in ⚙ Setup)':'(this link pulls over from your agent Setup page)')+'</small></label><input id="rv_link" placeholder="'+esc(ownLink||'yoursite.com/manhattanlife')+'" value="'+esc(R.link||'')+'"></div>'
    +'</div><div id="rv_warn" class="rv-warn"></div><div id="rvActual" class="rv-actual"></div></div>'
    +'<div id="rvApproved" class="rv-approved" style="display:none"></div>'
    +reviewCareHTML()
