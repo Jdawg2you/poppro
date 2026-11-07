@@ -28,7 +28,9 @@ if [ ! -d "$OUT/.git" ]; then
 fi
 
 # the site files only - the same set mypoppro.com serves (data/ and tools/ stay out, as _config.yml excludes them there)
-find "$OUT" -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+# redesign/ is the redesign preview (branch `redesign`, tools/publish-redesign.sh there) - Jesse, 7 Nov: "we have our regular
+# sandbox and then the redesign sandbox." This publish never touches it.
+find "$OUT" -mindepth 1 -maxdepth 1 ! -name .git ! -name redesign -exec rm -rf {} +
 git archive HEAD index.html tool assets favicon.ico _config.yml | tar -x -C "$OUT"
 echo "$HOST" > "$OUT/CNAME"
 printf 'User-agent: *\nDisallow: /\n' > "$OUT/robots.txt"
