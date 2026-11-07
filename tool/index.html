@@ -7854,12 +7854,16 @@ function prClaimCopy(c,btn){ var src='claims/'+c.f+'.jpg';
 function prClaimOpen(i){ var c=PR_CLAIMS[i], pop=$('prPop'), src='claims/'+c.f;
   pop.innerHTML='<div class="pr-pop"><button type="button" class="x" aria-label="Close">×</button><div class="sec">Real claim</div><h4>'+esc(c.t)+'</h4>'
     +'<a href="'+src+'.jpg" target="_blank" rel="noopener"><img src="'+src+'.jpg" alt="'+esc(c.t)+': '+esc(c.sum)+'" style="width:100%;border:1px solid var(--line);border-radius:8px;display:block"></a>'
-    +'<p class="pr-clact"><button type="button" data-cc="1">📋 Copy picture</button><a href="'+src+'.pdf" download>⬇ Download PDF</a><a href="'+src+'.jpg" target="_blank" rel="noopener">Open full size ↗</a></p>'
+    /* Copying a picture and downloading need a secure (https) page - mypoppro.com is; the http sandbox isn't, so there
+       the buttons open the picture or PDF instead (Jesse, 7 Nov: both did nothing on the sandbox). */
+    +(window.isSecureContext&&navigator.clipboard&&window.ClipboardItem
+      ?'<p class="pr-clact"><button type="button" data-cc="1">📋 Copy picture</button><a href="'+src+'.pdf" download>⬇ Download PDF</a><a href="'+src+'.jpg" target="_blank" rel="noopener">Open full size ↗</a></p>'
+      :'<p class="pr-clact"><a href="'+src+'.jpg" target="_blank" rel="noopener">📋 Open picture to copy</a><a href="'+src+'.pdf" target="_blank" rel="noopener">⬇ Open PDF</a></p><p style="font-size:12.5px;color:var(--muted);margin:-4px 0 8px">On the picture: press and hold (phone) or right-click (computer) → Copy image. Save the PDF from its page.</p>')
     +'<p><b>What happened:</b> '+esc(c.how)+'</p>'
     +'<p style="font-size:13px;color:var(--muted)"><b>Why they come out ahead:</b> the First Health network shrinks the bill first, the plan pays a fixed dollar amount, and the difference goes to the client.</p>'
     +'<p class="rule">This client’s plan paid $175 per office visit and $250 per X-ray. What a plan pays depends on the level they choose — quote the figures in their plan. All three are outpatient: don’t apply these discounts to a hospital stay. Never a client’s name.</p></div>';
   pop.style.display='block'; pop.querySelector('.x').onclick=function(){ pop.style.display='none'; };
-  var cb=pop.querySelector('[data-cc]'); cb.onclick=function(){ prClaimCopy(c,cb); }; }
+  var cb=pop.querySelector('[data-cc]'); if(cb) cb.onclick=function(){ prClaimCopy(c,cb); }; }
 /* "Enrolling with plan edits" (Jesse, 17 Oct): the card + side-by-side open under the script; edits never touch the quote */
 /* the same two buttons above and below the edit section, so nobody has to scroll to find them (Jesse, 17 Oct) */
 var PE_GO='<div class="pr-editgo"><button type="button" data-pe="cancel">Cancel edits — enroll what was presented →</button><button type="button" class="go" data-pe="go">✓ They’re in — enroll with these adjustments →</button></div>';
