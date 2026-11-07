@@ -5285,10 +5285,15 @@ function recLock(t){ var cur=S.rec, snap=pkSnap(t); if(!snap) return;
   if(!cur||(TIER_ORDER[t]!=null&&TIER_ORDER[cur.tier]!=null&&TIER_ORDER[t]>TIER_ORDER[cur.tier])){ snap.by='presented'; S.rec=snap; autosave(); } }
 /* What they chose is locked when it's decided: by the end-of-Present buttons, or here the first time (and again only
    if the package changes on Enroll). The Benefits Review's carrier edits to the card never rewrite it (gut check, 18 Oct). */
-/* same tier name, different lineup (Manhattan Comprehensive vs Cigna's best) is a different plan. Older saves have no lineup: left alone. */
-function lineupMoved(rec){ var now=(S.chosen&&S.chosen.lineup)||S.lineup; return !!(rec&&rec.lineup&&now&&rec.lineup!==now); }
-function electedLock(){ var t=chosenTier(); if(!t) return; var moved=actualOn()&&lineupMoved(S.actual); if(actualOn()&&(S.actual.from!==t||moved)) actualSeed(t);   /* they changed the package: start the card again from it */
-  if(S.elected&&S.elected.tier===t&&lineupMoved(S.elected)){ S.elected=actualOn()?actualSnap():pkSnap(t); S.elected.locked=1; autosave(); return; }
+/* Same tier name, different plan (Manhattan Comprehensive vs Cigna's best): a different lineup, or a different carrier the
+   plan is built on. Plan edits never change that carrier, so a mismatch is always a stale enrollment - and saves from before
+   lineups were recorded still carry it (Jesse, 7 Nov: Calleen's 5 Nov file showed Bright Life on top, Manhattan below). */
+function planBase(c){ return (c&&c.base)||'afc'; }
+function lineupMoved(rec,recCfg){ var now=(S.chosen&&S.chosen.lineup)||S.lineup, t=chosenTier();
+  if(rec&&rec.lineup&&now&&rec.lineup!==now) return true;
+  return !!(rec&&t&&recCfg&&S.packages&&S.packages[t]&&planBase(recCfg)!==planBase(effCfg(t))); }
+function electedLock(){ var t=chosenTier(); if(!t) return; var moved=actualOn()&&lineupMoved(S.actual,(S.cfg||{}).actual); if(actualOn()&&(S.actual.from!==t||moved)) actualSeed(t);   /* they changed the package: start the card again from it */
+  if(S.elected&&S.elected.tier===t&&lineupMoved(S.elected,S.elected.cfg)){ S.elected=actualOn()?actualSnap():pkSnap(t); S.elected.locked=1; autosave(); return; }
   if(S.elected&&S.elected.tier===t){ if(!S.elected.locked){ S.elected.locked=1; autosave(); } return; }   /* older files: lock what's there, never rewrite it */
   S.elected=actualOn()?actualSnap():pkSnap(t); if(S.elected&&!S.elected.lineup) S.elected.lineup=S.lineup||'mh'; S.elected.locked=1; autosave(); }
 var LB_K={lbp:1,lbs:1};
@@ -9148,7 +9153,7 @@ function chosenRestore(id){ var c=S.chosen, k=c&&c.tier&&c.lineup===id&&c.keep; 
   ['good','better','best'].forEach(function(t){ if(k.packages[t]) S.packages[t]=cfgClone(k.packages[t]); if(k.cfg[t]) S.cfg[t]=cfgClone(k.cfg[t]); }); return true; }
 /* What they're actually enrolling in: the plan card from the end of Present ('actual') when it belongs to the chosen
    package, otherwise the package itself. Enroll, its script and wrap-up text, the thank-you email and follow-ups read it. */
-function enrolledTier(){ var t=chosenTier(); return (t&&actualOn()&&S.actual.from===t&&!lineupMoved(S.actual))?'actual':t; }
+function enrolledTier(){ var t=chosenTier(); return (t&&actualOn()&&S.actual.from===t&&!lineupMoved(S.actual,(S.cfg||{}).actual))?'actual':t; }
 Object.defineProperty(TIER_NAME,'actual',{enumerable:false,get:function(){ return (S.actual&&TIER_NAME[S.actual.tier])||''; }});
 function chooseTier(t){ chosenSet(chosenTier()===t?null:t); if(S.step==='enroll'&&S.chosen.tier){ electedLock(); setTimeout(renderRecGap,0); } if(S.chosen.tier) celebrate('thumbs'); if(S.chosen.tier&&tierNonMh(t)&&!triadFlowOn(t)&&!blFlowOn(t)) setTimeout(function(){ nonMhNotice(t); },0);   /* the Triad flow (sandbox) presents it instead */ if(S.chosen.tier){ S.activeTab=t; S.include=S.include||{}; S.include[t]=true; } compute(); autosave(); }
 function tierHasDental(t){ return ((S.packages[t]||{}).products||[]).some(function(p){ return p.k==='dvh'&&(+p.monthly||0)>0; }); }
