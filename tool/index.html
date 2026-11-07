@@ -1190,6 +1190,7 @@ body.client #classicWrap>summary{display:none}
   .clientbar{border-radius:0 0 12px 12px}
   .sectitle{font-size:19px;letter-spacing:.1px}
   .rail-x{display:none}body.client #rail{display:none}
+  .rail-onpage{display:none}
   /* How to use / Setup as pages (only when opened from the sidebar; the toolbar button keeps the old window) */
   .wl-goatbar{display:none}
   .wl-card.mode-guide .wl-body,.wl-card.mode-setup .wl-body{padding:26px 28px 6px}
@@ -1258,6 +1259,13 @@ body.client #classicWrap>summary{display:none}
     body:not(.client) .rail-x.on{background:var(--gold);color:#10233e}body:not(.client) .rail-x.on .ri{color:#10233e}
     body.setup-open:not(.client) .stepper button.on{background:transparent;color:#d3dae6}body.setup-open:not(.client) .stepper button.on .n{color:#8d99ad}
     body:not(.client) #railGuide{margin-bottom:2px}
+    body:not(.client) .rail-onpage:empty{display:none}
+    body:not(.client) .rail-onpage{margin:14px 0 0;padding:12px 0 0;border-top:1px solid rgba(255,255,255,.1);display:flex;flex-direction:column;gap:1px}
+    body:not(.client) .rail-onpage .onp-h{color:#8d99ad;font:700 10.5px -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;letter-spacing:.16em;text-transform:uppercase;padding:0 10px 8px}
+    body:not(.client) .rail-onpage button{background:transparent;border:none;border-left:2px solid transparent;color:#b9c3d3;text-align:left;font:500 12.5px -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;padding:6px 10px 6px 26px;cursor:pointer;border-radius:0 6px 6px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    body:not(.client) .rail-onpage button:hover{background:#1c3657;color:#fff}
+    body:not(.client) .rail-onpage button.on{color:#fff;border-left-color:var(--gold);background:rgba(195,161,78,.12)}
+    body:not(.client).rail-min .rail-onpage{display:none}
     body:not(.client) #railSetup.beckon{background:var(--gold);color:#10233e}body:not(.client) #railSetup.beckon::after{content:'← here';margin-left:auto;font-weight:800;color:#10233e;animation:railbeckon .9s ease-in-out infinite}
     /* the pages sit in the work area beside the sidebar, on the paper background - not a dimmed pop-up */
     #setupModal.page{left:216px;background:var(--paper);z-index:55}
@@ -1363,6 +1371,7 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
     <button data-step="enroll"><span class="n">5</span> Enroll</button>
     <button data-step="review"><span class="n">6</span> <span class="lgl">Benefits Review</span><span class="sml">Review</span></button>
   </div>
+  <div id="railOnPage" class="rail-onpage hidein-client" aria-label="On this page"></div>
   <button type="button" id="railCollapse" class="rail-x" onclick="railToggle()" title="Make the sidebar narrow (or wide again)"><span class="ri">←</span><span class="rl">Collapse navigation</span></button>
   </nav>
 
@@ -8622,6 +8631,39 @@ function presentShow(where){ S.present=S.present||{}; S.present.returning=true; 
   setTimeout(function(){ var el=where==='cmp'?document.querySelector('#printout .po-cmp'):where==='ev'?document.querySelector('#printout .po-evpage'):document.querySelector('#printout .po-head');
     if(el){ var r=el.getBoundingClientRect(); document.scrollingElement.scrollTop+=r.top-20; } },60); }
 function presentBack(){ var b=$('presentBack'); if(b) b.style.display='none'; if(S.present) S.present.returning=false; setView('agent'); goStep('present'); }
+/* ===== On this page (Jesse, 7 Nov): under the steps, jumps to the parts of the page you're on. Quote: his list. Present:
+   the side panel's own boxes (so a Bright Life, Cigna or ACA panel lists what it actually has) plus Objections, Real
+   claims and Real stories. Intake: its sections. A part that isn't showing for this client isn't listed. ===== */
+var ONPAGE_QUOTE=[['Package builder','#sec_builder'],['POP Score / TFRA','#popScoreCard'],['Example 1','#ev0_editor'],['Example 2','#ev1_editor'],['Plan benefits','#afcPartners'],['Send the quote','#sendQuote'],['Brochures','#brochBox']];
+function onpVisible(el){ return !!(el&&el.offsetParent!==null&&el.getClientRects().length); }
+function onpLabel(el){ var t=''; el.childNodes.forEach(function(n){ if(!t&&n.nodeType===3&&n.textContent.trim()) t=n.textContent.trim(); }); if(!t){ var b=el.querySelector('b,h3'); t=b?b.textContent.trim():el.textContent.trim(); } return t.replace(/^●\s*/,'').replace(/\s+/g,' ').slice(0,38); }
+function onpPresentLabel(t){ t=String(t||'').replace(/\s+/g,' ').trim(); if(!t) return '';
+  if(/^quick answers/i.test(t)) return 'Objections'+((t.match(/\(([^)]+)\)\s*$/)||[])[1]?' ('+t.match(/\(([^)]+)\)\s*$/)[1]+')':'');
+  if(/^story repository/i.test(t)) return 'Real stories';
+  return t.split(' — ')[0].slice(0,38); }
+function railOnPageRender(){ var box=$('railOnPage'); if(!box) return; var st=S.step, items=[];
+  if(st==='quote') ONPAGE_QUOTE.forEach(function(q){ var el=document.querySelector(q[1]); if(el&&q[1].indexOf('_editor')>0) el=el.closest('.card')||el; if(onpVisible(el)) items.push({l:q[0],el:el}); });
+  else if(st==='present'){ var p=(typeof presentProd==='function')?presentProd(presentTier()):null;
+    if(p&&p!=='mh') items.push({l:'Objections ('+(PROD_TAG[p]||'')+')',bub:'obj'});
+    /* every heading in the side panel (the Objections box has two: quick answers, then follow-up questions) */
+    document.querySelectorAll('#step-present .pr-rail > .box').forEach(function(b){ if(!onpVisible(b)) return;
+      [].filter.call(b.querySelectorAll('b'),function(h){ return !h.closest('summary,details,button,li,p,small')&&(h.parentElement===b||h.parentElement.parentElement===b); }).forEach(function(h,k){
+        var l=onpPresentLabel(h.textContent); if(l) items.push({l:l,el:k?h:b,rail:1}); }); }); }
+  else if(st==='intake') document.querySelectorAll('#step-intake .intake-sec').forEach(function(el){ if(onpVisible(el)) items.push({l:onpLabel(el),el:el}); });
+  box._items=items;
+  box.innerHTML=items.length?'<div class="onp-h">On this page</div>'+items.map(function(it,i){ return '<button type="button" data-onp="'+i+'"'+(it.bub?' data-bub="'+it.bub+'"':'')+'>'+esc(it.l)+'</button>'; }).join(''):'';
+  box.querySelectorAll('button[data-onp]').forEach(function(b){ if(b.dataset.bub) return; b.onclick=function(){ var want=box._items[+b.dataset.onp], at=+b.dataset.onp;
+    if(want&&!document.contains(want.el)){ railOnPageRender(); var fresh=(box._items||[]).filter(function(x){ return x.l===want.l; })[0]; if(fresh) want=fresh; }   /* the page rebuilt itself since the list was drawn */
+    var it=want; if(!it||!it.el) return;
+    if(it.rail){ var rl=it.el.closest('.pr-rail'); if(rl) rl.scrollTo({top:Math.max(0,rl.scrollTop+it.el.getBoundingClientRect().top-rl.getBoundingClientRect().top-6),behavior:'smooth'}); }
+    else window.scrollTo({top:Math.max(0,it.el.getBoundingClientRect().top+window.scrollY-48),behavior:'smooth'});
+    it.el.classList.remove('pr-flash'); void it.el.offsetWidth; it.el.classList.add('pr-flash'); setTimeout(function(){ it.el.classList.remove('pr-flash'); },2200); }; });
+  onpSpy(); }
+/* the part you're looking at is highlighted as you scroll (Quote and Intake) */
+function onpSpy(){ var box=$('railOnPage'); if(!box||!box._items) return; var cur=-1; box._items.forEach(function(it,i){ if(!it.el||it.rail) return; if(it.el.getBoundingClientRect().top<160) cur=i; });
+  if(cur<0&&box._items.length&&!box._items[0].rail&&!box._items[0].bub) cur=0;
+  box.querySelectorAll('button[data-onp]').forEach(function(b){ b.classList.toggle('on',+b.dataset.onp===cur); }); }
+window.addEventListener('scroll',function(){ if(window._onpT) return; window._onpT=setTimeout(function(){ window._onpT=0; onpSpy(); },120); },{passive:true});
 function railToggle(min){ if(min==null) min=!document.body.classList.contains('rail-min'); document.body.classList.toggle('rail-min',!!min);
   var b=$('railCollapse'); if(b){ b.querySelector('.ri').textContent=min?'→':'←'; b.querySelector('.rl').textContent=min?'Expand navigation':'Collapse navigation'; b.setAttribute('aria-expanded',String(!min)); }
   try{ localStorage.setItem('pp_rail_min',min?'1':''); }catch(e){} }
@@ -8678,6 +8720,7 @@ function goStep(s){
   if(s==='present') renderPresent();
   if(s==='quote'){ syncRateBasis(); acaSync(); autoPriceTiers(); fill(); compute(); }
   autosave(); window.scrollTo(0,0);
+  if(window.railOnPageRender){ railOnPageRender(); setTimeout(railOnPageRender,700); setTimeout(railOnPageRender,2200); }
 }
 
 /* the follow-up as you'd say it: "later today at 6:00 pm", "tomorrow, Thursday, at 6:00 pm", "Thursday at 6:00 pm"
