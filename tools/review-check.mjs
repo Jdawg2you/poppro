@@ -88,7 +88,7 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  var oneOf=function(){ var T=reviewTokens('better'); return (T['client.on_glp1']==='1')!==(T['client.no_glp1']==='1'); }; ok(oneOf(),'exactly one Direction Rx version is switched on (GLP-1)');
  S.intake.glp1={}; reviewWire(d,'better'); ok(oneOf()&&reviewTokens('better')['client.no_glp1']==='1','exactly one Direction Rx version is switched on (no GLP-1)'); var dsay2=[].filter.call(d.querySelectorAll('.say'),function(e){ return /Direction Rx/.test(e.textContent)&&!e.closest('.pp-off,.pp-prodoff')&&!e.closest('[data-author="note"]'); }); ok(dsay2.length===1&&/weight loss/.test(dsay2[0].textContent),'no GLP-1: the Direction Rx offer still shows - it is for every member (23 Oct)');
  /* setup asks for the benefits page */
- S.agentBenefits=''; ok(agentSetupMissing().indexOf('benefits page')>=0,'Setup counts the benefits page until it is filled');
+ S.agentBenefits=''; ok(agentSetupMissing().indexOf('benefits page')<0&&reviewLink().indexOf('healthfirstquotes.netlify.app')>=0,'a blank benefits page uses HealthFirst’s page and is not counted missing (Jesse, 7 Nov)');
   /* What they actually have (Jesse, 17 Oct): a copy of their plan, edited off the approval; quote and recommendation untouched */
  S.chosen={tier:'better'}; S.rec=pkSnap('best'); S.rec.by='presented'; S.elected=pkSnap('better'); delete S.actual; reviewState().appr='chg'; renderReview(); await w(1500);
  var host=document.getElementById('rvActual'), col=host&&host.querySelector('.pbcol.actual');
