@@ -12,10 +12,15 @@
     [
       "💾 Save Quote now",
       "💾 Save client now"
+    ],
+    [
+      "Client Intake",
+      "Client Intake / Profile"
     ]
   ],
   "lines": [],
   "decisions": {
-    "Save Quote / Load Quote -> Save client / Load client": "Jesse, 7 Nov 2026: 'It'll be like save client. And then load client.'"
+    "Save Quote / Load Quote -> Save client / Load client": "Jesse, 7 Nov 2026: 'It'll be like save client. And then load client.'",
+    "Client Intake -> Client Intake / Profile": "Jesse, 7 Nov 2026: 'I want to transition people to calling it profile, but we'll do it slowly.'"
   }
 }

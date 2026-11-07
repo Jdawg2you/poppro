@@ -1364,7 +1364,7 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
   <button type="button" id="railSetup" class="rail-x hidein-client" onclick="openSetup('setup')" title="Your details: they go on every script, email and text"><span class="ri">⚙</span><span class="rl">Setup</span><em id="railSetupNeed"></em></button>
   <div class="stepper noprint" id="stepper">
     <button data-step="call"><span class="n">1</span> <span class="lgl">Discovery call</span><span class="sml">Call</span></button>
-    <button data-step="intake"><span class="n">2</span> Intake</button>
+    <button data-step="intake"><span class="n">2</span> <span class="lgl">Intake / Profile</span><span class="sml">Intake</span></button>
     <button data-step="tree" id="stepTreeBtn" style="display:none"><span class="n">3</span> <span class="lgl">Decision tree</span><span class="sml">Tree</span></button>
     <button data-step="quote" class="on"><span class="n">3</span> Quote</button>
     <button data-step="present"><span class="n">4</span> Present</button>
@@ -1384,7 +1384,7 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
   </div>
   <div id="step-intake" class="step">
    <div class="card pad">
-    <div class="sectitle"><span class="dot">●</span> Client Intake</div>
+    <div class="sectitle"><span class="dot">●</span> Client Intake / Profile</div>
     <!-- the call fills this (step 1); the walk-through in ⚙ Setup explains the flow - no How-to or outside-navigator buttons (Jesse, 17 Oct) -->
     <div class="note intro1" style="padding-top:2px">Check what the call filled in, add anything missing, then hit <b>Build Quote</b> — it recommends Good / Better / Best from these answers. <a href="#" class="backcall" onclick="goStep('call');return false;">← Back to the call</a></div>
     <div id="carrierStrip" class="cstrip" style="display:none"></div>
