@@ -334,7 +334,11 @@ const TEST = `(async function(){
   ok(!!document.querySelector('[data-enprof="save"]')&&!!document.querySelector('[data-enprof="print"]'),'save / print profile buttons');
   for(var ws=0;ws<40&&!/For security purposes/.test(pp.querySelector('.en-say').innerText);ws++) await wait(100);
   ok(/For security purposes/.test(pp.querySelector('.en-say').innerText)&&!/notes field/i.test(pp.querySelector('.en-say').innerText),'security question rendered from the script beside the maiden-name box (no write-it-in-notes tip)');
-  ok(['lnkMutual','lnkNLG','lnkAmerico','lnkManhattan','lnkCigna','lnkBrightlife','lnkAmaze','lnkHealthSherpa'].every(function(id){ return document.getElementById(id).style.display!=='none'; })&&!document.getElementById('lnkLifex'),'standard life and health links always shown');
+  /* life links always; health carriers only for the plan they're enrolling in (Jesse, 7 Nov - replaces the 8 Oct "always shown") */
+  var shownL=function(id){ var a=document.getElementById(id); return !!a&&a.style.display!=='none'; }, ctb=chosenTier(), cbase=ctb?(effCfg(ctb).base||'afc'):null;
+  ok(['lnkMutual','lnkNLG','lnkAmerico'].every(shownL)&&!document.getElementById('lnkLifex'),'standard life links always shown');
+  ok(!shownL('lnkAmazeDoc')&&!shownL('lnkAmazeSetup'),'the Amaze PDFs are not in Health carriers (they go in the email and text)');
+  ok(!ctb||(shownL('lnkCigna')===(cbase==='triad')&&shownL('lnkHealthSherpa')===(cbase==='aca')&&shownL('lnkAmaze')===(cbase==='amaze')),'health carriers match the enrolled plan ('+cbase+')');
   ok(document.getElementById('lnkNLG').href.indexOf('nationallife.com/agent')>=0,'National Life Group agent login');
   var order=['enLife','enPeople','enScriptEnd','enHealth'].map(function(id){ return document.getElementById(id).getBoundingClientRect().top; });
   ok(order.every(function(v,i){ return !i||v>order[i-1]; }),'Enroll order: life → each person → wrapping up → health');
