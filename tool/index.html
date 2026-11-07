@@ -1192,6 +1192,26 @@ body.client #classicWrap>summary{display:none}
   .rail-x{display:none}body.client #rail{display:none}
   /* How to use / Setup as pages (only when opened from the sidebar; the toolbar button keeps the old window) */
   .wl-goatbar{display:none}
+  .wl-card.mode-guide .wl-body,.wl-card.mode-setup .wl-body{padding:26px 28px 6px}
+  .wl-card.mode-guide .wl-goatbar,.wl-card.mode-setup .wl-goatbar{margin:0 0 26px!important}
+  .wl-card.mode-guide .wl-flowbox>summary{margin:0 0 14px;font-size:18px;pointer-events:none;list-style:none}
+  .wl-card.mode-guide .wl-flowbox>summary::-webkit-details-marker{display:none}
+  .wl-card.mode-guide .wl-flow{margin:0}
+  .wl-card.mode-guide .wl-tip{margin:22px 0 0;padding:20px 22px}
+  .wl-card.mode-guide .wl-step{cursor:pointer}
+  .wl-card.tour0 .wl-back{display:none!important}
+  .wl-card.mode-guide .wl-foot,.wl-card.mode-setup .wl-foot{padding:22px 28px 26px}
+  .wl-card.mode-setup .wl-you{margin:0;padding:0;border-top:none}
+  .wl-card.mode-setup .setupfile{margin:14px 0 0}
+  .wl-card.mode-setup .st-tabs{margin:22px 0 0!important}
+  .st-head{display:none}.wl-card.mode-setup .st-head{display:block;margin:22px 0 14px}
+  .st-head b{display:block;font-family:var(--serif);font-size:20px;color:var(--navy)}.st-head span{color:var(--muted);font-size:13.5px}
+  .wl-card.mode-setup .agentsetup{padding:0;margin:0}
+  .wl-card.mode-setup .agentgrid{gap:18px 16px}
+  .wl-card.mode-setup .goatgrab{margin-top:22px}
+  .wl-card.mode-setup .wl-back.st-show{display:inline-block!important}
+  .st-tabs button.maybe em{background:#c3a14e;color:#10233e;animation:agglow 1.8s ease-in-out infinite}
+  @keyframes railbeckon{0%,100%{transform:translateX(0)}50%{transform:translateX(6px)}}
   .wl-once-old,.wl-once-new{font-style:normal}.wl-once-new{display:none}.wl-card.mode-guide .wl-once-old{display:none}.wl-card.mode-guide .wl-once-new{display:inline}
   .wl-card.mode-guide #wlHint,.wl-card.mode-setup #wlHint{display:none}
   .wl-card.mode-guide .wl-flowbox>summary::after{content:'  ·  click any step to see how it works';font:400 12.5px -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:var(--muted)}
@@ -1238,6 +1258,7 @@ body.client #classicWrap>summary{display:none}
     body:not(.client) .rail-x.on{background:var(--gold);color:#10233e}body:not(.client) .rail-x.on .ri{color:#10233e}
     body.setup-open:not(.client) .stepper button.on{background:transparent;color:#d3dae6}body.setup-open:not(.client) .stepper button.on .n{color:#8d99ad}
     body:not(.client) #railGuide{margin-bottom:2px}
+    body:not(.client) #railSetup.beckon{background:var(--gold);color:#10233e}body:not(.client) #railSetup.beckon::after{content:'← here';margin-left:auto;font-weight:800;color:#10233e;animation:railbeckon .9s ease-in-out infinite}
     /* the pages sit in the work area beside the sidebar, on the paper background - not a dimmed pop-up */
     #setupModal.page{left:216px;background:var(--paper);z-index:55}
     body.rail-min #setupModal.page{left:64px}
@@ -5179,7 +5200,7 @@ function agentGlow(){ var empty=[]; AGENT_BOXES.forEach(function(b){ var el=$(b[
   var st=$('agentSetupState'); if(st){ st.textContent=empty.length?'· fill in: '+empty.join(', '):'· complete'; st.classList.toggle('needfill-sum',!!empty.length); } return empty; }
 /* No fold any more: the box lives in the Setup window. While anything is missing, the Setup button glows and counts it. */
 function agentSetupFold(){ var miss=agentSetupMissing(), b=$('setupBtn'), n=$('setupNeed'); if(b){ b.classList.toggle('need',!!miss.length); b.title=miss.length?'Still to fill in: '+miss.join(', '):'Your agency, name, phone, email, NPN and links'; } if(n) n.textContent=miss.length?String(miss.length):''; if(typeof setupTabsPaint==='function') setupTabsPaint(); var rs=$('railSetup'), rn=$('railSetupNeed'); if(rs){ rs.classList.toggle('need',!!miss.length); rs.title=b?b.title:''; } if(rn) rn.textContent=miss.length?String(miss.length):'';
-  var ws=$('wlSetupState'); if(ws){ ws.textContent=miss.length?miss.length+' to fill in ↓':'✓ Done'; ws.className=miss.length?'todo':''; }
+  var ws=$('wlSetupState'); if(ws){ ws.textContent=miss.length?miss.length+' to fill in':'✓ Done'; ws.className=miss.length?'todo':''; }
   var d=$('agentSetup'); if(d) d.classList.toggle('goat-skipped',goatSkipped()); var sf=$('setupFile'); if(sf) sf.classList.toggle('empty',setupEmpty()); agentGlow(); }
 function fillAgent(){ $('in_agency').value=S.agency||'HealthFirst'; $('in_agent').value=(S.client||{}).agent||''; $('in_aphone').value=S.agentPhone||''; $('in_aemail').value=S.agentEmail||''; $('in_anpn').value=S.agentNPN||''; $('in_aweb').value=S.agentWebsite||''; $('in_acard').value=S.agentCard||''; $('in_abook').value=S.agentBooking||''; $('in_abenefits').value=S.agentBenefits||''; $('in_adrxlink').value=S.agentDrxLink||''; $('in_adrxcode').value=S.agentDrxCode||''; if($('in_ahslink')) $('in_ahslink').value=S.agentHsLink||''; if($('in_aamazelink')) $('in_aamazelink').value=S.agentAmazeLink||''; $('in_abio').value=S.agentBio||''; agentSetupFold(); }
 /* Only the agent fields - captureIntake() would also read the client boxes, which are stale off the Intake step. */
@@ -6892,10 +6913,15 @@ var TOUR=[null,
    'The review covers <b>only what they bought</b>, and you fill their care card (doctors, urgent care, hospital) as you go. The call ends with the referral ask and their annual review month.',
    'The last step is the <b>recap email</b> and a <b>&ldquo;recap sent&rdquo; text</b>: every link they need and their care card, built from the call. Every message along the way is written for their plan and their details. Your benefits page link lives in <b>⚙ Setup</b>.']}];
 var tourAt=0;
-function showTour(i){ tourAt=i; var fb=$('wlFlowBox'); if(fb&&i>0) fb.open=true; var card=document.querySelector('#setupModal .wl-card'); card.classList.toggle('touring',i>0);
+/* How to use MyPopPro, step zero (Jesse, 7 Nov): read the six steps first, then set yourself up */
+var TOUR0={t:'Start here',d:['<b>First, take a minute with the six steps to the right.</b> Hover over each one, or click <b>Next</b>. Knowing how a client moves through MyPopPro now saves you a lot of confusion later.',
+  'Then <b>set yourself up</b>: your name, phone, email, NPN, your links and your introduction. It goes on every script, email and text you send.',
+  'When you reach <b>Benefits Review</b>, <b>Let&rsquo;s go</b> takes you straight to Setup.']};
+function showTour(i){ tourAt=i; var fb=$('wlFlowBox'); var card=document.querySelector('#setupModal .wl-card'), guide=card.classList.contains('mode-guide'); if(fb&&(i>0||guide)) fb.open=true; card.classList.toggle('touring',i>0||guide); card.classList.toggle('tour0',guide&&i===0);
+  var rsb=$('railSetup'); if(rsb) rsb.classList.toggle('beckon',guide&&i===6);
   document.querySelectorAll('#setupModal .wl-step').forEach(function(el){ el.classList.toggle('cur',+el.dataset.tour===i); });
-  if(i>0){ var T=TOUR[i]; $('wlTip').innerHTML='<h3>'+i+' · '+T.t+'<small>STEP '+i+' OF 6</small></h3><ol>'+T.d.map(function(x){return '<li>'+x+'</li>';}).join('')+'</ol>';
-    $('wlGo').textContent=i<6?'Next: '+TOUR[i+1].t+' →':'Let’s go! →'; }
+  if(i>0||guide){ var T=i>0?TOUR[i]:TOUR0; $('wlTip').innerHTML='<h3>'+i+' · '+T.t+'<small>STEP '+i+' OF 6</small></h3><ol>'+T.d.map(function(x){return '<li>'+x+'</li>';}).join('')+'</ol>';
+    $('wlGo').textContent=i<6?'Next: '+TOUR[i+1].t+' →':(guide?'Let’s go — set yourself up →':'Let’s go! →'); }
   else $('wlGo').textContent=(document.querySelector('#setupModal .wl-card.mode-guide')?'Set yourself up →':'Save →');
   var b=document.querySelector('#setupModal .wl-body'); if(b) b.scrollTop=0; $('setupModal').scrollTop=0; }
 function letsGo(){
@@ -6914,6 +6940,7 @@ function finishSetup(){ var keep=inProgress(); closeSetup(); if(!keep) goStep('c
 var SETUP_TABS=[['identity','Identity',['in_agency','in_agent','in_aphone','in_aemail','in_anpn'],['agency','your name','phone','email','NPN']],
   ['links','Links & resources',['in_aweb','in_acard','in_abook','in_abenefits','in_adrxlink','in_adrxcode','in_ahslink','in_aamazelink'],['website','digital business card','booking link','benefits page']],
   ['intro','Introduction',['in_abio'],[]]];
+var SETUP_HEADS={identity:['Set up your basics','Who you are and how clients reach you.'],links:['Your links and resources','Where clients book, read about their plan and sign up for their extras.'],intro:['Your introduction','Optional - read at the start of every discovery call. Leave it empty and MyPopPro uses its own.']};
 var setupTab='identity';
 function setupMode(m){ var card=document.querySelector('#setupModal .wl-card'), md=$('setupModal'); if(!card||!md) return;
   card.classList.toggle('mode-guide',m==='guide'); card.classList.toggle('mode-setup',m==='setup'); md.classList.toggle('page',!!m);
@@ -6921,21 +6948,26 @@ function setupMode(m){ var card=document.querySelector('#setupModal .wl-card'), 
   var t=$('wlTitle'); if(t) t.textContent=m==='guide'?'How to use MyPopPro':m==='setup'?'Setup — make it yours':'Welcome to MyPopPro';
   var hp=document.querySelector('#setupModal .wl-head p'); if(hp){ if(!hp.dataset.orig) hp.dataset.orig=hp.textContent; hp.textContent=m==='setup'?'Set this once. Your details go on every script, email and text you send from MyPopPro.':hp.dataset.orig; }
   if(m==='guide'){ var fb=$('wlFlowBox'); if(fb) fb.open=true; }
+  if(m==='guide') tourAt=0;
+  if(m!=='guide'){ card.classList.remove('touring','tour0'); var rsb=$('railSetup'); if(rsb) rsb.classList.remove('beckon'); }
   if(m==='setup'){ var miss=agentSetupMissing(); var first=SETUP_TABS.filter(function(T){ return T[3].some(function(n){ return miss.indexOf(n)>=0; }); })[0]; setupTabGo(first?first[0]:'identity'); }
-  setTimeout(function(){ if(typeof showTour==='function'&&$('setupModal').classList.contains('open')) showTour(tourAt||0); },0); }
+  setTimeout(function(){ if(!$('setupModal').classList.contains('open')) return; var now=card.classList.contains('mode-setup')?'setup':card.classList.contains('mode-guide')?'guide':''; if(now!==m) return; if(m==='setup') setupTabGo(setupTab); else if(typeof showTour==='function') showTour(tourAt||0); },0); }
 function setupTabsInit(){ var grid=document.querySelector('#agentSetup .agentgrid'); if(!grid||$('setupTabs')) return;
   SETUP_TABS.forEach(function(T){ T[2].forEach(function(id){ var el=$(id), f=el&&el.closest('.fld'); if(f) f.setAttribute('data-stab',T[0]); }); });
   var bar=document.createElement('div'); bar.id='setupTabs'; bar.className='st-tabs'; bar.setAttribute('role','tablist');
   bar.innerHTML=SETUP_TABS.map(function(T){ return '<button type="button" role="tab" data-stab="'+T[0]+'">'+T[1]+'<em></em></button>'; }).join('');
   var as=$('agentSetup'); as.parentNode.insertBefore(bar,as);
+  var hd=document.createElement('div'); hd.id='setupTabHead'; hd.className='st-head'; as.parentNode.insertBefore(hd,as);
   bar.querySelectorAll('button').forEach(function(b){ b.onclick=function(){ setupTabGo(b.dataset.stab); }; });
   as.addEventListener('input',function(){ setTimeout(setupTabsPaint,0); }); setupTabsPaint(); }
-function setupTabGo(t){ setupTab=t; var as=$('agentSetup'); if(as) as.setAttribute('data-stab',t);
+function setupTabGo(t){ setupTab=t; var as=$('agentSetup'); if(as) as.setAttribute('data-stab',t); var H=SETUP_HEADS[t], hd=$('setupTabHead'); if(hd&&H) hd.innerHTML='<b>'+H[0]+'</b><span>'+H[1]+'</span>';
+  var go=$('wlGo'), bk=$('wlBack'), card=document.querySelector('#setupModal .wl-card'); if(card&&card.classList.contains('mode-setup')){ if(go) go.textContent=t==='identity'?'Next: Links & resources →':t==='links'?'Next: Introduction →':'💾 Save my Setup →'; if(bk) bk.classList.toggle('st-show',t!=='identity'); }
   document.querySelectorAll('#setupTabs button').forEach(function(b){ var on=b.dataset.stab===t; b.classList.toggle('on',on); b.setAttribute('aria-selected',String(on)); }); setupTabsPaint(); }
 function setupTabsPaint(){ var miss=(typeof agentSetupMissing==='function')?agentSetupMissing():[];
   document.querySelectorAll('#setupTabs button').forEach(function(b){ var T=SETUP_TABS.filter(function(x){ return x[0]===b.dataset.stab; })[0], n=T[3].filter(function(x){ return miss.indexOf(x)>=0; }).length, em=b.querySelector('em');
-    em.textContent=n?String(n):'✓'; b.classList.toggle('need',!!n); b.classList.toggle('done',!n); b.title=n?'Still to fill in: '+T[3].filter(function(x){ return miss.indexOf(x)>=0; }).join(', '):'All set'; }); }
-function openSetup(mode){ setupMode(typeof mode==='string'?mode:(window.innerWidth>=1000&&!welcomeSeen()?'guide':'')); fillAgent(); var fb=$('wlFlowBox'); if(fb) fb.open=!welcomeSeen(); $('setupModal').classList.add('open'); showTour(0); var b=document.querySelector('#setupModal .wl-body'); if(b) b.scrollTop=0; }
+    var opt=b.dataset.stab==='intro', bio=String(($('in_abio')||{}).value||'').trim();
+    em.textContent=n?String(n):(opt&&!bio?'?':'✓'); if(opt&&!bio) b.title='Optional: your introduction for the discovery call'; b.classList.toggle('need',!!n); b.classList.toggle('maybe',opt&&!bio); b.classList.toggle('done',!n&&!(opt&&!bio)); b.title=n?'Still to fill in: '+T[3].filter(function(x){ return miss.indexOf(x)>=0; }).join(', '):'All set'; }); }
+function openSetup(mode){ setupMode(typeof mode==='string'?mode:(window.innerWidth>=1000&&!welcomeSeen()?'guide':'')); fillAgent(); var fb=$('wlFlowBox'); if(fb) fb.open=!welcomeSeen()||document.querySelector('#setupModal .wl-card.mode-guide')!==null; $('setupModal').classList.add('open'); showTour(0); var b=document.querySelector('#setupModal .wl-body'); if(b) b.scrollTop=0; }
 function closeSetup(){ setupMode(''); readAgent(); try{ localStorage.setItem('pp_welcome_v',WELCOME_V); }catch(e){} $('setupModal').classList.remove('open'); if(typeof goStep==='function') goStep(S.step||'call'); }
 document.addEventListener('input',function(e){ if(e.target&&e.target.closest&&e.target.closest('#agentSetup')) readAgent(); });
 function keepAgent(ag){
@@ -8788,11 +8820,11 @@ function bindInputs(){
   $('newsBtn').onclick=openNews; $('newsClose').onclick=closeNews; $('newsScrim').onclick=closeNews;
   document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&$('newsPanel').classList.contains('open')) closeNews(); });
   newsBadge();
-  $('wlGo').onclick=function(){ var card=document.querySelector('#setupModal .wl-card'); if(card&&card.classList.contains('mode-setup')){ finishSetup(); return; } if(card&&card.classList.contains('mode-guide')&&tourAt===0){ setupMode('setup'); return; } if(tourAt===0){ readAgent(); try{ localStorage.setItem('pp_welcome_v',WELCOME_V); }catch(e){} showTour(1); } else if(tourAt<6) showTour(tourAt+1); else { finishSetup(); letsGo(); } };
-  $('wlBack').onclick=function(){ showTour(Math.max(0,tourAt-1)); };
+  $('wlGo').onclick=function(){ var card=document.querySelector('#setupModal .wl-card'); if(card&&card.classList.contains('mode-setup')){ if(setupTab==='identity'){ readAgent(); setupTabGo('links'); } else if(setupTab==='links'){ readAgent(); setupTabGo('intro'); } else { saveSetup(); try{ localStorage.setItem('pp_welcome_v',WELCOME_V); }catch(e){} var keep=inProgress(); setupMode(''); $('setupModal').classList.remove('open'); goStep(keep?(S.step||'call'):'call'); } var sm=$('setupModal'); if(sm) sm.scrollTop=0; return; } if(card&&card.classList.contains('mode-guide')){ if(tourAt<6) showTour(tourAt+1); else { try{ localStorage.setItem('pp_welcome_v',WELCOME_V); }catch(e){} setupMode('setup'); } return; } if(tourAt===0){ readAgent(); try{ localStorage.setItem('pp_welcome_v',WELCOME_V); }catch(e){} showTour(1); } else if(tourAt<6) showTour(tourAt+1); else { finishSetup(); letsGo(); } };
+  $('wlBack').onclick=function(){ var c=document.querySelector('#setupModal .wl-card'); if(c&&c.classList.contains('mode-setup')){ setupTabGo(setupTab==='intro'?'links':'identity'); return; } showTour(Math.max(0,tourAt-1)); };
   $('wlSkip').onclick=finishSetup;
   setupTabsInit();
-  var s0=document.querySelector('#setupModal .wl-step[data-tour="0"]'); if(s0) s0.addEventListener('click',function(){ if(document.querySelector('#setupModal .wl-card.mode-guide')) setupMode('setup'); });
+  document.querySelectorAll('#setupModal .wl-step[data-tour]').forEach(function(el){ el.addEventListener('mouseenter',function(){ if(document.querySelector('#setupModal .wl-card.mode-guide')&&tourAt!==+el.dataset.tour) showTour(+el.dataset.tour); }); });
   $('rail').addEventListener('click',function(e){ if(e.target.closest('#stepper button')&&$('setupModal').classList.contains('open')){ setupMode(''); readAgent(); try{ localStorage.setItem('pp_welcome_v',WELCOME_V); }catch(x){} $('setupModal').classList.remove('open'); } },true);
   document.querySelectorAll('#setupModal .wl-step[data-tour]').forEach(function(el){ el.onclick=function(){ showTour(+el.dataset.tour); }; });
   var ppUpd=false; try{ ppUpd=!!sessionStorage.getItem('pp_updated'); }catch(e){}
