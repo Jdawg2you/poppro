@@ -1170,6 +1170,45 @@ body.client #classicWrap>summary{display:none}
 #medFlags .mflag button{font:inherit;font-size:12.5px;font-weight:700;border-radius:7px;padding:5px 10px;cursor:pointer;border:1px solid var(--line);background:#fff}
 #medFlags .mflag button.yes{background:var(--navy);color:#fff;border-color:var(--navy)}
 .condinput{width:100%;font:inherit;font-size:14px;padding:8px 10px;border:1px solid var(--line);border-radius:8px}
+
+  /* ===== REDESIGN stage 1 (branch redesign, Jesse 7 Nov 2026) - the look of the design-lab study, nothing else.
+     Colours, type and the shell only: every element, id, handler and word is the one live has (tools/parity-check.mjs). ===== */
+  :root{
+    --navy:#10233e; --navy-strip:#1c3657; --navy-band:#10233e;
+    --gold:#c3a14e; --gold-brand:#c3a14e; --gold-pill:#c3a14e; --gold-lt:#d3b46a;
+    --green:#34745a; --green-soft:#edf4ee;
+    --ink:#15263b; --muted:#6a7480; --line:#dfdfd8; --line2:#ecebe5;
+    --paper:#f6f5f1;
+  }
+  body{background:var(--paper)}
+  .card{border-radius:12px;border-color:var(--line);box-shadow:0 1px 2px rgba(16,35,62,.04)}
+  .brandbar{border-radius:12px 12px 0 0;padding:12px 18px;gap:10px}
+  .brand b{font-size:22px;letter-spacing:.2px}
+  .btn-ghost,.btn-gold{border-radius:7px}
+  .btn-gold{color:#10233e;border-color:#a98a3e}
+  .seg{border-radius:8px}.seg button{border-radius:6px}
+  .clientbar{border-radius:0 0 12px 12px}
+  .sectitle{font-size:19px;letter-spacing:.1px}
+  /* the workflow rail: the stepper becomes a fixed navy column on a laptop or bigger; phones and tablets keep the strip */
+  @media screen and (min-width:1000px){
+    body:not(.client){padding-left:216px}
+    body:not(.client) .stepper{position:fixed;left:0;top:0;bottom:0;width:216px;margin:0;z-index:60;flex-direction:column;justify-content:flex-start;align-items:stretch;gap:3px;
+      background:var(--navy);border:none;border-radius:0;padding:22px 12px 16px;overflow-y:auto;box-shadow:inset -1px 0 0 rgba(255,255,255,.06)}
+    body:not(.client) .stepper::before{content:'Your workflow';display:block;color:#8d99ad;font:700 10.5px -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;letter-spacing:.16em;text-transform:uppercase;padding:0 10px 12px}
+    body:not(.client) .stepper button{flex:none;justify-content:flex-start;gap:12px;color:#d3dae6;padding:11px 12px;border-radius:7px;font-weight:600;font-size:14px;letter-spacing:0;text-align:left}
+    body:not(.client) .stepper button .n{width:auto;height:auto;min-width:16px;background:transparent;border-radius:0;color:#8d99ad;font-size:11.5px;font-weight:700;font-variant-numeric:tabular-nums;justify-content:flex-start}
+    body:not(.client) .stepper button.on{background:var(--gold);color:#10233e}
+    body:not(.client) .stepper button.on .n{background:transparent;color:#10233e}
+    body:not(.client) .stepper button:not(.on):hover{background:#1c3657;color:#fff}
+    body:not(.client) .stepper .lgl{display:inline}body:not(.client) .stepper .sml{display:none}
+
+    /* the household strip: one line ("Dana Reyes · FL · …"), details on hover or the ▾ - Present's behaviour, now on every step */
+    body:not(.client) .clientbar{padding:9px 18px}
+    body:not(.client) .cs-sum{display:flex}
+    body:not(.client) .clientbar:not(.pinned) .grid8,body:not(.client) .clientbar:not(.pinned) .note{display:none}
+    body:not(.client) .brandbar:hover + .clientbar .grid8,body:not(.client) .clientbar:hover .grid8,body:not(.client) .clientbar.pinned .grid8{display:grid;margin-top:8px}
+    body:not(.client) .clientbar.pinned #csCaret{transform:rotate(180deg)}
+  }
 </style>
 </head>
 <body>
@@ -1178,6 +1217,7 @@ body.client #classicWrap>summary{display:none}
 <button type="button" id="presentBack" onclick="presentBack()">← Back to the script</button>
 <div id="verBanner" style="display:none;position:sticky;top:0;z-index:9999;background:#9c3b2f;color:#fff;font:600 13px -apple-system,sans-serif;text-align:center;padding:6px 10px">VERSION B — in progress · compare with A at 127.0.0.1:8765</div>
 <script>if((location.port==='8767'||location.hostname==='sandbox.mypoppro.com')){ var vb0=document.getElementById('verBanner'); vb0.style.display='block'; vb0.style.background='#1f6b3b'; vb0.textContent='PRESENT SANDBOX — not live · trying out Present mode'; document.title='Present · '+document.title; }
+if(location.port==='8795'||location.pathname.indexOf('/redesign/')===0){ var vr=document.getElementById('verBanner'); vr.style.display='block'; vr.style.background='#c3a14e'; vr.style.color='#10233e'; vr.textContent='REDESIGN SANDBOX — not live · the new look, in progress'; document.title='Redesign · '+document.title.replace(/^Present · /,''); }
 if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.style.display='block'; document.title='B · '+document.title;
   /* The file's own timestamp: if this doesn't match the latest change, the browser is showing an old copy. */
   var lm=new Date(document.lastModified); if(!isNaN(lm)) vb.textContent+=' · updated '+lm.toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}); }</script>
