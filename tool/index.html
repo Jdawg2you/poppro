@@ -1190,7 +1190,7 @@ body.client #classicWrap>summary{display:none}
   .clientbar{border-radius:0 0 12px 12px}
   .sectitle{font-size:19px;letter-spacing:.1px}
   .rail-x{display:none}body.client #rail{display:none}
-  .rail-onpage{display:none}
+  .rail-onpage{display:none}.rail-actions{display:none}
   /* How to use / Setup as pages (only when opened from the sidebar; the toolbar button keeps the old window) */
   .wl-goatbar{display:none}
   .wl-card.mode-guide .wl-body,.wl-card.mode-setup .wl-body{padding:26px 28px 6px}
@@ -1243,10 +1243,10 @@ body.client #classicWrap>summary{display:none}
   @media screen and (min-width:1000px){
     body:not(.client){padding-left:216px}
     body:not(.client).rail-min{padding-left:64px}
-    body:not(.client) #rail{position:fixed;left:0;top:0;bottom:0;width:216px;z-index:60;display:flex;flex-direction:column;gap:3px;background:var(--navy);padding:22px 12px 14px;overflow-y:auto;overflow-x:hidden;box-shadow:inset -1px 0 0 rgba(255,255,255,.06)}
+    body:not(.client) #rail{position:fixed;left:0;top:0;bottom:0;width:216px;z-index:60;display:flex;flex-direction:column;gap:3px;background:var(--navy);padding:16px 12px 12px;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;box-shadow:inset -1px 0 0 rgba(255,255,255,.06)}
     body:not(.client) #rail::before{content:'Your workflow';display:block;color:#8d99ad;font:700 10.5px -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;letter-spacing:.16em;text-transform:uppercase;padding:0 10px 12px;white-space:nowrap}
     body:not(.client) .stepper{position:static;margin:0;flex-direction:column;justify-content:flex-start;align-items:stretch;gap:3px;background:transparent;border:none;border-radius:0;padding:0}
-    body:not(.client) .stepper button,body:not(.client) .rail-x{flex:none;display:flex;align-items:center;justify-content:flex-start;gap:12px;color:#d3dae6;background:transparent;border:1px solid transparent;padding:11px 12px;border-radius:7px;font:600 14px -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;letter-spacing:0;text-align:left;cursor:pointer;white-space:nowrap}
+    body:not(.client) .stepper button,body:not(.client) .rail-x{flex:none;display:flex;align-items:center;justify-content:flex-start;gap:12px;color:#d3dae6;background:transparent;border:1px solid transparent;padding:8px 12px;border-radius:7px;font:600 14px -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;letter-spacing:0;text-align:left;cursor:pointer;white-space:nowrap}
     body:not(.client) .stepper button .n{width:auto;height:auto;min-width:16px;background:transparent;border-radius:0;color:#8d99ad;font-size:11.5px;font-weight:700;font-variant-numeric:tabular-nums;justify-content:flex-start}
     body:not(.client) .stepper button.on{background:var(--gold);color:#10233e}
     body:not(.client) .stepper button.on .n{background:transparent;color:#10233e}
@@ -1254,15 +1254,21 @@ body.client #classicWrap>summary{display:none}
     body:not(.client) .rail-x .ri{min-width:16px;color:#8d99ad;font-size:12px}
     body:not(.client) .rail-x em{font-style:normal;font-size:11px;font-weight:800;margin-left:auto;background:#22a05a;color:#fff;border-radius:999px;padding:1px 7px}body:not(.client) .rail-x em:empty{display:none}
     body:not(.client) #railSetup.need{border-color:#22a05a;animation:agglow 1.8s ease-in-out infinite}
-    body:not(.client) #railCollapse{margin-top:auto;font-size:12.5px;color:#aeb8c8}
+    body:not(.client) #railCollapse{margin-top:auto;font-size:12.5px;color:#aeb8c8;flex:none}
     body:not(.client) .rail-x:hover{background:#1c3657;color:#fff}
     body:not(.client) .rail-x.on{background:var(--gold);color:#10233e}body:not(.client) .rail-x.on .ri{color:#10233e}
     body.setup-open:not(.client) .stepper button.on{background:transparent;color:#d3dae6}body.setup-open:not(.client) .stepper button.on .n{color:#8d99ad}
     body:not(.client) #railGuide{margin-bottom:2px}
     body:not(.client) .rail-onpage:empty{display:none}
-    body:not(.client) .rail-onpage{margin:14px 0 0;padding:12px 0 0;border-top:1px solid rgba(255,255,255,.1);display:flex;flex-direction:column;gap:1px}
+    body:not(.client) .rail-actions{display:flex;flex-direction:column;gap:1px;margin:10px 0 0;padding:10px 0 0;border-top:1px solid rgba(255,255,255,.1)}
+    body:not(.client) .rail-actions .onp-h{color:#8d99ad;font:700 10.5px -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;letter-spacing:.16em;text-transform:uppercase;padding:0 10px 8px}
+    body:not(.client).rail-min .rail-actions .onp-h{font-size:0;padding:0 0 6px}
+    body:not(.client) #railNews em{background:#c3a14e;color:#10233e}
+    body:not(.client) .rail-onpage{margin:10px 0 0;padding:10px 0 0;border-top:1px solid rgba(255,255,255,.1);display:flex;flex-direction:column;gap:1px;flex:0 1 auto;min-height:90px;overflow-y:auto;scrollbar-width:thin}
+    body:not(.client) .rail-onpage>*{flex:none}
+    body:not(.client) .stepper,body:not(.client) .rail-actions,body:not(.client) #rail>.rail-x{flex:none}
     body:not(.client) .rail-onpage .onp-h{color:#8d99ad;font:700 10.5px -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;letter-spacing:.16em;text-transform:uppercase;padding:0 10px 8px}
-    body:not(.client) .rail-onpage button{background:transparent;border:none;border-left:2px solid transparent;color:#b9c3d3;text-align:left;font:500 12.5px -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;padding:6px 10px 6px 26px;cursor:pointer;border-radius:0 6px 6px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    body:not(.client) .rail-onpage button{background:transparent;border:none;border-left:2px solid transparent;color:#b9c3d3;text-align:left;font:500 12.5px -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;padding:5px 10px 5px 26px;cursor:pointer;border-radius:0 6px 6px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     body:not(.client) .rail-onpage button:hover{background:#1c3657;color:#fff}
     body:not(.client) .rail-onpage button.on{color:#fff;border-left-color:var(--gold);background:rgba(195,161,78,.12)}
     body:not(.client).rail-min .rail-onpage{display:none}
@@ -1361,6 +1367,7 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
 
   <nav id="rail" class="noprint" aria-label="Your workflow">
   <button type="button" id="railGuide" class="rail-x hidein-client" onclick="openSetup('guide')" title="The whole process, start to finish - and where to begin"><span class="ri">?</span><span class="rl">How to use MyPopPro</span></button>
+  <button type="button" id="railNews" class="rail-x hidein-client" onclick="document.getElementById('newsBtn').click()" title="What’s new in MyPopPro"><span class="ri">✨</span><span class="rl">What’s new</span><em id="railNewsCount"></em></button>
   <button type="button" id="railSetup" class="rail-x hidein-client" onclick="openSetup('setup')" title="Your details: they go on every script, email and text"><span class="ri">⚙</span><span class="rl">Setup</span><em id="railSetupNeed"></em></button>
   <div class="stepper noprint" id="stepper">
     <button data-step="call"><span class="n">1</span> <span class="lgl">Discovery call</span><span class="sml">Call</span></button>
@@ -1372,6 +1379,12 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
     <button data-step="review"><span class="n">6</span> <span class="lgl">Benefits Review</span><span class="sml">Review</span></button>
   </div>
   <div id="railOnPage" class="rail-onpage hidein-client" aria-label="On this page"></div>
+  <div id="railActions" class="rail-actions hidein-client" aria-label="Actions"><div class="onp-h">Actions</div>
+    <button type="button" class="rail-x" onclick="document.getElementById('newBtn').click()"><span class="ri">＋</span><span class="rl">New client</span></button>
+    <button type="button" class="rail-x" onclick="document.getElementById('loadBtn').click()"><span class="ri">⬆</span><span class="rl">Load client</span></button>
+    <button type="button" class="rail-x" onclick="document.getElementById('saveBtn').click()"><span class="ri">💾</span><span class="rl">Save client</span></button>
+    <button type="button" class="rail-x" onclick="document.getElementById('printBtn').click()"><span class="ri">⎙</span><span class="rl">Print quote</span></button>
+  </div>
   <button type="button" id="railCollapse" class="rail-x" onclick="railToggle()" title="Make the sidebar narrow (or wide again)"><span class="ri">←</span><span class="rl">Collapse navigation</span></button>
   </nav>
 
@@ -8694,8 +8707,11 @@ function railOnPageRender(){ var box=$('railOnPage'); if(!box) return; var st=S.
 /* the part you're looking at is highlighted as you scroll (Quote and Intake) */
 function onpSpy(){ var box=$('railOnPage'); if(!box||!box._items) return; var cur=-1, best=-1e9; box._items.forEach(function(it,i){ if(!it.el||it.rail) return; var t=it.el.getBoundingClientRect().top; if(t<160&&t>best){ best=t; cur=i; } });   /* the heading nearest above the line, by position on the page */
   if(cur<0&&box._items.length&&!box._items[0].rail&&!box._items[0].bub) cur=0;
-  box.querySelectorAll('button[data-onp]').forEach(function(b){ b.classList.toggle('on',+b.dataset.onp===cur); }); }
+  box.querySelectorAll('button[data-onp]').forEach(function(b){ var on=+b.dataset.onp===cur; b.classList.toggle('on',on);
+    if(on&&box.scrollHeight>box.clientHeight){ var bt=b.offsetTop-box.offsetTop; if(bt<box.scrollTop+24) box.scrollTop=Math.max(0,bt-24); else if(bt+b.offsetHeight>box.scrollTop+box.clientHeight) box.scrollTop=bt+b.offsetHeight-box.clientHeight; } }); }   /* a long list keeps the lit line in view */
 window.addEventListener('scroll',function(){ if(window._onpT) return; window._onpT=setTimeout(function(){ window._onpT=0; onpSpy(); },120); },{passive:true});
+(function(){ var src=document.getElementById('newsCount'), dst=document.getElementById('railNewsCount'); if(!src||!dst) return;
+  var sync=function(){ dst.textContent=src.textContent; }; sync(); new MutationObserver(sync).observe(src,{childList:true,characterData:true,subtree:true}); })();
 function railToggle(min){ if(min==null) min=!document.body.classList.contains('rail-min'); document.body.classList.toggle('rail-min',!!min);
   var b=$('railCollapse'); if(b){ b.querySelector('.ri').textContent=min?'→':'←'; b.querySelector('.rl').textContent=min?'Expand navigation':'Collapse navigation'; b.setAttribute('aria-expanded',String(!min)); }
   try{ localStorage.setItem('pp_rail_min',min?'1':''); }catch(e){} }
