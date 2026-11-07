@@ -389,6 +389,10 @@ const TEST = `(async function(){
   ok(mhBase==='afc'&&S.actual.lineup==='cg'&&effCfg('actual').base==='triad'&&/Cigna/.test($('enrollSummary').innerText),'presenting another lineup re-starts the enrollment from it (Enroll button)');
   pbApplyLineup('mh'); chooseTier('best'); goStep('enroll'); await wait(300);
   ok(S.actual.lineup==='mh'&&(effCfg('actual').base||'afc')==='afc'&&!/Cigna PPO/.test($('enrollSummary').querySelector('.en-pk').innerText),'and straight from the sidebar: Enroll follows the chosen lineup');
+  /* and a file saved before lineups were recorded (Calleen's, 5 Nov): Manhattan Essential enrolled, then Bright Life chosen */
+  pbApplyLineup('mh'); chooseTier('good'); enrollAsPresented(); await wait(300); delete S.actual.lineup; delete S.elected.lineup; delete S.chosen.lineup;
+  pbApplyLineup('lx-mh-cg'); chooseTier('good'); goStep('enroll'); await wait(300);
+  ok(effCfg('actual').base==='brightlife'&&/Bright Life/.test(S.elected.name||'')&&/Bright Life/.test($('enrollSummary').querySelector('.en-pk').innerText),'an older save: Enroll follows the plan the carrier is built on, not the stale enrollment');
   return {n:nOk, fails:fails};
 })()`;
 
