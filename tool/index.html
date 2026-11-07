@@ -1189,18 +1189,35 @@ body.client #classicWrap>summary{display:none}
   .seg{border-radius:8px}.seg button{border-radius:6px}
   .clientbar{border-radius:0 0 12px 12px}
   .sectitle{font-size:19px;letter-spacing:.1px}
+  .rail-x{display:none}body.client #rail{display:none}
+  @media screen and (min-width:1000px){body:not(.client) .rail-x{display:flex}}
   /* the workflow rail: the stepper becomes a fixed navy column on a laptop or bigger; phones and tablets keep the strip */
   @media screen and (min-width:1000px){
     body:not(.client){padding-left:216px}
-    body:not(.client) .stepper{position:fixed;left:0;top:0;bottom:0;width:216px;margin:0;z-index:60;flex-direction:column;justify-content:flex-start;align-items:stretch;gap:3px;
-      background:var(--navy);border:none;border-radius:0;padding:22px 12px 16px;overflow-y:auto;box-shadow:inset -1px 0 0 rgba(255,255,255,.06)}
-    body:not(.client) .stepper::before{content:'Your workflow';display:block;color:#8d99ad;font:700 10.5px -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;letter-spacing:.16em;text-transform:uppercase;padding:0 10px 12px}
-    body:not(.client) .stepper button{flex:none;justify-content:flex-start;gap:12px;color:#d3dae6;padding:11px 12px;border-radius:7px;font-weight:600;font-size:14px;letter-spacing:0;text-align:left}
+    body:not(.client).rail-min{padding-left:64px}
+    body:not(.client) #rail{position:fixed;left:0;top:0;bottom:0;width:216px;z-index:60;display:flex;flex-direction:column;gap:3px;background:var(--navy);padding:22px 12px 14px;overflow-y:auto;overflow-x:hidden;box-shadow:inset -1px 0 0 rgba(255,255,255,.06)}
+    body:not(.client) #rail::before{content:'Your workflow';display:block;color:#8d99ad;font:700 10.5px -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;letter-spacing:.16em;text-transform:uppercase;padding:0 10px 12px;white-space:nowrap}
+    body:not(.client) .stepper{position:static;margin:0;flex-direction:column;justify-content:flex-start;align-items:stretch;gap:3px;background:transparent;border:none;border-radius:0;padding:0}
+    body:not(.client) .stepper button,body:not(.client) .rail-x{flex:none;display:flex;align-items:center;justify-content:flex-start;gap:12px;color:#d3dae6;background:transparent;border:1px solid transparent;padding:11px 12px;border-radius:7px;font:600 14px -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;letter-spacing:0;text-align:left;cursor:pointer;white-space:nowrap}
     body:not(.client) .stepper button .n{width:auto;height:auto;min-width:16px;background:transparent;border-radius:0;color:#8d99ad;font-size:11.5px;font-weight:700;font-variant-numeric:tabular-nums;justify-content:flex-start}
     body:not(.client) .stepper button.on{background:var(--gold);color:#10233e}
     body:not(.client) .stepper button.on .n{background:transparent;color:#10233e}
     body:not(.client) .stepper button:not(.on):hover{background:#1c3657;color:#fff}
-    body:not(.client) .stepper .lgl{display:inline}body:not(.client) .stepper .sml{display:none}
+    body:not(.client) .rail-x .ri{min-width:16px;color:#8d99ad;font-size:12px}
+    body:not(.client) .rail-x em{font-style:normal;font-size:11px;font-weight:800;margin-left:auto;background:#22a05a;color:#fff;border-radius:999px;padding:1px 7px}body:not(.client) .rail-x em:empty{display:none}
+    body:not(.client) #railSetup.need{border-color:#22a05a;animation:agglow 1.8s ease-in-out infinite}
+    body:not(.client) #railCollapse{margin-top:auto;font-size:12.5px;color:#aeb8c8}
+    body:not(.client) .rail-x:hover{background:#1c3657;color:#fff}
+    body:not(.client) .toolbar #setupBtn{display:none}   /* Setup lives in the sidebar on a laptop; the toolbar keeps it on phones and tablets */
+    body:not(.client).rail-min #rail{width:64px;padding:22px 8px 14px}
+    body:not(.client).rail-min #rail::before{content:'';padding:0 0 12px}
+    body:not(.client).rail-min .stepper button,body:not(.client).rail-min .rail-x{font-size:0;justify-content:center;gap:0;padding:11px 0}
+    body:not(.client).rail-min .stepper button .n{font-size:12px;justify-content:center}
+    body:not(.client).rail-min .rail-x .ri{font-size:14px;text-align:center}
+    body:not(.client).rail-min .rail-x em{display:none}
+    body:not(.client).rail-min .rail-x .rl{display:none}
+    body:not(.client).rail-min .stepper .lgl,body:not(.client).rail-min .stepper .sml{display:none}
+    body:not(.client):not(.rail-min) .stepper .lgl{display:inline}body:not(.client):not(.rail-min) .stepper .sml{display:none}
 
     /* the household strip: one line ("Dana Reyes · FL · …"), details on hover or the ▾ - Present's behaviour, now on every step */
     body:not(.client) .clientbar{padding:9px 18px}
@@ -1258,6 +1275,8 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
     <div class="note" style="color:#8fa1c2;padding:6px 0 0">From the intake — edit on the Intake step.</div>
   </div>
 
+  <nav id="rail" class="noprint" aria-label="Your workflow">
+  <button type="button" id="railSetup" class="rail-x hidein-client" onclick="openSetup()" title="Your details, and how MyPopPro works step by step"><span class="ri">⚙</span><span class="rl">Setup</span><em id="railSetupNeed"></em></button>
   <div class="stepper noprint" id="stepper">
     <button data-step="call"><span class="n">1</span> <span class="lgl">Discovery call</span><span class="sml">Call</span></button>
     <button data-step="intake"><span class="n">2</span> Intake</button>
@@ -1267,6 +1286,8 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
     <button data-step="enroll"><span class="n">5</span> Enroll</button>
     <button data-step="review"><span class="n">6</span> <span class="lgl">Benefits Review</span><span class="sml">Review</span></button>
   </div>
+  <button type="button" id="railCollapse" class="rail-x" onclick="railToggle()" title="Make the sidebar narrow (or wide again)"><span class="ri">←</span><span class="rl">Collapse navigation</span></button>
+  </nav>
 
   <div id="step-call" class="step">
     <div class="card pad callwrap">
@@ -5100,7 +5121,7 @@ var AGENT_BOXES=[['in_agency','agency'],['in_agent','your name'],['in_aphone','p
 function agentGlow(){ var empty=[]; AGENT_BOXES.forEach(function(b){ var el=$(b[0]); if(!el) return; var f=el.closest('.fld'), e=!String(el.value||'').trim(); if(f) f.classList.toggle('needfill',e); if(e) empty.push(b[1]); });
   var st=$('agentSetupState'); if(st){ st.textContent=empty.length?'· fill in: '+empty.join(', '):'· complete'; st.classList.toggle('needfill-sum',!!empty.length); } return empty; }
 /* No fold any more: the box lives in the Setup window. While anything is missing, the Setup button glows and counts it. */
-function agentSetupFold(){ var miss=agentSetupMissing(), b=$('setupBtn'), n=$('setupNeed'); if(b){ b.classList.toggle('need',!!miss.length); b.title=miss.length?'Still to fill in: '+miss.join(', '):'Your agency, name, phone, email, NPN and links'; } if(n) n.textContent=miss.length?String(miss.length):'';
+function agentSetupFold(){ var miss=agentSetupMissing(), b=$('setupBtn'), n=$('setupNeed'); if(b){ b.classList.toggle('need',!!miss.length); b.title=miss.length?'Still to fill in: '+miss.join(', '):'Your agency, name, phone, email, NPN and links'; } if(n) n.textContent=miss.length?String(miss.length):''; var rs=$('railSetup'), rn=$('railSetupNeed'); if(rs){ rs.classList.toggle('need',!!miss.length); rs.title=b?b.title:''; } if(rn) rn.textContent=miss.length?String(miss.length):'';
   var ws=$('wlSetupState'); if(ws){ ws.textContent=miss.length?miss.length+' to fill in ↓':'✓ Done'; ws.className=miss.length?'todo':''; }
   var d=$('agentSetup'); if(d) d.classList.toggle('goat-skipped',goatSkipped()); var sf=$('setupFile'); if(sf) sf.classList.toggle('empty',setupEmpty()); agentGlow(); }
 function fillAgent(){ $('in_agency').value=S.agency||'HealthFirst'; $('in_agent').value=(S.client||{}).agent||''; $('in_aphone').value=S.agentPhone||''; $('in_aemail').value=S.agentEmail||''; $('in_anpn').value=S.agentNPN||''; $('in_aweb').value=S.agentWebsite||''; $('in_acard').value=S.agentCard||''; $('in_abook').value=S.agentBooking||''; $('in_abenefits').value=S.agentBenefits||''; $('in_adrxlink').value=S.agentDrxLink||''; $('in_adrxcode').value=S.agentDrxCode||''; if($('in_ahslink')) $('in_ahslink').value=S.agentHsLink||''; if($('in_aamazelink')) $('in_aamazelink').value=S.agentAmazeLink||''; $('in_abio').value=S.agentBio||''; agentSetupFold(); }
@@ -8482,10 +8503,21 @@ function presentShow(where){ S.present=S.present||{}; S.present.returning=true; 
   setTimeout(function(){ var el=where==='cmp'?document.querySelector('#printout .po-cmp'):where==='ev'?document.querySelector('#printout .po-evpage'):document.querySelector('#printout .po-head');
     if(el){ var r=el.getBoundingClientRect(); document.scrollingElement.scrollTop+=r.top-20; } },60); }
 function presentBack(){ var b=$('presentBack'); if(b) b.style.display='none'; if(S.present) S.present.returning=false; setView('agent'); goStep('present'); }
+function railToggle(min){ if(min==null) min=!document.body.classList.contains('rail-min'); document.body.classList.toggle('rail-min',!!min);
+  var b=$('railCollapse'); if(b){ b.querySelector('.ri').textContent=min?'→':'←'; b.querySelector('.rl').textContent=min?'Expand navigation':'Collapse navigation'; b.setAttribute('aria-expanded',String(!min)); }
+  try{ localStorage.setItem('pp_rail_min',min?'1':''); }catch(e){} }
+try{ if(localStorage.getItem('pp_rail_min')) setTimeout(function(){ railToggle(true); },0); }catch(e){}
+/* the household line (Jesse, 7 Nov): everyone on the case with their age - "Dana Reyes (41), Sam (42), Kit (12) · FL · household of 4" */
+function householdLine(){ var C=S.client||{}, I=S.intake||{}, W=I.who||{}, first=function(n){ return String(n||'').trim().split(/\s+/)[0]; }, ppl=[];
+  var p=String(C.pname||'').trim(); if(p) ppl.push(p+(C.page?' ('+C.page+')':''));
+  var sn=String(C.sname||'').trim(); if(sn&&W.spouse!==false) ppl.push(first(sn)+(C.sage?' ('+C.sage+')':''));
+  if(W.kids!==false) (I.kids||[]).forEach(function(k,i){ var n=first(k.n)||('Child '+(i+1)); ppl.push(n+(k.age?' ('+k.age+')':'')); });
+  if(!ppl.length) return 'No client yet';
+  return [ppl.join(', '),[C.state,C.zip].filter(Boolean).join(' '),'household of '+ppl.length].filter(Boolean).join('  ·  '); }
 function clientStripSum(){ var el=$('csSum'), cs=$('clientStrip'); if(!el||!cs) return; var C=S.client||{};
   var who=[C.pname,C.sname].filter(function(x){ return String(x||'').trim(); }).join(' & ')||'No client yet';
   var ages=[C.page,C.sage].filter(Boolean).join(' / ');
-  el.textContent=[who,[C.state,C.zip].filter(Boolean).join(' '),ages?'ages '+ages:'',C.dob||C.date?'DOB '+(C.dob||C.date):'',C.agent?'Agent '+C.agent:''].filter(Boolean).join('  ·  ');
+  el.textContent=householdLine(); el.title=[who,ages?'ages '+ages:'',C.dob||C.date?'DOB '+(C.dob||C.date):'',C.agent?'Agent '+C.agent:''].filter(Boolean).join('  ·  ');
   cs.classList.toggle('pinned',!!(S.present&&S.present.stripOpen)); var cb=$('csCaret'); if(cb) cb.setAttribute('aria-expanded',String(!!(S.present&&S.present.stripOpen))); }
 /* ===== Discovery call inside POP Pro (Jesse, 14 Oct) =====
    The Script Navigator's own Health Discovery, framed - one script, so every navigator edit shows here. POP Pro hands in
