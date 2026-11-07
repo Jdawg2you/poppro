@@ -600,6 +600,7 @@
   .pr-f .cp{font-size:11px;padding:2px 7px;margin-left:6px}
   .pr-prog button{padding:5px 9px}
   #prPop .pr-pop{position:fixed;right:18px;top:90px;width:min(460px,calc(100vw - 36px));max-height:calc(100vh - 110px);overflow-y:auto;z-index:9997;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,.2);padding:16px 18px;font-size:14px}
+  #prPop .pr-clact{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}#prPop .pr-clact>*{font:inherit;font-size:13px;font-weight:700;padding:7px 12px;border-radius:999px;border:1px solid var(--navy);background:#fff;color:var(--navy);cursor:pointer;text-decoration:none}#prPop .pr-clact>:first-child{background:var(--navy);color:#fff}
   #prPop .pr-pop h4{margin:4px 0 8px;font-family:var(--serif);color:var(--navy)}#prPop .x{position:absolute;right:10px;top:8px;border:none;background:none;font-size:22px;cursor:pointer;color:var(--muted)}
   #prPop .warn{background:#fde8e8;color:#8a1f12;border-radius:8px;padding:8px 10px;font-size:13px}#prPop .rule{font-size:12px;color:var(--muted)}
   .en-step{font-family:var(--serif);font-weight:700;color:var(--navy);margin-bottom:10px;font-size:17px}
@@ -7829,6 +7830,29 @@ var PR_FOLLOWUP=[
  ['“Does the living benefit cover the kids too?”','It covers the two of you. For the kids I’d look at something permanent rather than a short-term policy, and we go through that on your Benefits Review call.'],
  ['“Let me talk to my husband and I’ll get back to you.”','Of course, it’s a decision for both of you. What time tomorrow works? I’ll put it on both our calendars, and if he has questions, have him on the call so he hears it from me. Approval is based on your health today, so the sooner we apply, the better.']];
 var PR_STORY_HEAD='<b>Story repository (who to tell)</b>';
+/* Jesse, 7 Nov: real ManhattanLife claims as pictures an agent can open, copy and text. The only three on record
+   (Health ZONE checked the whole project): all outpatient, all on one client's plan, client details removed.
+   Health ZONE's notes: the network discount is the mechanism, the benefit level is that client's, not universal. */
+var PR_CLAIMS=[
+  {f:'01-green-imaging-two-xrays',t:'Two X-rays at a cash price',sum:'Paid $150 · got back $500 · $350 ahead',how:'She paid the imaging center’s $75 cash price per X-ray, uploaded the receipt in the ManhattanLife Easy Upload app, and the plan paid its X-ray benefit to her.'},
+  {f:'02-two-doctor-visits-with-xrays',t:'Two doctor visits, each with an X-ray',sum:'Bill $1,360.50 · she paid $0 · $650 check to her',how:'The First Health network discount took the doctor’s bill from $1,360.50 to $200. The plan paid the doctor that $200 and sent the rest of its benefit to her.'},
+  {f:'03-outpatient-surgery',t:'An outpatient surgery',sum:'Bill $3,313 · she paid $0 · $803.02 check to her',how:'The network discount took $3,313 down to $233.75 (93% off). The plan paid that directly, and the rest of its $1,036.77 surgery benefit went to her. It was paid even though it fell in the pre-existing condition period; ManhattanLife said it may review later claims in that window.'}];
+var PR_CLAIMS_HEAD='<b>Real claims — pictures to text</b>';
+function prClaimsHTML(){ return PR_CLAIMS_HEAD+PR_CLAIMS.map(function(c,i){ return '<button type="button" data-claim="'+i+'">🧾 '+esc(c.t)+'<small style="display:block;color:#17824a;font-weight:700">'+esc(c.sum)+'</small></button>'; }).join(''); }
+function prClaimCopy(c,btn){ var src='claims/'+c.f+'.jpg';
+  var png=fetch(src).then(function(r){ return r.blob(); }).then(function(b){ return createImageBitmap(b); }).then(function(bm){ var cv=document.createElement('canvas'); cv.width=bm.width; cv.height=bm.height; cv.getContext('2d').drawImage(bm,0,0);
+    return new Promise(function(res){ cv.toBlob(res,'image/png'); }); });
+  try{ navigator.clipboard.write([new ClipboardItem({'image/png':png})]).then(function(){ btn.textContent='✓ Copied — paste it into your text'; },function(){ btn.textContent='Couldn’t copy — use Download'; }); }
+  catch(e){ btn.textContent='Couldn’t copy — use Download'; } }
+function prClaimOpen(i){ var c=PR_CLAIMS[i], pop=$('prPop'), src='claims/'+c.f;
+  pop.innerHTML='<div class="pr-pop"><button type="button" class="x" aria-label="Close">×</button><div class="sec">Real claim</div><h4>'+esc(c.t)+'</h4>'
+    +'<a href="'+src+'.jpg" target="_blank" rel="noopener"><img src="'+src+'.jpg" alt="'+esc(c.t)+': '+esc(c.sum)+'" style="width:100%;border:1px solid var(--line);border-radius:8px;display:block"></a>'
+    +'<p class="pr-clact"><button type="button" data-cc="1">📋 Copy picture</button><a href="'+src+'.pdf" download>⬇ Download PDF</a><a href="'+src+'.jpg" target="_blank" rel="noopener">Open full size ↗</a></p>'
+    +'<p><b>What happened:</b> '+esc(c.how)+'</p>'
+    +'<p style="font-size:13px;color:var(--muted)"><b>Why they come out ahead:</b> the First Health network shrinks the bill first, the plan pays a fixed dollar amount, and the difference goes to the client.</p>'
+    +'<p class="rule">This client’s plan paid $175 per office visit and $250 per X-ray. What a plan pays depends on the level they choose — quote the figures in their plan. All three are outpatient: don’t apply these discounts to a hospital stay. Never a client’s name.</p></div>';
+  pop.style.display='block'; pop.querySelector('.x').onclick=function(){ pop.style.display='none'; };
+  var cb=pop.querySelector('[data-cc]'); cb.onclick=function(){ prClaimCopy(c,cb); }; }
 /* "Enrolling with plan edits" (Jesse, 17 Oct): the card + side-by-side open under the script; edits never touch the quote */
 /* the same two buttons above and below the edit section, so nobody has to scroll to find them (Jesse, 17 Oct) */
 var PE_GO='<div class="pr-editgo"><button type="button" data-pe="cancel">Cancel edits — enroll what was presented →</button><button type="button" class="go" data-pe="go">✓ They’re in — enroll with these adjustments →</button></div>';
@@ -7859,6 +7883,7 @@ function renderPresent(){ var host=$('presentHost'); if(!host) return; if(triadF
     +'<div class="box pw-box" id="prWhy"></div>'
     +'<div class="box pw-box" id="prDrx" style="display:none"></div>'
     +'<div class="box pr-qa" id="prQA"><b>Quick answers — objections</b></div>'
+    +((effCfg(t).base||'afc')==='afc'?'<div class="box" id="prClaims">'+prClaimsHTML()+'</div>':'')
     +'<div class="box" id="prStories">'+PR_STORY_HEAD+'</div>'
     +'</div></div><div id="prPop" style="display:none"></div>'
     +'<div id="prEdit" class="pr-edit" style="display:none"><div class="rv-ch">Enrolling with plan edits <small>make the changes with them — the price and the side-by-side follow — then enroll.</small></div>'+PE_GO+'<div id="prEditBody"></div>'+PE_GO+'</div>';
@@ -7878,6 +7903,7 @@ function renderPresent(){ var host=$('presentHost'); if(!host) return; if(triadF
     }catch(e){} };
   host.querySelectorAll('[data-pr="quote"]').forEach(function(b){ b.onclick=function(){ goStep('quote'); }; });
   host.querySelectorAll('[data-ben]').forEach(function(b){ b.onclick=function(){ benOpen(t,b.dataset.ben); }; });
+  host.querySelectorAll('[data-claim]').forEach(function(b){ b.onclick=function(){ prClaimOpen(+b.dataset.claim); }; });
   host.querySelectorAll('[data-show]').forEach(function(b){ b.onclick=function(){ presentShow(b.dataset.show); }; });
 }
 /* flip to a screen without reloading the script (its state, notes and picks stay put) */
