@@ -1699,6 +1699,8 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
         <a class="portalbtn" id="lnkBrightlife" href="#" target="_blank" rel="noopener" style="display:none">Bright Life — client application &#8599;</a>
         <a class="portalbtn" id="lnkBrightlifeAgent" href="#" target="_blank" rel="noopener" style="display:none">Bright Life — agent contracting (not signed up yet?) &#8599;</a>
         <a class="portalbtn" id="lnkAmaze" href="#" target="_blank" rel="noopener">Amaze — client sign-up &#8599;</a>
+        <a class="portalbtn" id="lnkAmazeDoc" href="docs/amaze-overview.pdf" target="_blank" rel="noopener">Amaze — what it includes (PDF for the client) &#8599;</a>
+        <a class="portalbtn" id="lnkAmazeSetup" href="docs/amaze-setup.pdf" target="_blank" rel="noopener">Amaze — app setup steps (send with your sign-up link) &#8599;</a>
         <a class="portalbtn" id="lnkHealthSherpa" href="https://www.healthsherpa.com/sessions/new" target="_blank" rel="noopener">HealthSherpa — send the ACA application &#8599;</a>
         <div class="note" id="enLinkHint" style="padding:6px 0 0;display:none"></div>
       </div>
@@ -2855,6 +2857,10 @@ function amazeIn(t){ try{ return !!t&&!!(S.cfg||{})[t==='actual'?(S.actual||{}).
    RxValet"), so for an Amaze client it is told as part of Amaze, never as an EasyCare2go login. */
 var AMAZE_APP='https://app.amazepbc.com';
 function amazeSignup(){ return amazeLink()||AMAZE_APP; }
+/* Amaze's member two-pager (Jesse via Health ZONE, 7 Nov), hosted here so clients can open it without Drive sharing.
+   Page 1 (what Amaze includes) is for the pitch; page 2 (setting up the app) opens with "Register using the link
+   provided by your agent", so it only ever goes out next to the agent's own sign-up link. */
+function amazeDoc(n){ return (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)?'https://sandbox.mypoppro.com':location.origin)+'/tool/docs/amaze-'+n+'.pdf'; }
 function amazeLines(fam){ return ['You can reach a doctor any time, day or night, by phone, video or message. No appointment, and no fee per visit.',
   'Their doctors can diagnose and treat you, prescribe, and order tests and referrals. They help with mental health and with managing ongoing conditions, and there’s virtual dental and orthopaedic support too.',
   'Their patient advocates help you with medical bills and insurance questions.',
@@ -2888,7 +2894,7 @@ function acaEnrollEmail(t){ var c=effCfg(t), pk=S.packages[t]||{}, A=acaIn(), ac
   var body='Hi '+first+',\n\n'
     +'Thank you for your time today — I’m so glad I could help get you'+(fam?' and your family':'')+' set up. Here’s everything in one place.\n\n'
     +(aca?'YOUR MARKETPLACE PLAN\n'+(A.plan?A.plan+'. ':'')+'I’ll send your marketplace application over separately — watch for it, and finish it as soon as it arrives.\nOnce you’re enrolled, you’ll be working with the marketplace and that plan’s insurance company on the plan itself — and I’m still here for anything you need.\n\n'
-         :'AMAZE — YOUR EVERYDAY CARE\n'+(am?'Sign up here: '+am:'I’ll send you the sign-up link separately.')+'\nFor '+fmt2(AMAZE_MO)+' a month'+(fam?' — one price for the whole family':'')+'. It isn’t insurance; it’s everyday care:\n'+amazeLines(fam).map(function(s){ return '• '+s; }).join('\n')+'\n\n')
+         :'AMAZE — YOUR EVERYDAY CARE\n'+(am?'Sign up here: '+am+'\nSetting up the app, step by step: '+amazeDoc('setup'):'I’ll send you the sign-up link separately.')+'\nWhat Amaze includes: '+amazeDoc('overview')+'\nFor '+fmt2(AMAZE_MO)+' a month'+(fam?' — one price for the whole family':'')+'. It isn’t insurance; it’s everyday care:\n'+amazeLines(fam).map(function(s){ return '• '+s; }).join('\n')+'\n\n')
     +((prods.length||LB.length)?'WHAT I SET UP FOR YOU\n'+prods.map(function(p){ return '• '+nm(p)+' — '+pbSummary(p.k,c); }).join('\n')
       +(LB.length?(prods.length?'\n':'')+LB.map(function(x){ return '• '+(x.face?'$'+x.face.toLocaleString('en-US')+' of ':'')+'Living Benefits coverage with Term Life Protection for '+x.who+' with '+x.carrier; }).join('\n'):'')
       +'\n'+(aca?'These pay you cash directly when something happens, on top of your marketplace plan — so its deductible isn’t all on you.':'These pay you cash directly when something happens — a hospital stay or an accident.')+'\n\n'
@@ -5819,7 +5825,7 @@ function reviewEmailPaint(){ var sm=$('rvMailSms'); if(sm){ var ph=String((S.int
 function drxForAll(){ var ct=chosenTier(); return !(ct&&tierNonMh(ct)); }
 function drxGeneral(){ return 'As a ManhattanLife member you also get Direction Rx member pricing, for weight loss and hormone therapy. Your member code: '+drxCode()+' — start here: '+drxLink(); }
 function reviewTicks(){ var L=REVIEW_TICKS.filter(function(x){ return (x.k!=='cg'||reviewProducts(chosenTier()).afc)&&!((x.k==='ecg'||x.k==='rxv')&&amazeIn(chosenTier())); });
-  if(amazeIn(chosenTier())) L.splice(1,0,{k:'amz',t:'Amaze app set up',open:'Open Amaze',url:amazeSignup(),sms:function(f){ return 'Hi '+f+'! Here’s Amaze, your doctor any time by phone, video or message — no appointment and no fee per visit. Set it up now so it’s ready at 2am: '+amazeSignup(); }}); if(!drxWho().length&&drxForAll()) L.push({k:'drx',t:'Direction Rx offered (weight loss, hormone therapy)',open:'Open Direction Rx',url:drxLink()||'#',copy:drxCode()||drxLink(),copyLabel:drxCode()?'Copy code':'Copy link',sms:function(f){ return 'Hi '+f+'! '+drxGeneral(); }});
+  if(amazeIn(chosenTier())) L.splice(1,0,{k:'amz',t:'Amaze app set up',open:'Open Amaze',url:amazeSignup(),sms:function(f){ return 'Hi '+f+'! Here’s Amaze, your doctor any time by phone, video or message — no appointment and no fee per visit. Set it up now so it’s ready at 2am: '+amazeSignup()+(amazeLink()?' Step-by-step setup: '+amazeDoc('setup'):''); }}); if(!drxWho().length&&drxForAll()) L.push({k:'drx',t:'Direction Rx offered (weight loss, hormone therapy)',open:'Open Direction Rx',url:drxLink()||'#',copy:drxCode()||drxLink(),copyLabel:drxCode()?'Copy code':'Copy link',sms:function(f){ return 'Hi '+f+'! '+drxGeneral(); }});
   if(drxWho().length) L.push({k:'drx',t:'Direction Rx code sent (GLP-1)',open:'Open Direction Rx',url:drxLink()||'#',copy:drxCode()||drxLink(),copyLabel:drxCode()?'Copy code':'Copy link',sms:function(f){ return 'Hi '+f+'! '+drxHowTo(); }});
   L.push({k:'card',t:'Care card sent',open:'Open their care card',url:careCardLink(),copy:careCardLink(),copyLabel:'Copy link',
     sms:function(f){ return 'Hi '+f+'! Here’s your care card — your doctors and the numbers you need, ready to print a card for each adult on the plan or save to your phone: '+careCardLink(); }});
@@ -6085,6 +6091,7 @@ function acaPresentHTML(t){ var first=triadFirst(), a=S.aca||{}, A=acaIn(), base
      triadSay('“For everyday care there’s <b>Amaze</b>. It’s a membership, not insurance: for <b>'+fmt2(AMAZE_MO)+' a month</b>'+(fam?' — one price for you, your spouse and your kids up to 26 —':'')+' you can reach a doctor any time, day or night, by phone, video or message. No appointment, and no fee per visit.”'),
      triadSay('“Their doctors can diagnose you, treat you, prescribe, and order tests and referrals. They help with mental health and with managing ongoing conditions, and there’s virtual dental and orthopaedic support too. And their patient advocates help you with medical bills and insurance questions.”'),
      triadSay('“If you ever pull into an emergency room parking lot, the app may send you a notification — so you can check whether a virtual visit would do before you sit in the ER.”'),
+     triadDo('<b>Show them:</b> <a href="'+amazeDoc('overview')+'" target="_blank" rel="noopener">What Amaze includes — one page ↗</a>. Share your screen, or text them the link.'),
      triadDo('<b>Never call Amaze coverage or insurance</b> — it’s care access. It doesn’t pay a hospital bill. Don’t quote Amaze’s own utilisation or ER-reduction percentages; they’re company claims.'),
      triadDo('Amaze is their virtual care. Don’t mention EasyCare2go to an Amaze client at all — two telehealth services is confusing. Amaze’s RxValet: a client with a ManhattanLife plan already has RxValet free through EasyCare2go — don’t sell it to them as part of Amaze.')].join('');
   var pages=[];
@@ -6115,7 +6122,7 @@ function acaPresentHTML(t){ var first=triadFirst(), a=S.aca||{}, A=acaIn(), base
     pages.push({t:'The price',h:triadSay('“All together that’s <b>'+fmt2(pkMonthly(S.packages[t]||{}))+' a month</b>'+(ded&&net>pkMonthly(S.packages[t]||{})?' — against <b>'+fmt2(net)+'</b> for the marketplace plan alone':'')+'.”')
         +triadDo('Be clear what this is: everyday care plus cash for the big things — <b>not</b> major medical. A big bill still lands on them; these plans put money in their hands toward it.')});
     pages.push({t:'The close',h:triadSay('“So here’s what we’ll do: I’ll get you signed up with Amaze, and I’ll take care of your Manhattan application'+(t==='better'?'s':'')+'.”')
-        +triadDo('Amaze: use your Amaze member sign-up link. The ManhattanLife application is on Enroll.')
+        +triadDo('Amaze: use your Amaze member sign-up link'+(amazeLink()?', and send the <a href="'+amazeDoc('setup')+'" target="_blank" rel="noopener">setup steps ↗</a> with it':' (add it in Setup first — the setup steps start with “use the link your agent sent”)')+'. The ManhattanLife application is on Enroll.')
         +'<button type="button" class="btn-gold" onclick="goStep(\'enroll\')">Go to Enroll →</button>'});
   }
   return '<div class="pr-top"><div><h3>Presenting <em class="pr-plan">'+esc(LN[0])+'</em> to '+esc(first)+'</h3><small>Agent-only — '+(vb?'Virtual Basic':'ACA + protection')+'. The ACA figures come from the Intake.</small></div>'
