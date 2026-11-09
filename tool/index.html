@@ -681,7 +681,7 @@
   .docmeta{display:flex;gap:8px;align-items:center;margin-top:5px;font-size:12.5px}.docmeta select{font:inherit;font-size:12.5px;padding:3px 6px;border:1px solid var(--line);border-radius:6px;background:#fff}.docmeta label{display:flex;gap:4px;align-items:center;font-weight:600;color:#17824a}
   .pbrx{margin:6px 12px 2px;padding:7px 9px;border:1px dashed #d6cdb4;border-radius:8px;font-size:12px;line-height:1.45;color:#4b5563}.pbrx b{color:var(--navy);margin-right:4px}.pbrx span{display:block}.pbrx .up{color:#17824a;font-weight:700}.pbrx .dn{color:#b42318;font-weight:700}
   /* Triad flow (sandbox) */
-  .trd{font-size:14px}.trd-chips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}.trd-chips button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:5px 11px;font:inherit;font-size:12.5px;cursor:pointer}.trd-chips button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+  .trd{font-size:14px}.trd-chips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}.trd-chips button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:5px 11px;font:inherit;font-size:12.5px;cursor:pointer}.trd-chips button.on{background:var(--navy);color:#fff;border-color:var(--navy)}.trd-chips button.pr-enr,#prChips button.pr-enr{background:var(--gold-pill);border-color:#b0872f;color:#26324a;font-weight:700}
   .trd-page{border:1px solid var(--line);border-radius:12px;padding:14px 16px;background:#fff}.trd-page h4{margin:0 0 10px;font-family:var(--serif);font-size:19px;color:var(--navy)}
   .trd-say{display:grid;grid-template-columns:44px 1fr;gap:10px;background:#eef3f9;border-left:3px solid #2b4c7e;border-radius:8px;padding:10px 12px;margin:0 0 10px}.trd-say span{font-size:10px;font-weight:800;letter-spacing:.08em;background:#2b4c7e;color:#fff;border-radius:4px;padding:3px 0;text-align:center;height:fit-content}.trd-say p{margin:0;font-family:var(--serif);font-size:16.5px;line-height:1.5;color:#1d2f4f}
   .trd-do{background:#fbf8f0;border:1px solid #eadfc4;border-radius:8px;padding:9px 12px;margin:0 0 10px;font-size:13.5px;line-height:1.5}
@@ -5951,8 +5951,9 @@ function triadDo(x){ return '<div class="trd-do">'+x+'</div>'; }
 function triadTick(id,label){ var on=!!triadState().ticks[id]; return '<label class="trd-tick'+(on?' on':'')+'"><input type="checkbox" data-trdtick="'+id+'"'+(on?' checked':'')+'> '+label+'</label>'; }
 function triadField(id,label,ph,type){ var v=triadState()[id]||''; return '<label class="trd-f"><span>'+label+'</span><input data-trdf="'+id+'"'+(type?' type="'+type+'"':'')+' value="'+esc(v).replace(/"/g,'&quot;')+'" placeholder="'+(ph||'')+'"></label>'; }
 function triadPick(id,label,opts){ var v=triadState()[id]||''; return '<label class="trd-f"><span>'+label+'</span><select data-trdf="'+id+'">'+['—'].concat(opts).map(function(o,i){ return '<option value="'+(i?esc(o):'')+'"'+((i?o:'')===v?' selected':'')+'>'+esc(o)+'</option>'; }).join('')+'</select></label>'; }
-function triadSteps(list,key){ var st=triadState(), i=Math.max(0,Math.min(list.length-1,+st[key]||0));
-  return '<div class="trd-chips">'+list.map(function(p,j){ return '<button type="button" class="'+(j===i?'on':'')+'" data-trdpg="'+key+'|'+j+'">'+(j+1)+'. '+esc(p.t)+'</button>'; }).join('')+'</div>'
+/* enr: a gold "Enroll →" at the end of the step row (Jesse 9 Nov: skip the script and go straight to Enroll, every presentation) */
+function triadSteps(list,key,enr){ var st=triadState(), i=Math.max(0,Math.min(list.length-1,+st[key]||0));
+  return '<div class="trd-chips">'+list.map(function(p,j){ return '<button type="button" class="'+(j===i?'on':'')+'" data-trdpg="'+key+'|'+j+'">'+(j+1)+'. '+esc(p.t)+'</button>'; }).join('')+(enr?'<button type="button" class="pr-enr" title="Skip ahead: enroll them in the plan you are presenting" onclick="enrollAsPresented()">Enroll →</button>':'')+'</div>'
     +'<div class="trd-page"><h4>'+esc(list[i].t)+'</h4>'+list[i].h+'</div>'
     +'<div class="trd-nav">'+(i>0?'<button type="button" data-trdpg="'+key+'|'+(i-1)+'">← Back</button>':'<span></span>')+(i<list.length-1?'<button type="button" class="next" data-trdpg="'+key+'|'+(i+1)+'">Next: '+esc(list[i+1].t)+' →</button>':'')+'</div>'; }
 function triadBind(host){
@@ -6003,7 +6004,7 @@ function triadPresentHTML(t){ var first=triadFirst(), plan=triadPlanOf(t), ded=t
       +'<button type="button" class="btn-gold" onclick="enrollAsPresented()">Go to Enroll →</button>'; })()}];
   return '<div class="pr-top"><div><h3>Presenting the <em class="pr-plan">Cigna PPO '+esc(plan)+'</em> to '+esc(first)+'</h3><small>Agent-only. Figures come from the 2027 rate and benefit guide for the '+esc(plan)+' plan.</small></div>'
     +presentBubbles(t)+'<button type="button" data-pr="quote" style="font:inherit;font-weight:700;border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 13px;cursor:pointer">← Back to the Quote</button></div>'
-    +'<div class="trd">'+triadSteps(pages,'prpg')+'</div>'; }
+    +'<div class="trd">'+triadSteps(pages,'prpg',1)+'</div>'; }
 
 /* ---------- BRIGHT LIFE PRESENT (sandbox, Jesse 4 Nov: "create a script based on Bright Life") ----------
    Built from the Health Shield PPO 1250 brochure (V1.110226), the Bright Life plan shelf and Bill Pauley's 22 Oct
@@ -6080,7 +6081,7 @@ function blPresentHTML(t){ var first=triadFirst(), c=effCfg(t), prem=triadPremiu
       +'<button type="button" class="btn-gold" onclick="enrollAsPresented()">Go to Enroll →</button>'}];
   return '<div class="pr-top"><div><h3>Presenting the <em class="pr-plan">Bright Life Health Shield PPO 1250</em> to '+esc(first)+'</h3><small>Agent-only. Figures come from the Health Shield PPO 1250 brochure (V1.110226).</small></div>'
     +presentBubbles(t)+'<button type="button" data-pr="quote" style="font:inherit;font-weight:700;border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 13px;cursor:pointer">← Back to the Quote</button></div>'
-    +'<div class="trd">'+triadSteps(pages,'blprpg')+'</div>'; }
+    +'<div class="trd">'+triadSteps(pages,'blprpg',1)+'</div>'; }
 
 /* ---------- ACA + PROTECTION and VIRTUAL BASIC PRESENT (sandbox, Jesse 4 Nov) ----------
    ACA lineup: the marketplace plan is the plan; we protect its deductible. Accident is for a health history the
@@ -6144,7 +6145,7 @@ function acaPresentHTML(t){ var first=triadFirst(), a=S.aca||{}, A=acaIn(), base
   }
   return '<div class="pr-top"><div><h3>Presenting <em class="pr-plan">'+esc(LN[0])+'</em> to '+esc(first)+'</h3><small>Agent-only — '+(vb?'Virtual Basic':'ACA + protection')+'. The ACA figures come from the Intake.</small></div>'
     +presentBubbles(t)+'<button type="button" data-pr="quote" style="font:inherit;font-weight:700;border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 13px;cursor:pointer">← Back to the Quote</button></div>'
-    +'<div class="trd">'+triadSteps(pages,'acapg_'+S.lineup+'_'+t)+'</div>'; }
+    +'<div class="trd">'+triadSteps(pages,'acapg_'+S.lineup+'_'+t,1)+'</div>'; }
 
 /* Cigna underwriting screen (Jesse, 27 Oct: incorporate the EBA underwriting guide). Reads what Intake already holds -
    height/weight, the medication list, conditions, the diabetic tick - against triad-rules.js. Keyword matching: it
@@ -8025,7 +8026,8 @@ function presentGo(pg){ var pages=presentPages(), nav=presentNav(), t=presentTie
   var fr=$('prFrame'), doc=fr&&fr.contentDocument, pos=nav.indexOf(pg);
   presentShowPage(doc,pg); try{ presentWire(doc,t); }catch(e){}
   fr.style.height='60px'; fr.style.height=(doc.documentElement.scrollHeight+8)+'px';
-  $('prChips').innerHTML=nav.map(function(ix,i){ var x=pages[ix]; return '<button type="button" data-pg="'+ix+'" title="'+esc(x.t)+'" class="'+(i===pos?'on':(i<pos?'done':''))+'">'+(i+1)+(i===pos?'. '+esc(x.t):'')+'</button>'; }).join('');
+  $('prChips').innerHTML=nav.map(function(ix,i){ var x=pages[ix]; return '<button type="button" data-pg="'+ix+'" title="'+esc(x.t)+'" class="'+(i===pos?'on':(i<pos?'done':''))+'">'+(i+1)+(i===pos?'. '+esc(x.t):'')+'</button>'; }).join('')+'<button type="button" class="pr-enr" data-enr="1" title="Skip ahead: enroll them in the plan you are presenting">Enroll →</button>';
+  $('prChips').querySelector('[data-enr]').onclick=enrollAsPresented;
   $('prChips').querySelectorAll('[data-pg]').forEach(function(b){ b.onclick=function(){ presentGo(+b.dataset.pg); }; });
   var nx=nav[pos+1]!=null?pages[nav[pos+1]]:null;
   $('prNav').innerHTML='<button type="button" data-go="-1"'+(pos?'':' disabled')+'>← Back</button>'
