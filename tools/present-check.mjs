@@ -393,6 +393,14 @@ const TEST = `(async function(){
   pbApplyLineup('mh'); chooseTier('good'); enrollAsPresented(); await wait(300); delete S.actual.lineup; delete S.elected.lineup; delete S.chosen.lineup;
   pbApplyLineup('lx-mh-cg'); chooseTier('good'); goStep('enroll'); await wait(300);
   ok(effCfg('actual').base==='brightlife'&&/Bright Life/.test(S.elected.name||'')&&/Bright Life/.test($('enrollSummary').querySelector('.en-pk').innerText),'an older save: Enroll follows the plan the carrier is built on, not the stale enrollment');
+  /* Jesse, 9 Nov: an "Enroll →" at the end of the step row in EVERY presentation - skip the script, same as the last page's button */
+  for (const [ln,tr,base] of [['mh','best','afc'],['mh','good','afc'],['cg','best','triad'],['lx-mh-cg','good',null],['lx-mh-cg','best','triad'],['aca','best','aca'],['aca','good','aca'],['vb','better','amaze']]) {
+    S.chosen={}; pbApplyLineup(ln); chooseTier(tr); goStep('present');
+    var eb=[]; for(var k=0;k<20&&!eb.length;k++){ await wait(150); eb=[].slice.call(document.querySelectorAll('#prChips .pr-enr, .trd-chips .pr-enr')).filter(function(x){ return x.offsetParent; }); }
+    var row=eb[0]&&eb[0].parentNode, last=row&&row.lastElementChild===eb[0], want=base||effCfg(tr).base||'afc';
+    if(eb[0]) eb[0].click(); await wait(300);
+    ok(eb.length===1&&last&&S.step==='enroll'&&(effCfg('actual').base||'afc')===want&&S.actual.lineup===ln,'Enroll → ends the step row on '+ln+'/'+tr+' and enrolls the presented plan ('+eb.length+' button, last='+last+', step '+S.step+', base '+(effCfg('actual').base||'afc')+' vs '+want+')');
+  }
   return {n:nOk, fails:fails};
 })()`;
 
