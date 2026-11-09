@@ -722,6 +722,12 @@
   .cs-ok{color:#1f6b40;margin:4px 0}.cs-src{font-size:11.5px;color:var(--muted);margin-top:6px}
   .uwwatch{margin-top:8px;border:1.5px solid #c0392b;background:#fdecea;border-radius:10px;padding:10px 14px;color:#8f1d12;font-size:13.5px;line-height:1.45}.uwwatch .uwhd{font-weight:800;margin-bottom:4px}.uwwatch ul{margin:0;padding-left:18px}.uwwatch li{margin:3px 0}.uwwatch b{color:#a12525}
   .rv-actmin{font-size:13.5px;padding:8px 2px}.rv-actmin i{color:var(--muted)}.rv-actmin a{margin-left:8px}.rv-actmin small{display:block;color:var(--muted);margin-top:3px}
+  body:not(.client) #step-enroll.en-gated :is(#enKeyDates,#enDiff,#enrollSummary,#enTriad,#enLife,#enPeople,#enScriptEnd,#enHealth){display:none!important}
+  .eg-box{margin:12px 0 4px;border:2px solid var(--navy);border-radius:12px;padding:12px 14px;background:#fffaf0}.eg-box p{margin:6px 0 10px;font-size:13.5px}
+  .eg-h{font-family:var(--serif);font-weight:700;font-size:17px;color:var(--navy)}.eg-h small{display:block;font-family:inherit;font-weight:400;font-size:12.5px;color:var(--muted);margin-top:2px}
+  .eg-ok{display:flex;gap:10px;align-items:center;flex-wrap:wrap;border-width:1px;border-color:#b7dfc6;background:#effaf3;padding:9px 12px}.eg-ok span{flex:1;min-width:220px}
+  .eg-btn{font:inherit;font-weight:700;border-radius:9px;padding:9px 15px;cursor:pointer;border:1px solid var(--line);background:#fff;margin:0 8px 4px 0}.eg-btn.go{background:#2f7d4a;border-color:#2f7d4a;color:#fff}
+  .pbcol.actual select[data-act=actbase]{font:inherit;font-family:var(--serif);font-size:18px;color:var(--navy);border:1px solid #d6cdb4;border-radius:7px;padding:2px 6px;background:#fff;max-width:100%}
   .pr-edit{margin-top:16px;border:2px solid var(--navy);border-radius:12px;padding:12px 14px;background:#fffaf0}.pr-editgo{display:flex;gap:10px;justify-content:flex-end;margin:12px 0}
   .pr-editgo button{font:inherit;font-weight:700;border-radius:9px;padding:10px 16px;cursor:pointer;border:1px solid var(--line);background:#fff}.pr-editgo .go{background:#2f7d4a;border-color:#2f7d4a;color:#fff}
   .rv-confbar{display:none;cursor:pointer;font-size:13px;color:var(--navy)}.rv-confbar small{color:var(--muted);margin-left:6px}.rv-confbar .car{display:inline-block;width:12px}
@@ -1680,6 +1686,7 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
    <div class="card pad">
     <div class="sectitle"><span class="dot">●</span> Enroll</div>
     <div class="note" style="padding-top:2px">In call order: the life application first (it has the health questions), each person’s details, the finish — then the health carriers after the call.</div>
+    <div id="enGate" class="hidein-client noprint"></div>
     <div id="enKeyDates"></div>
     <div id="enDiff" class="hidein-client"></div>
     <div id="enrollSummary" style="margin:14px 0"></div>
@@ -5292,10 +5299,58 @@ function planBase(c){ return (c&&c.base)||'afc'; }
 function lineupMoved(rec,recCfg){ var now=(S.chosen&&S.chosen.lineup)||S.lineup, t=chosenTier();
   if(rec&&rec.lineup&&now&&rec.lineup!==now) return true;
   return !!(rec&&t&&recCfg&&S.packages&&S.packages[t]&&planBase(recCfg)!==planBase(effCfg(t))); }
-function electedLock(){ var t=chosenTier(); if(!t) return; var moved=actualOn()&&lineupMoved(S.actual,(S.cfg||{}).actual); if(actualOn()&&(S.actual.from!==t||moved)) actualSeed(t);   /* they changed the package: start the card again from it */
-  if(S.elected&&S.elected.tier===t&&lineupMoved(S.elected,S.elected.cfg)){ S.elected=actualOn()?actualSnap():pkSnap(t); S.elected.locked=1; autosave(); return; }
-  if(S.elected&&S.elected.tier===t){ if(!S.elected.locked){ S.elected.locked=1; autosave(); } return; }   /* older files: lock what's there, never rewrite it */
-  S.elected=actualOn()?actualSnap():pkSnap(t); if(S.elected&&!S.elected.lineup) S.elected.lineup=S.lineup||'mh'; S.elected.locked=1; autosave(); }
+/* Jesse, 9 Nov: what they enroll in is CONFIRMED - "as presented" or "with plan edits" - never set by just opening Enroll
+   from the sidebar. A confirmed enrollment that no longer matches the plan being presented (another tier, lineup or base
+   carrier) is not rewritten: Enroll asks again. Older files that have an enrollment for the current plan are locked as they are. */
+function enrollConfirmed(){ var t=chosenTier(), E=S.elected; return !!(t&&E&&E.locked&&E.tier===t&&!lineupMoved(E,E.cfg)); }
+function electedLock(){ var t=chosenTier(), E=S.elected; if(!t||!E||E.tier!==t||lineupMoved(E,E.cfg)) return;
+  if(actualOn()&&(S.actual.from!==t||lineupMoved(S.actual,(S.cfg||{}).actual))) actualSeed(t);
+  if(!E.locked){ E.locked=1; autosave(); } }
+/* The edit panel at the top of Enroll. A snapshot is taken when it opens, so Cancel puts everything back - including the
+   Quote's lineup, which a switch of base plan changes. */
+var EN_EDIT=null;
+function enSnap(){ var c=function(x){ return x==null?x:JSON.parse(JSON.stringify(x)); }, P={}, C={};
+  ['good','better','best','actual'].forEach(function(t){ if(S.packages[t]) P[t]=c(S.packages[t]); if(S.cfg&&S.cfg[t]) C[t]=c(S.cfg[t]); });
+  return {lineup:S.lineup||'mh',chosen:c(S.chosen),actual:c(S.actual),P:P,C:C}; }
+function enSnapRestore(z){ S.lineup=z.lineup; S.chosen=z.chosen; S.cfg=S.cfg||{};
+  ['good','better','best','actual'].forEach(function(t){ if(z.P[t]) S.packages[t]=z.P[t]; else delete S.packages[t]; if(z.C[t]) S.cfg[t]=z.C[t]; else delete S.cfg[t]; });
+  if(z.actual) S.actual=z.actual; else delete S.actual; pbReprice(); }
+function enEditOpen(fresh){ var z=enSnap(), t=chosenTier()||S.activeTab||'best';
+  if(fresh||!enrollConfirmed()||!actualOn()||S.actual.from!==t||lineupMoved(S.actual,(S.cfg||{}).actual)) actualSeed(t);
+  S.actual.how='edited'; EN_EDIT=z; autosave(); }
+function enEditGo(){ if(!actualOn()) return; chosenSet(S.actual.from); S.actual.how='edited'; S.elected=actualSnap(); S.elected.locked=1; EN_EDIT=null; autosave(); celebrate('confetti',enrollCheer()); goStep('enroll'); }
+function enEditCancel(){ var z=EN_EDIT; EN_EDIT=null; if(z) enSnapRestore(z); autosave(); goStep('enroll'); }
+/* every plan the edit panel can switch to: the base plan, then the level (Jesse, 9 Nov) */
+function enBaseOpts(){ var G=[['ManhattanLife',[['mh','good','Essential'],['mh','better','Complete'],['mh','best','Comprehensive']]],
+    [blOn()?'Bright Life':'LifeX',[['lx-mh-cg','good',blOn()?'Bright Life':'LifeX']]],['Cigna',[['lx-mh-cg','best','Cigna PPO']]]];
+  if(DT_ON){ var AN=LINEUP_NAMES.aca, VN=LINEUP_NAMES.vb; G.push(['Amaze (Virtual Basic)',[['vb','better',VN.better[0]],['vb','best',VN.best[0]]]]);
+    G.push(['ACA + protection',[['aca','good',AN.good[0]],['aca','better',AN.better[0]],['aca','best',AN.best[0]]]]); }
+  var ln=(S.actual&&S.actual.lineup)||S.lineup||'mh';
+  if(ln==='custom'||ln==='cg') G.push([lineupLabel(ln),['good','better','best'].filter(function(t){ return S.packages[t]; }).map(function(t){ return [ln,t,tierDisp(t)||TIER_NAME[t]]; })]);
+  return G; }
+function enBaseSelect(){ var A=S.actual||{}, cur=((A.lineup||S.lineup||'mh')+'|'+A.tier), seen=false;
+  var h=enBaseOpts().map(function(g){ return '<optgroup label="'+esc(g[0])+'">'+g[1].map(function(o){ var v=o[0]+'|'+o[1]; if(v===cur) seen=true; return '<option value="'+esc(v)+'"'+(v===cur?' selected':'')+'>'+esc(o[2])+'</option>'; }).join('')+'</optgroup>'; }).join('');
+  if(!seen) h='<option value="'+esc(cur)+'" selected>'+esc(actualSnap().name||TIER_NAME[A.tier]||'')+'</option>'+h;
+  return '<select data-act="actbase" aria-label="Base plan and level">'+h+'</select>'; }
+function enEditPick(v){ var a=String(v).split('|'), ln=a[0], t=a[1]; if(!t) return; if(ln!==(S.lineup||'mh')) pbApplyLineup(ln); if(!S.packages[t]) return; actualSeed(t); S.actual.how='edited'; autosave(); renderEnGate(); }
+function enGateScroll(){ setTimeout(function(){ var g=$('enGate'); if(g) window.scrollTo(0,g.getBoundingClientRect().top+window.scrollY-70); },120); }
+function enGatePlanName(t){ var c=S.chosen||{}; return c.name||choiceName(t); }
+function renderEnGate(){ var g=$('enGate'), st=$('step-enroll'); if(!g) return; var t=chosenTier(), ok=enrollConfirmed(), ed=!!EN_EDIT&&actualOn();
+  if(EN_EDIT&&!actualOn()) EN_EDIT=null;
+  st.classList.toggle('en-gated',!ok||ed);
+  if(ed){ g.innerHTML='<div class="pr-edit" id="enEdit"><div class="rv-ch">Enrolling with plan edits <small>Make the changes with them — another level, another base plan, ✕ what they’re not taking. The price and the side-by-side follow. Nothing is enrolled until you press enroll.</small></div>'+PE_GO+'<div id="enEditBody"></div>'+PE_GO+'</div>';
+    renderActual();
+    g.querySelectorAll('[data-pe]').forEach(function(b){ b.onclick=function(){ if(b.dataset.pe==='go') enEditGo(); else enEditCancel(); }; }); return; }
+  if(ok){ var E=S.elected, how=S.actual&&S.actual.how;
+    g.innerHTML='<div class="eg-box eg-ok"><span>✓ <b>Enrolling: '+esc(E.name||'')+'</b> · '+fmt2(E.monthly)+'/mo '+(how==='edited'?'<i>with plan edits</i>':(how==='presented'?'<i>as presented</i>':''))+'</span><button type="button" class="eg-btn" data-eg="edit">✎ Need to make edits?</button></div>'; }
+  else g.innerHTML='<div class="eg-box eg-need"><div class="eg-h">Confirm what they’re enrolling in</div><p>'
+      +(t?'You presented <b>'+esc(enGatePlanName(t))+'</b> · '+fmt2(tierTotals(t).mo||0)+'/mo.':'No plan has been presented yet. Pick it with them under plan edits, or go back to the Quote and present one.')
+      +' The applications open once it’s confirmed — that’s the record of what they chose against what you recommended.</p>'
+      +(t?'<button type="button" class="eg-btn go" data-eg="as">✓ Enrolling as presented →</button>':'')
+      +'<button type="button" class="eg-btn" data-eg="edit">✎ Enrolling with plan edits</button>'
+      +(t?'':'<button type="button" class="eg-btn" data-eg="quote">← Back to the Quote</button>')+'</div>';
+  g.querySelectorAll('[data-eg]').forEach(function(b){ b.onclick=function(){ var k=b.dataset.eg;
+    if(k==='as') enrollAsPresented(); else if(k==='quote') goStep('quote'); else { enEditOpen(false); renderEnGate(); enGateScroll(); } }; }); }
 var LB_K={lbp:1,lbs:1};
 /* every way what they bought falls short of what was recommended, each with a stable key for its acknowledgment */
 function recGap(){ return gapOf(S.rec,S.elected); }
@@ -5303,10 +5358,15 @@ function recGap(){ return gapOf(S.rec,S.elected); }
 function prodName(p){ var C=S.client||{}, f=function(n){ n=String(n||'').trim().split(/\s+/)[0]; return n?' ('+n+')':''; };
   if(p&&p.k==='lbp') return 'Living benefits — primary'+f(C.pname); if(p&&p.k==='lbs') return 'Living benefits — spouse'+f(C.sname);
   var sl=p&&p.k&&p.k!=='base'&&typeof PB_SLOTS!=='undefined'?PB_SLOTS.filter(function(x){ return x.k===p.k; })[0]:null; return sl?sl.name:((p&&p.name)||''); }   /* the card's own names */
+var BASE_NAME={afc:'ManhattanLife',triad:'Cigna',brightlife:'Bright Life',lifex:'LifeX',aca:'ACA',amaze:'Amaze'};
 function gapOf(R,E,miss){ var out=[]; if(!R||!E) return out; miss=miss||'Declined';
-  if(TIER_ORDER[E.tier]<TIER_ORDER[R.tier]) out.push({key:'tier',kind:'below',text:'Below our recommendation: '+E.name+' instead of '+R.name+' ('+fmt2(E.monthly)+' vs '+fmt2(R.monthly)+' a month)'});
+  /* Jesse, 9 Nov: a different base plan from the one presented is always on the page, whatever the price */
+  var xb=R.cfg&&E.cfg&&planBase(R.cfg)!==planBase(E.cfg);
+  var bl=function(X){ var n=BASE_NAME[planBase(X.cfg)]||'', m=String(X.name||''), l=(!m||m===n)?n:(m.indexOf(n)>=0?m:(n?n+' '+m:m)); return l+' ('+fmt2(X.monthly)+' a month)'; };
+  if(xb) out.push({key:'base:'+planBase(E.cfg),kind:'below',text:'A different plan from the one you presented: '+bl(E)+' instead of '+bl(R)});
+  else if(TIER_ORDER[E.tier]<TIER_ORDER[R.tier]) out.push({key:'tier',kind:'below',text:'Below our recommendation: '+E.name+' instead of '+R.name+' ('+fmt2(E.monthly)+' vs '+fmt2(R.monthly)+' a month)'});
   var has={}; E.products.forEach(function(p){ has[p.k]=p; });
-  R.products.forEach(function(p){ var e=has[p.k];
+  R.products.forEach(function(p){ var e=has[p.k]; if(xb&&(p.k==='base'||p.k==='afc')) return;   /* the base plan itself is the line above */
     if(!e) out.push({key:'p:'+p.k,kind:'declined',name:prodName(p),text:miss+': '+prodName(p)+(p.sum?' ('+p.sum+')':'')+' — '+fmt2(p.monthly)+' a month'});
     else if(e.monthly<p.monthly-0.005&&e.sum!==p.sum) out.push({key:'l:'+p.k,kind:'lowered',name:prodName(p),text:'Lowered: '+prodName(p)+' — '+(p.sum||fmt2(p.monthly))+' → '+(e.sum||fmt2(e.monthly))}); });
   /* living benefits are priced live at the pivot, so they're "recommended" once that screen was shown */
@@ -5457,19 +5517,19 @@ function cmpHTML(){ if(typeof BEN_DATA!=='undefined') ['afc','his'].forEach(func
     +rows.join('')+'<tbody class="ev"><tr class="gh"><th colspan="3">If this happens — what the plan pays</th></tr>'+evRows+'</tbody></table>'
     +(X.own||base?'':'<div class="rv-cmpnote">This recommendation was saved before plan details were kept, so it is priced from today’s '+esc(R.name)+' package on the quote.</div>')
     +(F.any?'<div class="rv-cmpnote"><span class="rv-sw"></span> Gold: speaks to their family history of '+esc(F.label)+(F.who?' ('+esc(F.who)+')':'')+'.</div>':''); }
-function pbActHead(){ var A=S.actual||{}, pr=S.step==='present';
+function pbActHead(){ var A=S.actual||{}, en=S.step==='enroll'&&!!$('enEditBody'), pr=S.step==='present'||en;
   return '<div class="pbcol actual" data-t="actual"><div class="pbhd"><div class="r1"><span class="tt">'+(pr?'What they’re enrolling in':'What they actually have')+'</span>'
     +'<button type="button" class="pbreset" data-act="actreset" title="Start this plan again as it was built on the Quote">↺ As quoted</button></div>'
-    +'<div class="nm"><select data-act="actname" aria-label="Plan name">'+pbOpts([['good','Essential'],['better','Complete'],['best','Comprehensive']],A.tier)+'</select></div>'
+    +'<div class="nm">'+(en?enBaseSelect():'<select data-act="actname" aria-label="Plan name">'+pbOpts([['good','Essential'],['better','Complete'],['best','Comprehensive']],A.tier)+'</select>')+'</div>'
     +'<div class="r3"><small>'+(pr?'Edit it with them: ✕ what they’re not taking, change a level.':'From the carrier’s approval.')+' Changes here never touch the quote or your recommendation.</small></div></div>'; }
 var RV_ACT_OPEN=false;
-function actualRedraw(){ var y=window.scrollY; renderActual(); if(S.step==='present'){ window.scrollTo(0,y); return; } var R=reviewState(), pe=$('rv_prem'); if(pe&&!(+R.prem>0)&&document.activeElement!==pe) pe.value=reviewPrem()>0?fmtMoney2(reviewPrem()):'';
+function actualRedraw(){ var y=window.scrollY; renderActual(); if(S.step==='present'||(S.step==='enroll'&&$('enEditBody'))){ window.scrollTo(0,y); return; } var R=reviewState(), pe=$('rv_prem'); if(pe&&!(+R.prem>0)&&document.activeElement!==pe) pe.value=reviewPrem()>0?fmtMoney2(reviewPrem()):'';
   reviewCheck(); var fr=$('rvFrame'); if(fr&&fr.contentDocument&&fr.contentDocument.body&&fr.contentDocument.body.dataset.rvp) reviewGo(+R.pg||0,true); window.scrollTo(0,y); }
 /* the premium is the plan's own total unless the agent types the carrier's figure (R.prem); a different figure is confirmed, not assumed */
 function reviewPremTool(){ return actualOn()?Math.round(tierTotals('actual').mo*100)/100:0; }   /* premium only - their prescription cost is not a premium */
 function reviewPrem(){ var R=reviewState(); return +R.prem>0?+R.prem:reviewPremTool(); }
 function actualReprice(){ priceTier('actual'); autosave(); actualRedraw(); }
-function renderActual(){ var pr=S.step==='present', host=pr?$('prEditBody'):$('rvActual'), t=pr?presentTier():chosenTier(); if(!host||!t) return; if(!actualOn()) actualSeed(t); if(!actualOn()) return;
+function renderActual(){ var en=S.step==='enroll'&&!!$('enEditBody'), pr=S.step==='present'||en, host=en?$('enEditBody'):(pr?$('prEditBody'):$('rvActual')), t=en?((S.actual&&S.actual.from)||chosenTier()):(pr?presentTier():chosenTier()); if(!host||!t) return; if(!actualOn()) actualSeed(t); if(!actualOn()) return;
   var r=pbColHTML(['actual'],null), E=S.elected, A=actualSnap(), lines=[], RV=reviewState();
   /* Benefits Review: the plan they enrolled in is settled; it opens only when the carrier approved it with a change */
   if(!pr&&RV.appr!=='chg'&&!RV_ACT_OPEN){ host.innerHTML='<div class="rv-actmin"><b>Enrolled in:</b> '+esc(A.name)+' · '+fmt2(A.monthly)+'/mo'+(S.actual.how==='edited'?' <i>with plan edits</i>':(S.actual.how==='presented'?' <i>as presented</i>':''))
@@ -5489,6 +5549,7 @@ function renderActual(){ var pr=S.step==='present', host=pr?$('prEditBody'):$('r
      right here). On the Benefits Review it only renames - the carrier's version is already in the card. */
   var nm=host.querySelector('[data-act="actname"]'); if(nm) nm.onchange=function(){ if(pr){ var how=S.actual.how, base=S.actual.base; actualSeed(nm.value); if(how) S.actual.how=how; if(base) S.actual.base=base; } else S.actual.tier=nm.value; autosave(); actualRedraw(); };
   var rp=$('rvRecSet'); if(rp) rp.onclick=function(){ var sn=pkSnap($('rvRecPick').value); if(sn){ sn.by='marked on the Benefits Review'; S.rec=sn; autosave(); actualRedraw(); } };
+  var bs=host.querySelector('[data-act="actbase"]'); if(bs) bs.onchange=function(){ enEditPick(bs.value); };
   var rs=host.querySelector('[data-act="actreset"]'); if(rs) rs.onclick=function(){ var how=S.actual.how; actualSeed(pr?(S.actual.from||presentTier()):chosenTier()); if(how) S.actual.how=how; autosave(); actualRedraw(); }; }
 /* Section 11 in the client's language (Jesse, 17 Oct): what they did - stayed on the plan and lowered levels, went to a
    lower plan, or went lower and added coverage on top - with the products named the way you'd say them. */
@@ -6462,7 +6523,7 @@ function reviewMailWire(){ var ta=$('rvEmailTxt'); if(!ta) return; var rs=$('rvM
 function renderReview(){ var host=$('reviewHost'); if(!host) return; var t=chosenTier(), R=reviewState(), C=S.client||{};
   if(t&&!tierNonMh(t)&&(!actualOn()||S.actual.from!==t)) actualSeed(t);
   var head='<div class="sectitle"><span class="dot">●</span> Benefits Review <small style="font-family:inherit;font-weight:600;color:var(--muted);font-size:13px">— after approval, before the effective date · about fifteen minutes</small></div><div data-sentlog>'+sentLogHTML()+'</div>';
-  if(!t){ host.innerHTML=head+'<p class="note">Mark the plan they bought first: <b>Choose this plan</b> on the Quote page. This call is built from it.</p><button type="button" class="btn-gold" onclick="goStep(\'quote\')">← Quote</button>'; return; }
+  if(!t){ host.innerHTML=head+'<p class="note">Confirm the plan they bought first, at the top of <b>Enroll</b>. This call is built from it.</p><button type="button" class="btn-gold" onclick="goStep(\'enroll\')">← Enroll</button>'; return; }
   if(triadFlowOn(t)){ host.innerHTML=head+triadReviewHTML(t)+reviewCareHTML(); triadBind(host); reviewCareWire(); return; }   /* the care card too (Jesse, 4 Nov) */
   if(tierNonMh(t)){ host.innerHTML=head+'<p class="note">This Benefits Review is the ManhattanLife call — portal, EasyCare2go, Easy Upload and CareGuide. '+esc(tierNonMh(t).name)+' clients get their onboarding from the carrier.</p>'; return; }
   var mo=MONTHS.map(function(m){ return '<option'+(R.month===m?' selected':'')+'>'+m+'</option>'; }).join('');
@@ -6768,7 +6829,7 @@ var TOUR=[null,
    '<b>Doctors:</b> look each one up on First Health and set it to ✓ in network, ✗ out, or leave ? until you&rsquo;ve checked &mdash; the in-network ones go on their care card. <b>Medications and conditions</b> are checked against ManhattanLife&rsquo;s underwriting list as you type, with the guide page linked.',
    'Click <b>Build Quote</b>.']},
  {t:'Quote',d:['MyPopPro builds three packages. You see Good / Better / Best; the client sees Essential / Complete / Comprehensive.',
-   'Open a row to change a level or add a product; <b>ⓘ</b> shows that product&rsquo;s benefits for their state. Click <b>Choose this plan</b> on the one they lean toward.',
+   'Open a row to change a level or add a product; <b>ⓘ</b> shows that product&rsquo;s benefits for their state. Click <b>Present this plan →</b> on the one you’ll walk them through.',
    'Pick an example (a hospital stay, a broken arm) to show what each plan pays. Not today? <b>Send the quote</b> is at the bottom.',
    'Customize any package with ManhattanLife, Cigna or Bright Life plans, or build on their own ACA plan. The Decision Tree, between Intake and Quote, points you to the right plans from what the Intake knows.']},
  {t:'Present',d:['Click <b>▶ Present</b>. The script plays screen by screen with their name, numbers, doctors and medications filled in.',
@@ -7651,7 +7712,7 @@ function presentTier(){ return chosenTier()||S.activeTab||'best'; }
 /* "Enrolling as presented": the enrollment starts fresh from the plan just presented - every presentation's Enroll button
    (Manhattan's script close, and Cigna / Bright Life / ACA / Amaze's "Go to Enroll"). Jesse, 7 Nov: presenting Cigna after
    Manhattan went to Enroll still holding the Manhattan plan. */
-function enrollAsPresented(){ var pt=presentTier(); chosenSet(pt); actualSeed(pt); S.actual.how='presented'; S.elected=actualSnap(); S.elected.locked=1; autosave(); celebrate('confetti',enrollCheer()); goStep('enroll'); }
+function enrollAsPresented(){ EN_EDIT=null; var pt=presentTier(); chosenSet(pt); actualSeed(pt); S.actual.how='presented'; S.elected=actualSnap(); S.elected.locked=1; autosave(); celebrate('confetti',enrollCheer()); goStep('enroll'); }
 /* ===== Celebrations (Jesse, 9 Oct) ===== the wins get a moment: "They're enrolling" sets off a full-page confetti storm,
    choosing a plan floats a thumbs-up. Drawn on a throwaway canvas that ignores clicks and removes itself; reduced
    motion gets a short, still version. Never on the printout. */
@@ -7969,11 +8030,10 @@ function prClaimOpen(i){ var c=PR_CLAIMS[i], pop=$('prPop'), src='claims/'+c.f;
   var cb=pop.querySelector('[data-cc]'); if(cb) cb.onclick=function(){ prClaimCopy(c,cb); }; }
 /* "Enrolling with plan edits" (Jesse, 17 Oct): the card + side-by-side open under the script; edits never touch the quote */
 /* the same two buttons above and below the edit section, so nobody has to scroll to find them (Jesse, 17 Oct) */
-var PE_GO='<div class="pr-editgo"><button type="button" data-pe="cancel">Cancel edits — enroll what was presented →</button><button type="button" class="go" data-pe="go">✓ They’re in — enroll with these adjustments →</button></div>';
-function presentEditsOpen(){ var t=presentTier(), box=$('prEdit'); if(!box||!t) return; if(!actualOn()||(S.actual.base||S.actual.from)!==t){ actualSeed(t); S.actual.base=t; }
-  box.style.display=''; renderActual(); peCue(box);
-  /* after the render settles - a smooth scroll started straight away was being cancelled, and the box stayed off screen */
-  setTimeout(function(){ var y=box.getBoundingClientRect().top+window.scrollY-12; window.scrollTo(0,y); },120); }
+var PE_GO='<div class="pr-editgo"><button type="button" data-pe="cancel">Cancel edits</button><button type="button" class="go" data-pe="go">✓ They’re in — enroll with these edits →</button></div>';
+/* Jesse, 9 Nov: plan edits happen in ONE place - the top of Enroll. "Enrolling with plan edits" at the end of Present opens
+   that panel with the presented plan in it; nothing is enrolled until "Enroll with these edits". */
+function presentEditsOpen(){ var t=presentTier(); if(!t) return; enEditOpen(true); goStep('enroll'); enGateScroll(); }
 /* "Scroll down" cue (Jesse, 23 Oct): a flashing red arrow pinned to the bottom until the edit section is on screen */
 function peCue(box){ var c=$('peCue'); if(!c){ c=document.createElement('button'); c.type='button'; c.id='peCue'; c.className='pe-cue'; c.innerHTML='<span>▼</span> Scroll down to edit their plan <span>▼</span>'; document.body.appendChild(c); }
   c.onclick=function(){ window.scrollTo(0,box.getBoundingClientRect().top+window.scrollY-12); chk(); };
@@ -7999,11 +8059,8 @@ function renderPresent(){ var host=$('presentHost'); if(!host) return; if(triadF
     +'<div class="box pr-qa" id="prQA"><b>Quick answers — objections (MH)</b></div>'
     +((effCfg(t).base||'afc')==='afc'?'<div class="box" id="prClaims">'+prClaimsHTML()+'</div>':'')
     +'<div class="box" id="prStories">'+PR_STORY_HEAD+'</div>'
-    +'</div></div><div id="prPop" style="display:none"></div>'
-    +'<div id="prEdit" class="pr-edit" style="display:none"><div class="rv-ch">Enrolling with plan edits <small>make the changes with them — the price and the side-by-side follow — then enroll.</small></div>'+PE_GO+'<div id="prEditBody"></div>'+PE_GO+'</div>';
+    +'</div></div><div id="prPop" style="display:none"></div>';
   host.innerHTML=h; presentWhyBox(t); presentDrxBox();
-  host.querySelectorAll('[data-pe]').forEach(function(b){ b.onclick=function(){ if(b.dataset.pe==='cancel'){ var pt=presentTier(); chosenSet(pt); actualSeed(pt); S.actual.how='presented'; S.elected=actualSnap(); S.elected.locked=1; autosave(); celebrate('confetti',enrollCheer()); goStep('enroll'); return; }
-    chosenSet(S.actual.from); S.actual.how='edited'; S.elected=actualSnap(); S.elected.locked=1; autosave(); celebrate('confetti',enrollCheer()); goStep('enroll'); }; });
   var fr=$('prFrame');
   fr.onload=function(){ try{ var doc=fr.contentDocument; scriptClean(doc); presentPaginate(doc);
       benLoadSafe('afc').then(function(){ presentWire(doc,t); presentGo(+S.present.pg||0); });
@@ -8505,6 +8562,7 @@ function ppUpdatedToast(){ var u=null; try{ u=sessionStorage.getItem('pp_updated
   var t=document.createElement('div'); t.textContent='Updated to the latest MyPopPro ✓'; t.style.cssText='position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#2f7d4a;color:#fff;font:600 14px -apple-system,Segoe UI,sans-serif;padding:10px 18px;border-radius:999px;z-index:99999;box-shadow:0 8px 24px rgba(0,0,0,.25)';
   document.body.appendChild(t); setTimeout(function(){ t.remove(); },3500); }
 function goStep(s){
+  if(s!=='enroll'&&typeof EN_EDIT!=='undefined'&&EN_EDIT){ var z=EN_EDIT; EN_EDIT=null; enSnapRestore(z); }   /* leaving Enroll mid-edit drops the unconfirmed edits */
   S.step=s; setTimeout(ppUpdateCheck,0); setTimeout(sentPaint,0);
   document.querySelectorAll('.step').forEach(function(el){el.classList.toggle('on',el.id==='step-'+s);});
   document.querySelectorAll('#stepper button').forEach(function(b){b.classList.toggle('on',b.dataset.step===s);});
@@ -8512,7 +8570,7 @@ function goStep(s){
   document.body.classList.toggle('step-present',s==='present'); clientStripSum();
   if(s==='intake') fillIntake();
   if(s==='call') callOpen();
-  if(s==='enroll'){ electedLock(); renderEnroll(); renderRecGap(); }
+  if(s==='enroll'){ electedLock(); renderEnGate(); renderEnroll(); renderRecGap(); }
   if(s==='review') renderReview();
   if(s==='tree') renderTree();
   if(s==='present') renderPresent();
@@ -9157,7 +9215,10 @@ function chosenRestore(id){ var c=S.chosen, k=c&&c.tier&&c.lineup===id&&c.keep; 
    package, otherwise the package itself. Enroll, its script and wrap-up text, the thank-you email and follow-ups read it. */
 function enrolledTier(){ var t=chosenTier(); return (t&&actualOn()&&S.actual.from===t&&!lineupMoved(S.actual,(S.cfg||{}).actual))?'actual':t; }
 Object.defineProperty(TIER_NAME,'actual',{enumerable:false,get:function(){ return (S.actual&&TIER_NAME[S.actual.tier])||''; }});
-function chooseTier(t){ chosenSet(chosenTier()===t?null:t); if(S.step==='enroll'&&S.chosen.tier){ electedLock(); setTimeout(renderRecGap,0); } if(S.chosen.tier) celebrate('thumbs'); if(S.chosen.tier&&tierNonMh(t)&&!triadFlowOn(t)&&!blFlowOn(t)) setTimeout(function(){ nonMhNotice(t); },0);   /* the Triad flow (sandbox) presents it instead */ if(S.chosen.tier){ S.activeTab=t; S.include=S.include||{}; S.include[t]=true; } compute(); autosave(); }
+/* Jesse, 9 Nov: on the Quote the agent picks what to PRESENT; what the client chooses is confirmed at the end of Present
+   (as presented, or with plan edits) or at the top of Enroll. */
+function presentThis(t){ if(chosenTier()!==t){ chosenSet(t); S.activeTab=t; S.include=S.include||{}; S.include[t]=true; compute(); autosave(); } presentOpen(); }
+function chooseTier(t){ chosenSet(chosenTier()===t?null:t); if(S.step==='enroll'){ electedLock(); setTimeout(function(){ renderEnGate(); renderRecGap(); },0); } if(S.chosen.tier) celebrate('thumbs'); if(S.chosen.tier&&tierNonMh(t)&&!triadFlowOn(t)&&!blFlowOn(t)) setTimeout(function(){ nonMhNotice(t); },0);   /* the Triad flow (sandbox) presents it instead */ if(S.chosen.tier){ S.activeTab=t; S.include=S.include||{}; S.include[t]=true; } compute(); autosave(); }
 function tierHasDental(t){ return ((S.packages[t]||{}).products||[]).some(function(p){ return p.k==='dvh'&&(+p.monthly||0)>0; }); }
 function dentalPrice(t){ try{ var r=pDVH(HF_RATES,ratingAge(),householdKey(),effCfg(t).dvh,(S.client.state||'').toUpperCase()); return r&&r.price!=null?+r.price:null; }catch(e){ return null; } }
 /* Dental stays a yes/no after the choice: the three packages are compared without it, then the
@@ -9282,13 +9343,13 @@ function pbColHTML(T,anc){ var t=T[0], act=(t==='actual'), st=(S.client.state||'
     if(sv){ var line=function(lab,v){ return '<div class="sv"><span>'+lab+'</span><b class="'+(v>=0?'up':'dn')+'">'+(v>=0?'saves ':'costs ')+pbMoney(Math.abs(v))+(v>=0?'':' more')+'</b></div>'; };
       html+='<div class="pbsave">'+line('Premium vs premium',sv.actual)+(cpn?'<div class="sv" style="font-size:10.5px;color:var(--muted)">'+cpn+'</div>':'')+line('True cost',sv.tru)+'<div class="sv tcn" style="color:#8a6a1f;font-size:11px">'+trueCostNote(t,anc)+'</div>'
         +'<div class="sv tf"><span>Room for a TFRA <i style="font-style:normal;color:var(--muted);font-size:10.5px">(premium saving)</i></span><b>'+(sv.tfra>0?pbMoney(sv.tfra)+'/mo':'—')+'</b></div>'+'</div>'; }
-    if(!act) html+='<button type="button" class="pbchoose'+(chosenTier()===t?' on':'')+'" data-act="choose" title="The package the client is going with — it carries to Client View and Enroll">'+(chosenTier()===t?'✓ Client’s choice — this is their plan':'Choose this plan')+'</button>';
+    if(!act) html+='<button type="button" class="pbchoose hidein-client noprint'+(chosenTier()===t?' on':'')+'" data-act="choose" title="Your pick to walk them through. What they actually enroll in is confirmed at the end of Present or on Enroll.">'+(chosenTier()===t?'✓ Presenting this plan — open Present →':'Present this plan →')+'</button>';
     html+='</div>';
   return {html:html,sum:sum}; }
 /* A column's controls; rr reprices + redraws, rd only redraws (the builder, or the Benefits Review copy). */
 function pbColBind(col,rr,rd){
     var t=col.dataset.t;
-    col.querySelectorAll('[data-act="choose"]').forEach(function(b){ b.onclick=function(){ chooseTier(t); }; });
+    col.querySelectorAll('[data-act="choose"]').forEach(function(b){ b.onclick=function(){ presentThis(t); }; });
     col.querySelectorAll('[data-act="inc"]').forEach(function(x){ x.onchange=function(){ S.include=S.include||{}; S.include[t]=x.checked; var cl=$('inc_'+t); if(cl) cl.checked=x.checked; compute(); autosave(); }; });
     col.querySelectorAll('[data-act="tog"]').forEach(function(b){ b.onclick=function(){ var key=t+'|'+b.dataset.k; PB_OPEN[key]=!PB_OPEN[key]; rd(); }; });
     col.querySelectorAll('[data-act="rm"]').forEach(function(b){ b.onclick=function(){ var pk=S.packages[t]; pk.dropped=pk.dropped||[]; if(pk.dropped.indexOf(b.dataset.k)<0) pk.dropped.push(b.dataset.k); rr(); }; });
@@ -9345,7 +9406,8 @@ function renderBuilder(){
     +'<button type="button" data-act="reload" title="Put all three packages back to MyPopPro’s recommendation" style="font:inherit;font-size:13px;font-weight:700;border-radius:999px;padding:7px 14px;cursor:pointer;border:1.5px solid var(--gold);background:#fffdf7;color:#8a6a1f;margin-right:6px">↺ Reload our recommendation</button>'
     +LINEUPS.map(function(L){ var on=(S.lineup||'mh')===L[0]; return '<button type="button" data-lineup="'+L[0]+'" style="font:inherit;font-size:13px;font-weight:600;border-radius:999px;padding:7px 14px;cursor:pointer;border:1px solid '+(on?'var(--navy)':'#d6cdb4')+';background:'+(on?'var(--navy)':'#fff')+';color:'+(on?'#fff':'var(--ink)')+'">'+L[1]+'</button>'; }).join('')+'</div>';
   lineupBar=lineupBar.replace(/<\/div>$/,presentBtn+'</div>');
-  var CH=S.chosen; if(CH&&CH.tier&&CH.lineup&&CH.lineup!==(S.lineup||'mh')) lineupBar+='<div class="hidein-client noprint" style="margin:-4px 0 12px;padding:8px 12px;border:1px solid #b7dfc6;background:#effaf3;border-radius:9px;font-size:13px">✓ <b>Client’s choice: '+esc(CH.name||TIER_NAME[CH.tier]||'')+'</b> on the <b>'+esc(lineupLabel(CH.lineup))+'</b> lineup — this lineup is for comparing. <button type="button" data-lineup="'+esc(CH.lineup)+'" style="font:inherit;font-size:12.5px;font-weight:700;margin-left:6px;padding:4px 10px;border-radius:999px;border:1px solid #17824a;background:#fff;color:#17824a;cursor:pointer">Back to their choice</button></div>';
+  var CH=S.chosen; if(CH&&CH.tier&&CH.lineup&&CH.lineup!==(S.lineup||'mh')) lineupBar+='<div class="hidein-client noprint" style="margin:-4px 0 12px;padding:8px 12px;border:1px solid #b7dfc6;background:#effaf3;border-radius:9px;font-size:13px">✓ <b>Presenting: '+esc(CH.name||TIER_NAME[CH.tier]||'')+'</b> on the <b>'+esc(lineupLabel(CH.lineup))+'</b> lineup — this lineup is for comparing. <button type="button" data-lineup="'+esc(CH.lineup)+'" style="font:inherit;font-size:12.5px;font-weight:700;margin-left:6px;padding:4px 10px;border-radius:999px;border:1px solid #17824a;background:#fff;color:#17824a;cursor:pointer">Back to it</button></div>';
+  var RC=S.rec; if(RC&&RC.by==='presented') lineupBar+='<div class="hidein-client noprint" id="pbPresentedNote" style="margin:-4px 0 12px;padding:8px 12px;border:1px solid #e6cf8f;background:#fff8e6;border-radius:9px;font-size:13px">You presented <b>'+esc((planBase(RC.cfg)==='afc'?'Manhattan ':(BASE_NAME[planBase(RC.cfg)]||'')+' — ')+(RC.name||''))+'</b>. Changes here change what you’d present. To change what they’re buying, use <b>Enroll → ✎ Need to make edits?</b></div>';
   var html=(PR_STATE==='failed'?'<div class="hidein-client noprint" style="margin:0 0 10px;padding:10px 14px;border:1px solid #f1b4ad;background:#fdecea;color:#b42318;border-radius:10px;font-weight:700">The full ManhattanLife rate file didn’t load, so some products (Out-of-Pocket, dental, Cancer/Heart/Stroke) can’t be priced in many states. <a href="#" onclick="location.reload();return false" style="color:#b42318">Refresh the page</a> before you quote.</div>':'')
     +lineupBar+anchorStrip+covClockBar()+(S.lineup==='aca'?'<div class="pbacanote hidein-client noprint"><b>Only use this lineup when ACA is their best option</b> (step 02 of the Decision Tree). The marketplace plan stays — these packages add the protection on top so they still get the full POP.</div>':'')+'<div class="bh" style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap"><h3>Package builder</h3><small>'+st+' · age '+age+' · '+({i:'Individual',s:'Individual + Spouse',c:'Individual + Children',f:'Family'}[householdKey()])+' · prices from the ManhattanLife rate tables</small><button type="button" class="picbtn hidein-client noprint" data-copypic="plans" style="margin-left:auto">📋 Copy plans</button></div><div class="pb3">';
   tiers.forEach(function(T){ var r=pbColHTML(T,anc); html+=r.html; totals[T[0]]=r.sum; });
