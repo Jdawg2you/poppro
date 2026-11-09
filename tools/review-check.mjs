@@ -74,12 +74,13 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  S.rec=null; S.elected=null; S.decl={}; S.chosen={tier:'best'}; presentOpen(); await w(300);
  ok(S.rec&&S.rec.tier==='best'&&S.rec.products.length>2,'Present locks the recommendation with its products');
  S.chosen={tier:'better'}; presentOpen(); await w(200); ok(S.rec.tier==='best','presenting a lower package later does not move the recommendation');
- goStep('enroll'); await w(300); ok(S.elected&&S.elected.tier==='better','Enroll locks what they bought');
+ window.celebrate=function(){}; goStep('enroll'); await w(300); ok(!S.elected&&/Confirm what they’re enrolling in/.test(document.getElementById('enGate').innerText),'opening Enroll alone locks nothing - it asks (Jesse, 9 Nov)');
+ document.querySelector('#enGate [data-eg="as"]').click(); await w(300); ok(S.elected&&S.elected.tier==='better','confirming as presented locks what they bought');
  var g=recGap(); ok(g[0]&&g[0].kind==='below'&&g.some(function(x){ return x.kind==='declined'||x.kind==='lowered'; }),'Enroll lists the gap: package and products ('+g.length+')');
  ok(document.querySelectorAll('#enDiff [data-gk]').length===g.length,'one acknowledgment line per gap');
  var cb=document.querySelector('#enDiff [data-gk="tier"]'); cb.click(); ok(!!(JSON.parse(localStorage.getItem('hf_pop_last')).decl.tier||{}).ack,'an acknowledgment is saved with the client');
  S.recommended='better'; ok(reviewBelow('better')===true,'the Benefits Review reads the locked recommendation, not the tool\u2019s REC');
- S.chosen={tier:'best'}; goStep('enroll'); await w(200); ok(recGap().length===0&&/took what you recommended/.test(document.getElementById('enDiff').textContent),'no gap when they take the recommendation');
+ S.chosen={tier:'best'}; goStep('enroll'); await w(200); document.querySelector('#enGate [data-eg="as"]').click(); await w(300); ok(recGap().length===0&&/took what you recommended/.test(document.getElementById('enDiff').textContent),'no gap when they take the recommendation');
  S.rec=null; renderRecGap(); ok(/No recommendation on record/.test(document.getElementById('enDiff').textContent),'never presented: says so, offers the tool\u2019s REC');
  S.chosen={tier:'better'}; S.recommended='best';
  /* Direction Rx block inside screen 7: only for a weight-loss GLP-1, with the agent's code */
@@ -141,19 +142,28 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  S.chosen={tier:'better'}; S.rec=pkSnap('best'); S.rec.by='presented'; delete S.actual; goStep('present'); await w(2500);
  var nav=presentNav(); presentGo(nav[nav.length-1]); await w(300);
  var eb=document.querySelector('#prNav [data-go="edits"]'), ab=document.querySelector('#prNav [data-go="enroll"]'); ok(!!eb&&!!ab&&/as presented/.test(ab.textContent),'the last screen offers as presented and with plan edits');
- eb.click(); await w(400); var pc=document.querySelector('#prEditBody .pbcol.actual'); ok(!!pc&&/enrolling in/i.test(pc.textContent)&&!!document.querySelector('#prEditBody table.rv-cmp'),'with plan edits: the card and the side-by-side open under the script');
+ window.celebrate=function(){};
+ var elj=function(){ var e=S.elected; return e?JSON.stringify([e.tier,e.products,e.monthly]):''; }, el9=elj(); eb.click(); await w(600); var pc=document.querySelector('#enEditBody .pbcol.actual'); ok(S.step==='enroll'&&!!pc&&/enrolling in/i.test(pc.textContent)&&!!document.querySelector('#enEditBody table.rv-cmp')&&elj()===el9,'with plan edits: Enroll opens the edit card and the side-by-side on top, nothing enrolled yet (Jesse, 9 Nov: one place to edit)');
  var betterQ=JSON.stringify(S.packages.better.products); var rx=pc.querySelector('[data-act="rm"][data-k="acc"]'); if(rx) rx.click(); await w(300);
  ok(JSON.stringify(S.packages.better.products)===betterQ,'editing never touches the quote');
- document.querySelector('[data-pe="go"]').click(); await w(500);
- ok(S.step==='enroll'&&S.actual.how==='edited'&&!S.elected.products.some(function(p){ return p.k==='acc'; }),'enroll with adjustments: Enroll records the edited plan');
+ ok(document.querySelectorAll('#enEdit [data-pe="go"]').length===2&&document.querySelectorAll('#enEdit [data-pe="cancel"]').length===2,'both buttons sit above and below the edit section');
+ document.querySelector('#enEdit [data-pe="go"]').click(); await w(500);
+ ok(S.step==='enroll'&&S.actual.how==='edited'&&!S.elected.products.some(function(p){ return p.k==='acc'; }),'enroll with edits: Enroll records the edited plan');
  var es=document.getElementById('enrollSummary').textContent; ok(!/24-Hour Accident/.test(es)&&/with plan edits/.test(es)&&es.indexOf(fmt2(reviewPremTool()))>=0,'the Enroll summary is the plan they are actually enrolling in (premium '+fmt2(reviewPremTool())+')');
- ok(enrolledTier()==='actual'&&TIER_NAME.actual==='Complete'&&!lbSummary().some(function(x){ return false; }),'the email, follow-ups and wrap-up read the enrolled plan');
+ ok(enrolledTier()==='actual'&&TIER_NAME.actual==='Complete','the email, follow-ups and wrap-up read the enrolled plan');
  goStep('present'); await w(2500); nav=presentNav(); presentGo(nav[nav.length-1]); await w(300); document.querySelector('#prNav [data-go="enroll"]').click(); await w(500);
  ok(S.step==='enroll'&&S.actual.how==='presented'&&S.elected.products.some(function(p){ return p.k==='acc'; }),'enroll as presented: the plan as presented, edits gone');
-  goStep('present'); await w(2500); nav=presentNav(); presentGo(nav[nav.length-1]); await w(300); document.querySelector('#prNav [data-go="edits"]').click(); await w(400);
- var px=document.querySelector('#prEditBody [data-act="rm"][data-k="acc"]'); if(px) px.click(); await w(300); var cb2=document.querySelector('[data-pe="cancel"]');
- ok(/Cancel edits/.test(cb2.textContent)&&document.querySelectorAll('#prEdit [data-pe="go"]').length===2&&document.querySelectorAll('#prEdit [data-pe="cancel"]').length===2,'both buttons sit above and below the edit section'); cb2.click(); await w(500);
- ok(S.step==='enroll'&&S.actual.how==='presented'&&S.elected.products.some(function(p){ return p.k==='acc'; }),'cancel edits enrolls the plan as presented');
+ /* Need to make edits? on top of Enroll, then Cancel puts it back as it was */
+ document.querySelector('#enGate [data-eg="edit"]').click(); await w(400);
+ var px=document.querySelector('#enEditBody [data-act="rm"][data-k="acc"]'); if(px) px.click(); await w(300);
+ document.querySelector('#enEdit [data-pe="cancel"]').click(); await w(500);
+ ok(S.step==='enroll'&&S.actual.how==='presented'&&S.elected.products.some(function(p){ return p.k==='acc'; })&&Math.abs(tierTotals('actual').mo-S.elected.monthly)<0.01&&!document.getElementById('enEdit'),'cancel edits keeps the enrollment as it was');
+ /* switching the BASE plan (Jesse, 9 Nov): Cigna from a Manhattan presentation - enrolled, and the gap page always lists it */
+ document.querySelector('#enGate [data-eg="edit"]').click(); await w(400);
+ var bsel=document.querySelector('#enEditBody [data-act="actbase"]'); ok(!!bsel&&bsel.querySelectorAll('optgroup').length>=3&&!!bsel.querySelector('option[value="lx-mh-cg|best"]'),'the plan picker groups every base plan');
+ bsel.value='lx-mh-cg|best'; bsel.dispatchEvent(new Event('change')); await w(500); document.querySelector('#enEdit [data-pe="go"]').click(); await w(500);
+ ok(planBase(S.elected.cfg)==='triad'&&chosenTier()==='best'&&S.chosen.lineup==='lx-mh-cg'&&recGap().some(function(g){ return /^base:/.test(g.key); })&&/different plan from the one you presented/.test(document.getElementById('enDiff').innerText),'a different base plan enrolls and always needs the acknowledgment');
+ pbApplyLineup('mh'); S.chosen={tier:'better',lineup:'mh'};
   /* section 11 says what they did (Jesse, 17 Oct) */
  S.chosen={tier:'better'}; S.client.sname='Kristal Stamm'; S.rec=pkSnap('best'); S.rec.by='presented'; actualSeed('best'); S.cfg.actual.afc='Elite'; priceTier('actual');
  var g1=gapSpoken(S.rec,actualSnap()); ok(g1.kind==='same'&&/Affordable Choice level/.test(g1.lowered),'same plan, a level lowered: '+JSON.stringify(g1));
@@ -163,11 +173,11 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  S.chosen={tier:'better'}; actualSeed('better'); goStep('review'); await w(1800); var rv=document.getElementById('rvFrame').contentDocument; reviewWire(rv,'better');
  var s11=Array.prototype.filter.call(rv.querySelectorAll('[data-tier="below"]'),function(x){ return x.dataset.ppEd; }); ok(s11.length===3&&/speed dial/.test(s11[2].textContent)&&!/own family/.test(rv.body.textContent)&&/When we first spoke/.test(s11[0].textContent),'section 11 is the softer version on screen');
  ok(s11.every(function(x){ return x.dataset.rv!=null; }),'the new lines stay on their own page');
-  /* Present: switching the plan loads that package as built on the Quote (Jesse, 17 Oct) */
- S.chosen={tier:'better'}; delete S.actual; goStep('present'); await w(2500); var nv=presentNav(); presentGo(nv[nv.length-1]); await w(300); document.querySelector('#prNav [data-go="edits"]').click(); await w(400);
- var sel=document.querySelector('#prEditBody [data-act="actname"]'); sel.value='good'; sel.dispatchEvent(new Event('change')); await w(300);
- ok(S.actual.from==='good'&&Math.abs(tierTotals('actual').mo-tierTotals('good').mo)<0.01&&/Essential/.test(document.querySelector('#prEditBody .pbcol.actual').textContent),'picking Essential loads the Essential package from the Quote');
- document.querySelector('[data-pe="go"]').click(); await w(500); ok(S.step==='enroll'&&chosenTier()==='good'&&enrolledTier()==='actual','enrolling from it makes Essential their plan');
+  /* Enroll's plan picker: another level loads that package as built on the Quote (Jesse, 17 Oct; on Enroll since 9 Nov) */
+ S.chosen={tier:'better',lineup:'mh'}; delete S.actual; goStep('present'); await w(2500); var nv=presentNav(); presentGo(nv[nv.length-1]); await w(300); document.querySelector('#prNav [data-go="edits"]').click(); await w(500);
+ var sel=document.querySelector('#enEditBody [data-act="actbase"]'); sel.value='mh|good'; sel.dispatchEvent(new Event('change')); await w(300);
+ ok(S.actual.from==='good'&&Math.abs(tierTotals('actual').mo-tierTotals('good').mo)<0.01&&/Essential/.test(document.querySelector('#enEditBody .pbcol.actual select').selectedOptions[0].textContent),'picking Essential loads the Essential package from the Quote');
+ document.querySelector('#enEdit [data-pe="go"]').click(); await w(500); ok(S.step==='enroll'&&chosenTier()==='good'&&enrolledTier()==='actual','enrolling from it makes Essential their plan');
   /* Close: re-send the digital business card (Jesse, 17 Oct) */
  var rvd=document.getElementById('rvFrame').contentDocument; S.agentCard='mycard.example/jesse'; reviewWire(rvd,'better');
  var cbx=rvd.querySelector('.pp-cardbox'); ok(!!rvd.querySelector('.pp-cardsay')&&cbx&&cbx.textContent.indexOf('https:'+'//mycard.example/jesse')>=0&&!!cbx.querySelector('.pp-copy')&&!!cbx.querySelector('.pp-sms'),'the Close re-sends the business card: line, link, Copy and Text them');
@@ -188,7 +198,7 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  var rvx=document.getElementById('rvFrame').contentDocument; reviewWire(rvx,'best'); var sm11=rvx.querySelector('[data-gap="same"]'), c11=sm11.cloneNode(true); c11.querySelectorAll('.pp-off').forEach(function(e){ e.remove(); });
  ok(/left out/.test(c11.textContent)&&!/lowered/.test(c11.textContent),'only a product left out: section 11 does not say levels were lowered ('+c11.textContent.replace(/\s+/g,' ').trim()+')');
   /* gut-check fixes (18 Oct) */
- S.chosen={tier:'better'}; delete S.elected; actualSeed('better'); S.actual.how='presented'; electedLock(); var el0=JSON.stringify(S.elected.products);
+ S.chosen={tier:'better'}; delete S.elected; actualSeed('better'); S.actual.how='presented'; S.elected=actualSnap(); S.elected.locked=1; electedLock(); var el0=JSON.stringify(S.elected.products);
  (S.packages.actual.dropped=S.packages.actual.dropped||[]).push('acc'); priceTier('actual'); goStep('enroll'); await w(300);
  ok(JSON.stringify(S.elected.products)===el0,'carrier edits on the review never rewrite what they chose at Enroll');
  S.chosen={tier:'good'}; renderReview(); await w(600); ok(S.actual.from==='good'&&reviewT()==='actual','a card from a package they are no longer on starts again from the chosen plan');

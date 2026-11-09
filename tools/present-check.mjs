@@ -296,6 +296,12 @@ const TEST = `(async function(){
   /* Send the quote lives at the bottom of Quote */
   for(var qw=0;qw<40&&!document.querySelector('#prNav [data-go="quote"]');qw++) await wait(75); document.querySelector('#prNav [data-go="quote"]').click(); await wait(100);
   ok(S.step==='quote'&&!!document.querySelector('#step-quote #sendQuote #emailBtn')&&!document.querySelector('#step-enroll #emailBtn'),'Not today → Quote, where Send the quote now lives');
+  /* Jesse, 9 Nov: Enroll straight from the sidebar asks first - the applications stay closed until the plan is confirmed */
+  window.celebrate=function(){}; delete S.elected; goStep('enroll'); await wait(300);
+  var eg=document.getElementById('enGate');
+  ok(/Confirm what they’re enrolling in/.test(eg.innerText)&&!!eg.querySelector('[data-eg="as"]')&&!!eg.querySelector('[data-eg="edit"]')&&getComputedStyle(document.getElementById('enLife')).display==='none'&&!S.elected,'straight from the sidebar: confirm first (as presented / with plan edits), applications closed, nothing enrolled');
+  eg.querySelector('[data-eg="as"]').click(); await wait(400);
+  ok(S.elected&&S.elected.locked&&/as presented/.test(document.getElementById('enGate').innerText)&&!!document.querySelector('#enGate [data-eg="edit"]')&&getComputedStyle(document.getElementById('enLife')).display!=='none','confirmed: the applications open, with "Need to make edits?" on top');
   /* Enroll in call order */
   goStep('enroll'); await wait(300);
   var pp=document.getElementById('enPeople');
@@ -388,11 +394,15 @@ const TEST = `(async function(){
   pbApplyLineup('cg'); chooseTier('best'); enrollAsPresented(); await wait(300);
   ok(mhBase==='afc'&&S.actual.lineup==='cg'&&effCfg('actual').base==='triad'&&/Cigna/.test($('enrollSummary').innerText),'presenting another lineup re-starts the enrollment from it (Enroll button)');
   pbApplyLineup('mh'); chooseTier('best'); goStep('enroll'); await wait(300);
-  ok(S.actual.lineup==='mh'&&(effCfg('actual').base||'afc')==='afc'&&!/Cigna PPO/.test($('enrollSummary').querySelector('.en-pk').innerText),'and straight from the sidebar: Enroll follows the chosen lineup');
+  ok(planBase(S.elected.cfg)==='triad'&&/Confirm what they’re enrolling in/.test($('enGate').innerText)&&/Manhattan Comprehensive/.test($('enGate').innerText)&&$('step-enroll').classList.contains('en-gated'),'straight from the sidebar after presenting another plan: Enroll asks again (never rewrites the enrollment, never shows the old one)');
+  $('enGate').querySelector('[data-eg="as"]').click(); await wait(300);
+  ok(S.actual.lineup==='mh'&&(effCfg('actual').base||'afc')==='afc'&&!/Cigna PPO/.test($('enrollSummary').querySelector('.en-pk').innerText),'and confirming it enrolls the plan now presented');
   /* and a file saved before lineups were recorded (Calleen's, 5 Nov): Manhattan Essential enrolled, then Bright Life chosen */
   pbApplyLineup('mh'); chooseTier('good'); enrollAsPresented(); await wait(300); delete S.actual.lineup; delete S.elected.lineup; delete S.chosen.lineup;
   pbApplyLineup('lx-mh-cg'); chooseTier('good'); goStep('enroll'); await wait(300);
-  ok(effCfg('actual').base==='brightlife'&&/Bright Life/.test(S.elected.name||'')&&/Bright Life/.test($('enrollSummary').querySelector('.en-pk').innerText),'an older save: Enroll follows the plan the carrier is built on, not the stale enrollment');
+  ok(/Confirm what they’re enrolling in/.test($('enGate').innerText)&&/Bright Life/.test($('enGate').innerText),'an older save: the stale Manhattan enrollment is not shown as theirs - Enroll asks, naming Bright Life');
+  $('enGate').querySelector('[data-eg="as"]').click(); await wait(300);
+  ok(effCfg('actual').base==='brightlife'&&/Bright Life/.test(S.elected.name||'')&&/Bright Life/.test($('enrollSummary').querySelector('.en-pk').innerText),'confirmed: Enroll is the Bright Life plan');
   /* Jesse, 9 Nov: an "Enroll →" at the end of the step row in EVERY presentation - skip the script, same as the last page's button */
   for (const [ln,tr,base] of [['mh','best','afc'],['mh','good','afc'],['cg','best','triad'],['lx-mh-cg','good',null],['lx-mh-cg','best','triad'],['aca','best','aca'],['aca','good','aca'],['vb','better','amaze']]) {
     S.chosen={}; pbApplyLineup(ln); chooseTier(tr); goStep('present');
