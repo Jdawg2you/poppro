@@ -422,6 +422,14 @@ const TEST = `(async function(){
   ok(reviewTokens('best')['tier.recommended']==='Cigna','the Benefits Review says "I recommended the Cigna plan", not "Comprehensive"');
   presentOpen(); await wait(800); ok(planBase(S.rec.cfg)==='triad','re-opening Present on the enrolled plan leaves the record alone');
   await presentIt('custom','best'); await enrChip(); ok(S.rec.lineup==='custom'&&recGap().length===0,'a custom column presented and enrolled: no gap');
+  /* Jesse, 9 Nov: Enroll names the whole plan, and Bright Life / Amaze get an Enroll card like Cigna's */
+  var goEn=async function(ln,t){ pbApplyLineup(ln); goStep('quote'); await wait(200); presentThis(t); await wait(1200); enrollAsPresented(); await wait(600); };
+  await goEn('lx-mh-cg','best');
+  ok(/^✓ Enrolling: Cigna PPO [0-9]+ [+] Manhattan Hospital Indemnity/.test($('enGate').innerText)&&/2027 rate guide/.test($('enTriad').innerText),'Cigna + hospital indemnity: the whole plan is named, and the 2027 rate guide is there: '+$('enGate').innerText.slice(0,90));
+  await goEn('lx-mh-cg','good'); var bxx=$('enTriad');
+  ok(bxx.style.display!=='none'&&/Enrolling .* with Bright Life/.test(bxx.innerText)&&/health form/i.test(bxx.innerText)&&!!bxx.querySelector('a[href*="brightlifehw.com/optimum"]')&&/3 days before the start date/.test(bxx.innerText)&&/ManhattanLife add-ons/.test(bxx.innerText),'Bright Life: its own Enroll card (health form, apply, accepted, ManhattanLife add-ons)');
+  await goEn('vb','better'); bxx=$('enTriad');
+  ok(bxx.style.display!=='none'&&/with Amaze/.test(bxx.innerText)&&!!bxx.querySelector('a[href*="amaze-setup"]')&&/Amaze [+] Manhattan/.test($('enGate').innerText),'Amaze: its own Enroll card (sign-up, setup steps, ManhattanLife add-ons) and the whole plan named: '+$('enGate').innerText.slice(0,90)+' | '+bxx.style.display+' | '+bxx.innerText.slice(0,80));
   pbApplyLineup('mh');
   return {n:nOk, fails:fails};
 })()`;
