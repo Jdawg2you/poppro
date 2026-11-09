@@ -5288,8 +5288,10 @@ function pkSnap(t){ if(!t||!S.packages[t]) return null; var c=effCfg(t), pk=S.pa
     products:(pk.products||[]).filter(function(p){ return (+p.monthly||0)>0; }).map(function(p){
       return {k:p.k, name:String(p.name||'').split(' — ')[0], monthly:+p.monthly||0, sum:pbSummary(p.k,c,p)||''}; }),
     cfg:cfgClone(c), pk:JSON.parse(JSON.stringify({products:pk.products||[],dropped:pk.dropped||[],lb:pk.lb||0,med:pk.med||0}))}; }
-function recLock(t){ var cur=S.rec, snap=pkSnap(t); if(!snap) return;
-  if(!cur||(TIER_ORDER[t]!=null&&TIER_ORDER[cur.tier]!=null&&TIER_ORDER[t]>TIER_ORDER[cur.tier])){ snap.by='presented'; S.rec=snap; autosave(); } }
+/* Jesse, 9 Nov: the recommendation IS what you presented - that exact plan (lineup, base carrier, every product and level),
+   the last one presented, not the "highest column". Re-opening Present on the plan they're already enrolled in never moves it. */
+function recLock(t){ var snap=pkSnap(t); if(!snap) return; snap.by='presented'; snap.lineup=S.lineup||'mh'; snap.name=choiceName(t); S.rec=snap; autosave(); }
+function recIsPlan(R,t){ return !!(R&&t&&R.tier===t&&(R.lineup||'mh')===(S.lineup||'mh')&&R.cfg&&planBase(R.cfg)===planBase(effCfg(t))); }
 /* What they chose is locked when it's decided: by the end-of-Present buttons, or here the first time (and again only
    if the package changes on Enroll). The Benefits Review's carrier edits to the card never rewrite it (gut check, 18 Oct). */
 /* Same tier name, different plan (Manhattan Comprehensive vs Cigna's best): a different lineup, or a different carrier the
@@ -5342,7 +5344,7 @@ function renderEnGate(){ var g=$('enGate'), st=$('step-enroll'); if(!g) return; 
     renderActual();
     g.querySelectorAll('[data-pe]').forEach(function(b){ b.onclick=function(){ if(b.dataset.pe==='go') enEditGo(); else enEditCancel(); }; }); return; }
   if(ok){ var E=S.elected, how=S.actual&&S.actual.how;
-    g.innerHTML='<div class="eg-box eg-ok"><span>✓ <b>Enrolling: '+esc(E.name||'')+'</b> · '+fmt2(E.monthly)+'/mo '+(how==='edited'?'<i>with plan edits</i>':(how==='presented'?'<i>as presented</i>':''))+'</span><button type="button" class="eg-btn" data-eg="edit">✎ Need to make edits?</button></div>'; }
+    g.innerHTML='<div class="eg-box eg-ok"><span>✓ <b>Enrolling: '+esc(planLabel(E))+'</b> · '+fmt2(E.monthly)+'/mo '+(how==='edited'?'<i>with plan edits</i>':(how==='presented'?'<i>as presented</i>':''))+'</span><button type="button" class="eg-btn" data-eg="edit">✎ Need to make edits?</button></div>'; }
   else g.innerHTML='<div class="eg-box eg-need"><div class="eg-h">Confirm what they’re enrolling in</div><p>'
       +(t?'You presented <b>'+esc(enGatePlanName(t))+'</b> · '+fmt2(tierTotals(t).mo||0)+'/mo.':'No plan has been presented yet. Pick it with them under plan edits, or go back to the Quote and present one.')
       +' The applications open once it’s confirmed — that’s the record of what they chose against what you recommended.</p>'
@@ -5364,7 +5366,7 @@ function gapOf(R,E,miss){ var out=[]; if(!R||!E) return out; miss=miss||'Decline
   var xb=R.cfg&&E.cfg&&planBase(R.cfg)!==planBase(E.cfg);
   var bl=function(X){ var n=BASE_NAME[planBase(X.cfg)]||'', m=String(X.name||''), l=(!m||m===n)?n:(m.indexOf(n)>=0?m:(n?n+' '+m:m)); return l+' ('+fmt2(X.monthly)+' a month)'; };
   if(xb) out.push({key:'base:'+planBase(E.cfg),kind:'below',text:'A different plan from the one you presented: '+bl(E)+' instead of '+bl(R)});
-  else if(TIER_ORDER[E.tier]<TIER_ORDER[R.tier]) out.push({key:'tier',kind:'below',text:'Below our recommendation: '+E.name+' instead of '+R.name+' ('+fmt2(E.monthly)+' vs '+fmt2(R.monthly)+' a month)'});
+  else if((R.lineup||'mh')===(E.lineup||'mh')&&{mh:1,aca:1}[R.lineup||'mh']&&TIER_ORDER[E.tier]<TIER_ORDER[R.tier]) out.push({key:'tier',kind:'below',text:'Below what you presented: '+E.name+' instead of '+R.name+' ('+fmt2(E.monthly)+' vs '+fmt2(R.monthly)+' a month)'});
   var has={}; E.products.forEach(function(p){ has[p.k]=p; });
   R.products.forEach(function(p){ var e=has[p.k]; if(xb&&(p.k==='base'||p.k==='afc')) return;   /* the base plan itself is the line above */
     if(!e) out.push({key:'p:'+p.k,kind:'declined',name:prodName(p),text:miss+': '+prodName(p)+(p.sum?' ('+p.sum+')':'')+' — '+fmt2(p.monthly)+' a month'});
@@ -5382,9 +5384,9 @@ function renderRecGap(){ var host=$('enDiff'); if(!host) return; var R=S.rec, E=
       +(S.recommended?'<button type="button" class="rg-btn" id="rgUseRec">Record '+esc(TIER_NAME[S.recommended])+' (the tool’s REC) as our recommendation</button>':'')+'</div>';
     if($('rgUseRec')) $('rgUseRec').onclick=function(){ var s=pkSnap(S.recommended); if(s){ s.by='marked on Enroll'; S.rec=s; autosave(); renderRecGap(); } };
     return; }
-  var gap=recGap(), head='<div class="rg-head"><span><b>Recommended</b> '+esc(R.name)+' · '+fmt2(R.monthly)+'/mo <small>'+esc(R.by||'presented')+' '+esc(R.at||'')+'</small></span><span><b>Elected</b> '+esc(E.name)+' · '+fmt2(E.monthly)+'/mo</span></div>';
-  if(!gap.length){ host.innerHTML='<div class="rg-box rg-ok">'+head+'<div class="rg-match">✓ They took what you recommended.</div></div>'; return; }
-  host.innerHTML='<div class="rg-box">'+head+'<div class="rg-sub">Where it falls short of the recommendation — check each one the client knowingly declined. This is the record the declination page and the Benefits Review will use.</div>'
+  var gap=recGap(), head='<div class="rg-head"><span><b>Presented</b> '+esc(planLabel(R))+' · '+fmt2(R.monthly)+'/mo <small>'+esc(R.by||'presented')+' '+esc(R.at||'')+'</small></span><span><b>Elected</b> '+esc(planLabel(E))+' · '+fmt2(E.monthly)+'/mo</span></div>';
+  if(!gap.length){ host.innerHTML='<div class="rg-box rg-ok">'+head+'<div class="rg-match">✓ They’re enrolling in exactly what you presented.</div></div>'; return; }
+  host.innerHTML='<div class="rg-box">'+head+'<div class="rg-sub">Where it falls short of what you presented — check each one the client knowingly declined. This is the record the declination page and the Benefits Review will use.</div>'
     +gap.map(function(g){ var a=A[g.key]||{}; return '<div class="rg-row rg-'+g.kind+(g.hist?' rg-hasHist':'')+'"><label><input type="checkbox" data-gk="'+esc(g.key)+'"'+(a.ack?' checked':'')+'> <span>'+esc(g.text)+(g.hist?'<span class="rg-hist">⚑ '+esc(g.hist)+' — this is the coverage that speaks to it. Make sure they heard that.</span>':'')+'</span></label>'
       +'<input class="rg-why" data-gw="'+esc(g.key)+'" placeholder="why (optional) — budget, has it through work…" value="'+esc(a.why||'')+'"></div>'; }).join('')
     +'</div>';
@@ -5452,6 +5454,8 @@ function actualSeed(t){ if(!t||!S.packages[t]) return; S.cfg=S.cfg||{}; S.cfg.ac
   Object.keys(PB_OPEN).forEach(function(k){ if(k.indexOf('actual|')===0) delete PB_OPEN[k]; }); priceTier('actual'); }
 function actualSnap(){ var s=pkSnap('actual')||{products:[]}, b=effCfg('actual').base; s.tier=S.actual.tier; if(S.actual.lineup) s.lineup=S.actual.lineup;
   s.name=b==='lifex'?'LifeX':b==='triad'?'Cigna':b==='brightlife'?'Bright Life':(tierDisp(s.tier)||''); return s; }
+/* the plan's full name on screen: Manhattan plans say so ("Manhattan Complete"), the others already name their carrier */
+function planLabel(X){ var n=String((X&&X.name)||''); return (X&&X.cfg&&planBase(X.cfg)==='afc'&&!/^Manhattan/.test(n)&&!(X.lineup&&LINEUP_NAMES[X.lineup]))?'Manhattan '+n:n; }
 /* Recommended vs what they have, side by side (Jesse, 17 Oct): every product's level, then what the plan pays on a few
    real events - small ones usually match, the big ones show the difference. Built for the clarity / declination page too.
    The recommendation is priced from its own saved settings (S.rec.cfg/pk); one saved before those existed uses the
@@ -5516,7 +5520,7 @@ function cmpHTML(){ if(typeof BEN_DATA!=='undefined') ['afc','his'].forEach(func
         ).concat((x.oweParts||[]).map(function(q){ return '−'+fmt2(q.v)+' '+esc(String(q.lab).toLowerCase())+' (they pay)'; })); return '<small class="how">'+L.join('<br>')+'</small>'; };
     return '<tr class="'+(Math.abs(gap)>=1?'d':'')+(hist?' h':'')+'"><th>'+esc(e.lab)+'<small>'+fmt2(e.bill)+' bill'+(e.amb?' · includes an ambulance ride':'')+'</small></th><td>'+fmt2(e.r)+you(e.rn)+how(e.rx,e.rh)+'</td><td>'+fmt2(e.a)+you(e.an)+how(e.ax,e.ah)
       +(Math.abs(gap)>=1?'<b class="gap '+(gap>0?'dn':'up')+'">'+(gap>0?fmt2(gap)+' less':fmt2(-gap)+' more')+'</b>':'<small class="same">same</small>')+'</td></tr>'; }).join('');
-  return norec+'<table class="rv-cmp"><thead><tr><th></th><th>'+(base?'What they chose':'Our recommendation')+'<small>'+esc(R.name)+' · '+fmt2(R.monthly)+'/mo</small></th><th>'+(base?'What they have':'Plan elected')+'<small>'+esc(A.name)+' · '+fmt2(A.monthly)+'/mo</small></th></tr></thead>'
+  return norec+'<table class="rv-cmp"><thead><tr><th></th><th>'+(base?'What they chose':'What you presented')+'<small>'+esc(R.name)+' · '+fmt2(R.monthly)+'/mo</small></th><th>'+(base?'What they have':'Plan elected')+'<small>'+esc(A.name)+' · '+fmt2(A.monthly)+'/mo</small></th></tr></thead>'
     +rows.join('')+'<tbody class="ev"><tr class="gh"><th colspan="3">If this happens — what the plan pays</th></tr>'+evRows+'</tbody></table>'
     +(X.own||base?'':'<div class="rv-cmpnote">This recommendation was saved before plan details were kept, so it is priced from today’s '+esc(R.name)+' package on the quote.</div>')
     +(F.any?'<div class="rv-cmpnote"><span class="rv-sw"></span> Gold: speaks to their family history of '+esc(F.label)+(F.who?' ('+esc(F.who)+')':'')+'.</div>':''); }
@@ -5664,7 +5668,7 @@ function reviewTokens(t){ t=reviewT()||t; var C=S.client||{}, R=reviewState(), T
   (function(){ var cd=careCardData(); T['card.doctor']=join([cd.md,cd.sd,cd.kd].filter(Boolean)); })();
   T['tier.elected']=actualOn()?actualSnap().name:(TIER_NAME[t]||'');
   var RB=S.rec||(S.recommended&&pkSnap(S.recommended));   /* older files: the tool's recommendation stands in */
-  if(actualOn()&&RB){ var GS=gapSpoken(RB,actualSnap()); T['gap.missing']=GS.missing; T['gap.lowered']=GS.lowered; T['gap.added']=GS.added; T['gap.kind']=GS.kind; } T['tier.recommended']=TIER_NAME[(S.rec&&S.rec.tier)||S.recommended]||'';
+  if(actualOn()&&RB){ var GS=gapSpoken(RB,actualSnap()); T['gap.missing']=GS.missing; T['gap.lowered']=GS.lowered; T['gap.added']=GS.added; T['gap.kind']=GS.kind; } T['tier.recommended']=(function(R){ if(!R) return TIER_NAME[S.recommended]||''; var b=R.cfg?planBase(R.cfg):'afc', LN=R.lineup&&LINEUP_NAMES[R.lineup]; if(LN&&LN[R.tier]) return LN[R.tier][0].replace(/^The /,''); return b==='afc'?(TIER_NAME[R.tier]||''):(BASE_NAME[b]||TIER_NAME[R.tier]||''); })(S.rec);   /* Jesse, 9 Nov: the plan you presented, by name - not the column */
   var DQ=drxParts(); T['drx.drug']=drxWho().length?DQ.drug||drxWho()[0].drug:''; T['drx.pct']=DRX_PCT; T['drx.link']=drxLink(); T['drx.code']=drxCode(); T['drx.howto']=drxWho().length?'1':'';   /* the Direction Rx line has two versions (Jesse, 23 Oct): on a GLP-1 (now or before, either adult - the Intake answer or the medication list) or not */
   var G1=(S.intake&&S.intake.glp1)||{}, onG=['p','s'].some(function(w){ return (G1[w]||{}).on==='Yes'; })||((S.intake&&S.intake.medList)||[]).some(function(m){ return GLP1_RX.test(String((m&&m.name)||'')); });
   T['client.on_glp1']=onG?'1':''; T['client.no_glp1']=onG?'':'1';   /* the block's switch; its words are Health ZONE's */
@@ -7715,7 +7719,8 @@ function presentTier(){ return chosenTier()||S.activeTab||'best'; }
 /* "Enrolling as presented": the enrollment starts fresh from the plan just presented - every presentation's Enroll button
    (Manhattan's script close, and Cigna / Bright Life / ACA / Amaze's "Go to Enroll"). Jesse, 7 Nov: presenting Cigna after
    Manhattan went to Enroll still holding the Manhattan plan. */
-function enrollAsPresented(){ EN_EDIT=null; var pt=presentTier(); chosenSet(pt); actualSeed(pt); S.actual.how='presented'; S.elected=actualSnap(); S.elected.locked=1; autosave(); celebrate('confetti',enrollCheer()); goStep('enroll'); }
+function enrollAsPresented(){ EN_EDIT=null; var pt=presentTier(); chosenSet(pt); if(!recIsPlan(S.rec,pt)) recLock(pt);   /* reached Present from the sidebar: what's on screen is what was presented */
+  actualSeed(pt); S.actual.how='presented'; S.elected=actualSnap(); S.elected.locked=1; autosave(); celebrate('confetti',enrollCheer()); goStep('enroll'); }
 /* ===== Celebrations (Jesse, 9 Oct) ===== the wins get a moment: "They're enrolling" sets off a full-page confetti storm,
    choosing a plan floats a thumbs-up. Drawn on a throwaway canvas that ignores clicks and removes itself; reduced
    motion gets a short, still version. Never on the printout. */
@@ -7792,8 +7797,8 @@ function nonMhNotice(t){ var N=tierNonMh(t); if(!N) return; var first=((S.client
     +'<li><b>Enroll them with '+esc(N.name)+'</b>: <a href="'+esc(N.url())+'" target="_blank" rel="noopener">'+esc(N.lab)+' ↗</a></li></ul>'
     +'<p style="margin:0;padding:10px 12px;background:#fff8e6;border:1px solid #e6d3a3;border-radius:8px"><b>💾 Save Quote/Package of Protection when you’re done.</b> It keeps everything you collected; <b>Load Quote</b> brings it all back later.</p>';
   $('nmhModal').classList.add('open'); }
-function presentOpen(){ if(triadFlowOn(chosenTier())||blFlowOn(chosenTier())||acaFlowOn(chosenTier())){ recLock(chosenTier()); goStep('present'); return; } if(tierNonMh(chosenTier())){ nonMhNotice(chosenTier()); return; } if(!chosenTier()){ var t=S.activeTab||'best'; if(!confirm('No package is marked as their plan yet. Present '+TIER_NAME[t]+'?')) return; chooseTier(t); }
-  S.present=S.present||{}; S.present.pg=S.present.pg||0; recLock(chosenTier()); goStep('present'); }
+function presentOpen(){ if(triadFlowOn(chosenTier())||blFlowOn(chosenTier())||acaFlowOn(chosenTier())){ if(!enrollConfirmed()) recLock(chosenTier()); goStep('present'); return; } if(tierNonMh(chosenTier())){ nonMhNotice(chosenTier()); return; } if(!chosenTier()){ var t=S.activeTab||'best'; if(!confirm('No package is marked as their plan yet. Present '+TIER_NAME[t]+'?')) return; chooseTier(t); }
+  S.present=S.present||{}; S.present.pg=S.present.pg||0; if(!enrollConfirmed()) recLock(chosenTier()); goStep('present'); }
 function presentHas(t,cond){ if(!cond) return true; var m=String(cond).match(/^(has|base):(\w+)$/); if(!m) return true;
   if(m[1]==='base') return (effCfg(t).base||'afc')===m[2];
   var pk=S.packages[t]||{}; return (pk.products||[]).some(function(p){ return (p.k===m[2]||(m[2]==='lb'&&(p.k==='lbp'||p.k==='lbs')))&&(+p.monthly||0)>0; }); }

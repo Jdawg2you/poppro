@@ -411,6 +411,18 @@ const TEST = `(async function(){
     if(eb[0]) eb[0].click(); await wait(300);
     ok(eb.length===1&&last&&S.step==='enroll'&&(effCfg('actual').base||'afc')===want&&S.actual.lineup===ln,'Enroll → ends the step row on '+ln+'/'+tr+' and enrolls the presented plan ('+eb.length+' button, last='+last+', step '+S.step+', base '+(effCfg('actual').base||'afc')+' vs '+want+')');
   }
+  /* Jesse, 9 Nov: the record is the plan PRESENTED (last one, exact plan), not the highest column */
+  var enrChip=async function(){ var b=[].slice.call(document.querySelectorAll('#prChips .pr-enr, .trd-chips .pr-enr')).filter(function(x){ return x.offsetParent; })[0]; if(b) b.click(); await wait(500); };
+  var presentIt=async function(ln,t){ pbApplyLineup(ln); goStep('quote'); await wait(200); presentThis(t); for(var k=0;k<20&&!document.querySelector('#prChips .pr-enr, .trd-chips .pr-enr');k++) await wait(150); await wait(300); };
+  S.chosen={}; delete S.elected; S.rec=null;
+  await presentIt('mh','best'); await presentIt('lx-mh-cg','good'); await enrChip();
+  ok(planBase(S.rec.cfg)==='brightlife'&&S.rec.lineup==='lx-mh-cg'&&recGap().length===0&&/exactly what you presented/.test($('enDiff').innerText),'Comprehensive then Bright Life presented, Bright Life enrolled: the record is Bright Life, no gap');
+  await presentIt('lx-mh-cg','best'); await enrChip();
+  ok(planBase(S.rec.cfg)==='triad'&&recGap().length===0,'Cigna presented and enrolled: no gap');
+  ok(reviewTokens('best')['tier.recommended']==='Cigna','the Benefits Review says "I recommended the Cigna plan", not "Comprehensive"');
+  presentOpen(); await wait(800); ok(planBase(S.rec.cfg)==='triad','re-opening Present on the enrolled plan leaves the record alone');
+  await presentIt('custom','best'); await enrChip(); ok(S.rec.lineup==='custom'&&recGap().length===0,'a custom column presented and enrolled: no gap');
+  pbApplyLineup('mh');
   return {n:nOk, fails:fails};
 })()`;
 
