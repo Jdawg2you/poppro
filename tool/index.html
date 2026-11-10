@@ -6446,8 +6446,7 @@ function triadEnrollEmail(t){ var L=brochList(t), first=triadFirst(), plan=triad
     +'Congratulations, and thank you for applying today! It was a real pleasure working with you — you’ve done something good for yourself'+(fam?' and your family':'')+'.\n\n'
     +'Here’s what happens next with your Cigna PPO '+plan+' plan:\n'
     +'1. The plan reviews your application. It’s fully underwritten, which is part of why the price is what it is — and it means approval isn’t automatic.\n'
-    +'2. When you’re approved, you’ll get a final offer by email. It has to be signed by '+d.sign+'. If it isn’t signed by then, there’s no coverage — so watch for it, and tell me the moment it arrives.\n'
-    +'3. The final monthly rate is set at approval. We quoted '+fmt2(q)+'/mo, and it can land between '+fmt2(Math.max(0,q-r))+' and '+fmt2(q+r)+'. You’ll see it before you sign.\n\n'
+    +'2. When you’re approved, you’ll get a final offer by email. It has to be signed by '+d.sign+'. If it isn’t signed by then, there’s no coverage — so watch for it, and tell me the moment it arrives.\n\n'   /* Jesse, 9 Nov: no rate-range line in the client's email */
     +'YOUR PLAN DOCUMENTS\nPlan summary: '+triadDrive(TRIAD_SBC[plan]||TRIAD_SBC['3500'])+'\nPrescription list (summary): '+triadDrive(TRIAD_FORMULARY_SUM)+'\nFind a Cigna PPO doctor: '+TRIAD_PROVIDER_URL+'\n\n'
     +(L.list.length?'Your ManhattanLife plans are reviewed on their own. Here are their brochures:\n'+brochLines(L)+'\n\n':'')
     +(LB.length?'Your plan also includes living benefits:\n'+LB.map(function(x){ return '• '+x.who+' — '+(x.face?'$'+x.face.toLocaleString('en-US')+' of ':'')+(x.term?x.term+' ':'')+'Living Benefits coverage with Term Life Protection with '+x.carrier; }).join('\n')+'\n'+LB_BLURB+'\n\n':'')
@@ -9521,7 +9520,7 @@ var LINEUP_BASES={'aca':['aca','aca','aca'],'vb':['aca','amaze','amaze'],'mh':['
    the $2,500 admission, rounded down to $1,000 ($1,000-$10,000); Out-of-Pocket $200 a day + $2,500 admission, + $3,000
    outpatient under an $8,000 deductible. */
 function acaBuster(c,ded){ ded=+ded||5000; c.his={ben:Math.max(1000,Math.min(10000,Math.floor((ded-2500)/1000)*1000)),amb:1,outp:0};
-  c.gap={daily:'200',adm:'2500',outp:ded<8000?'3000':'0',ea:1}; return c; }
+  c.gap={daily:'200',adm:'2500',outp:'1000',ea:1}; return c; }   /* Jesse, 9 Nov: Out-of-Pocket on the ACA lineup defaults to $1,000 outpatient */
 function cignaHIS(ded){ return Math.min(10000,Math.ceil((+ded||3500)/1000)*1000); }
 function pbTierDefaults(t,lu,baseOverride){
   var i=['good','better','best'].indexOf(t), c=cfgClone(TIERCFG[t]), drop=[];
