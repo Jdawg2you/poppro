@@ -149,7 +149,7 @@ if (mode === 'engine') {
     const want = ['Hospital stay (national average)', 'ER visit — admitted, 3 days', 'Broken arm — cast, no surgery', 'Broken arm — needs surgery', 'Heart attack', 'Cancer — first year of treatment', 'Doctor visit', 'Urgent care visit', 'ER visit (not admitted)', 'MRI', 'Outpatient knee surgery'];
     ok(labels.length === 12 && want.every(w => labels.includes(w)), 'one scenario list for both cards, all 12 scenarios (appendicitis added 9 Oct) (' + labels.length + ')');
     ok(/src:'Derived: 3 of the 5\.2-day/.test(blk), 'ER-admitted 3-day stay cites how it was derived'); }
-  ok(/ev:\[evScn\('hosp'\),evScn\('urgent'\)\]/.test(html), 'new cases start with hospital stay on top and urgent care below');
+  ok(/ev:\[evScn\('arm'\),evScn\('append'\)\]/.test(html), 'new cases start with the broken arm on top and appendicitis below (Jesse, 9 Nov)');
   { const a = html.indexOf('var showEvents=false'), b = html.indexOf('/* ---- last page', a), blk = html.slice(a, b);
     ok(/po-newpage po-evpage/.test(blk) && !/\bevM\b|\bevE\b/.test(blk), 'printout: both examples sit on their own page, no leftover old variables'); }
   for (const gone of ['id="b_daily"', 'id="b_adm"', 'id="b_his"', 'id="b_other"', 'id="r_pay"', 'id="r_aca"']) ok(!html.includes(gone), 'hand-typed field removed: ' + gone);

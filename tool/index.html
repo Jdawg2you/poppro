@@ -1193,6 +1193,24 @@ body.client #classicWrap>summary{display:none}
      above and below the gold offer and the brand sits in the middle (Jesse, 9 Nov) */
   html body .brandbar:has(+ #clientStrip:not([style*="none"])){padding-bottom:28px}
   html body .brandbar .toolbar{margin-bottom:0}
+  .sharebtn{font:inherit;font-size:12.5px;font-weight:800;letter-spacing:.02em;border-radius:8px;padding:8px 14px;cursor:pointer;border:1.5px solid var(--gold,#c3a14e);background:#fffaf0;color:#10233e;margin-left:8px;white-space:nowrap}
+  .sharebtn:hover{background:var(--gold,#c3a14e)}body.sharing .sharebtn{background:#10233e;color:#fff;border-color:#10233e}
+  body.sharing #verBanner,body.sharing #rail,body.sharing #viewseg,body.sharing .brandbar .toolbar,body.sharing #csCaret,body.sharing .fab-save,body.sharing #qnFab{display:none!important}
+  html body.sharing .brandbar{display:none!important}html body.sharing #clientStrip{background:none!important;border:0!important;padding:0!important;margin:0!important;min-height:0!important;box-shadow:none!important}
+  html body.sharing #clientStrip>*:not(.cs-top),html body.sharing .cs-top>*:not(#shareBtn){display:none!important}
+  html body.sharing #shareBtn{position:fixed;top:10px;right:12px;z-index:9999;opacity:.8;box-shadow:0 2px 10px rgba(0,0,0,.18)}html body.sharing #shareBtn:hover{opacity:1}
+  /* Client View check-offs + the plan as one complete plan (Jesse, 9 Nov) */
+  .po-pick{display:flex;flex-wrap:wrap;gap:10px 22px;align-items:center;margin:12px 0 4px;padding:11px 14px;border:1px solid #e3d9bf;border-radius:12px;background:#fffdf7}
+  .po-pickrow{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.po-pickl{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted,#6b7280);margin-right:2px}
+  .po-chip{font:inherit;font-size:13.5px;font-weight:700;display:inline-flex;align-items:center;gap:8px;padding:7px 14px 7px 9px;border-radius:999px;border:1.5px solid #d6cdb4;background:#fff;color:#4a5568;cursor:pointer}
+  .po-chip .bx{width:18px;height:18px;border-radius:5px;border:1.5px solid #c9bd9b;display:inline-flex;align-items:center;justify-content:center;font-size:12px;line-height:1;background:#fff}
+  .po-chip.on{border-color:var(--navy,#10233e);color:var(--navy,#10233e);background:#f4f1e8}.po-chip.on .bx{background:var(--gold,#c3a14e);border-color:var(--gold,#c3a14e);color:#10233e}
+  @media print{.po-pick{display:none!important}}
+  #printout .po-inchd{font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#8a6a1f;padding:4px 16px 4px}
+  #printout .po-li.po-inc{display:flex;gap:9px;align-items:flex-start;justify-content:flex-start}
+  #printout .po-li.po-inc .ck{flex:0 0 18px;height:18px;border-radius:50%;background:#e7f4ec;color:#2f7d4a;font-style:normal;font-weight:800;font-size:11px;display:inline-flex;align-items:center;justify-content:center;margin-top:1px}
+  #printout .po-li.po-inc>span{display:block;text-align:left;font-weight:600}#printout .po-li.po-inc small.po-sum{display:block;background:none!important;padding:0!important;border:0!important;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-weight:400;color:#6b7280;font-size:12px;margin-top:2px}
+  #printout .evdb{font-size:12.5px;color:#4a5568}#printout .evdb b{display:block;color:#2f7d4a;font-size:14px}
   .brand b{font-size:22px;letter-spacing:.2px}
   .btn-ghost,.btn-gold{border-radius:7px}
   .btn-gold{color:#10233e;border-color:#a98a3e}
@@ -1361,7 +1379,7 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
       <div class="seg noprint" id="viewseg">
         <button data-view="agent" class="on">Agent workspace</button>
         <button data-view="client">Client view</button>
-      </div></div>
+      </div><button type="button" class="sharebtn noprint" id="shareBtn" onclick="shareScreen()" title="Client View, full screen - for CrankWheel or any screen share. Esc to stop.">🖥 Share screen</button></div>
     <div class="grid8">
       <div class="fld"><label>Primary name</label><input id="c_pname" readonly></div>
       <div class="fld"><label>Spouse name</label><input id="c_sname" readonly></div>
@@ -3749,7 +3767,7 @@ function blankState(){
       best:{products:[],dropped:[],lb:0,lbCarrier:'',lbCov:'',med:0,rxBenefit:0}
     },
     pension:{monthly:0,note:'e.g., IUL / tax-free retirement savings for your future',cv10:0,cv20:0,cv30:0,leg1:0,leg25:0},
-    ev:[evScn('hosp'),evScn('urgent')],   // the two example cards: same builder, any scenario
+    ev:[evScn('arm'),evScn('append')],   // the two example cards: same builder, any scenario. New clients: broken arm + appendicitis (Jesse, 9 Nov); saved files keep theirs
     negot:{on:true,pct:40,min:2500,cards:{}},   // Medical Bill Saver (CareGuide) - a conservative 40% illustration; no carrier average is published
     intake:{who:{app:true,spouse:false,kids:false},phone:'',email:'',tobaccoP:false,tobaccoS:false,maternityP:false,maternityS:false,maternity:false,dv:false,famcancerP:false,famcancerS:false,famcancer:false,famheartP:false,famheartS:false,famheart:false,mentalP:false,mentalS:false,mental:false,surg2yrP:false,surg2yrS:false,surg2yr:false,majorcond:false,majorcondNote:'',diabetic:false,diabeticNote:'',health:'',income:0,pincome:0,sincome:0,hhManual:false,retage:'',savings:0,invest:0,invprot:false,invsra:false,invnote:'',docs1:'',docs2:'',docs3:'',keepaca:'',keepafc:'',docnote:'',medList:[],budget:0,priority:'coverage',notes:'',carrier:'',plan:'',pheight:'',pweight:'',sheight:'',sweight:'',psex:'',ssex:'',kidsNote:'',routeNote:'',docsNote:'',whyShop:'',whyMatters:'',foundPlan:'',effDate:''},
     recommended:'best',
@@ -4877,6 +4895,14 @@ function applyClientZeroHide(){
   if(medRow) medRow.style.display=(isClient && !(+pk.med)) ? 'none' : '';
 }
 
+/* Share screen (Jesse, 9 Nov - for the agents who present on CrankWheel): Client View, full screen, nothing agent-only
+   showing. Esc (or the button) stops it and leaves you in Client View. */
+function shareScreen(){ var on=document.body.classList.contains('sharing'); if(on){ if(document.fullscreenElement&&document.exitFullscreen) document.exitFullscreen(); else shareOff(); return; }
+  setView('client'); document.body.classList.add('sharing'); var b=$('shareBtn'); if(b) b.textContent='✕ Stop sharing';
+  try{ var el=document.documentElement; if(el.requestFullscreen) el.requestFullscreen().catch(function(){}); }catch(e){}
+  window.scrollTo(0,0); }
+function shareOff(){ document.body.classList.remove('sharing'); var b=$('shareBtn'); if(b) b.textContent='🖥 Share screen'; }
+document.addEventListener('fullscreenchange',function(){ if(!document.fullscreenElement) shareOff(); });
 function setView(v){
   if(v!=='client'&&S.negot) S.negot.cards={};   /* setup always runs both examples off the one switch */
   view=v; document.body.classList.toggle('client',v==='client');
@@ -4966,6 +4992,19 @@ function poGlanceHTML(tiers,labels,B){
       +(pop?'<td><b>'+pop.score+'</b></td>':'')+'</tr>'; });
   return h+'</tbody></table></div>';
 }
+/* Client View's check-offs (Jesse, 9 Nov): the one plan they want, against the ACA and/or what they have now. On screen
+   only - the printout and the picture show the result, not the switches. */
+function poPickHTML(hasAca,hasCur,showAca,showCur){ var inc=S.include||{}, LN=LINEUP_NAMES[S.lineup];
+  var nm=function(t){ if(LN&&LN[t]) return LN[t][0]; var b=planBase(effCfg(t)); return (b==='afc'?((S.lineup||'mh')==='mh'?'':'Manhattan ')+TIER_NAME[t]:(BASE_NAME[b]||TIER_NAME[t]))||t; };
+  var chip=function(attr,on,lab){ return '<button type="button" class="po-chip'+(on?' on':'')+'" '+attr+' aria-pressed="'+(on?'true':'false')+'"><span class="bx">'+(on?'✓':'')+'</span>'+esc(lab)+'</button>'; };
+  var ts=['good','better','best'].filter(function(t){ return tierTotals(t).mo>0; });
+  return '<div class="po-pick noprint"><div class="po-pickrow"><span class="po-pickl">Show</span>'+ts.map(function(t){ return chip('data-poinc="'+t+'"',inc[t]!==false,nm(t)); }).join('')+'</div>'
+    +((hasAca||hasCur)?'<div class="po-pickrow"><span class="po-pickl">Compare with</span>'+(hasAca?chip('data-pocmp="aca"',showAca,'ACA marketplace'):'')+(hasCur?chip('data-pocmp="cur"',showCur,'What they have now'):'')+'</div>':'')+'</div>'; }
+function poPickBind(){ var po=$('printout'); if(!po) return;
+  po.querySelectorAll('[data-poinc]').forEach(function(b){ b.onclick=function(){ var t=b.dataset.poinc, inc=S.include=S.include||{};
+    var on=['good','better','best'].filter(function(x){ return inc[x]!==false&&tierTotals(x).mo>0; }); if(inc[t]!==false&&on.length<=1) return;   /* always at least one plan */
+    inc[t]=(inc[t]===false); compute(); autosave(); }; });
+  po.querySelectorAll('[data-pocmp]').forEach(function(b){ b.onclick=function(){ var k=b.dataset.pocmp; S.poShow=S.poShow||{}; S.poShow[k]=!b.classList.contains('on'); compute(); autosave(); }; }); }
 function buildPrintout(){
   read();
   var a=S.aca, agency=S.agency||'HealthFirst', c=S.client;
@@ -4986,7 +5025,13 @@ function buildPrintout(){
       +'</div>';
 
   /* ---- what they have now, and the ACA — each only when the agent chose to show it ---- */
-  var A=acaIn(), Cu=curIn(), ank=(S.intake&&S.intake.anchor)||'aca', showAca=A.show!==false||(ank==='aca'&&+S.aca.prem>0), showCur=(!!Cu.show||ank==='cur')&&((+Cu.prem>0)||(+Cu.ded>0)), ct=curTrue();   /* the anchor always shows */
+  var A=acaIn(), Cu=curIn(), ank=(S.intake&&S.intake.anchor)||'aca', PS=S.poShow||{}, hasAca=+S.aca.prem>0, hasCur=(+Cu.prem>0)||(+Cu.ded>0);
+  /* Jesse, 9 Nov: Client View has its own check-offs - which plans, and whether to compare with the ACA and/or their current
+     plan. Unset, it shows what it always did. The savings line then compares with whichever one is showing (both: the anchor). */
+  var showAca=hasAca&&(PS.aca!=null?!!PS.aca:(A.show!==false||ank==='aca')), showCur=hasCur&&(PS.cur!=null?!!PS.cur:(!!Cu.show||ank==='cur')), ct=curTrue();
+  var I0=S.intake=S.intake||{}, ank0=I0.anchor; if(showAca!==showCur) I0.anchor=showAca?'aca':'cur';
+  var noCmp=!showAca&&!showCur;
+  html+=poPickHTML(hasAca,hasCur,showAca,showCur);
   var li=function(lab,sub,amt,cls){ return '<div class="li'+(cls?' '+cls:'')+'"><div class="lab">'+lab+(sub?'<small>'+sub+'</small>':'')+'</div><div class="amt">'+amt+'</div></div>'; };
   html+=poRecapHTML(showCur,showAca);
   var pair=showCur&&showAca; if(pair) html+='<div class="po-anc2">';
@@ -5011,7 +5056,7 @@ function buildPrintout(){
   }
   if(pair) html+='</div>';
   /* Savings are measured against the ACA when it is shown, otherwise against what they have now. */
-  var B=anchorBase(), base=B?{mo:B.mo,yr:B.yr,prem:B.prem,premOnly:B.premOnly,ded:B.ded,k:B.k,lab:B.k==='aca'?'ACA':'your current plan',your:B.your}:null;
+  var B=noCmp?null:anchorBase(), base=B?{mo:B.mo,yr:B.yr,prem:B.prem,premOnly:B.premOnly,ded:B.ded,k:B.k,lab:B.k==='aca'?'ACA':'your current plan',your:B.your}:null;
 
   html+=poGlanceHTML(tiers,labels,B);
 
@@ -5023,12 +5068,13 @@ function buildPrintout(){
       var pop=S.showPop!==false?computePop(x.t):null, pc=pop?(pop.score>=80?'#2f7d4a':pop.score>=60?'#a57a1c':'#b24b4b'):'';
       var isCh=chosenTier()===x.t;
       html+='<div class="po-col'+(isCh?' chosen':'')+'">'+(isCh?'<div class="po-ribbon">Your new plan</div>':'')+'<div class="po-hd"><h3>'+lab[0]+'<small>'+esc(lab[1])+'</small></h3>'
-        +(pop?'<div class="popchip" style="border-color:'+pc+';color:'+pc+'"><span>POP Score</span><b>'+pop.score+'</b>'+(pop.s.provisional?'<small>provisional</small>':'')+'</div>':'')+'</div><div class="po-items">';
+        +(pop?'<div class="popchip" style="border-color:'+pc+';color:'+pc+'"><span>POP Score</span><b>'+pop.score+'</b>'+(pop.s.provisional?'<small>provisional</small>':'')+'</div>':'')+'</div><div class="po-items"><div class="po-inchd">Everything in your plan</div>';
       var HF=histFam(), htag=HF.any?'<small class="po-histtag">Because of your family history</small>':'';
       (x.pk.products||[]).forEach(function(p){ if(!(+p.monthly)) return; var hi=HF.any&&HIST_KEYS.indexOf(p.k)>=0;
-        html+='<div class="po-li'+(hi?' po-hist':'')+'"><span>'+esc(p.name)+(hi?htag:'')+'</span><span>'+fmt2(+p.monthly||0)+'</span></div>'; });
-      if(+x.pk.lb>0) html+='<div class="po-li'+(HF.any?' po-hist':'')+'"><span>Living Benefits'+(x.pk.lbCarrier?' — '+esc(x.pk.lbCarrier):'')+(HF.any?htag:'')+'</span><span>'+fmt2(+x.pk.lb)+'</span></div>';
-      html+='</div><div class="po-tot"><div class="m"><span>Monthly</span><b>'+fmt2(x.mo)+'</b></div><div class="a"><span>Annual</span><span>'+fmt2(x.yr)+'</span></div></div>'+rxLineHTML(x.t).replace('class="pbrx"','class="pbrx po-rx"');
+        var sm=''; try{ sm=pbSummary(p.k,effCfg(x.t),p)||''; }catch(e){}
+        html+='<div class="po-li po-inc'+(hi?' po-hist':'')+'"><i class="ck">✓</i><span>'+esc(String(p.name).split(' — ')[0])+(sm?'<small class="po-sum">'+esc(sm)+'</small>':'')+(hi?htag:'')+'</span></div>'; });
+      if(+x.pk.lb>0) html+='<div class="po-li po-inc'+(HF.any?' po-hist':'')+'"><i class="ck">✓</i><span>Living Benefits'+(x.pk.lbCarrier?' — '+esc(x.pk.lbCarrier):'')+(HF.any?htag:'')+'</span></div>';
+      html+='</div><div class="po-tot"><div class="m"><span>Monthly — everything included</span><b>'+fmt2(x.mo)+'</b></div><div class="a"><span>Annual</span><span>'+fmt2(x.yr)+'</span></div></div>'+rxLineHTML(x.t).replace('class="pbrx"','class="pbrx po-rx"');
       if(acaAddsOn(x.t,B)) html+='<div class="po-save"><div class="vs">On top of your marketplace plan</div><div class="ln"><span>Adds</span><b>'+fmt2(pkgPremMo(x.t)-B.prem)+'/mo</b></div><div class="tn">You keep the same marketplace plan and its deductible. These benefits pay you cash when the accident or hospital stay happens — the examples below show what they pay.</div></div>';
       else if(base){ var ttx=tierTrue(x.t), sv=anchorSavings(base,pkgPremMo(x.t),x.mo+ttx.extra), cpn=copayNote(B,x.t), vs=base.k==='aca'?'your marketplace plan':'your current plan';
         var ln=function(lab,v){ return '<div class="ln"><span>'+lab+'</span><b class="'+(v>=0?'up':'dn')+'">'+(v>=0?'saves ':'costs ')+fmt2(Math.abs(v))+'/mo'+(v>=0?'':' more')+'</b></div>'; };
@@ -5104,7 +5150,7 @@ function buildPrintout(){
   var tfra=html; html=main;
 
   /* ---- event illustrations, page 3: the two example cards, on a page of their own ---- */
-  var showEvents=false, evs=[evTableHTML(0,{noBtn:true}),evTableHTML(1,{noBtn:true})];
+  var showEvents=false, evs=[evTableHTML(0,{noBtn:true,client:1,noAnchor:noCmp}),evTableHTML(1,{noBtn:true,client:1,noAnchor:noCmp})]; I0.anchor=ank0;
   if(evs[0]||evs[1]) html+='<div class="po-newpage po-evpage">';
   evs.forEach(function(t,i){ if(!t) return; showEvents=true; var d=(S.ev[i]||{}).desc;
     html+='<div class="po-event"><div class="band">'+(d?'If this happens: <span class="d">'+esc(d)+'</span>':'Example '+(i+1))+negToggleHTML(i)+'</div>'+t+'</div>'; });
@@ -5116,7 +5162,7 @@ function buildPrintout(){
   var partners=renderAfcPartnersHTML(true);
   html+=(tfra||partners)?'<div class="po-last">'+tfra+partners+foot+'</div>':foot;
   $('printout').innerHTML=html;
-  evBindToggles($('printout'));
+  evBindToggles($('printout')); poPickBind();
   $('printout').querySelectorAll('[data-choose]').forEach(function(el){ el.onclick=function(){ chooseTier(el.dataset.choose); }; el.onkeydown=function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); chooseTier(el.dataset.choose); } }; });
   $('printout').querySelectorAll('[data-dental]').forEach(function(b){ b.onclick=function(){ setDental(b.dataset.t,b.dataset.dental==='1'); }; });
   /* Client View: each example has its own Bill Saver On / Off, on top of the agent's master switch. */
@@ -9445,8 +9491,12 @@ function evTableHTML(i,opt){ var O=opt||{}, tiers=O.tiers?EV_TIERS.filter(functi
   /* the corner: on Quote it holds the picture button; in the picture itself it names the example instead */
   var exName=sc.desc||sc.label||(EV_SCENARIOS.filter(function(x){ return x.id===sc.id; })[0]||{}).desc||'';
   h+='<div class="c l evcorner">'+(O.pic?(exName?'<b class="evname">'+esc(exName)+'</b>':''):'')+'</div>'+(A?'<div class="c h anc">'+A.lab+'</div>':'')+res.map(function(x){ return '<div class="c h">'+x.T[1]+'</div>'; }).join('');
+  /* Jesse, 9 Nov: on Client View a Manhattan plan never shows money beyond the bill (the Bill Saver part is a gray area) - it
+     reads "You pay $0". A Cigna / Bright Life plan's math is set by the plan, so its net stays, with the deductible buster shown. */
+  var CL=!!O.client, gray=function(x){ return CL&&!x.o.major; };
   h+='<div class="c l evtog" data-evtog="'+i+'" role="button" tabindex="0"><span class="car">▸</span> Your plan pays<small class="noprint">click to see why</small></div>'+(A?'<div class="c anc">'+fmt2(Math.max(0,bill-aOwe))+'<small>toward the bill</small></div>':'')
-    +res.map(function(x){ return '<div class="c">'+(x.o.unknown&&!x.r.pays?'—':fmt2(x.r.pays+(x.o.major?Math.max(0,bill-x.r.owe0):0)))+'<small>'+(x.o.major?'plan + cash benefits':'paid to you')+'</small></div>'; }).join('');
+    +res.map(function(x){ if(gray(x)&&!(x.o.unknown&&!x.r.pays)) return '<div class="c">'+fmt2(Math.min(x.r.pays,bill))+'<small>'+(x.r.pays>=bill?'the whole bill':'paid to you, toward the bill')+'</small></div>';
+      return '<div class="c">'+(x.o.unknown&&!x.r.pays?'—':fmt2(x.r.pays+(x.o.major?Math.max(0,bill-x.r.owe0):0)))+'<small>'+(x.o.major?'plan + cash benefits':'paid to you')+'</small></div>'; }).join('');
   /* Itemised: what each benefit pays and why - behind the caret on screen, always shown in print. */
   /* Jesse, 5 Nov: read it like a receipt - what the client pays is a red minus, every benefit paid to them is a green plus,
      and the lines add up to the net. The plan's payment to the hospital is shown but not counted: it never reaches the client. */
@@ -9458,11 +9508,16 @@ function evTableHTML(i,opt){ var O=opt||{}, tiers=O.tiers?EV_TIERS.filter(functi
       if(x.o.major&&x.r.oweParts&&x.r.oweParts.length){ its=its.concat(x.r.oweParts.map(function(p){ return p.v<0?li(p.lab,-p.v,'in'):li('You pay — '+p.lab,p.v,'out'); }));
         var nt=x.r.net; its.push(li(nt<=0?'You NET':'You pay',nt,nt<=0?'tot in':'tot out')); }
       if(x.o.unknown&&!x.r.pays) its=['<div class="why">'+esc(x.o.unknown)+'</div>'];
+      else if(gray(x)) its=['<div class="why">Your benefits pay you directly'+(x.r.pays>=bill?' — enough to cover this bill.':', toward this bill.')+'</div>'];
       return '<div class="c evit">'+(its.join('')||'<div class="why">No benefit applies to this event.</div>')+(x.o.afc&&(+sc.days||0)>0?'<div class="why surg">Surgery benefits (paid on the policy fee schedule) are extra and not counted here.</div>':'')+'</div>'; }).join('');
   if(negAny) h+='<div class="c l">Bill after Medical Bill Saver <small>'+S.negot.pct+'% average reduction</small></div>'+(A?'<div class="c anc">—<small>network price already</small></div>':'')
     +res.map(function(x){ return '<div class="c">'+(x.r.negotiated!=null?fmt2(x.r.negotiated):'—<small>major medical</small>')+'</div>'; }).join('');
-  h+='<div class="c l">You pay <small>(or net)</small></div>'+(A?'<div class="c anc big">'+fmt2(aOwe)+(A.note?'<small>'+A.note+'</small>':(A.how&&aOwe>=A.oop?'<small>'+A.how+'</small>':''))+'</div>':'')
-    +res.map(function(x){ var n=x.r.net; return '<div class="c big '+(n<=0?'up':'dn')+'">'+(x.o.unknown&&!x.r.pays?'<small>'+x.o.unknown+'</small>':(n<=0?'You NET '+fmt2(-n):'You pay '+fmt2(n)))+'</div>'; }).join('');
+  var dbx=CL&&res.some(function(x){ return x.o.major&&x.r.parts&&x.r.parts.length; });
+  if(dbx) h+='<div class="c l">Your deductible buster <small>pays you cash toward your share</small></div>'+(A?'<div class="c anc">—</div>':'')
+    +res.map(function(x){ var pd=(x.r.parts||[]).reduce(function(s2,q){ return s2+(+q.v||0); },0);
+      return x.o.major&&pd>0?'<div class="c evdb">Your share '+fmt2(x.r.owe0)+'<b>Buster pays you '+fmt2(pd)+'</b></div>':'<div class="c">—</div>'; }).join('');
+  h+='<div class="c l">You pay <small>'+(CL?'':'(or net)')+'</small></div>'+(A?'<div class="c anc big">'+fmt2(aOwe)+(A.note?'<small>'+A.note+'</small>':(A.how&&aOwe>=A.oop?'<small>'+A.how+'</small>':''))+'</div>':'')
+    +res.map(function(x){ var n=x.r.net; if(gray(x)&&n<=0&&!(x.o.unknown&&!x.r.pays)) return '<div class="c big up">You pay $0</div>'; return '<div class="c big '+(n<=0?'up':'dn')+'">'+(x.o.unknown&&!x.r.pays?'<small>'+x.o.unknown+'</small>':(n<=0?'You NET '+fmt2(-n):'You pay '+fmt2(n)))+'</div>'; }).join('');
   /* Two lines with the math showing (team call, 3 Nov - Kyle: "I want to see the numbers that got me to this"):
      the monthly premium saving against the anchor, then the year with this event, each side worked out. The total is
      the same as before - 12 x the premium difference + (their share of the event - the package's net). */
@@ -9472,10 +9527,10 @@ function evTableHTML(i,opt){ var O=opt||{}, tiers=O.tiers?EV_TIERS.filter(functi
     +res.map(function(x){ var d=B.prem-pkgPremMo(x.T[0]); if(acaAddsOn(x.T[0],B)) return '<div class="c evmo">Adds '+fmt2(-d)+'/mo<small>'+fmt2(pkgPremMo(x.T[0]))+'/mo with the marketplace plan</small></div>'; return '<div class="c evmo '+(d>=0?'up':'dn')+'">'+(d>=0?'Saves '+fmt2(d):'Costs '+fmt2(-d)+' more')+'/mo<small>'+fmt2(pkgPremMo(x.T[0]))+'/mo</small></div>'; }).join('');
     h+='<div class="c l">This year, with this event <small>12 months of premium + what this event costs them</small></div>'
     +'<div class="c anc evyr">12 × '+fmt2(B.prem)+' + '+fmt2(aOwe)+'<small>premiums + their share of this event</small><b>= '+fmt(aYr)+'</b></div>'
-    +res.map(function(x){ var pm=pkgPremMo(x.T[0]), n=x.r.net, y=pm*12+n, v=aYr-y;
+    +res.map(function(x){ var pm=pkgPremMo(x.T[0]), n=gray(x)?Math.max(0,x.r.net):x.r.net, y=pm*12+n, v=aYr-y;
       return '<div class="c evyr '+(v>=0?'up':'dn')+'">12 × '+fmt2(pm)+(n>=0?' + '+fmt2(n):' − '+fmt2(-n))+'<small>premiums '+(n>=0?'+ what they still pay for this event':'− what the benefits pay them beyond the bill')+'</small><b>= '+(y>=0?fmt(y):fmt(-y)+' back to them')+'</b><em>'+(v>=0?'Ahead '+fmt(v):(acaAddsOn(x.T[0],B)?fmt(-v)+' more this year':'Behind '+fmt(-v)))+'</em></div>'; }).join(''); }   /* no "Behind" on an ACA + protection column (Jesse, 4 Nov) */
   h+='</div>';
-  if(res.some(function(x){ return !x.o.major; })) h+='<div class="evhow"><b>How the money reaches you:</b> the Manhattan benefits are fixed amounts paid for the event, not a share of the bill. In network, show the card and the provider bills ManhattanLife directly; whatever the benefits pay beyond the bill comes back to you. Out of network, you pay the provider and the benefits are paid to you.</div>';
+  if(res.some(function(x){ return !x.o.major; })) h+='<div class="evhow"><b>How the money reaches you:</b> the Manhattan benefits are fixed amounts paid for the event, not a share of the bill. In network, show the card and the provider bills ManhattanLife directly'+(CL?'.':'; whatever the benefits pay beyond the bill comes back to you.')+' Out of network, you pay the provider and the benefits are paid to you.</div>';
   if((+sc.days||0)>0&&res.some(function(x){ return x.o.afc; })) h+='<div class="evsrc printonly">Affordable Choice surgery benefits (paid on the policy fee schedule) are extra and not counted above.</div>';
   var src=sc.src; if(src) h+='<div class="evsrc">National average (what insurance pays): '+esc(src)+'</div>';
   return h; }

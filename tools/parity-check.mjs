@@ -48,6 +48,7 @@ const CAPTURE = `(async function(){
   var STEPS=['intake','tree','quote','present','enroll','review'], out={};
   for(var i=0;i<SC.length;i++){ var sc=SC[i], R={};
     S=blankState(); applySuiteClient(sc.c); ['good','better','best'].forEach(function(t){ S.include[t]=true; });
+    S.ev=[evScn('hosp'),evScn('urgent')];   /* the same two examples on both sides: new clients default to broken arm + appendicitis on the redesign (Jesse, 9 Nov) - a deliberate change, not a regression */
     autoPriceTiers(); compute(); goStep('quote'); await wait(250);
     R.lineupApplied=T(function(){ pbApplyLineup(sc.lineup); return S.lineup; }); compute(); await wait(150);
     chooseTier(sc.pick); await wait(150);

@@ -22,7 +22,7 @@ if [ "$(git -C /Users/jessestamm/Documents/poppro-present rev-parse present)" !=
 fi
 git merge-base --is-ancestor present HEAD || { echo "The redesign is BEHIND present - merge present into redesign first."; exit 1; }
 run node tools/parity-check.mjs "$REF" "http://127.0.0.1:$PORT/tool/"
-for c in present-check event-check review-check total-check intake-check why-check med-check care-check clean-check; do
+for c in present-check event-check review-check total-check intake-check why-check med-check care-check clean-check clientview-check; do
   [ -f tools/$c.mjs ] && run node tools/$c.mjs $PORT
 done
 for m in embed init live save; do run node tools/discovery-check.mjs $m $PORT 8777; done   # the Discovery step = the navigator in a frame
