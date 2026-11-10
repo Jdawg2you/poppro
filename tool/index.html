@@ -1218,6 +1218,7 @@ body.client #classicWrap>summary{display:none}
   #printout .po-money th small,#printout .po-money td small{display:block;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:11.5px;font-weight:400;opacity:.85;margin-top:2px}
   #printout .po-money td.rl{text-align:left;font-weight:700;color:#10233e;width:20%}#printout .po-money td.cm{background:#fbf3f1}#printout .po-money td.pl{background:#f3f8f4}
   #printout .po-money tr.yr td{font-size:16px}#printout .po-money tr.sv td b{display:block;font-size:15px}#printout .po-money b.up{color:#2f7d4a}#printout .po-money b.dn{color:#b42318}
+  #printout .po-money tr.pop b.popn{font-family:var(--serif,Georgia,serif);font-size:24px;line-height:1}
   #printout .po-money i.est{color:#9a5b00;font-size:.8em}#printout .po-money .estnote{padding:6px 16px 10px;font-size:11px;color:#9a5b00;font-style:italic}
   #printout .evdb{font-size:12.5px;color:#4a5568}#printout .evdb b{display:block;color:#2f7d4a;font-size:14px}
   .brand b{font-size:22px;letter-spacing:.2px}
@@ -5008,11 +5009,13 @@ function poPickHTML(hasAca,hasCur,showAca,showCur){ var inc=S.include||{}, LN=LI
   var ts=['good','better','best'].filter(function(t){ return tierTotals(t).mo>0; });
   return '<div class="po-pick noprint"><div class="po-pickrow"><span class="po-pickl">Show</span>'+ts.map(function(t){ return chip('data-poinc="'+t+'"',inc[t]!==false,nm(t)); }).join('')+'</div>'
     +((hasAca||hasCur)?'<div class="po-pickrow"><span class="po-pickl">Compare with</span>'+(hasAca?chip('data-pocmp="aca"',showAca,'ACA marketplace'):'')+(hasCur?chip('data-pocmp="cur"',showCur,'What they have now'):'')+'</div>':'')
-    +'<div class="po-pickrow"><span class="po-pickl">Also show</span>'+chip('data-potfra="1"',S.showTfra!==false,'Tax-free savings (TFRA)')+'</div></div>'; }
+    +'<div class="po-pickrow"><span class="po-pickl">Also show</span>'+chip('data-popop="1"',S.showPop!==false,'POP Score')+chip('data-potfra="1"',S.showTfra!==false,'Tax-free savings (TFRA)')+'</div></div>'; }
 function poPickBind(){ var po=$('printout'); if(!po) return;
   po.querySelectorAll('[data-poinc]').forEach(function(b){ b.onclick=function(){ var t=b.dataset.poinc, inc=S.include=S.include||{};
     var on=['good','better','best'].filter(function(x){ return inc[x]!==false&&tierTotals(x).mo>0; }); if(inc[t]!==false&&on.length<=1) return;   /* always at least one plan */
     inc[t]=(inc[t]===false); compute(); autosave(); }; });
+  /* POP Score on or off for the client (Jesse, 9 Nov) - the same switch as the Quote's "Show POP Score" */
+  po.querySelectorAll('[data-popop]').forEach(function(b){ b.onclick=function(){ S.showPop=(S.showPop===false); if($('pop_show')) $('pop_show').checked=S.showPop; if(typeof updateTfraVisibility==='function') updateTfraVisibility(); compute(); autosave(); }; });
   po.querySelectorAll('[data-potfra]').forEach(function(b){ b.onclick=function(){ S.showTfra=(S.showTfra===false); if($('tfra_show')) $('tfra_show').checked=S.showTfra; if(typeof updateTfraVisibility==='function') updateTfraVisibility(); compute(); autosave(); }; });
   po.querySelectorAll('[data-pocmp]').forEach(function(b){ b.onclick=function(){ var k=b.dataset.pocmp; S.poShow=S.poShow||{}; S.poShow[k]=!b.classList.contains('on'); compute(); autosave(); }; }); }
 /* Jesse, 9 Nov: Client View compares the money side by side - what they have now, the ACA (each only when ticked) and the
@@ -5033,6 +5036,7 @@ function poMoneyHTML(tiers,labels,B,showCur,showAca){ if(!tiers.length) return '
   var cell=function(c,v){ return '<td class="'+(c.k==='plan'?'pl':'cm')+(B&&c.k===B.k?' anc':'')+'">'+v+'</td>'; };
   var h='<div class="po-money"><div class="t">Your plans, side by side<small>'+(B?'Savings are measured against '+esc(B.your)+'.':'What each one costs you.')+' True cost = premium + the deductible &amp; co-pays spread across the year.</small></div><table><thead><tr><th></th>'
     +cols.map(function(c){ return '<th class="'+(c.k==='plan'?'pl':'cm')+'">'+esc(c.lab)+'<small>'+esc(c.sub||'')+(B&&c.k===B.k?' · compared against':'')+'</small></th>'; }).join('')+'</tr></thead><tbody>'
+    +(S.showPop!==false?'<tr class="pop"><td class="rl">POP Score<small>how well it protects you</small></td>'+cols.map(function(c){ if(c.k!=='plan') return cell(c,'—'); var pp=computePop(c.t), pc=pp.score>=80?'#2f7d4a':pp.score>=60?'#a57a1c':'#b24b4b'; return cell(c,'<b class="popn" style="color:'+pc+'">'+pp.score+'</b>'+(pp.s&&pp.s.provisional?'<small>provisional</small>':'')); }).join('')+'</tr>':'')
     +'<tr><td class="rl">Monthly premium</td>'+cols.map(function(c){ return cell(c,c.prem); }).join('')+'</tr>'
     +'<tr><td class="rl">Deductible</td>'+cols.map(function(c){ return cell(c,c.ded); }).join('')+'</tr>'
     +'<tr><td class="rl">True cost, a month</td>'+cols.map(function(c){ return cell(c,'<b>'+fmt2(c.mo)+'</b>'+(c.est?' <i class="est">est.</i>':'')); }).join('')+'</tr>'

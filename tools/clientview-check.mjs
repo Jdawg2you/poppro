@@ -46,6 +46,8 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); for
  ok(!po.querySelector('.po-glance')&&!po.querySelector('.po-acabox')&&mh.length===4&&/What you have now/.test(mh.join('|'))&&/ACA/.test(mh.join('|'))&&myr.length===2&&myr[0]>=myr[1],'one side-by-side money table (current, ACA, the plan), most expensive first: '+myr.join(' > '));
  curIn().paying=false; compute(); await w(300); po=document.getElementById('printout'); var mh2=[].slice.call(po.querySelectorAll('.po-money th.cm')).map(function(t){ return t.innerText; }).join('|');
  ok(/What you have now/.test(mh2)&&/ACA/.test(mh2),'not paying for their current plan: it is still their current plan, not a second marketplace column ('+mh2.replace(/[^A-Za-z |—]/g,'').slice(0,90)+')'); curIn().paying=true; compute(); await w(200); po=document.getElementById('printout');
+ S.showPop=true; compute(); await w(200); po=document.getElementById('printout'); var pr=!!po.querySelector('.po-money tr.pop'); po.querySelector('[data-popop]').click(); await w(300); po=document.getElementById('printout');
+ ok(pr&&!po.querySelector('.po-money tr.pop')&&!po.querySelector('.po-cmp .popchip')&&S.showPop===false,'POP Score: a row at the top of the table, and its own check-off turns it off everywhere on Client View'); po.querySelector('[data-popop]').click(); await w(300); po=document.getElementById('printout');
  var tf=po.querySelector('[data-potfra]'); var had=!!po.querySelector('.po-ad,.po-green'); tf.click(); await w(300); po=document.getElementById('printout'); var gone=!po.querySelector('.po-ad,.po-green'); po.querySelector('[data-potfra]').click(); await w(300);
  ok(had&&gone&&!!document.getElementById('printout').querySelector('.po-ad,.po-green'),'the TFRA has its own check-off on Client View (off and back on)');
  setView('agent'); S.includeBy={}; S.include={good:false,better:false,best:true}; pbApplyLineup('lx-mh-cg'); var inc2=JSON.stringify(S.include); pbApplyLineup('mh'); setView('client'); compute(); await w(300); po=document.getElementById('printout');
@@ -54,7 +56,7 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); for
  shareScreen(); await w(200); ok(!document.fullscreenElement,'Share screen stays in the window (no full screen)'); ok(document.body.classList.contains('sharing')&&getComputedStyle(document.querySelector('.brandbar')).display==='none'&&getComputedStyle(document.getElementById('viewseg')).display==='none','Share screen: Client View with the agent bar and switches hidden');
  document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape'})); await w(100); ok(!document.body.classList.contains('sharing')&&document.body.classList.contains('client'),'Esc stops sharing and leaves Client View on'); setView('agent'); await w(200); ok(!document.body.classList.contains('sharing')&&!document.body.classList.contains('client'),'and it comes back');
  var ag=document.querySelector('#step-quote .pbcol[data-t="best"]'); ok(!!ag&&/[$][0-9]/.test(ag.innerText),'the agent Quote page still has every price');
- return {n:20, fails:fails}; })()`;
+ return {n:21, fails:fails}; })()`;
 try {
   let l; for (let i = 0; i < 60 && !l; i++) { await sleep(150); l = await fetch(`http://127.0.0.1:${DBG}/json/list`).then(r => r.json()).catch(() => null); }
   ws = new WebSocket(l.find(t => t.type === 'page').webSocketDebuggerUrl);
