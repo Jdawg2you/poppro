@@ -1193,6 +1193,7 @@ body.client #classicWrap>summary{display:none}
      above and below the gold offer and the brand sits in the middle (Jesse, 9 Nov) */
   html body .brandbar:has(+ #clientStrip:not([style*="none"])){padding-bottom:28px}
   html body .brandbar .toolbar{margin-bottom:0}
+  @media (max-width:760px){html body table.dt-tab{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%}}   /* phone: the Decision Tree table scrolls on its own, the page doesn't */
   .sharebtn{font:inherit;font-size:12.5px;font-weight:800;letter-spacing:.02em;border-radius:8px;padding:8px 14px;cursor:pointer;border:1.5px solid var(--gold,#c3a14e);background:#fffaf0;color:#10233e;margin-left:8px;white-space:nowrap}
   .sharebtn:hover{background:var(--gold,#c3a14e)}body.sharing .sharebtn{background:#10233e;color:#fff;border-color:#10233e}
   body.sharing #verBanner,body.sharing #rail,body.sharing #viewseg,body.sharing .brandbar .toolbar,body.sharing #csCaret,body.sharing .fab-save,body.sharing #qnFab{display:none!important}
