@@ -54,7 +54,7 @@ const CAPTURE = `(async function(){
     chooseTier(sc.pick); await wait(150);
     R.chosen=T(function(){ return {tier:chosenTier(),lineup:S.lineup,name:S.chosen&&S.chosen.name}; });
     R.totals=T(function(){ return ['good','better','best'].map(function(t){ var x=tierTotals(t); return t+':'+(+x.mo).toFixed(2); }); });
-    R.file=T(function(){ return stripAgent(currentQuote()); });
+    R.file=T(function(){ var q=stripAgent(currentQuote()); delete q.includeBy; return q; });   /* includeBy: the redesign keeps each lineup's Client View picks (Jesse, 9 Nov) - a new field, not a change */
     R.roundtrip=T(function(){ var f=JSON.stringify(stripAgent(currentQuote())); loadQuoteObject(JSON.parse(f)); fill(); compute(); return JSON.stringify(stripAgent(currentQuote()))===f?'same':'CHANGED'; });
     R.enrollEmail=T(function(){ return enrollEmail(); });
     R.enrollText=T(function(){ return enrollTextPlain(sc.pick); });
