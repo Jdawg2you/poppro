@@ -5004,7 +5004,7 @@ function poGlanceHTML(tiers,labels,B,B2){
 /* Client View's check-offs (Jesse, 9 Nov): the one plan they want, against the ACA and/or what they have now. On screen
    only - the printout and the picture show the result, not the switches. */
 function poPickHTML(hasAca,hasCur,showAca,showCur){ var inc=S.include||{}, LN=LINEUP_NAMES[S.lineup];
-  var nm=function(t){ if(LN&&LN[t]) return LN[t][0]; var b=planBase(effCfg(t)); return (b==='afc'?((S.lineup||'mh')==='mh'?'':'Manhattan ')+TIER_NAME[t]:(BASE_NAME[b]||TIER_NAME[t]))||t; };
+  var nm=function(t){ if(LN&&LN[t]) return LN[t][0]; if(S.lineup==='custom'&&effCfg(t).pick) return effCfg(t).pick.short; var b=planBase(effCfg(t)); return (b==='afc'?((S.lineup||'mh')==='mh'?'':'Manhattan ')+TIER_NAME[t]:(BASE_NAME[b]||TIER_NAME[t]))||t; };
   var chip=function(attr,on,lab){ return '<button type="button" class="po-chip'+(on?' on':'')+'" '+attr+' aria-pressed="'+(on?'true':'false')+'"><span class="bx">'+(on?'✓':'')+'</span>'+esc(lab)+'</button>'; };
   var ts=['good','better','best'].filter(function(t){ return tierTotals(t).mo>0; });
   return '<div class="po-pick noprint"><div class="po-pickrow"><span class="po-pickl">Show</span>'+ts.map(function(t){ return chip('data-poinc="'+t+'"',inc[t]!==false,nm(t)); }).join('')+'</div>'
@@ -5931,7 +5931,7 @@ function reviewTokens(t){ t=reviewT()||t; var C=S.client||{}, R=reviewState(), T
   (function(){ var cd=careCardData(); T['card.doctor']=join([cd.md,cd.sd,cd.kd].filter(Boolean)); })();
   T['tier.elected']=actualOn()?actualSnap().name:(TIER_NAME[t]||'');
   var RB=S.rec||(S.recommended&&pkSnap(S.recommended));   /* older files: the tool's recommendation stands in */
-  if(actualOn()&&RB){ var GS=gapSpoken(RB,actualSnap()); T['gap.missing']=GS.missing; T['gap.lowered']=GS.lowered; T['gap.added']=GS.added; T['gap.kind']=GS.kind; } T['tier.recommended']=(function(R){ if(!R) return TIER_NAME[S.recommended]||''; var b=R.cfg?planBase(R.cfg):'afc', LN=R.lineup&&LINEUP_NAMES[R.lineup]; if(LN&&LN[R.tier]) return LN[R.tier][0].replace(/^The /,''); return b==='afc'?(TIER_NAME[R.tier]||''):(BASE_NAME[b]||TIER_NAME[R.tier]||''); })(S.rec);   /* Jesse, 9 Nov: the plan you presented, by name - not the column */
+  if(actualOn()&&RB){ var GS=gapSpoken(RB,actualSnap()); T['gap.missing']=GS.missing; T['gap.lowered']=GS.lowered; T['gap.added']=GS.added; T['gap.kind']=GS.kind; } T['tier.recommended']=(function(R){ if(!R) return TIER_NAME[S.recommended]||''; if(R.lineup==='custom'&&R.cfg&&R.cfg.pick&&R.cfg.pick.short) return R.cfg.pick.short.replace(/^Manhattan /,''); var b=R.cfg?planBase(R.cfg):'afc', LN=R.lineup&&LINEUP_NAMES[R.lineup]; if(LN&&LN[R.tier]) return LN[R.tier][0].replace(/^The /,''); return b==='afc'?(TIER_NAME[R.tier]||''):(BASE_NAME[b]||TIER_NAME[R.tier]||''); })(S.rec);   /* Jesse, 9 Nov: the plan you presented, by name - not the column */
   var DQ=drxParts(); T['drx.drug']=drxWho().length?DQ.drug||drxWho()[0].drug:''; T['drx.pct']=DRX_PCT; T['drx.link']=drxLink(); T['drx.code']=drxCode(); T['drx.howto']=drxWho().length?'1':'';   /* the Direction Rx line has two versions (Jesse, 23 Oct): on a GLP-1 (now or before, either adult - the Intake answer or the medication list) or not */
   var G1=(S.intake&&S.intake.glp1)||{}, onG=['p','s'].some(function(w){ return (G1[w]||{}).on==='Yes'; })||((S.intake&&S.intake.medList)||[]).some(function(m){ return GLP1_RX.test(String((m&&m.name)||'')); });
   T['client.on_glp1']=onG?'1':''; T['client.no_glp1']=onG?'':'1';   /* the block's switch; its words are Health ZONE's */
@@ -6422,12 +6422,13 @@ function blPresentHTML(t){ var first=triadFirst(), c=effCfg(t), prem=triadPremiu
    tight); B = Amaze + accident (unhealthy, funds very tight). Amaze lines are from Amaze's own site and FAQ
    (AMAZE-HEALTH.md): never call it insurance, never repeat its utilisation claims, and don't sell RxValet to a
    ManhattanLife client - they already have it through EasyCare2go. */
-function acaFlowOn(t){ return DT_ON&&!!t&&t!=='actual'&&(S.lineup==='aca'||S.lineup==='vb'); }
+function acaFlowOn(t){ return DT_ON&&!!t&&t!=='actual'&&(S.lineup==='aca'||S.lineup==='vb'||(S.lineup==='custom'&&!!(effCfg(t).pick&&/^(aca|vb)$/.test(effCfg(t).pick.ln)))); }
 function acaProt(t){ var c=effCfg(t), out=[];
   ((S.packages[t]||{}).products||[]).forEach(function(p){ if(!(+p.monthly>0)||p.k==='base') return;
     out.push({k:p.k,name:(PB_SLOTS.filter(function(x){ return x.k===p.k; })[0]||{}).name||p.name,mo:+p.monthly,sum:pbSummary(p.k,c)||''}); });
   return out; }
-function acaPresentHTML(t){ var first=triadFirst(), a=S.aca||{}, A=acaIn(), base=effCfg(t).base, vb=S.lineup==='vb', LN=(LINEUP_NAMES[S.lineup]||{})[t]||[TIER_NAME[t],''];
+function acaPresentHTML(t){ var PK=(S.lineup==='custom'&&effCfg(t).pick&&/^(aca|vb)$/.test(effCfg(t).pick.ln))?effCfg(t).pick:null, tp=PK?PK.t:t;   /* a Custom column presents as the plan picked for it (Jesse, 9 Nov) */
+  var first=triadFirst(), a=S.aca||{}, A=acaIn(), base=effCfg(t).base, vb=PK?PK.ln==='vb':S.lineup==='vb', LN=(LINEUP_NAMES[PK?PK.ln:S.lineup]||{})[tp]||[TIER_NAME[t],''];
   var m=function(v){ return '$'+Math.round(+v||0).toLocaleString('en-US'); }, ded=+a.ded||0, oop=+a.oop||0, coins=+a.coins||0, net=acaNetPrem(), fam=acaPeople().length>1;
   var P=acaProt(t), sumP=P.reduce(function(x,p){ return x+p.mo; },0), has=function(k){ return P.filter(function(p){ return p.k===k; })[0]; };
   var li=function(L){ return '<ul class="trd-bus">'+L.map(function(p){ return '<li><b>'+esc(p.name)+'</b> <small>'+fmt2(p.mo)+'/mo</small><br>'+esc(p.sum)+'</li>'; }).join('')+'</ul>'; };
@@ -6446,31 +6447,31 @@ function acaPresentHTML(t){ var first=triadFirst(), a=S.aca||{}, A=acaIn(), base
   var pages=[];
   if(!vb){
     pages.push({t:'The ACA plan',h:acaSay+acaDo});
-    if(t==='good') pages.push({t:'The accident plan',h:triadSay('“The marketplace plan is a good plan for you. The big thing is if you have an accident — you could have to come up with as much as that '+m(ded)+' deductible. So for <b>'+fmt2(sumP)+' a month</b> we add a 24-Hour Accident plan. If you get hurt, it pays you cash'+(has('acc')?' — '+esc(has('acc').sum.replace(/^\d+ units? · /,''))+'':'')+'.”')
+    if(tp==='good') pages.push({t:'The accident plan',h:triadSay('“The marketplace plan is a good plan for you. The big thing is if you have an accident — you could have to come up with as much as that '+m(ded)+' deductible. So for <b>'+fmt2(sumP)+' a month</b> we add a 24-Hour Accident plan. If you get hurt, it pays you cash'+(has('acc')?' — '+esc(has('acc').sum.replace(/^\d+ units? · /,''))+'':'')+'.”')
         +triadSay('“And you can get it no matter what your health is.”')
         +triadDo('<b>This column is for a health history the deductible buster can’t take.</b> If they can qualify, the buster (the middle column) is the better recommendation — say so.')
         +(P.length?li(P):'')});
     else pages.push({t:'The deductible buster',h:triadSay('“We strongly recommend you don’t leave that deductible open. Otherwise one hospital stay can cost you the whole '+m(ded)+' deductible'+(oop?', and up to '+m(oop)+' in a bad year':'')+'. So we put two Manhattan plans next to it that pay <i>you</i> cash when you’re admitted:”')
         +li(P.filter(function(p){ return p.k!=='dvh'; }))
-        +(t==='best'&&has('dvh')?triadSay('“And we’re adding dental, so your teeth are looked after too: '+esc(has('dvh').sum)+'.”')+li([has('dvh')]):'')
+        +(tp==='best'&&has('dvh')?triadSay('“And we’re adding dental, so your teeth are looked after too: '+esc(has('dvh').sum)+'.”')+li([has('dvh')]):'')
         +triadSay('“All of that is <b>'+fmt2(sumP)+' a month</b> on top of your marketplace plan.”')
         +triadDo('These are ManhattanLife plans — they pay the client directly, on top of the ACA plan, with their own application. The Client View shows what a hospital stay costs with and without them.')});
-    pages.push({t:'The close',h:triadSay('“So here’s what we’ll do. I’m going to send you the application for the ACA plan so you can apply for that, and I’ll take care of your application for the Manhattan '+(t==='good'?'accident plan — so an accident doesn’t leave you scrambling.”':'hospital plan and out-of-pocket protection'+(t==='best'&&has('dvh')?', and the dental':'')+' — so you’re not stuck with that deductible.”'))
+    pages.push({t:'The close',h:triadSay('“So here’s what we’ll do. I’m going to send you the application for the ACA plan so you can apply for that, and I’ll take care of your application for the Manhattan '+(tp==='good'?'accident plan — so an accident doesn’t leave you scrambling.”':'hospital plan and out-of-pocket protection'+(tp==='best'&&has('dvh')?', and the dental':'')+' — so you’re not stuck with that deductible.”'))
         +triadDo('Send them the marketplace application (HealthSherpa). The ManhattanLife application is on Enroll.')
         +'<button type="button" class="btn-gold" onclick="enrollAsPresented()">Go to Enroll →</button>'});
-  } else if(t==='good'){
+  } else if(tp==='good'){
     pages.push({t:'The ACA plan',h:acaSay+acaDo+triadDo('This column is the <b>anchor</b>: the marketplace plan on its own, so they see what it really costs them. Virtual Basic A and B are what it’s compared with.')});
     pages.push({t:'The close',h:triadSay('“If the marketplace plan is the one for you, I’ll send you the application so you can apply.”')+triadDo('Send them the marketplace application (HealthSherpa).')});
   } else {
     pages.push({t:'Why not the ACA',h:(ded?triadSay('“We looked at the marketplace first. '+(A.plan?esc(A.plan)+' would':'It would')+' cost you <b>'+fmt2(net)+'</b> a month, and before it paid for anything big you’d owe <b>'+m(ded)+'</b>'+(oop?', up to '+m(oop)+' in a year':'')+'. With money tight, that’s a lot to pay for a plan you can’t afford to use.”'):triadDo('<b>No ACA plan on the Intake yet.</b> Put it in the Intake’s ACA section — this page compares against it.'))
-        +triadDo(t==='better'?'Virtual Basic A is for someone <b>healthy, but funds are tight</b>.':'Virtual Basic B is for someone <b>unhealthy, and funds are very tight</b>: the accident plan is the one they can get whatever their health.')});
+        +triadDo(tp==='better'?'Virtual Basic A is for someone <b>healthy, but funds are tight</b>.':'Virtual Basic B is for someone <b>unhealthy, and funds are very tight</b>: the accident plan is the one they can get whatever their health.')});
     pages.push({t:'Amaze for everyday care',h:amaze});
     var prot=P.filter(function(p){ return p.k!=='base'; });
-    pages.push({t:t==='better'?'Protection for the big things':'The accident plan',h:(t==='better'?triadSay('“Amaze is for everyday care. For the big things — a hospital stay, an accident — we add three Manhattan plans that pay <i>you</i> cash:”'):triadSay('“Amaze is for everyday care. For an accident we add a 24-Hour Accident plan that pays <i>you</i> cash — and you can get it no matter what your health is.”'))
+    pages.push({t:tp==='better'?'Protection for the big things':'The accident plan',h:(tp==='better'?triadSay('“Amaze is for everyday care. For the big things — a hospital stay, an accident — we add three Manhattan plans that pay <i>you</i> cash:”'):triadSay('“Amaze is for everyday care. For an accident we add a 24-Hour Accident plan that pays <i>you</i> cash — and you can get it no matter what your health is.”'))
         +li(prot)+triadDo('These pay the client directly. They’re not health insurance: they don’t pay the hospital, they pay the client.')});
     pages.push({t:'The price',h:triadSay('“All together that’s <b>'+fmt2(pkMonthly(S.packages[t]||{}))+' a month</b>'+(ded&&net>pkMonthly(S.packages[t]||{})?' — against <b>'+fmt2(net)+'</b> for the marketplace plan alone':'')+'.”')
         +triadDo('Be clear what this is: everyday care plus cash for the big things — <b>not</b> major medical. A big bill still lands on them; these plans put money in their hands toward it.')});
-    pages.push({t:'The close',h:triadSay('“So here’s what we’ll do: I’ll get you signed up with Amaze, and I’ll take care of your Manhattan application'+(t==='better'?'s':'')+'.”')
+    pages.push({t:'The close',h:triadSay('“So here’s what we’ll do: I’ll get you signed up with Amaze, and I’ll take care of your Manhattan application'+(tp==='better'?'s':'')+'.”')
         +triadDo('Amaze: use your Amaze member sign-up link'+(amazeLink()?', and send the <a href="'+amazeDoc('setup')+'" target="_blank" rel="noopener">setup steps ↗</a> with it':' (add it in Setup first — the setup steps start with “use the link your agent sent”)')+'. The ManhattanLife application is on Enroll.')
         +'<button type="button" class="btn-gold" onclick="enrollAsPresented()">Go to Enroll →</button>'});
   }
@@ -9465,7 +9466,7 @@ function evTierCarrier(t){ var c=effCfg(t);
   if(c.base==='brightlife') return {co:'Bright Life', plan:c.blPlan||BL_DEFAULT};
   if(c.base==='triad') return {co:'Cigna', plan:'$'+Number(c.triadPlan||3500).toLocaleString('en-US')};
   return {co:'ManhattanLife', plan:(LVLNAME&&LVLNAME[c.afc])||c.afc||''}; }
-function evTierName(t,mixed,fallback){ var LN=LINEUP_NAMES[S.lineup]; if(LN&&LN[t]) return LN[t][0]; if(!mixed) return fallback;
+function evTierName(t,mixed,fallback){ var LN=LINEUP_NAMES[S.lineup]; if(LN&&LN[t]) return LN[t][0]; if(S.lineup==='custom'&&effCfg(t).pick) return effCfg(t).pick.short; if(!mixed) return fallback;
   var x=evTierCarrier(t); return x.plan?x.co+' '+x.plan:x.co; }
 function evIncluded(){ var inc=S.include||{}, rows=EV_TIERS.filter(function(T){ return inc[T[0]]!==false&&tierTotals(T[0]).mo>0; });
   var cos=rows.map(function(T){ return evTierCarrier(T[0]).co; }), mixed=cos.some(function(c){ return c!==cos[0]; });
@@ -9625,7 +9626,11 @@ function renderTfraHint(){ var el=$('tfraHint'); if(!el) return; var B=anchorBas
   el.innerHTML=h;
   el.querySelectorAll('.tfrause').forEach(function(b){ b.onclick=function(){ var inp=$('p_pension'); inp.value=b.dataset.amt; inp.dispatchEvent(new Event('input')); compute(); autosave(); }; }); }
 /* ===== The client's choice (builder + Client View -> Enroll) ===== */
-var TIER_NAME={good:'Essential',better:'Complete',best:'Comprehensive'};
+var TIER_NAME={};
+/* Jesse, 9 Nov: on "Create your custom plan" each column holds whatever plan was picked for it (Cigna PPO, Virtual Basic A,
+   Manhattan Comprehensive...), so a column's name is that plan's - never "Complete" just because it sits in the middle. */
+var TIER_NAME0={good:'Essential',better:'Complete',best:'Comprehensive'};
+['good','better','best'].forEach(function(t){ Object.defineProperty(TIER_NAME,t,{enumerable:true,get:function(){ try{ if(S&&S.lineup==='custom'){ var c=S.cfg&&S.cfg[t]; if(c&&c.pick&&c.pick.short) return c.pick.short; } }catch(e){} return TIER_NAME0[t]; }}); });
 /* The ACA and Virtual Basic lineups aren't Essential / Complete / Comprehensive - the client reads what each column is (Kyle, 4 Nov). */
 var LINEUP_NAMES={aca:{good:['ACA + accident','24-Hour Accident'],better:['ACA + deductible buster','Hospital + Out-of-Pocket'],best:['ACA + deductible buster + dental','Deductible buster + dental']},
   vb:{good:['The ACA plan','The marketplace plan alone'],better:['Virtual Basic A','Real out-of-pocket protection','healthy, but funds are tight'],best:['Virtual Basic B','Basic protection','unhealthy, and funds are very tight']}};
@@ -9713,10 +9718,10 @@ function pbColHTML(T,anc){ var t=T[0], act=(t==='actual'), st=(S.client.state||'
     var c=effCfg(t), pk=S.packages[t]||{products:[]}, dropped=pk.dropped||[];
     var built=buildTierProducts(c,null,[]), byK={}; built.forEach(function(p){ byK[p.k]=p; });
     var byKpk={}; (pk.products||[]).forEach(function(p){ if(p.k) byKpk[p.k]=p; });
-    var hdr=LINEUP_NAMES[S.lineup]?(LINEUP_NAMES[S.lineup][t]||[T[1],T[2]]):(S.lineup==='lx-mh-cg'||S.lineup==='custom')&&c.base&&c.base!=='afc'?['',c.base==='lifex'?'LifeX':c.base==='brightlife'?'Bright Life':'Cigna']:(S.lineup==='lx-mh-cg'?['','Manhattan']:[T[1],T[2]]);   /* no Pivot down / Lead / Pivot up over the columns (Jesse, 5 Nov) */
+    var hdr=(S.lineup==='custom'&&c.pick&&c.pick.short)?['',c.pick.short]:LINEUP_NAMES[S.lineup]?(LINEUP_NAMES[S.lineup][t]||[T[1],T[2]]):(S.lineup==='lx-mh-cg'||S.lineup==='custom')&&c.base&&c.base!=='afc'?['',c.base==='lifex'?'LifeX':c.base==='brightlife'?'Bright Life':'Cigna']:(S.lineup==='lx-mh-cg'?['','Manhattan']:[T[1],T[2]]);   /* no Pivot down / Lead / Pivot up over the columns (Jesse, 5 Nov) */
     var incT=(S.include||{})[t]!==false;
     if(act) html+=pbActHead(); else html+='<div class="pbcol'+(S.recommended===t?' rec':'')+(rfBadge(t)?' dtpick':'')+(incT?'':' excl')+(chosenTier()===t?' chosen':'')+'" data-t="'+t+'"><div class="pbhd"><div class="pbbadge">'+rfBadge(t)+'</div>'+(hdr[0]||hdr[2]?'<div class="r1"><span class="tt">'+hdr[0]+(hdr[2]?' <span class="tfor">('+hdr[2]+')</span>':'')+'</span></div>':'')+'<div class="r2"><div class="nm">'+hdr[1]+'</div><button type="button" class="pbreset" data-act="reset1" title="Put this package back to the recommendation">↺ Reset</button></div><div class="r3"><label class="pbshow"><input type="checkbox" data-act="inc"'+(incT?' checked':'')+'> Show on quote</label></div></div>'
-      +((S.lineup==='custom')?'':'<!--')+'<div style="padding:0 12px 4px"><select data-act="base" aria-label="Base plan" style="width:100%;font:inherit;font-size:13px;padding:6px 8px;border:1px solid #d6cdb4;border-radius:7px">'+pbOpts([['afc','Base: Manhattan — Affordable Choice']].concat(blOn()?(c.base==='lifex'?[['lifex','Base: LifeX (replaced by Bright Life)']]:[]).concat([['brightlife','Base: Bright Life']]):[['lifex','Base: LifeX']].concat(c.base==='brightlife'?[['brightlife','Base: Bright Life']]:[])).concat([['triad','Base: Cigna — Triad PPO']]),c.base||'afc')+'</select></div>'+((S.lineup==='custom')?'':'-->');
+      +((S.lineup==='custom')?'<div style="padding:0 12px 4px">'+colPickSelect(t)+'</div>':'')+'<!--'+'<div style="padding:0 12px 4px"><select data-act="base" aria-label="Base plan" style="width:100%;font:inherit;font-size:13px;padding:6px 8px;border:1px solid #d6cdb4;border-radius:7px">'+pbOpts([['afc','Base: Manhattan — Affordable Choice']].concat(blOn()?(c.base==='lifex'?[['lifex','Base: LifeX (replaced by Bright Life)']]:[]).concat([['brightlife','Base: Bright Life']]):[['lifex','Base: LifeX']].concat(c.base==='brightlife'?[['brightlife','Base: Bright Life']]:[])).concat([['triad','Base: Cigna — Triad PPO']]),c.base||'afc')+'</select></div>'+'-->';
     var sum=0, addable=[], unavail=[];
     PB_SLOTS.forEach(function(sl){
       var k=sl.k; if(k==='lbs'&&!pbHasSpouse()) return;
@@ -9878,6 +9883,7 @@ function renderBuilder(){
   host.querySelectorAll('.pbinfo').forEach(function(b){ b.onclick=function(e){ e.stopPropagation(); var col=b.closest('.pbcol'); benOpen(col?col.dataset.t:(b.dataset.bt||'best'),b.dataset.ben); }; });
   benRefresh();
   host.querySelectorAll('.pbcol').forEach(function(col){ pbColBind(col,pbReprice,renderBuilder); });
+  host.querySelectorAll('[data-act="colpick"]').forEach(function(sel){ sel.onchange=function(){ colPick(sel.closest('.pbcol').dataset.t,sel.value); }; });
   host.querySelectorAll('[data-act="base"]').forEach(function(sel){ sel.onchange=function(){ var t=sel.closest('.pbcol').dataset.t; var c=effCfg(t); c.base=sel.value;
       if(sel.value==='lifex') c.lifexPlan='$500 PPO'; if(sel.value==='brightlife'){ c.blPlan=c.blPlan||BL_DEFAULT; c.his=c.his||{amb:1,outp:0}; c.his.ben=2000; c.his.outp=1500; } if(sel.value==='triad'){ c.triadPlan=c.triadPlan||'7350'; c.his=c.his||{amb:1,outp:0}; c.his.ben=cignaHIS(c.triadPlan); }
       PB_OPEN[t+'|base']=sel.value!=='afc'; pbReprice(); }; });
@@ -9907,6 +9913,20 @@ var LINEUP_BASES={'aca':['aca','aca','aca'],'vb':['aca','amaze','amaze'],'mh':['
 function acaBuster(c,ded){ ded=+ded||5000; c.his={ben:Math.max(1000,Math.min(10000,Math.floor((ded-2500)/1000)*1000)),amb:1,outp:0};
   c.gap={daily:'200',adm:'2500',outp:ded<8000?'3000':'0',ea:1}; return c; }
 function cignaHIS(ded){ return Math.min(10000,Math.ceil((+ded||3500)/1000)*1000); }
+/* Custom column picker: the same list as the Enroll edits - every plan and its levels. Picking one loads that package exactly
+   as its own lineup builds it into this column. */
+function colPickOpts(){ return enBaseOpts().filter(function(g){ return g[1].every(function(o){ return o[0]!=='custom'&&o[0]!=='cg'; }); }); }
+function colPickSelect(t){ var c=effCfg(t), cur=c.pick?c.pick.ln+'|'+c.pick.t:'';
+  return '<select data-act="colpick" aria-label="Plan in this column" style="width:100%;font:inherit;font-size:13px;font-weight:600;padding:7px 8px;border:1.5px solid #c3a14e;border-radius:8px;background:#fffdf7;color:#10233e">'
+    +(cur?'':'<option value="" selected>Pick a plan for this column…</option>')
+    +colPickOpts().map(function(g){ return '<optgroup label="'+esc(g[0])+'">'+g[1].map(function(o){ var v=o[0]+'|'+o[1]; return '<option value="'+esc(v)+'"'+(v===cur?' selected':'')+'>'+esc(o[2])+'</option>'; }).join('')+'</optgroup>'; }).join('')+'</select>'; }
+function colPick(t,v){ var a=String(v||'').split('|'), ln=a[0], st=a[1]; if(!st) return; var lab='';
+  colPickOpts().forEach(function(g){ g[1].forEach(function(o){ if(o[0]===ln&&o[1]===st) lab=o[2]; }); });
+  if(ln==='mh') lab='Manhattan '+lab;   /* beside other carriers, say whose */
+  var d=pbTierDefaults(st,ln); S.cfg=S.cfg||{}; S.cfg[t]=d.c; d.c.pick={ln:ln,t:st,short:lab};
+  var pk=S.packages[t]=S.packages[t]||{products:[]}, keepDvh=(pk.dropped||[]).indexOf('dvh')>=0; pk.dropped=d.drop.slice(); if(keepDvh&&pk.dropped.indexOf('dvh')<0&&ln!=='aca') pk.dropped.push('dvh');
+  (pk.products||[]).forEach(function(p){ if(p.k) delete p.manual; }); Object.keys(PB_OPEN).forEach(function(k){ if(k.indexOf(t+'|')===0) delete PB_OPEN[k]; });
+  pbReprice(); if(typeof renderBuilder==='function') renderBuilder(); }
 function pbTierDefaults(t,lu,baseOverride){
   var i=['good','better','best'].indexOf(t), c=cfgClone(TIERCFG[t]), drop=[];
   c.base=baseOverride||(LINEUP_BASES[lu]||LINEUP_BASES.mh)[i];
@@ -9932,7 +9952,9 @@ function pbResetTier(t){
   var pk=S.packages[t], keepDvh=(pk.dropped||[]).indexOf('dvh')>=0&&!(lu==='aca'&&t==='best');   /* that column is the dental one */
   S.cfg=S.cfg||{};
   if(lu){ var d=pbTierDefaults(t,lu); S.cfg[t]=d.c; pk.dropped=(keepDvh?['dvh']:[]).concat(d.drop); }
-  else { var d2=pbTierDefaults(t,'mh',(S.cfg[t]||{}).base||'afc'); S.cfg[t]=d2.c; pk.dropped=(keepDvh?['dvh']:[]).concat(d2.drop); }   // Custom: keep each package's base
+  else { var pk0=(S.cfg[t]||{}).pick;   // Custom: back to the plan picked for this column, else keep its base
+    if(pk0){ var d3=pbTierDefaults(pk0.t,pk0.ln); d3.c.pick=pk0; S.cfg[t]=d3.c; pk.dropped=(keepDvh?['dvh']:[]).concat(d3.drop); }
+    else { var d2=pbTierDefaults(t,'mh',(S.cfg[t]||{}).base||'afc'); S.cfg[t]=d2.c; pk.dropped=(keepDvh?['dvh']:[]).concat(d2.drop); } }
   (pk.products||[]).forEach(function(p){ if(p.k) delete p.manual; });
   Object.keys(PB_OPEN).forEach(function(k){ if(k.indexOf(t+'|')===0) delete PB_OPEN[k]; });
 }
@@ -10265,7 +10287,7 @@ loadBaseRates();
   html body .qn-pad textarea:focus{outline:2px solid #c3a14e;outline-offset:0;background:#fff}
   html body .qn-pad textarea::placeholder{color:#9aa1ab;font-style:normal}
   html body .qn-foot{color:#6b7280;font-size:11.5px}
-  @media (min-width:761px){html body:not(.client) .wrap{padding-right:62px}}   /* the Quick notes / save tabs get their own lane (Jesse, 9 Nov: they sat on the Quote) */
+  @media (min-width:1200px){html body:not(.client) .wrap{padding-right:62px}}   /* the Quick notes / save tabs get their own lane (Jesse, 9 Nov: they sat on the Quote) */
   @media (min-width:761px){html body .qn-tab{width:44px;box-sizing:border-box}html body:not(.client) .fab-save{box-sizing:border-box;max-width:44px;overflow:hidden;padding-left:12px;transition:max-width .18s}
     html body .fab-save:hover,html body .fab-save:focus-visible{max-width:280px}}
 </style>

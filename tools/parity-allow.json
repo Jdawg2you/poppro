@@ -16,11 +16,20 @@
     [
       "Client Intake",
       "Client Intake / Profile"
+    ],
+    [
+      "Base: Manhattan — Affordable ChoiceBase: Bright LifeBase: Cigna — Triad PPO",
+      "Pick a plan for this column…EssentialCompleteComprehensiveBright LifeCigna PPOVirtual Basic AVirtual Basic BACA + accidentACA + deductible busterACA + deductible buster + dental"
     ]
   ],
-  "lines": [],
+  "lines": [
+    "Base: Bright Life",
+    "Base: Cigna — Triad PPO",
+    "Base: Manhattan — Affordable Choice"
+  ],
   "decisions": {
     "Save Quote / Load Quote -> Save client / Load client": "Jesse, 7 Nov 2026: 'It'll be like save client. And then load client.'",
-    "Client Intake -> Client Intake / Profile": "Jesse, 7 Nov 2026: 'I want to transition people to calling it profile, but we'll do it slowly.'"
+    "Client Intake -> Client Intake / Profile": "Jesse, 7 Nov 2026: 'I want to transition people to calling it profile, but we'll do it slowly.'",
+    "Custom: Base picker -> plan picker": "Jesse, 9 Nov 2026: on Create your custom plan, pick any plan with its versions per column, 'similar to how when we edit a plan after enroll'."
   }
 }

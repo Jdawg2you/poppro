@@ -53,10 +53,20 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); for
  setView('agent'); S.includeBy={}; S.include={good:false,better:false,best:true}; pbApplyLineup('lx-mh-cg'); var inc2=JSON.stringify(S.include); pbApplyLineup('mh'); setView('client'); compute(); await w(300); po=document.getElementById('printout');
  ok(inc2==='{"good":true,"better":true,"best":true}'&&S.include.best===true&&S.include.good===false,'which plans show belongs to the lineup: '+inc2+' on the other lineup, Comprehensive alone back on Manhattan');
  S.poShow={aca:true,cur:true};
+ /* Custom columns hold any plan, and the column is named after it everywhere (Jesse, 9 Nov) */
+ setView('agent'); pbApplyLineup('mh'); autoPriceTiers(); pbApplyLineup('custom'); renderBuilder(); await w(200);
+ colPick('good','vb|better'); colPick('better','lx-mh-cg|best'); colPick('best','mh|best'); await w(200);
+ ok(TIER_NAME.good==='Virtual Basic A'&&TIER_NAME.better==='Cigna PPO'&&TIER_NAME.best==='Manhattan Comprehensive'&&effCfg('good').base==='amaze'&&effCfg('better').base==='triad'&&effCfg('best').base==='afc','custom columns take any plan and are named after it: '+[TIER_NAME.good,TIER_NAME.better,TIER_NAME.best].join(' / '));
+ ok(acaFlowOn('good')&&triadFlowOn('better'),'a custom column presents as its plan (Virtual Basic, Cigna)');
+ S.include={good:true,better:true,best:true}; setView('client'); compute(); await w(300); po=document.getElementById('printout');
+ var ch=[].slice.call(po.querySelectorAll('.po-money th.pl')).map(function(t){ return t.innerText.split(String.fromCharCode(10))[0]; }).join('|');
+ ok(/VIRTUAL BASIC A/.test(ch)&&/CIGNA PPO/.test(ch)&&/MANHATTAN COMPREHENSIVE/.test(ch),'Client View names the custom columns by plan: '+ch);
+ S.lineup='mh'; ok(TIER_NAME.better==='Complete','other lineups keep Essential / Complete / Comprehensive');
+ setView('agent'); pbApplyLineup('mh');
  shareScreen(); await w(200); ok(!document.fullscreenElement,'Share screen stays in the window (no full screen)'); ok(document.body.classList.contains('sharing')&&getComputedStyle(document.querySelector('.brandbar')).display==='none'&&getComputedStyle(document.getElementById('viewseg')).display==='none','Share screen: Client View with the agent bar and switches hidden');
  document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape'})); await w(100); ok(!document.body.classList.contains('sharing')&&document.body.classList.contains('client'),'Esc stops sharing and leaves Client View on'); setView('agent'); await w(200); ok(!document.body.classList.contains('sharing')&&!document.body.classList.contains('client'),'and it comes back');
  var ag=document.querySelector('#step-quote .pbcol[data-t="best"]'); ok(!!ag&&/[$][0-9]/.test(ag.innerText),'the agent Quote page still has every price');
- return {n:21, fails:fails}; })()`;
+ return {n:25, fails:fails}; })()`;
 try {
   let l; for (let i = 0; i < 60 && !l; i++) { await sleep(150); l = await fetch(`http://127.0.0.1:${DBG}/json/list`).then(r => r.json()).catch(() => null); }
   ws = new WebSocket(l.find(t => t.type === 'page').webSocketDebuggerUrl);
@@ -71,4 +81,4 @@ try {
   console.log(bad.length ? `CLIENTVIEW FAILED ${bad.length}:\n  ` + bad.join('\n  ') : `CLIENTVIEW ok - ${r.n} checks`);
   process.exitCode = bad.length ? 1 : 0;
 } catch (e) { console.log('CLIENTVIEW FAILED ' + e.message); process.exitCode = 1; }
-finally { try { ws && ws.close(); } catch {} chrome.kill(); await sleep(300); fs.rmSync(prof, { recursive: true, force: true }); }
+finally { try { ws && ws.close(); } catch {} chrome.kill(); await sleep(300); try { fs.rmSync(prof, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 }); } catch {}   /* Chrome can still be flushing its cache */ }
