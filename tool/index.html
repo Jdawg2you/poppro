@@ -1379,7 +1379,7 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
       <div class="seg noprint" id="viewseg">
         <button data-view="agent" class="on">Agent workspace</button>
         <button data-view="client">Client view</button>
-      </div><button type="button" class="sharebtn noprint" id="shareBtn" onclick="shareScreen()" title="Client View, full screen - for CrankWheel or any screen share. Esc to stop.">🖥 Share screen</button></div>
+      </div><button type="button" class="sharebtn noprint" id="shareBtn" onclick="shareScreen()" title="Client View in this window, nothing agent-only showing - for CrankWheel or any screen share. Esc to stop.">🖥 Share screen</button></div>
     <div class="grid8">
       <div class="fld"><label>Primary name</label><input id="c_pname" readonly></div>
       <div class="fld"><label>Spouse name</label><input id="c_sname" readonly></div>
@@ -4895,14 +4895,12 @@ function applyClientZeroHide(){
   if(medRow) medRow.style.display=(isClient && !(+pk.med)) ? 'none' : '';
 }
 
-/* Share screen (Jesse, 9 Nov - for the agents who present on CrankWheel): Client View, full screen, nothing agent-only
-   showing. Esc (or the button) stops it and leaves you in Client View. */
-function shareScreen(){ var on=document.body.classList.contains('sharing'); if(on){ if(document.fullscreenElement&&document.exitFullscreen) document.exitFullscreen(); else shareOff(); return; }
-  setView('client'); document.body.classList.add('sharing'); var b=$('shareBtn'); if(b) b.textContent='✕ Stop sharing';
-  try{ var el=document.documentElement; if(el.requestFullscreen) el.requestFullscreen().catch(function(){}); }catch(e){}
-  window.scrollTo(0,0); }
+/* Share screen (Jesse, 9 Nov - for the agents who present on CrankWheel): Client View in this window, nothing agent-only
+   showing. It does NOT go full screen (Jesse: "just the window"). Esc or Stop sharing ends it and leaves you in Client View. */
+function shareScreen(){ if(document.body.classList.contains('sharing')){ shareOff(); return; }
+  setView('client'); document.body.classList.add('sharing'); var b=$('shareBtn'); if(b) b.textContent='✕ Stop sharing'; window.scrollTo(0,0); }
 function shareOff(){ document.body.classList.remove('sharing'); var b=$('shareBtn'); if(b) b.textContent='🖥 Share screen'; }
-document.addEventListener('fullscreenchange',function(){ if(!document.fullscreenElement) shareOff(); });
+document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&document.body.classList.contains('sharing')) shareOff(); });
 function setView(v){
   if(v!=='client'&&S.negot) S.negot.cards={};   /* setup always runs both examples off the one switch */
   view=v; document.body.classList.toggle('client',v==='client');
@@ -4977,19 +4975,19 @@ function poRecapHTML(showCur,showAca){
     +rows.map(function(r){ return '<div class="r'+(r[2]?' '+r[2]:'')+'"><span class="k">'+r[0]+'</span><span class="v">'+r[1]+'</span></div>'; }).join('')+'</div></div>';
 }
 /* Printout page 1: every option in one table against the anchor, so the page ends on the answer. */
-function poGlanceHTML(tiers,labels,B){
+function poGlanceHTML(tiers,labels,B,B2){
   if(!tiers.length) return '';
-  var showPop=S.showPop!==false, ch=chosenTier();
-  var h='<div class="po-glance"><div class="t">Your options at a glance<small>'+(B?'Each package against '+(B.k==='aca'?'the ACA marketplace bronze plan':'what you have now')+' — the details follow on the next pages':'The details follow on the next pages')+'</small></div>'
+  var showPop=S.showPop!==false, ch=chosenTier(), Bs=[B,B2].filter(Boolean), multi=Bs.length>1;
+  var nm=function(b){ return b.k==='aca'?'ACA marketplace — bronze':'What you have now'; }, tag=function(b){ return multi?' <i>vs '+(b.k==='aca'?'ACA':'current')+'</i>':''; };
+  var h='<div class="po-glance"><div class="t">Your options at a glance<small>'+(B?'Each package against '+(multi?'the ACA marketplace and what you have now':(B.k==='aca'?'the ACA marketplace bronze plan':'what you have now'))+' — the details follow on the next pages':'The details follow on the next pages')+'</small></div>'
     +'<table><thead><tr><th></th><th>Monthly</th>'+(B?'<th>Premium vs today</th><th>True cost, a year</th>':'')+(showPop?'<th>POP Score</th>':'')+'</tr></thead><tbody>';
-  if(B) h+='<tr class="anc"><td>'+(B.k==='aca'?'ACA marketplace — bronze':'What you have now')+'<small>premium'+(B.copayMo>0?' + doctor copays':'')+'</small></td><td>'+fmt2(B.prem)+'</td><td>—</td><td>'+fmt2(B.yr)+'</td>'+(showPop?'<td>—</td>':'')+'</tr>';
-  tiers.forEach(function(x){ var sv=B?anchorSavings(B,pkgPremMo(x.t),x.mo+tierTrue(x.t).extra):null, pop=showPop?computePop(x.t):null;
+  Bs.forEach(function(b){ h+='<tr class="anc"><td>'+nm(b)+'<small>premium'+(b.copayMo>0?' + doctor copays':'')+'</small></td><td>'+fmt2(b.prem)+'</td><td>—</td><td>'+fmt2(b.yr)+'</td>'+(showPop?'<td>—</td>':'')+'</tr>'; });
+  tiers.forEach(function(x){ var pop=showPop?computePop(x.t):null;
     var d=function(v,per){ return '<b class="'+(v>=0?'up':'dn')+'">'+(v>=0?'saves ':'costs ')+fmt2(Math.abs(v))+per+(v>=0?'':' more')+'</b>'; };
-    var adds=acaAddsOn(x.t,B);
+    var c1=Bs.map(function(b){ if(acaAddsOn(x.t,b)) return '<b>adds '+fmt2(pkgPremMo(x.t)-b.prem)+'/mo</b>'+tag(b); var sv=anchorSavings(b,pkgPremMo(x.t),x.mo+tierTrue(x.t).extra); return d(sv.actual,'/mo')+tag(b); }).join('<br>');
+    var c2=Bs.map(function(b){ if(acaAddsOn(x.t,b)) return '—'; var sv=anchorSavings(b,pkgPremMo(x.t),x.mo+tierTrue(x.t).extra); return (sv.tru>=0?'<b class="up">ahead '+fmt2(sv.tru*12)+'</b>':'<b class="dn">behind '+fmt2(-sv.tru*12)+'</b>')+tag(b); }).join('<br>');
     h+='<tr'+(ch===x.t?' class="ch"':'')+'><td>'+labels[x.t][0]+'<small>'+esc(labels[x.t][1])+(ch===x.t?' · your choice':'')+'</small></td><td>'+fmt2(x.mo)+'</td>'
-      +(adds?'<td><b>adds '+fmt2(pkgPremMo(x.t)-B.prem)+'/mo</b></td><td>—</td>':'')
-      +(sv&&!adds?'<td>'+d(sv.actual,'/mo')+'</td><td>'+(sv.tru>=0?'<b class="up">ahead '+fmt2(sv.tru*12)+'</b>':'<b class="dn">behind '+fmt2(-sv.tru*12)+'</b>')+'</td>':'')
-      +(pop?'<td><b>'+pop.score+'</b></td>':'')+'</tr>'; });
+      +(Bs.length?'<td>'+c1+'</td><td>'+c2+'</td>':'')+(pop?'<td><b>'+pop.score+'</b></td>':'')+'</tr>'; });
   return h+'</tbody></table></div>';
 }
 /* Client View's check-offs (Jesse, 9 Nov): the one plan they want, against the ACA and/or what they have now. On screen
@@ -5056,9 +5054,10 @@ function buildPrintout(){
   }
   if(pair) html+='</div>';
   /* Savings are measured against the ACA when it is shown, otherwise against what they have now. */
+  var B2=null; if(showAca&&showCur){ var kA=I0.anchor==='cur'?'cur':'aca'; I0.anchor=kA==='aca'?'cur':'aca'; B2=anchorBase(); I0.anchor=ank0; if(B2&&B2.k===kA) B2=null; }
   var B=noCmp?null:anchorBase(), base=B?{mo:B.mo,yr:B.yr,prem:B.prem,premOnly:B.premOnly,ded:B.ded,k:B.k,lab:B.k==='aca'?'ACA':'your current plan',your:B.your}:null;
 
-  html+=poGlanceHTML(tiers,labels,B);
+  html+=poGlanceHTML(tiers,labels,B,B2);
 
   /* ---- Good / Better / Best comparison - page 2 ---- */
   if(tiers.length){
@@ -5075,11 +5074,12 @@ function buildPrintout(){
         html+='<div class="po-li po-inc'+(hi?' po-hist':'')+'"><i class="ck">✓</i><span>'+esc(String(p.name).split(' — ')[0])+(sm?'<small class="po-sum">'+esc(sm)+'</small>':'')+(hi?htag:'')+'</span></div>'; });
       if(+x.pk.lb>0) html+='<div class="po-li po-inc'+(HF.any?' po-hist':'')+'"><i class="ck">✓</i><span>Living Benefits'+(x.pk.lbCarrier?' — '+esc(x.pk.lbCarrier):'')+(HF.any?htag:'')+'</span></div>';
       html+='</div><div class="po-tot"><div class="m"><span>Monthly — everything included</span><b>'+fmt2(x.mo)+'</b></div><div class="a"><span>Annual</span><span>'+fmt2(x.yr)+'</span></div></div>'+rxLineHTML(x.t).replace('class="pbrx"','class="pbrx po-rx"');
+      [B].concat(B2?[B2]:[]).forEach(function(B){ var base=B?{mo:B.mo,yr:B.yr,prem:B.prem,premOnly:B.premOnly,ded:B.ded,k:B.k,lab:B.k==='aca'?'ACA':'your current plan',your:B.your}:null;
       if(acaAddsOn(x.t,B)) html+='<div class="po-save"><div class="vs">On top of your marketplace plan</div><div class="ln"><span>Adds</span><b>'+fmt2(pkgPremMo(x.t)-B.prem)+'/mo</b></div><div class="tn">You keep the same marketplace plan and its deductible. These benefits pay you cash when the accident or hospital stay happens — the examples below show what they pay.</div></div>';
       else if(base){ var ttx=tierTrue(x.t), sv=anchorSavings(base,pkgPremMo(x.t),x.mo+ttx.extra), cpn=copayNote(B,x.t), vs=base.k==='aca'?'your marketplace plan':'your current plan';
         var ln=function(lab,v){ return '<div class="ln"><span>'+lab+'</span><b class="'+(v>=0?'up':'dn')+'">'+(v>=0?'saves ':'costs ')+fmt2(Math.abs(v))+'/mo'+(v>=0?'':' more')+'</b></div>'; };
         html+='<div class="po-save"><div class="vs">Compared with '+vs+'</div>'+ln('Premium',sv.actual)+(cpn?'<div class="tn">'+cpn+'</div>':'')+ln('True cost',sv.tru)+'<div class="tn tcn">'+trueCostNote(x.t,base)+'</div>'
-          +'<div class="yr '+(sv.tru>=0?'up':'dn')+'">'+(sv.tru>=0?'Ahead '+fmt2(sv.tru*12)+' a year':'Behind '+fmt2(-sv.tru*12)+' a year')+'<small>on true cost</small></div></div>'; }
+          +'<div class="yr '+(sv.tru>=0?'up':'dn')+'">'+(sv.tru>=0?'Ahead '+fmt2(sv.tru*12)+' a year':'Behind '+fmt2(-sv.tru*12)+' a year')+'<small>on true cost</small></div></div>'; } });
       var dp=dentalPrice(x.t), hasD=tierHasDental(x.t);
       html+='<div class="po-choose'+(isCh?' on':'')+'" data-choose="'+x.t+'" role="button" tabindex="0"><span class="box">'+(isCh?'☑':'☐')+'</span> This is my plan</div>';
       var dph=dvhPhrase(effCfg(x.t).dvh).replace(/&/g,'&amp;');
@@ -5150,7 +5150,7 @@ function buildPrintout(){
   var tfra=html; html=main;
 
   /* ---- event illustrations, page 3: the two example cards, on a page of their own ---- */
-  var showEvents=false, evs=[evTableHTML(0,{noBtn:true,client:1,noAnchor:noCmp}),evTableHTML(1,{noBtn:true,client:1,noAnchor:noCmp})]; I0.anchor=ank0;
+  var showEvents=false, evs=[evTableHTML(0,{noBtn:true,client:1,noAnchor:noCmp,anchors:B2?[B.k,B2.k]:null}),evTableHTML(1,{noBtn:true,client:1,noAnchor:noCmp,anchors:B2?[B.k,B2.k]:null})]; I0.anchor=ank0;
   if(evs[0]||evs[1]) html+='<div class="po-newpage po-evpage">';
   evs.forEach(function(t,i){ if(!t) return; showEvents=true; var d=(S.ev[i]||{}).desc;
     html+='<div class="po-event"><div class="band">'+(d?'If this happens: <span class="d">'+esc(d)+'</span>':'Example '+(i+1))+negToggleHTML(i)+'</div>'+t+'</div>'; });
@@ -9478,6 +9478,9 @@ function evMoneyTxt(v){ return (v<0?'+':'')+fmt2(Math.abs(v)); }
 function evTableHTML(i,opt){ var O=opt||{}, tiers=O.tiers?EV_TIERS.filter(function(T){ return O.tiers.indexOf(T[0])>=0; }):evIncluded(); if(!tiers.length) return ''; var kind=i, sc=O.sc||S.ev[i]||evScn('');
   var negA=function(b){ return O.neg?(+(S.negot||{}).pct>0&&b>(+((S.negot||{}).min)||2500)):negApplies(i,b); };
   var A=O.noAnchor?null:evAnchor(), B=anchorBase(), res=[], bill, head;
+  /* Client View with both "Compare with" boxes ticked (Jesse, 9 Nov): one column per comparison, ACA and current plan */
+  var ZZ=[]; if(!O.noAnchor&&O.anchors&&O.anchors.length>1){ var I1=S.intake=S.intake||{}, k0=I1.anchor; O.anchors.forEach(function(k){ I1.anchor=k; var a1=evAnchor(), b1=anchorBase(); if(a1&&b1&&b1.k===k) ZZ.push({A:a1,B:b1}); }); I1.anchor=k0; if(ZZ.length){ A=ZZ[0].A; B=ZZ[0].B; } }
+  else if(A) ZZ.push({A:A,B:B});
   var bb=evScnBill(sc), bill=bb.total, head, adds=[]; if(!(bill>0)) return '';
   EV_ADDONS.forEach(function(a){ var x=(sc.add||{})[a[0]]; if(x&&+x.n>0) adds.push((+x.n)+' '+a[1].toLowerCase()+(+x.n>1?'s':'')+' at '+fmt2(+x.each||0)); });
   head=(bb.main>0?((+sc.disc||0)>0?'Billed '+fmt2(+sc.charge)+', network price after a '+fmt2(+sc.disc)+' discount':'Network price — what insurance actually pays'):'')
@@ -9485,16 +9488,16 @@ function evTableHTML(i,opt){ var O=opt||{}, tiers=O.tiers?EV_TIERS.filter(functi
     +(adds.length?(bb.main>0?' · plus ':'')+adds.join(', '):'');
   head=head.replace(/^ · /,'');
   tiers.forEach(function(T){ var o=evTierPack(T[0]); res.push({T:T,o:o,r:evEvent(sc,Object.assign({},o,{negotPct:negA(bill)?S.negot.pct:0}))}); });
-  var aOwe=A?evAnchorOweEv(sc,A):null, negAny=negA(bill)&&res.some(function(x){ return !x.o.major; });   /* Bill Saver is a Manhattan package's - none here, none shown */
+  ZZ.forEach(function(Z){ Z.aOwe=evAnchorOweEv(sc,Z.A); }); var aOwe=A?evAnchorOweEv(sc,A):null, negAny=negA(bill)&&res.some(function(x){ return !x.o.major; });   /* Bill Saver is a Manhattan package's - none here, none shown */
   var billed=(+sc.disc||0)>0&&!bb.extra?+sc.charge:0, negB=negAny?Math.round(bill*(1-S.negot.pct/100)*100)/100:null;
-  var cols=(A?1:0)+res.length, h='<div class="evbill"><span>This event costs</span>'+(billed?'<b class="was">'+fmt2(billed)+'</b><i class="arr">→</i>':'')+'<b>'+fmt2(bill)+'</b>'+(billed?'<em>network price — every plan pays this, not the sticker price</em>':'')+(negB!=null?'<i class="arr">→</i><b class="neg">'+fmt2(negB)+'</b><em>with Medical Bill Saver (CareGuide), Manhattan packages</em>':'')+'<small>'+head+'</small>'+(negAny?'<small class="printonly negfine">Medical Bill Saver (CareGuide): illustrated at '+S.negot.pct+'% off the network price on the Manhattan packages; CareGuide states savings are not guaranteed.</small>':'')+'</div>'+((O.neg||negOn(i))&&!negA(bill)&&res.some(function(x){ return !x.o.major; })?'<div class="evneg off">Medical Bill Saver is for bills over '+fmt(+S.negot.min||2500)+' — this one is not negotiated.</div>':'')+(negAny?'<div class="evneg"><b>Medical Bill Saver (CareGuide) is on.</b><span class="ex"> On the Manhattan packages, ManhattanLife’s care-negotiation service (CareGuide) works the bill down before you pay it — illustrated here at '+S.negot.pct+'%. The plan still pays its full benefits, so more of that money stays with you.</span><span class="printonly" style="display:none"> CareGuide negotiates the bill down; the plan still pays in full.</span><small>Illustration: assumes a '+S.negot.pct+'% reduction. CareGuide states savings are not guaranteed.</small></div>':'')+'<div class="evtab'+((O.open||(S.evOpen||{})[i])?' open':'')+'" style="grid-template-columns:var(--evlab,minmax(120px,1.1fr)) repeat('+cols+',1fr)">';
+  var cols=ZZ.length+res.length, h='<div class="evbill"><span>This event costs</span>'+(billed?'<b class="was">'+fmt2(billed)+'</b><i class="arr">→</i>':'')+'<b>'+fmt2(bill)+'</b>'+(billed?'<em>network price — every plan pays this, not the sticker price</em>':'')+(negB!=null?'<i class="arr">→</i><b class="neg">'+fmt2(negB)+'</b><em>with Medical Bill Saver (CareGuide), Manhattan packages</em>':'')+'<small>'+head+'</small>'+(negAny?'<small class="printonly negfine">Medical Bill Saver (CareGuide): illustrated at '+S.negot.pct+'% off the network price on the Manhattan packages; CareGuide states savings are not guaranteed.</small>':'')+'</div>'+((O.neg||negOn(i))&&!negA(bill)&&res.some(function(x){ return !x.o.major; })?'<div class="evneg off">Medical Bill Saver is for bills over '+fmt(+S.negot.min||2500)+' — this one is not negotiated.</div>':'')+(negAny?'<div class="evneg"><b>Medical Bill Saver (CareGuide) is on.</b><span class="ex"> On the Manhattan packages, ManhattanLife’s care-negotiation service (CareGuide) works the bill down before you pay it — illustrated here at '+S.negot.pct+'%. The plan still pays its full benefits, so more of that money stays with you.</span><span class="printonly" style="display:none"> CareGuide negotiates the bill down; the plan still pays in full.</span><small>Illustration: assumes a '+S.negot.pct+'% reduction. CareGuide states savings are not guaranteed.</small></div>':'')+'<div class="evtab'+((O.open||(S.evOpen||{})[i])?' open':'')+'" style="grid-template-columns:var(--evlab,minmax(120px,1.1fr)) repeat('+cols+',1fr)">';
   /* the corner: on Quote it holds the picture button; in the picture itself it names the example instead */
   var exName=sc.desc||sc.label||(EV_SCENARIOS.filter(function(x){ return x.id===sc.id; })[0]||{}).desc||'';
-  h+='<div class="c l evcorner">'+(O.pic?(exName?'<b class="evname">'+esc(exName)+'</b>':''):'')+'</div>'+(A?'<div class="c h anc">'+A.lab+'</div>':'')+res.map(function(x){ return '<div class="c h">'+x.T[1]+'</div>'; }).join('');
+  h+='<div class="c l evcorner">'+(O.pic?(exName?'<b class="evname">'+esc(exName)+'</b>':''):'')+'</div>'+ZZ.map(function(Z){ var A=Z.A, aOwe=Z.aOwe, B=Z.B; return '<div class="c h anc">'+A.lab+'</div>'; }).join('')+res.map(function(x){ return '<div class="c h">'+x.T[1]+'</div>'; }).join('');
   /* Jesse, 9 Nov: on Client View a Manhattan plan never shows money beyond the bill (the Bill Saver part is a gray area) - it
      reads "You pay $0". A Cigna / Bright Life plan's math is set by the plan, so its net stays, with the deductible buster shown. */
   var CL=!!O.client, gray=function(x){ return CL&&!x.o.major; };
-  h+='<div class="c l evtog" data-evtog="'+i+'" role="button" tabindex="0"><span class="car">▸</span> Your plan pays<small class="noprint">click to see why</small></div>'+(A?'<div class="c anc">'+fmt2(Math.max(0,bill-aOwe))+'<small>toward the bill</small></div>':'')
+  h+='<div class="c l evtog" data-evtog="'+i+'" role="button" tabindex="0"><span class="car">▸</span> Your plan pays<small class="noprint">click to see why</small></div>'+ZZ.map(function(Z){ var A=Z.A, aOwe=Z.aOwe, B=Z.B; return '<div class="c anc">'+fmt2(Math.max(0,bill-aOwe))+'<small>toward the bill</small></div>'; }).join('')
     +res.map(function(x){ if(gray(x)&&!(x.o.unknown&&!x.r.pays)) return '<div class="c">'+fmt2(Math.min(x.r.pays,bill))+'<small>'+(x.r.pays>=bill?'the whole bill':'paid to you, toward the bill')+'</small></div>';
       return '<div class="c">'+(x.o.unknown&&!x.r.pays?'—':fmt2(x.r.pays+(x.o.major?Math.max(0,bill-x.r.owe0):0)))+'<small>'+(x.o.major?'plan + cash benefits':'paid to you')+'</small></div>'; }).join('');
   /* Itemised: what each benefit pays and why - behind the caret on screen, always shown in print. */
@@ -9502,7 +9505,7 @@ function evTableHTML(i,opt){ var O=opt||{}, tiers=O.tiers?EV_TIERS.filter(functi
      and the lines add up to the net. The plan's payment to the hospital is shown but not counted: it never reaches the client. */
   var li=function(lab,v,k){ var sg=/\bin\b/.test(k||'')?'+':/\bout\b/.test(k||'')?'−':''; return '<div class="it'+(k?' '+k:'')+'"><span>'+esc(lab)+'</span><b>'+sg+fmt2(Math.abs(v))+'</b></div>'; };
   h+='<div class="c l evit">What each benefit pays</div>'
-    +(A?'<div class="c anc evit">'+li('Plan pays toward the bill',Math.max(0,bill-aOwe),'bill')+'<div class="why">Your share first: '+(A.how||'up to the out-of-pocket limit')+'.</div></div>':'')
+    +ZZ.map(function(Z){ var A=Z.A, aOwe=Z.aOwe, B=Z.B; return '<div class="c anc evit">'+li('Plan pays toward the bill',Math.max(0,bill-aOwe),'bill')+'<div class="why">Your share first: '+(A.how||'up to the out-of-pocket limit')+'.</div></div>'; }).join('')
     +res.map(function(x){ var its=x.r.parts.map(function(p){ return li(p.lab,p.v,'in'); });
       if(x.o.major&&bill-x.r.owe0>0) its.unshift(li('The plan pays the rest of the bill (to the hospital)',bill-x.r.owe0,'bill'));
       if(x.o.major&&x.r.oweParts&&x.r.oweParts.length){ its=its.concat(x.r.oweParts.map(function(p){ return p.v<0?li(p.lab,-p.v,'in'):li('You pay — '+p.lab,p.v,'out'); }));
@@ -9510,25 +9513,30 @@ function evTableHTML(i,opt){ var O=opt||{}, tiers=O.tiers?EV_TIERS.filter(functi
       if(x.o.unknown&&!x.r.pays) its=['<div class="why">'+esc(x.o.unknown)+'</div>'];
       else if(gray(x)) its=['<div class="why">Your benefits pay you directly'+(x.r.pays>=bill?' — enough to cover this bill.':', toward this bill.')+'</div>'];
       return '<div class="c evit">'+(its.join('')||'<div class="why">No benefit applies to this event.</div>')+(x.o.afc&&(+sc.days||0)>0?'<div class="why surg">Surgery benefits (paid on the policy fee schedule) are extra and not counted here.</div>':'')+'</div>'; }).join('');
-  if(negAny) h+='<div class="c l">Bill after Medical Bill Saver <small>'+S.negot.pct+'% average reduction</small></div>'+(A?'<div class="c anc">—<small>network price already</small></div>':'')
+  if(negAny) h+='<div class="c l">Bill after Medical Bill Saver <small>'+S.negot.pct+'% average reduction</small></div>'+ZZ.map(function(Z){ var A=Z.A, aOwe=Z.aOwe, B=Z.B; return '<div class="c anc">—<small>network price already</small></div>'; }).join('')
     +res.map(function(x){ return '<div class="c">'+(x.r.negotiated!=null?fmt2(x.r.negotiated):'—<small>major medical</small>')+'</div>'; }).join('');
   var dbx=CL&&res.some(function(x){ return x.o.major&&x.r.parts&&x.r.parts.length; });
-  if(dbx) h+='<div class="c l">Your deductible buster <small>pays you cash toward your share</small></div>'+(A?'<div class="c anc">—</div>':'')
+  if(dbx) h+='<div class="c l">Your deductible buster <small>pays you cash toward your share</small></div>'+ZZ.map(function(Z){ var A=Z.A, aOwe=Z.aOwe, B=Z.B; return '<div class="c anc">—</div>'; }).join('')
     +res.map(function(x){ var pd=(x.r.parts||[]).reduce(function(s2,q){ return s2+(+q.v||0); },0);
       return x.o.major&&pd>0?'<div class="c evdb">Your share '+fmt2(x.r.owe0)+'<b>Buster pays you '+fmt2(pd)+'</b></div>':'<div class="c">—</div>'; }).join('');
-  h+='<div class="c l">You pay <small>'+(CL?'':'(or net)')+'</small></div>'+(A?'<div class="c anc big">'+fmt2(aOwe)+(A.note?'<small>'+A.note+'</small>':(A.how&&aOwe>=A.oop?'<small>'+A.how+'</small>':''))+'</div>':'')
+  h+='<div class="c l">You pay <small>'+(CL?'':'(or net)')+'</small></div>'+ZZ.map(function(Z){ var A=Z.A, aOwe=Z.aOwe, B=Z.B; return '<div class="c anc big">'+fmt2(aOwe)+(A.note?'<small>'+A.note+'</small>':(A.how&&aOwe>=A.oop?'<small>'+A.how+'</small>':''))+'</div>'; }).join('')
     +res.map(function(x){ var n=x.r.net; if(gray(x)&&n<=0&&!(x.o.unknown&&!x.r.pays)) return '<div class="c big up">You pay $0</div>'; return '<div class="c big '+(n<=0?'up':'dn')+'">'+(x.o.unknown&&!x.r.pays?'<small>'+x.o.unknown+'</small>':(n<=0?'You NET '+fmt2(-n):'You pay '+fmt2(n)))+'</div>'; }).join('');
   /* Two lines with the math showing (team call, 3 Nov - Kyle: "I want to see the numbers that got me to this"):
      the monthly premium saving against the anchor, then the year with this event, each side worked out. The total is
      the same as before - 12 x the premium difference + (their share of the event - the package's net). */
-  if(A&&B){ var aYr=B.prem*12+aOwe;
+  if(ZZ.length&&B){ var multi=ZZ.length>1;
+    ZZ.forEach(function(Z){ Z.aYr=Z.B.prem*12+Z.aOwe; });
     var allAdd=res.every(function(x){ return acaAddsOn(x.T[0],B); });   /* ACA + protection: the columns add to the marketplace plan, they don't save on it */
-    h+='<div class="c l">'+(allAdd?'Monthly cost <small>with '+esc(B.your)+'</small>':'Monthly premium savings <small>vs '+esc(B.your)+'</small>')+'</div><div class="c anc">'+fmt2(B.prem)+'/mo<small>what '+esc(B.your)+' costs a month</small></div>'
-    +res.map(function(x){ var d=B.prem-pkgPremMo(x.T[0]); if(acaAddsOn(x.T[0],B)) return '<div class="c evmo">Adds '+fmt2(-d)+'/mo<small>'+fmt2(pkgPremMo(x.T[0]))+'/mo with the marketplace plan</small></div>'; return '<div class="c evmo '+(d>=0?'up':'dn')+'">'+(d>=0?'Saves '+fmt2(d):'Costs '+fmt2(-d)+' more')+'/mo<small>'+fmt2(pkgPremMo(x.T[0]))+'/mo</small></div>'; }).join('');
+    h+='<div class="c l">'+(allAdd?'Monthly cost <small>with '+esc(B.your)+'</small>':'Monthly premium savings <small>vs '+(multi?'each':esc(B.your))+'</small>')+'</div>'
+    +ZZ.map(function(Z){ return '<div class="c anc">'+fmt2(Z.B.prem)+'/mo<small>what '+esc(Z.B.your)+' costs a month</small></div>'; }).join('')
+    +res.map(function(x){ var pm=pkgPremMo(x.T[0]);
+      return '<div class="c evmo">'+ZZ.map(function(Z){ var d=Z.B.prem-pm; if(acaAddsOn(x.T[0],Z.B)) return '<span>Adds '+fmt2(-d)+'/mo</span>';
+        return '<span class="'+(d>=0?'up':'dn')+'">'+(d>=0?'Saves '+fmt2(d):'Costs '+fmt2(-d)+' more')+'/mo'+(multi?' <i>vs '+(Z.B.k==='aca'?'ACA':'current')+'</i>':'')+'</span>'; }).join(multi?'<br>':'')+'<small>'+fmt2(pm)+'/mo'+(acaAddsOn(x.T[0],B)?' with the marketplace plan':'')+'</small></div>'; }).join('');
     h+='<div class="c l">This year, with this event <small>12 months of premium + what this event costs them</small></div>'
-    +'<div class="c anc evyr">12 × '+fmt2(B.prem)+' + '+fmt2(aOwe)+'<small>premiums + their share of this event</small><b>= '+fmt(aYr)+'</b></div>'
-    +res.map(function(x){ var pm=pkgPremMo(x.T[0]), n=gray(x)?Math.max(0,x.r.net):x.r.net, y=pm*12+n, v=aYr-y;
-      return '<div class="c evyr '+(v>=0?'up':'dn')+'">12 × '+fmt2(pm)+(n>=0?' + '+fmt2(n):' − '+fmt2(-n))+'<small>premiums '+(n>=0?'+ what they still pay for this event':'− what the benefits pay them beyond the bill')+'</small><b>= '+(y>=0?fmt(y):fmt(-y)+' back to them')+'</b><em>'+(v>=0?'Ahead '+fmt(v):(acaAddsOn(x.T[0],B)?fmt(-v)+' more this year':'Behind '+fmt(-v)))+'</em></div>'; }).join(''); }   /* no "Behind" on an ACA + protection column (Jesse, 4 Nov) */
+    +ZZ.map(function(Z){ return '<div class="c anc evyr">12 × '+fmt2(Z.B.prem)+' + '+fmt2(Z.aOwe)+'<small>premiums + their share of this event</small><b>= '+fmt(Z.aYr)+'</b></div>'; }).join('')
+    +res.map(function(x){ var pm=pkgPremMo(x.T[0]), n=gray(x)?Math.max(0,x.r.net):x.r.net, y=pm*12+n, v0=ZZ[0].aYr-y;
+      return '<div class="c evyr '+(v0>=0?'up':'dn')+'">12 × '+fmt2(pm)+(n>=0?' + '+fmt2(n):' − '+fmt2(-n))+'<small>premiums '+(n>=0?'+ what they still pay for this event':'− what the benefits pay them beyond the bill')+'</small><b>= '+(y>=0?fmt(y):fmt(-y)+' back to them')+'</b>'
+        +ZZ.map(function(Z){ var v=Z.aYr-y; return '<em class="'+(v>=0?'up':'dn')+'">'+(v>=0?'Ahead '+fmt(v):(acaAddsOn(x.T[0],Z.B)?fmt(-v)+' more this year':'Behind '+fmt(-v)))+(multi?' vs '+(Z.B.k==='aca'?'ACA':'current'):'')+'</em>'; }).join(multi?'<br>':'')+'</div>'; }).join(''); }   /* no "Behind" on an ACA + protection column (Jesse, 4 Nov) */
   h+='</div>';
   if(res.some(function(x){ return !x.o.major; })) h+='<div class="evhow"><b>How the money reaches you:</b> the Manhattan benefits are fixed amounts paid for the event, not a share of the bill. In network, show the card and the provider bills ManhattanLife directly'+(CL?'.':'; whatever the benefits pay beyond the bill comes back to you.')+' Out of network, you pay the provider and the benefits are paid to you.</div>';
   if((+sc.days||0)>0&&res.some(function(x){ return x.o.afc; })) h+='<div class="evsrc printonly">Affordable Choice surgery benefits (paid on the policy fee schedule) are extra and not counted above.</div>';
@@ -10191,6 +10199,22 @@ loadBaseRates();
   html.qn-attached .fab-save{border-radius:0 14px 14px 0;padding:9px 12px 9px 10px;max-width:44px}
   html.qn-attached .fab-save:hover,html.qn-attached .fab-save:focus-visible{max-width:280px}
   @media print{.qn-tab,.qn-pad{display:none!important}}
+  /* Redesign (Jesse, 9 Nov: "the quick notes look odd"): same tab family as the save tab - white with a gold edge, navy
+     text - and the pad is a clean card in the redesign's type, not a tilted yellow Post-it. */
+  html body .qn-tab{background:#fff;color:#10233e;border-color:#c3a14e;box-shadow:-2px 4px 14px rgba(16,35,62,.16);padding:11px 0 10px;gap:7px}
+  html body .qn-tab:hover{background:#fbf6e8}
+  html body .qn-tab .qn-lbl{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#10233e}
+  html body .qn-tab .qn-dot{background:#c3a14e}
+  html body .qn-pad{background:#fff;border:1px solid #e3dcc8;border-top:4px solid #c3a14e;border-radius:12px;transform:none;padding:12px 14px 12px;width:320px;
+    box-shadow:0 14px 34px rgba(16,35,62,.22);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+  html body .qn-head{color:#10233e;margin-bottom:8px}html body .qn-head b{font-family:var(--serif,Georgia,serif);font-size:16px}
+  html body .qn-head button{color:#6b7280;font-size:20px}
+  html body .qn-pad textarea{background:#fbfaf6;border:1px solid #e3dcc8;border-radius:9px;color:#1f2937;font:14px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;padding:10px 11px}
+  html body .qn-pad textarea:focus{outline:2px solid #c3a14e;outline-offset:0;background:#fff}
+  html body .qn-pad textarea::placeholder{color:#9aa1ab;font-style:normal}
+  html body .qn-foot{color:#6b7280;font-size:11.5px}
+  @media (min-width:761px){html body .qn-tab{width:44px;box-sizing:border-box}html body:not(.client) .fab-save{box-sizing:border-box;max-width:44px;overflow:hidden;padding-left:12px;transition:max-width .18s}
+    html body .fab-save:hover,html body .fab-save:focus-visible{max-width:280px}}
 </style>
 <button type="button" class="qn-tab noprint hidein-client" id="qnTab" title="Quick notes — for the random stuff"><span class="qn-ico">🗒</span><span class="qn-lbl">Quick notes</span><span class="qn-dot"></span></button>
 <div class="qn-pad noprint hidein-client" id="qnPad" role="dialog" aria-label="Quick notes">

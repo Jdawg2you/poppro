@@ -35,10 +35,15 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); for
  pbApplyLineup('lx-mh-cg'); autoPriceTiers(); S.include={good:false,better:false,best:true}; S.ev=[evScn('hosp'),evScn('append')]; compute(); await w(400); po=document.getElementById('printout');
  var db=po.querySelector('.po-event .evdb'), big2=[].slice.call(po.querySelectorAll('.po-event .c.big')).map(function(c){ return c.innerText; }).join(' | ');
  ok(!!db&&/Your share/.test(db.innerText)&&/Buster pays you/.test(db.innerText)&&/You NET|You pay [$][1-9]/.test(big2),'Cigna keeps its real net, with the deductible buster shown: '+(db?db.innerText.replace(/[ ]+/g,' '):'none')+' / '+big2);
- shareScreen(); await w(200); ok(document.body.classList.contains('sharing')&&getComputedStyle(document.querySelector('.brandbar')).display==='none'&&getComputedStyle(document.getElementById('viewseg')).display==='none','Share screen: Client View with the agent bar and switches hidden');
- shareOff(); setView('agent'); await w(200); ok(!document.body.classList.contains('sharing')&&!document.body.classList.contains('client'),'and it comes back');
+ /* both Compare-with boxes ticked: everything compares with both, not just the anchor (Jesse, 9 Nov) */
+ pbApplyLineup('mh'); autoPriceTiers(); var C=curIn(); C.prem=650; C.ded=3000; C.show=true; C.paying=true; S.intake.anchor='cur'; S.poShow={aca:true,cur:true}; S.include={good:false,better:true,best:false}; compute(); await w(400); po=document.getElementById('printout');
+ var ah=[].slice.call(po.querySelectorAll('.po-event')[1].querySelectorAll('.c.h.anc')).map(function(c){ return c.innerText; }), gl=po.querySelectorAll('.po-glance tr.anc').length, sv=po.querySelectorAll('.po-cmp .po-save').length;
+ ok(ah.length===2&&gl===2&&sv===2,'both ticked: two comparison columns in the examples ('+ah.join(' / ')+'), two rows at a glance ('+gl+'), two savings boxes ('+sv+')');
+ S.poShow={aca:true,cur:true};
+ shareScreen(); await w(200); ok(!document.fullscreenElement,'Share screen stays in the window (no full screen)'); ok(document.body.classList.contains('sharing')&&getComputedStyle(document.querySelector('.brandbar')).display==='none'&&getComputedStyle(document.getElementById('viewseg')).display==='none','Share screen: Client View with the agent bar and switches hidden');
+ document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape'})); await w(100); ok(!document.body.classList.contains('sharing')&&document.body.classList.contains('client'),'Esc stops sharing and leaves Client View on'); setView('agent'); await w(200); ok(!document.body.classList.contains('sharing')&&!document.body.classList.contains('client'),'and it comes back');
  var ag=document.querySelector('#step-quote .pbcol[data-t="best"]'); ok(!!ag&&/[$][0-9]/.test(ag.innerText),'the agent Quote page still has every price');
- return {n:11, fails:fails}; })()`;
+ return {n:14, fails:fails}; })()`;
 try {
   let l; for (let i = 0; i < 60 && !l; i++) { await sleep(150); l = await fetch(`http://127.0.0.1:${DBG}/json/list`).then(r => r.json()).catch(() => null); }
   ws = new WebSocket(l.find(t => t.type === 'page').webSocketDebuggerUrl);
