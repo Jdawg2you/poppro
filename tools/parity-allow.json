@@ -1,35 +1,10 @@
 {
-  "why": "Wording the redesign changes on purpose. Each rewrite is a decision Jesse made, applied word for word to the live text before comparing; nothing else may differ.",
-  "rewrites": [
-    [
-      "Save Quote/Package of Protection when you’re done",
-      "Save client when you’re done"
-    ],
-    [
-      "Load Quote brings it all back later",
-      "Load client brings it all back later"
-    ],
-    [
-      "💾 Save Quote now",
-      "💾 Save client now"
-    ],
-    [
-      "Client Intake",
-      "Client Intake / Profile"
-    ],
-    [
-      "Base: Manhattan — Affordable ChoiceBase: Bright LifeBase: Cigna — Triad PPO",
-      "Pick a plan for this column…EssentialCompleteComprehensiveBright LifeCigna PPOVirtual Basic AVirtual Basic BACA + accidentACA + deductible busterACA + deductible buster + dental"
-    ]
-  ],
-  "lines": [
-    "Base: Bright Life",
-    "Base: Cigna — Triad PPO",
-    "Base: Manhattan — Affordable Choice"
-  ],
-  "decisions": {
-    "Save Quote / Load Quote -> Save client / Load client": "Jesse, 7 Nov 2026: 'It'll be like save client. And then load client.'",
-    "Client Intake -> Client Intake / Profile": "Jesse, 7 Nov 2026: 'I want to transition people to calling it profile, but we'll do it slowly.'",
-    "Custom: Base picker -> plan picker": "Jesse, 9 Nov 2026: on Create your custom plan, pick any plan with its versions per column, 'similar to how when we edit a plan after enroll'."
-  }
+ "why": "Wording the redesign changes on purpose. Each rewrite is a decision Jesse made, applied word for word to the live text before comparing; nothing else may differ. Cleared 10 Nov after the redesign shipped (cc001b0): live now has every rewrite.",
+ "rewrites": [],
+ "lines": [],
+ "decisions": {
+  "Save Quote / Load Quote -> Save client / Load client": "Jesse, 7 Nov 2026: 'It'll be like save client. And then load client.'",
+  "Client Intake -> Client Intake / Profile": "Jesse, 7 Nov 2026: 'I want to transition people to calling it profile, but we'll do it slowly.'",
+  "Custom: Base picker -> plan picker": "Jesse, 9 Nov 2026: on Create your custom plan, pick any plan with its versions per column, 'similar to how when we edit a plan after enroll'."
+ }
 }
