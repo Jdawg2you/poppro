@@ -1423,6 +1423,7 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
   <button type="button" id="railGuide" class="rail-x hidein-client" onclick="openSetup('guide')" title="The whole process, start to finish - and where to begin"><span class="ri">?</span><span class="rl">How to use MyPopPro</span></button>
   <button type="button" id="railNews" class="rail-x hidein-client" onclick="document.getElementById('newsBtn').click()" title="What’s new in MyPopPro"><span class="ri">✨</span><span class="rl">What’s new</span><em id="railNewsCount"></em></button>
   <button type="button" id="railSetup" class="rail-x hidein-client" onclick="openSetup('setup')" title="Your details: they go on every script, email and text"><span class="ri">⚙</span><span class="rl">Setup</span><em id="railSetupNeed"></em></button>
+  <button type="button" id="railSuggest" class="rail-x hidein-client" onclick="sgOpen()" title="See something? Say something. Send us an idea, a fix or wording that sounds off"><span class="ri">💡</span><span class="rl">Suggest an idea</span></button>
   <div class="stepper noprint" id="stepper">
     <button data-step="call"><span class="n">1</span> <span class="lgl">Discovery call</span><span class="sml">Call</span></button>
     <button data-step="intake"><span class="n">2</span> <span class="lgl">Intake / Profile</span><span class="sml">Intake</span></button>
@@ -10503,6 +10504,51 @@ Not for anything important. Answers go in the Discovery questions or the Intake,
   try{ if(localStorage.getItem('mpp_qn_open')) pad.classList.add('open'); }catch(e){}
   qnRefresh();
 })();
+</script>
+<script>
+/* Suggestions (Jesse, 11 Nov 2026): "See something? Say something." The agent types one box; MyPopPro adds their
+   name, email, phone and NPN from Setup and the page they were on, and posts it to a hidden Google Form whose
+   responses land in the "MyPopPro suggestions" Sheet in Jesse's Drive. They never see the form or retype their details.
+   Never sends client data: only the agent's Setup fields, the page label and their words (long digit runs scrubbed). */
+var SG_FORM='https://docs.google.com/forms/d/e/1FAIpQLSfIMmcNo9nNf3LVBcskgg3OeT0FMDHXHglp--5tdbLkXS5R4g/formResponse';
+var SG_F={name:'entry.910064075',email:'entry.388612657',phone:'entry.1116271526',npn:'entry.355417349',page:'entry.984871260',text:'entry.1163606552'};
+function sgPage(){ var on=document.querySelector('#stepper button.on'), step=on?on.textContent.replace(/\s+/g,' ').replace(/^\s*\d+\s*/,'').trim():(S.step||'');
+  var box=document.querySelector('.step.on'), best='', bt=1e9;
+  if(box) box.querySelectorAll('h2,h3,h4').forEach(function(h){ var r=h.getBoundingClientRect(); if(!r.height) return; var t=Math.abs(r.top-120); if(r.top<window.innerHeight&&t<bt){ bt=t; best=h.textContent.replace(/\s+/g,' ').trim(); } });
+  var lu=(S.lineup&&S.step!=='intake'&&S.step!=='call')?' · lineup '+S.lineup:'';
+  return (step+(best?' › '+best.slice(0,90):'')+lu).trim(); }
+function sgVer(){ return (typeof NEWS!=='undefined'&&NEWS[0])?' · v'+NEWS[0].d:''; }
+function sgNames(){ var C=S.client||{}, I=S.intake||{}, out=[];
+  [C.pname,C.sname].concat((I.kids||[]).map(function(k){ return k&&k.n; })).forEach(function(n){ String(n||'').split(/[\s,]+/).forEach(function(w){ w=w.replace(/[^A-Za-z'’-]/g,''); if(w.length>=2) out.push(w); }); });
+  return out; }
+function sgScrub(t){ t=String(t).replace(/\d[\d\s-]{7,}\d/g,'[number removed]');
+  sgNames().forEach(function(n){ t=t.replace(new RegExp('\\b'+n.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\b','gi'),'[client]'); });
+  return t; }
+function sgOpen(){ var m=document.getElementById('sgModal');
+  if(!m){ m=document.createElement('div'); m.id='sgModal';
+    m.setAttribute('style','position:fixed;inset:0;background:rgba(16,35,62,.55);display:flex;align-items:center;justify-content:center;z-index:99999;padding:16px');
+    m.innerHTML='<div role="dialog" aria-modal="true" aria-labelledby="sgH" style="background:#fff;border-radius:14px;max-width:520px;width:100%;box-shadow:0 18px 50px rgba(0,0,0,.3);overflow:hidden;font:14px/1.5 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#15263b">'
+      +'<div style="background:#10233e;color:#fff;padding:16px 20px;display:flex;align-items:center;gap:10px"><span style="font-size:20px">💡</span><div><div id="sgH" style="font:700 18px Georgia,serif;color:#c3a14e">See something? Say something.</div><div style="font-size:12.5px;color:#c9d3e3">Wording that sounds off, a step that confused you, a plan you keep needing.</div></div>'
+      +'<button type="button" onclick="sgClose()" aria-label="Close" style="margin-left:auto;background:none;border:0;color:#fff;font-size:22px;cursor:pointer;line-height:1">×</button></div>'
+      +'<div style="padding:18px 20px" id="sgBody"><textarea id="sgText" rows="6" placeholder="What’s on your mind? If something sounds off, tell us how you’d say it instead." style="width:100%;font:inherit;font-size:14.5px;padding:10px 12px;border:1px solid #dfdfd8;border-radius:10px;resize:vertical;box-sizing:border-box"></textarea>'
+      +'<div style="font-size:12.5px;color:#6a7480;margin:6px 0 14px">Please no client names or numbers.</div>'
+      +'<div style="display:flex;gap:10px;justify-content:flex-end"><button type="button" onclick="sgClose()" style="font:inherit;font-weight:700;padding:9px 16px;border-radius:8px;border:1px solid #dfdfd8;background:#fff;cursor:pointer">Cancel</button>'
+      +'<button type="button" id="sgSend" onclick="sgSend()" style="font:inherit;font-weight:800;padding:9px 18px;border-radius:8px;border:1px solid #10233e;background:#10233e;color:#fff;cursor:pointer">Send</button></div></div></div>';
+    m.addEventListener('click',function(e){ if(e.target===m) sgClose(); });
+    document.body.appendChild(m); }
+  m.dataset.page=sgScrub(sgPage())+sgVer(); m.style.display='flex'; var t=document.getElementById('sgText'); if(t){ t.value=''; setTimeout(function(){ t.focus(); },30); } }
+function sgClose(){ var m=document.getElementById('sgModal'); if(m) m.style.display='none'; }
+function sgSend(){ var t=document.getElementById('sgText'), txt=(t&&t.value||'').trim(); if(!txt){ t&&t.focus(); return; }
+  var m=document.getElementById('sgModal'), b=document.getElementById('sgSend'); if(b){ b.disabled=true; b.textContent='Sending…'; }
+  var fd=new URLSearchParams(); var c=S.client||{};
+  fd.append(SG_F.name,String(c.agent||'').trim()||'(Setup not filled in)'); fd.append(SG_F.email,String(S.agentEmail||'').trim());
+  fd.append(SG_F.phone,String(S.agentPhone||'').trim()); fd.append(SG_F.npn,String(S.agentNPN||'').trim());
+  fd.append(SG_F.page,m?m.dataset.page||'':''); fd.append(SG_F.text,sgScrub(txt));
+  var done=function(ok){ var body=document.getElementById('sgBody'); if(!body) return;
+    body.innerHTML=ok?'<div style="font:700 17px Georgia,serif;color:#10233e;margin-bottom:6px">Got it. Thank you.</div><div style="color:#4a5566">We read every one and ship updates most weeks. Watch What’s new.</div><div style="text-align:right;margin-top:14px"><button type="button" onclick="sgClose();document.getElementById(\'sgModal\').remove()" style="font:inherit;font-weight:800;padding:9px 18px;border-radius:8px;border:1px solid #10233e;background:#10233e;color:#fff;cursor:pointer">Close</button></div>'
+      :'<div style="font:700 16px Georgia,serif;color:#9c3b2f;margin-bottom:6px">That didn’t send.</div><div style="color:#4a5566">Check your internet connection and try again. Your words are below so you can copy them.</div><textarea readonly rows="5" style="width:100%;margin-top:10px;font:inherit;border:1px solid #dfdfd8;border-radius:10px;padding:8px;box-sizing:border-box">'+txt.replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</textarea><div style="text-align:right;margin-top:10px"><button type="button" onclick="document.getElementById(\'sgModal\').remove()" style="font:inherit;font-weight:700;padding:9px 16px;border-radius:8px;border:1px solid #dfdfd8;background:#fff;cursor:pointer">Close</button></div>'; };
+  fetch(SG_FORM,{method:'POST',mode:'no-cors',body:fd}).then(function(){ done(true); },function(){ done(false); }); }
+document.addEventListener('keydown',function(e){ if(e.key==='Escape'){ var m=document.getElementById('sgModal'); if(m&&m.style.display!=='none') sgClose(); } });
 </script>
 </body>
 </html>
