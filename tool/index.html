@@ -1440,7 +1440,7 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
     <button type="button" class="rail-x" onclick="document.getElementById('saveBtn').click()"><span class="ri">💾</span><span class="rl">Save client</span></button>
     <button type="button" class="rail-x" onclick="document.getElementById('printBtn').click()"><span class="ri">⎙</span><span class="rl">Print quote</span></button>
   </div>
-  <button type="button" id="railSuggest" class="rail-x hidein-client" onclick="sgOpen()" title="See something? Say something. Send us an idea, a fix or wording that sounds off"><span class="ri">💡</span><span class="rl">Suggest an idea</span></button>
+  <button type="button" id="railSuggest" class="rail-x hidein-client" onclick="sgOpen()" title="See something? Say something. Send an idea, or a quick fix that’s needed"><span class="ri">💡</span><span class="rl">Suggestions</span></button>
   <button type="button" id="railCollapse" class="rail-x" onclick="railToggle()" title="Make the sidebar narrow (or wide again)"><span class="ri">←</span><span class="rl">Collapse navigation</span></button>
   </nav>
 
@@ -10507,12 +10507,16 @@ Not for anything important. Answers go in the Discovery questions or the Intake,
 })();
 </script>
 <script>
-/* Suggestions (Jesse, 11 Nov 2026): "See something? Say something." The agent types one box; MyPopPro adds their
-   name, email, phone and NPN from Setup and the page they were on, and posts it to a hidden Google Form whose
-   responses land in the "MyPopPro suggestions" Sheet in Jesse's Drive. They never see the form or retype their details.
-   Never sends client data: only the agent's Setup fields, the page label and their words (long digit runs scrubbed). */
+/* Suggestions (Jesse, 11 Nov 2026): "See something? Say something." One box, a toggle (Idea / Quick fix needed) and up to
+   5 screenshots. MyPopPro adds the agent's name, email, phone and NPN from Setup and the page they were on; the agent
+   never sees a Google Form or retypes anything. Posts JSON to the Google Apps Script web app bound to the
+   "MyPopPro suggestions" Sheet (source: tools/suggestions-apps-script.gs): one row per suggestion, screenshots saved to
+   a private Drive folder, and a Quick fix emails Jesse at once. Never sends client data: household names and long digit
+   runs are scrubbed from the words and the page label (screenshots can't be scrubbed, so the pop-up asks them to crop). */
+var SG_URL='';   /* the Apps Script /exec URL; empty = fall back to the hidden Google Form (text only, no screenshots) */
 var SG_FORM='https://docs.google.com/forms/d/e/1FAIpQLSfIMmcNo9nNf3LVBcskgg3OeT0FMDHXHglp--5tdbLkXS5R4g/formResponse';
 var SG_F={name:'entry.910064075',email:'entry.388612657',phone:'entry.1116271526',npn:'entry.355417349',page:'entry.984871260',text:'entry.1163606552'};
+var SG_MAX=5, SG={type:'idea',shots:[]};
 function sgPage(){ var on=document.querySelector('#stepper button.on'), step=on?on.textContent.replace(/\s+/g,' ').replace(/^\s*\d+\s*/,'').trim():(S.step||'');
   var box=document.querySelector('.step.on'), best='', bt=1e9;
   if(box) box.querySelectorAll('h2,h3,h4').forEach(function(h){ var r=h.getBoundingClientRect(); if(!r.height) return; var t=Math.abs(r.top-120); if(r.top<window.innerHeight&&t<bt){ bt=t; best=h.textContent.replace(/\s+/g,' ').trim(); } });
@@ -10525,31 +10529,67 @@ function sgNames(){ var C=S.client||{}, I=S.intake||{}, out=[];
 function sgScrub(t){ t=String(t).replace(/\d[\d\s-]{7,}\d/g,'[number removed]');
   sgNames().forEach(function(n){ t=t.replace(new RegExp('\\b'+n.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\b','gi'),'[client]'); });
   return t; }
-function sgOpen(){ var m=document.getElementById('sgModal');
-  if(!m){ m=document.createElement('div'); m.id='sgModal';
-    m.setAttribute('style','position:fixed;inset:0;background:rgba(16,35,62,.55);display:flex;align-items:center;justify-content:center;z-index:99999;padding:16px');
-    m.innerHTML='<div role="dialog" aria-modal="true" aria-labelledby="sgH" style="background:#fff;border-radius:14px;max-width:520px;width:100%;box-shadow:0 18px 50px rgba(0,0,0,.3);overflow:hidden;font:14px/1.5 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#15263b">'
-      +'<div style="background:#10233e;color:#fff;padding:16px 20px;display:flex;align-items:center;gap:10px"><span style="font-size:20px">💡</span><div><div id="sgH" style="font:700 18px Georgia,serif;color:#c3a14e">See something? Say something.</div><div style="font-size:12.5px;color:#c9d3e3">Wording that sounds off, a step that confused you, a plan you keep needing.</div></div>'
-      +'<button type="button" onclick="sgClose()" aria-label="Close" style="margin-left:auto;background:none;border:0;color:#fff;font-size:22px;cursor:pointer;line-height:1">×</button></div>'
-      +'<div style="padding:18px 20px" id="sgBody"><textarea id="sgText" rows="6" placeholder="What’s on your mind? If something sounds off, tell us how you’d say it instead." style="width:100%;font:inherit;font-size:14.5px;padding:10px 12px;border:1px solid #dfdfd8;border-radius:10px;resize:vertical;box-sizing:border-box"></textarea>'
-      +'<div style="font-size:12.5px;color:#6a7480;margin:6px 0 14px">Please no client names or numbers.</div>'
-      +'<div style="display:flex;gap:10px;justify-content:flex-end"><button type="button" onclick="sgClose()" style="font:inherit;font-weight:700;padding:9px 16px;border-radius:8px;border:1px solid #dfdfd8;background:#fff;cursor:pointer">Cancel</button>'
-      +'<button type="button" id="sgSend" onclick="sgSend()" style="font:inherit;font-weight:800;padding:9px 18px;border-radius:8px;border:1px solid #10233e;background:#10233e;color:#fff;cursor:pointer">Send</button></div></div></div>';
-    m.addEventListener('click',function(e){ if(e.target===m) sgClose(); });
-    document.body.appendChild(m); }
-  m.dataset.page=sgScrub(sgPage())+sgVer(); m.style.display='flex'; var t=document.getElementById('sgText'); if(t){ t.value=''; setTimeout(function(){ t.focus(); },30); } }
-function sgClose(){ var m=document.getElementById('sgModal'); if(m) m.style.display='none'; }
+function sgBtn(p){ return 'font:inherit;font-weight:800;padding:9px 18px;border-radius:8px;cursor:pointer;'+(p?'border:1px solid #10233e;background:#10233e;color:#fff':'border:1px solid #dfdfd8;background:#fff;color:#15263b'); }
+function sgType(t){ SG.type=t; ['idea','fix'].forEach(function(k){ var b=document.getElementById('sgT_'+k); if(!b) return; var on=k===t;
+    b.setAttribute('aria-pressed',on?'true':'false');
+    b.style.background=on?(k==='fix'?'#9c3b2f':'#10233e'):'#fff'; b.style.color=on?'#fff':'#15263b'; b.style.borderColor=on?(k==='fix'?'#9c3b2f':'#10233e'):'#dfdfd8'; });
+  var h=document.getElementById('sgTypeHint'); if(h) h.textContent=t==='fix'?'Something isn’t working right. Jesse is told straight away.':'Wording, a feature, a plan you keep needing. Reviewed every week.'; }
+function sgShrink(file){ return new Promise(function(res){ var fr=new FileReader(); fr.onload=function(){ var im=new Image(); im.onload=function(){
+      var k=Math.min(1,1600/Math.max(im.width,im.height)), c=document.createElement('canvas'); c.width=Math.round(im.width*k); c.height=Math.round(im.height*k);
+      var x=c.getContext('2d'); x.fillStyle='#fff'; x.fillRect(0,0,c.width,c.height); x.drawImage(im,0,0,c.width,c.height); res(c.toDataURL('image/jpeg',0.8)); };
+    im.onerror=function(){ res(null); }; im.src=fr.result; }; fr.onerror=function(){ res(null); }; fr.readAsDataURL(file); }); }
+function sgAdd(files){ files=[].slice.call(files||[]).filter(function(f){ return f&&/^image\//.test(f.type); });
+  var room=SG_MAX-SG.shots.length; if(files.length>room){ var w=document.getElementById('sgShotMsg'); if(w) var x=files.length-room; w.textContent='Up to '+SG_MAX+' screenshots — '+(x===1?'1 extra was':x+' extras were')+' left off.'; files=files.slice(0,Math.max(0,room)); }
+  Promise.all(files.map(sgShrink)).then(function(urls){ urls.forEach(function(u){ if(u&&SG.shots.length<SG_MAX) SG.shots.push(u); }); sgThumbs(); }); }
+function sgDel(i){ SG.shots.splice(i,1); var w=document.getElementById('sgShotMsg'); if(w) w.textContent=''; sgThumbs(); }
+function sgThumbs(){ var t=document.getElementById('sgThumbs'), z=document.getElementById('sgDrop'); if(!t) return;
+  t.innerHTML=SG.shots.map(function(u,i){ return '<div style="position:relative;width:76px;height:56px;border:1px solid #dfdfd8;border-radius:8px;overflow:hidden;background:#f6f5f1"><img src="'+u+'" alt="Screenshot '+(i+1)+'" style="width:100%;height:100%;object-fit:cover;display:block"><button type="button" onclick="sgDel('+i+')" aria-label="Remove screenshot '+(i+1)+'" style="position:absolute;top:2px;right:2px;width:20px;height:20px;border-radius:50%;border:0;background:rgba(16,35,62,.85);color:#fff;font-size:13px;line-height:20px;padding:0;cursor:pointer">×</button></div>'; }).join('');
+  if(z) z.style.display=SG.shots.length>=SG_MAX?'none':'flex';
+  var c=document.getElementById('sgShotCount'); if(c) c.textContent=SG.shots.length?SG.shots.length+' of '+SG_MAX:''; }
+function sgOpen(){ var m=document.getElementById('sgModal'); SG={type:'idea',shots:[]};
+  if(m) m.remove();
+  m=document.createElement('div'); m.id='sgModal';
+  m.setAttribute('style','position:fixed;inset:0;background:rgba(16,35,62,.55);display:flex;align-items:center;justify-content:center;z-index:99999;padding:16px');
+  var tb=function(k,ic,l){ return '<button type="button" id="sgT_'+k+'" onclick="sgType(\''+k+'\')" aria-pressed="false" style="flex:1;font:inherit;font-weight:800;font-size:14px;padding:10px 12px;border-radius:10px;border:1.5px solid #dfdfd8;background:#fff;color:#15263b;cursor:pointer">'+ic+' '+l+'</button>'; };
+  m.innerHTML='<div role="dialog" aria-modal="true" aria-labelledby="sgH" style="background:#fff;border-radius:14px;max-width:560px;width:100%;max-height:calc(100vh - 32px);overflow:auto;box-shadow:0 18px 50px rgba(0,0,0,.3);font:14px/1.5 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#15263b">'
+    +'<div style="background:#10233e;color:#fff;padding:16px 20px;display:flex;align-items:center;gap:10px"><span style="font-size:20px">💡</span><div><div id="sgH" style="font:700 18px Georgia,serif;color:#c3a14e">See something? Say something.</div><div style="font-size:12.5px;color:#c9d3e3">Suggestions go straight to Jesse.</div></div>'
+    +'<button type="button" onclick="sgClose()" aria-label="Close" style="margin-left:auto;background:none;border:0;color:#fff;font-size:22px;cursor:pointer;line-height:1">×</button></div>'
+    +'<div style="padding:18px 20px" id="sgBody">'
+    +'<div role="group" aria-label="What kind" style="display:flex;gap:10px">'+tb('idea','💡','Idea')+tb('fix','🔧','Quick fix needed')+'</div>'
+    +'<div id="sgTypeHint" style="font-size:12.5px;color:#6a7480;margin:6px 0 12px"></div>'
+    +'<textarea id="sgText" rows="5" placeholder="What’s on your mind? If something sounds off, tell us how you’d say it instead." style="width:100%;font:inherit;font-size:14.5px;padding:10px 12px;border:1px solid #dfdfd8;border-radius:10px;resize:vertical;box-sizing:border-box"></textarea>'
+    +'<div style="display:flex;align-items:center;justify-content:space-between;margin:12px 0 6px"><b style="font-size:13.5px">Screenshots <span style="font-weight:400;color:#6a7480">(optional, up to 5)</span></b><span id="sgShotCount" style="font-size:12.5px;color:#6a7480"></span></div>'
+    +'<div id="sgThumbs" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px"></div>'
+    +'<label id="sgDrop" style="display:flex;align-items:center;justify-content:center;gap:8px;border:1.5px dashed #c3a14e;border-radius:10px;background:#fffaf0;padding:14px;cursor:pointer;font-size:13.5px;color:#15263b;text-align:center">📎 Drag screenshots here, paste them, or <u>choose files</u><input type="file" id="sgFile" accept="image/*" multiple style="display:none"></label>'
+    +'<div id="sgShotMsg" style="font-size:12.5px;color:#9c3b2f;min-height:0"></div>'
+    +'<div style="font-size:12.5px;color:#9c3b2f;margin:8px 0 14px">Please crop out client names before you attach, and leave names and numbers out of what you type.</div>'
+    +'<div style="display:flex;gap:10px;justify-content:flex-end"><button type="button" onclick="sgClose()" style="'+sgBtn(false)+'">Cancel</button>'
+    +'<button type="button" id="sgSend" onclick="sgSend()" style="'+sgBtn(true)+'">Send</button></div></div></div>';
+  m.addEventListener('click',function(e){ if(e.target===m) sgClose(); });
+  document.body.appendChild(m);
+  var fi=document.getElementById('sgFile'); fi.addEventListener('change',function(){ sgAdd(fi.files); fi.value=''; });
+  var dz=document.getElementById('sgDrop');
+  ['dragenter','dragover'].forEach(function(ev){ m.addEventListener(ev,function(e){ e.preventDefault(); dz.style.background='#fbf1d6'; }); });
+  m.addEventListener('dragleave',function(){ dz.style.background='#fffaf0'; });
+  m.addEventListener('drop',function(e){ e.preventDefault(); dz.style.background='#fffaf0'; sgAdd(e.dataTransfer&&e.dataTransfer.files); });
+  m.addEventListener('paste',function(e){ var it=[].slice.call((e.clipboardData||{}).items||[]).filter(function(x){ return x.kind==='file'&&/^image\//.test(x.type); }).map(function(x){ return x.getAsFile(); }); if(it.length){ e.preventDefault(); sgAdd(it); } });
+  m.dataset.page=sgScrub(sgPage())+sgVer(); sgType('idea'); sgThumbs();
+  setTimeout(function(){ var t=document.getElementById('sgText'); if(t) t.focus(); },30); }
+function sgClose(){ var m=document.getElementById('sgModal'); if(m) m.remove(); }
 function sgSend(){ var t=document.getElementById('sgText'), txt=(t&&t.value||'').trim(); if(!txt){ t&&t.focus(); return; }
   var m=document.getElementById('sgModal'), b=document.getElementById('sgSend'); if(b){ b.disabled=true; b.textContent='Sending…'; }
-  var fd=new URLSearchParams(); var c=S.client||{};
-  fd.append(SG_F.name,String(c.agent||'').trim()||'(Setup not filled in)'); fd.append(SG_F.email,String(S.agentEmail||'').trim());
-  fd.append(SG_F.phone,String(S.agentPhone||'').trim()); fd.append(SG_F.npn,String(S.agentNPN||'').trim());
-  fd.append(SG_F.page,m?m.dataset.page||'':''); fd.append(SG_F.text,sgScrub(txt));
+  var c=S.client||{}, d={type:SG.type, name:String(c.agent||'').trim()||'(Setup not filled in)', email:String(S.agentEmail||'').trim(),
+    phone:String(S.agentPhone||'').trim(), npn:String(S.agentNPN||'').trim(), page:m?m.dataset.page||'':'', text:sgScrub(txt),
+    shots:SG.shots.map(function(u,i){ return {name:'shot'+(i+1)+'.jpg',data:u}; })};
   var done=function(ok){ var body=document.getElementById('sgBody'); if(!body) return;
-    body.innerHTML=ok?'<div style="font:700 17px Georgia,serif;color:#10233e;margin-bottom:6px">Got it. Thank you.</div><div style="color:#4a5566">We read every one and ship updates most weeks. Watch What’s new.</div><div style="text-align:right;margin-top:14px"><button type="button" onclick="sgClose();document.getElementById(\'sgModal\').remove()" style="font:inherit;font-weight:800;padding:9px 18px;border-radius:8px;border:1px solid #10233e;background:#10233e;color:#fff;cursor:pointer">Close</button></div>'
-      :'<div style="font:700 16px Georgia,serif;color:#9c3b2f;margin-bottom:6px">That didn’t send.</div><div style="color:#4a5566">Check your internet connection and try again. Your words are below so you can copy them.</div><textarea readonly rows="5" style="width:100%;margin-top:10px;font:inherit;border:1px solid #dfdfd8;border-radius:10px;padding:8px;box-sizing:border-box">'+txt.replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</textarea><div style="text-align:right;margin-top:10px"><button type="button" onclick="document.getElementById(\'sgModal\').remove()" style="font:inherit;font-weight:700;padding:9px 16px;border-radius:8px;border:1px solid #dfdfd8;background:#fff;cursor:pointer">Close</button></div>'; };
+    body.innerHTML=ok?'<div style="font:700 17px Georgia,serif;color:#10233e;margin-bottom:6px">Got it. Thank you.</div><div style="color:#4a5566">'+(d.type==='fix'?'Jesse has been told about this one right away.':'We read every one and ship updates most weeks. Watch What’s new.')+'</div><div style="text-align:right;margin-top:14px"><button type="button" onclick="sgClose()" style="'+sgBtn(true)+'">Close</button></div>'
+      :'<div style="font:700 16px Georgia,serif;color:#9c3b2f;margin-bottom:6px">That didn’t send.</div><div style="color:#4a5566">Check your internet connection and try again. Your words are below so you can copy them.</div><textarea readonly rows="5" style="width:100%;margin-top:10px;font:inherit;border:1px solid #dfdfd8;border-radius:10px;padding:8px;box-sizing:border-box">'+txt.replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</textarea><div style="text-align:right;margin-top:10px"><button type="button" onclick="sgClose()" style="'+sgBtn(false)+'">Close</button></div>'; };
+  if(SG_URL){ fetch(SG_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(d)})
+      .then(function(r){ return r.json(); }).then(function(j){ done(!!(j&&j.ok)); },function(){ done(false); }); return; }
+  var fd=new URLSearchParams(); fd.append(SG_F.name,d.name); fd.append(SG_F.email,d.email); fd.append(SG_F.phone,d.phone); fd.append(SG_F.npn,d.npn);
+  fd.append(SG_F.page,(d.type==='fix'?'[QUICK FIX] ':'')+d.page); fd.append(SG_F.text,d.text);
   fetch(SG_FORM,{method:'POST',mode:'no-cors',body:fd}).then(function(){ done(true); },function(){ done(false); }); }
-document.addEventListener('keydown',function(e){ if(e.key==='Escape'){ var m=document.getElementById('sgModal'); if(m&&m.style.display!=='none') sgClose(); } });
+document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&document.getElementById('sgModal')) sgClose(); });
 </script>
 </body>
 </html>
