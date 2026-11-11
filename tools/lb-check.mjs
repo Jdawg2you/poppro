@@ -47,6 +47,8 @@ const TEST = String.raw`(async function(){
   ok(x&&x.monthly===42.5,'additional policies add together: '+(x&&x.monthly));
   ok(x&&/Kit — \$50K term \(National Life Group\)/.test(x.name)&&/Dana — \$25K IUL permanent coverage \(Corebridge QoL Flex\)/.test(x.name),'additional name lists each policy: '+(x&&x.name));
   ok(!same('best'),'additional: '+same('best'));
+  ok(lbTypeWords({carrier:'other',ptype:'wl'})==='whole life (permanent)'&&lbKindFor({carrier:'nlg',ptype:'wl'})==='Whole Life (permanent) protection','whole life plan (Jesse 11 Nov): '+lbTypeWords({carrier:'other',ptype:'wl'}));
+  ok(/<option value="wl"[^>]*>Whole life<\/option>/.test(pbControls('lbx',effCfg('best')))&&/Carrier name \/ solution/.test(pbControls('lbx',effCfg('best'))),'additional plan picker has Whole life + Carrier name / solution');
   ok(lbWhoOpts().map(function(o){ return o[0]; }).join(',')==='p,k0,k1,several','who list = household: '+lbWhoOpts().map(function(o){ return o[0]; }).join(','));
   c.lb.x[1].monthly=''; pbReprice(); ok(!(prod('lbx')&&+prod('lbx').monthly>0),'an additional policy with no monthly: nothing invented');
   ok(/Additional policy 2: type the monthly/.test(pbWhyNot('lbx',c,'TX',46)),'says which policy is missing: '+pbWhyNot('lbx',c,'TX',46));
