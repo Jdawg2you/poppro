@@ -41,7 +41,7 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  var sm=document.getElementById('setupModal'); if(sm) sm.classList.remove('open');
  ${LIVE ? `ok(RIGHT_FIT_ON&&TRIAD_FLOW_ON&&CARRIER_STRIP_ON&&blOn(),'live: decision tree, Cigna flow, carrier strip and Bright Life are on (5 Nov launch)');
  ok(getComputedStyle(document.getElementById('verBanner')).display==='none','live: no sandbox banner');` : ''}
- ok(NEWS[0].d==='2026-11-10'&&/new look, Client View/.test(NEWS[0].t),'What’s new has the 10 Nov release (top: '+NEWS[0].d+')');
+ ok(NEWS[0].d==='2026-11-11'&&/Living benefits for the whole household/.test(NEWS[0].t),'What’s new has the 11 Nov release (top: '+NEWS[0].d+')');
 ok(typeof triadBook==='function'&&TRI&&TRI.plans_2026&&TRI.effective_from==='2026-12-01','Cigna: 2027 book with 2026 kept for starts before 12/1/26');
  var nerr=null; try{ document.getElementById('newsBtn').click(); }catch(e){ nerr=e.message; } await w(400); ok(!nerr&&document.getElementById('newsPanel').classList.contains('open')&&/Benefits Review/.test(document.getElementById('newsBody').textContent),'What’s new opens and lists the release'+(nerr?' ('+nerr+')':'')); try{ document.getElementById('newsClose').click(); }catch(e){}
  var src=document.documentElement.outerHTML;
