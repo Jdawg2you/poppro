@@ -2383,14 +2383,31 @@ function lbTodo(lc,pre,lead){ lc=lc||{}; var todo=[], need={}, add=function(f,t)
   if(lc.carrier==='other'&&!String(lc.otherName||'').trim()) add('otherName','Type the carrier name');
   if(lbManual(lc.carrier)&&!lc.ptype) add('ptype','Pick the plan: term, IUL or other');
   var mk=pre.indexOf('lb.x.')===0?'monthly':'otherMonthly';
-  if(lc.carrier&&(lbManual(lc.carrier)||pre.indexOf('lb.x.')===0)&&!(lbNum(lc[mk])>0)) add(mk,'Type the monthly premium from '+(lc.carrier==='nlg'?'National Life’s':'the carrier’s')+' quote');
-  if(lc.carrier&&(lbManual(lc.carrier)||pre.indexOf('lb.x.')===0)&&!lc.covOk&&!(lbNum(lc[mk])>0)) add('face','Confirm the coverage — change it if needed, or click it and press Enter');
+  if(pre.indexOf('lb.x.')===0&&lc.carrier&&lc.who&&!lbManual(lc.carrier)){ var rx=lbxRate(lc); if(rx.price==null){ need[pre+'who']=1; todo.push(rx.note.charAt(0).toUpperCase()+rx.note.slice(1)); } }
+  if(lc.carrier&&lbManual(lc.carrier)&&!(lbNum(lc[mk])>0)) add(mk,'Type the monthly premium from '+(lc.carrier==='nlg'?'National Life’s':'the carrier’s')+' quote');
+  if(lc.carrier&&lbManual(lc.carrier)&&!lc.covOk&&!(lbNum(lc[mk])>0)) add('face','Confirm the coverage — change it if needed, or click it and press Enter');
   return {todo:todo,need:need,html:todo.length?'<div class="lbtodo"><b>'+(lead||'To finish')+':</b><ul>'+todo.map(function(x){ return '<li>'+x+'</li>'; }).join('')+'<li class="opt">Add notes if they’d help</li></ul></div>':''}; }
 function lbNeed(T,f){ return T.need[f]?' class="need"':''; }
+/* Additional policies on a priced carrier (TLE, Americo, IULE) price themselves from the person picked (Jesse, 10 Nov):
+   their age, sex and tobacco from the intake. A carrier that can't write that age is greyed out - IULE is 18-65, so a
+   child can't have it. NLG and Other stay open for anyone and are typed in. */
+function lbxPerson(who){ var C=S.client||{}, I=S.intake||{};
+  if(who==='p') return {age:+C.page||0,sex:I.psex||'',tob:!!I.tobaccoP};
+  if(who==='s') return {age:+C.sage||0,sex:I.ssex||'',tob:!!I.tobaccoS};
+  if(/^k\d+$/.test(who||'')){ var k=(I.kids||[])[+who.slice(1)]||{}; return {age:+(k.age||ageFromDOB(k.dob))||0,sex:/^f/i.test(k.sex||'')?'F':/^m/i.test(k.sex||'')?'M':'',tob:false}; }
+  return null; }
+function lbxCarOK(car,who){ var C=LB_RATES[car]; if(!C) return true; var pp=lbxPerson(who); if(!pp) return false; return !pp.age||(pp.age>=C.min&&pp.age<=C.max); }
+function lbxCarWhy(car,who){ var C=LB_RATES[car]; if(!C) return ''; var pp=lbxPerson(who); if(!pp) return 'priced per person — pick one person';
+  return pp.age&&(pp.age<C.min||pp.age>C.max)?'ages '+C.min+'–'+C.max:''; }
+function lbxRate(x){ var pp=lbxPerson(x.who); if(!pp) return {price:null,note:'pick one person for a priced carrier'};
+  if(!pp.age) return {price:null,note:'add '+(lbWhoName(x.who)||'their')+'’s age on the Intake'};
+  if(!lbxCarOK(x.carrier,x.who)) return {price:null,note:LB_RATES[x.carrier].label+' issues ages '+LB_RATES[x.carrier].min+'–'+LB_RATES[x.carrier].max+' — pick NLG or Other'};
+  var r=lbRate(x.carrier,pp.age,pp.sex,pp.tob,+x.face||50000,'20'); if(r.price==null&&/sex/.test(r.note||'')) r.note='add '+(lbWhoName(x.who)||'their')+'’s sex at birth on the Intake'; return r; }
 function lbxList(c){ return (c&&c.lb&&Array.isArray(c.lb.x))?c.lb.x:[]; }
 function pLBX(list){ if(!list.length) return {price:null,note:'add a policy'}; var tot=0;
   for(var i=0;i<list.length;i++){ var x=list[i]||{}, n='Additional policy '+(i+1)+': ';
     if(!x.carrier) return {price:null,note:n+'pick the carrier'}; if(!x.who) return {price:null,note:n+'pick who it covers'};
+    if(!lbManual(x.carrier)){ var r=lbxRate(x); if(r.price==null) return {price:null,note:n+r.note}; tot+=r.price; continue; }
     if(!(lbNum(x.monthly)>0)) return {price:null,note:n+'type the monthly premium from the carrier’s quote'}; tot+=lbNum(x.monthly); }
   return {price:Math.round(tot*100)/100,note:''}; }
 function lbxOne(x){ var f=lbNum(x.face); return (lbWhoName(x.who)||'someone')+' — '+(f?lbFaceLabel(f):'')+lbTypeTag(x)+' ('+lbCarName(x)+')'; }
@@ -9392,15 +9409,17 @@ function pbControls(k,c){
         :'<div style="font-size:11.5px;color:var(--muted)">'+(lc.carrier==='iule'?'Mutual of Omaha IUL Express: indexed universal life with living benefits — permanent coverage, not a term. Ages 18–65, every state but New York.'
           :'20-year term with living benefits for this person. All faces $25K–$250K are priced: Mutual of Omaha to age 60, Americo 61–65. For National Life or another carrier, pick NLG or Other.')+'</div>'); }
   if(k==='lbx'){ var L=lbxList(c), ev2=function(x){ return String(x==null?'':x).replace(/"/g,'&quot;'); };
-    return '<div class="lbxnote">All additional policies go here — the kids, or a second policy for anyone in the household. Price each one in the carrier’s own quote and type the monthly; they’re added together.</div>'
+    return '<div class="lbxnote">All additional policies go here — the kids, or a second policy for anyone in the household. Mutual of Omaha (TLE, IULE) and Americo price themselves from that person’s age; for NLG or Other, type the monthly from the carrier’s quote. They’re all added together.</div>'
       +L.map(function(x,i){ var pre='lb.x.'+i+'.', cov=lbNum(x.face), mon=lbNum(x.monthly), oth=x.carrier==='other', fixed=x.carrier&&!lbManual(x.carrier), T=lbTodo(x,pre);
         return '<div class="lbxpol'+(T.todo.length?' todo':'')+'"><div class="lbxhd"><b>Policy '+(i+1)+'</b><button type="button" class="pbib" data-act="lbxrm" data-i="'+i+'" title="Remove this policy" aria-label="Remove policy '+(i+1)+'">✕</button></div>'+T.html
           +'<div class="two"><div class="f">Covers<select data-f="'+pre+'who"'+lbNeed(T,pre+'who')+'>'+pbOpts([['','Pick who']].concat(lbWhoOpts()),x.who||'')+'</select></div>'
-          +'<div class="f">Carrier<select data-f="'+pre+'carrier"'+lbNeed(T,pre+'carrier')+'>'+pbOpts([['','Pick a carrier']].concat(LB_CARRIERS),x.carrier||'')+'</select></div></div>'
+          +'<div class="f">Carrier<select data-f="'+pre+'carrier"'+lbNeed(T,pre+'carrier')+'><option value="">Pick a carrier</option>'+LB_CARRIERS.map(function(o){ var ok=!x.who||lbxCarOK(o[0],x.who), why=x.who?lbxCarWhy(o[0],x.who):'';
+              return '<option value="'+o[0]+'"'+(x.carrier===o[0]?' selected':'')+(ok?'':' disabled')+'>'+o[1]+(ok||!why?'':' — '+why)+'</option>'; }).join('')+'</select></div></div>'
           +(oth?'<div class="f">Carrier name<input data-f="'+pre+'otherName"'+lbNeed(T,pre+'otherName')+' placeholder="carrier and product" value="'+ev2(x.otherName)+'"></div>':'')
-          +'<div class="two"><div class="f">Coverage<input data-f="'+pre+'face" data-cov="1"'+lbNeed(T,pre+'face')+' inputmode="numeric" placeholder="$50,000" value="'+(cov?'$'+cov.toLocaleString('en-US'):'')+'"></div>'
+          +'<div class="two"><div class="f">Coverage'+(fixed?'<select data-f="'+pre+'face">'+pbOpts([['25000','$25,000'],['50000','$50,000'],['75000','$75,000'],['100000','$100,000'],['250000','$250,000']],String(x.face||'50000'))+'</select></div>':'<input data-f="'+pre+'face" data-cov="1"'+lbNeed(T,pre+'face')+' inputmode="numeric" placeholder="$50,000" value="'+(cov?'$'+cov.toLocaleString('en-US'):'')+'"></div>')
           +(fixed?'<div class="f">Plan<div style="padding:6px 0">'+lbTypeWords(x)+'</div></div>':'<div class="f">Plan<select data-f="'+pre+'ptype"'+lbNeed(T,pre+'ptype')+'>'+pbOpts([['','Pick plan'],['term','Term'],['iul','IUL (permanent)'],['other','Other']],x.ptype||'')+'</select></div>')+'</div>'
-          +'<div class="two"><div class="f">Monthly premium<input data-f="'+pre+'monthly"'+lbNeed(T,pre+'monthly')+' inputmode="decimal" placeholder="$0.00 a month" value="'+(mon?'$'+mon.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}):'')+'"></div>'
+          +'<div class="two"><div class="f">Monthly premium'+(fixed?(function(){ var r=x.who?lbxRate(x):{price:null}; return '<div style="padding:6px 0;font-weight:700;color:var(--navy)">'+(r.price!=null?fmt2(r.price)+' <span style="font-weight:500;color:var(--muted);font-size:11.5px">from the rate table</span>':'—')+'</div>'; })()
+              :'<input data-f="'+pre+'monthly"'+lbNeed(T,pre+'monthly')+' inputmode="decimal" placeholder="$0.00 a month" value="'+(mon?'$'+mon.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}):'')+'">')+'</div>'
           +'<div class="f">Notes<input data-f="'+pre+'notes" placeholder="who exactly, term length, product" value="'+ev2(x.notes)+'"></div></div></div>'; }).join('')
       +'<button type="button" class="lbxadd" data-act="lbxadd">＋ Add another policy</button>'; }
   if(k==='hhc') return '<div class="f">Plan<select data-f="hhc">'+pbOpts([['Classic','Classic'],['Premier','Premier'],['Deluxe','Deluxe']],c.hhc)+'</select></div>';
@@ -9919,6 +9938,7 @@ function pbColBind(col,rr,rd){
     col.querySelectorAll('[data-act="unedit"]').forEach(function(a){ a.onclick=function(e){ e.preventDefault(); var pr=(S.packages[t].products||[]).filter(function(x){ return x.k===a.dataset.k; })[0]; if(pr) delete pr.manual; rr(); }; });
     col.querySelectorAll('.pbbody select, .pbbody input[type="checkbox"], .pbbody input[data-f^="lb."]').forEach(function(el){ el.onchange=function(){ var c=effCfg(t);
       var val=el.type==='checkbox'?(el.checked?1:0):el.value; if(/^lb\.[ps]\.(face|otherMonthly)$/.test(el.dataset.f)||/^lb\.x\.\d+\.(face|monthly)$/.test(el.dataset.f)) val=String(val).replace(/[^\d.]/g,'');
+      if(/^lb\.x\.\d+\.carrier$/.test(el.dataset.f)&&val&&!lbManual(val)){ var px=lbxList(c)[+el.dataset.f.split('.')[2]]; if(px&&['25000','50000','75000','100000','250000'].indexOf(String(px.face))<0) px.face='50000'; }
       if(/^lb\.[ps]\.carrier$/.test(el.dataset.f)&&!lbManual(val)){ var lc0=c.lb&&c.lb[el.dataset.f.split('.')[1]]; if(lc0&&['25000','50000','75000','100000','250000'].indexOf(String(lc0.face))<0) lc0.face='50000'; }   // back to a rate-table face
       pbSet(c,el.dataset.f,val); if(/^lb\.([ps]|x\.\d+)\.face$/.test(el.dataset.f)) pbSet(c,el.dataset.f.replace(/face$/,'covOk'),'1');
       var kk=el.closest('.pbbody').dataset.k, pr=(S.packages[t].products||[]).filter(function(x){ return x.k===kk; })[0]; if(pr) delete pr.manual;   // new options → rate-table price again

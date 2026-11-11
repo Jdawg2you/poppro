@@ -68,6 +68,18 @@ const TEST = String.raw`(async function(){
   col=document.querySelector('.pbcol[data-t="best"]'); var rm=col&&col.querySelector('[data-act="lbxrm"][data-i="0"]'); if(rm){ rm.click(); await wait(300); }
   ok(lbxList(effCfg('best')).length===1&&lbxList(effCfg('best'))[0].who==='k1','✕ removes just that policy');
 
+  /* 4b. Additional on a priced carrier prices itself from the person; carriers outside their ages are greyed out
+     (expected figures from data/lb/moo-iule.json and moo-tle-20yr.json, not from the tool) */
+  if(LB_RATES.iule){ setup('TX',46,'M'); S.intake.who.spouse=true; S.client.sname='Sam Reyes'; S.client.sage=63; S.intake.ssex='M'; S.intake.kids[0].sex='Male'; S.intake.kids[1].sex='Female'; c=effCfg('best'); c.lb=c.lb||{};
+    ok(!lbxCarOK('iule','k0')&&!lbxCarOK('moo','k0')&&!lbxCarOK('americo','k0')&&lbxCarOK('nlg','k0')&&lbxCarOK('other','k0'),'a 10-year-old: only NLG and Other');
+    ok(lbxCarOK('iule','k1')&&lbxCarOK('moo','k1'),'a 24-year-old can have IULE and TLE');
+    c.lb.x=[{who:'k1',carrier:'iule',face:'50000'},{who:'s',carrier:'iule',face:'25000'},{who:'k1',carrier:'moo',face:'100000'},{who:'k0',carrier:'nlg',face:'50000',ptype:'iul',monthly:'9'}]; pbReprice(); x=prod('lbx');
+    ok(x&&Math.abs(x.monthly-(19.46+75.75+17.98+9))<0.005,'priced policies fill in from the tables: '+(x&&x.monthly)+' vs '+(19.46+75.75+17.98+9).toFixed(2));
+    c.lb.x=[{who:'k0',carrier:'iule',face:'50000'}]; pbReprice(); ok(!(prod('lbx')&&+prod('lbx').monthly>0)&&/issues ages 18–65/.test(pbWhyNot('lbx',c,'TX',46)),'IULE on a child: refused, says why: '+pbWhyNot('lbx',c,'TX',46));
+    c.lb.x=[{who:'several',carrier:'moo',face:'50000'}]; pbReprice(); ok(!(prod('lbx')&&+prod('lbx').monthly>0),'a priced carrier needs one person');
+    c.lb.x=[{who:'k0',carrier:'',face:''}]; S.packages.best.dropped=[]; PB_OPEN['best|lbx']=true; goStep('quote'); pbReprice(); await wait(300);
+    var cs=document.querySelector('.pbcol[data-t="best"] select[data-f="lb.x.0.carrier"]'), dis=cs?[].filter.call(cs.options,function(o){ return o.disabled; }).map(function(o){ return o.value; }).join(','):'none';
+    ok(dis==='moo,americo,iule','the child policy greys out TLE, Americo and IULE: '+dis); }
   /* 5. IUL Express from the rate table (Mutual of Omaha quoter, 10 Nov: TX 46 M non-tobacco $50K = $53.55) */
   if(LB_RATES.iule){ setup('TX',46,'M'); put('p',{carrier:'iule',face:'50000'}); p=prod('lbp');
     ok(p&&p.monthly===53.55&&/indexed universal life \(permanent\)/.test(p.name),'IULE TX 46 M $50K = 53.55: '+(p&&p.name)+' '+(p&&p.monthly));
