@@ -28,7 +28,8 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 const ALLOWF = (() => { try { return JSON.parse(fs.readFileSync(new URL('./parity-allow.json', import.meta.url))); } catch { return {}; } })();
 const ALLOW = new Set(ALLOWF.lines || []);
 /* deliberate rewordings: [old wording, new wording] - applied to A's step text before the comparison, so only these words may differ */
-const REWRITE = s => (ALLOWF.rewrites || []).reduce((t, [a, b]) => t.split(a).join(b), s);
+// a third element 're' makes the pair a regular expression (agent views list one option per line, client views run them together)
+const REWRITE = s => (ALLOWF.rewrites || []).reduce((t, [a, b, re]) => re === 're' ? t.replace(new RegExp(a, 'g'), b) : t.split(a).join(b), s);
 
 /* Clients built in the page with the tool's own functions - no real client data in this file. */
 const CAPTURE = `(async function(){

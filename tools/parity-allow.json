@@ -1,6 +1,21 @@
 {
  "why": "Wording the redesign changes on purpose. Each rewrite is a decision Jesse made, applied word for word to the live text before comparing; nothing else may differ. Cleared 10 Nov after the redesign shipped (cc001b0): live now has every rewrite.",
- "rewrites": [],
+ "rewrites": [
+  [
+   "Mutual of Omaha TLEOther",
+   "Mutual of Omaha TLEMutual of Omaha IUL ExpressOther"
+  ],
+  [
+   "\\nOther — type in a product that isn’t listed…",
+   "\nLiving benefits — Additional\nOther — type in a product that isn’t listed…",
+   "re"
+  ],
+  [
+   "(?<!\\n)Other — type in a product that isn’t listed…",
+   "Living benefits — AdditionalOther — type in a product that isn’t listed…",
+   "re"
+  ]
+ ],
  "lines": [],
  "decisions": {
   "Save Quote / Load Quote -> Save client / Load client": "Jesse, 7 Nov 2026: 'It'll be like save client. And then load client.'",
