@@ -1074,6 +1074,11 @@
 .pbcol .ph .tt{font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--muted);text-transform:uppercase}
 .pbrow{margin:0 10px;border:1px solid #e6e1d4;border-radius:10px;background:#fff}
 .pbrow.off{opacity:.55}
+.pbrow.todo{border-color:#c9a14a;background:#fffdf6}
+.pbrow.todo .pbhead .pr.na{color:#a3242a;font-weight:700}
+.lbtodo{color:#a3242a;font-size:12.5px;margin:2px 0 8px}
+.lbtodo ul{margin:3px 0 0 18px;padding:0}.lbtodo li{margin:1px 0}.lbtodo li.opt{color:var(--muted);font-weight:500}
+.pbbody .need{border-color:#2f8f4e!important;box-shadow:0 0 0 2px rgba(47,143,78,.35)}
 .pbhead{display:flex;align-items:center;gap:6px;padding:8px 4px 8px 12px;min-height:40px}
 .pbhead .nm{font-weight:700;font-size:14px;color:var(--ink)}
 .pbhead input.pbprice{width:92px;font:inherit;font-weight:700;font-size:15px;color:var(--navy);text-align:right;padding:5px 6px;border:1.5px solid var(--gold);border-radius:7px;background:#fffdf7}
@@ -2355,9 +2360,9 @@ function lbIsIul(c){ return c==='iule'; }
 var LB_CARRIERS=[['moo','Mutual of Omaha - TLE'],['americo','Americo - Term'],['iule','Mutual of Omaha - IULE'],['nlg','NLG - Term/IUL'],['other','Other…']];
 function lbManual(c){ return c==='nlg'||c==='other'; }
 function lbCarName(lc){ lc=lc||{}; return lc.carrier==='other'?(String(lc.otherName||'').trim()||'Other carrier'):lc.carrier==='nlg'?'National Life Group':lc.carrier==='americo'?'Americo':lc.carrier==='iule'?'Mutual of Omaha IUL Express':lc.carrier==='moo'?'Mutual of Omaha':''; }
-function lbType(lc){ lc=lc||{}; return lc.carrier==='iule'?'iul':(lc.carrier==='moo'||lc.carrier==='americo')?'term':(lc.ptype==='term'||lc.ptype==='iul'?lc.ptype:''); }
+function lbType(lc){ lc=lc||{}; return lc.carrier==='iule'?'iul':(lc.carrier==='moo'||lc.carrier==='americo')?'term':(lc.ptype==='term'||lc.ptype==='iul'||lc.ptype==='other'?lc.ptype:''); }
 /* what the coverage IS, in words: IULE is permanent IUL, not a 20-year term; NLG / Other say what the agent picked */
-function lbTypeWords(lc){ var t=lbType(lc); return t==='iul'?'IUL permanent coverage':t==='term'?((lc.carrier==='moo'||lc.carrier==='americo')?'20-year term':'term'):'term / IUL — see notes'; }
+function lbTypeWords(lc){ var t=lbType(lc); return t==='other'?'other plan — see notes':t==='iul'?'IUL permanent coverage':t==='term'?((lc.carrier==='moo'||lc.carrier==='americo')?'20-year term':'term'):'term / IUL — see notes'; }
 function lbTypeTag(lc){ return (lbType(lc)||lc.carrier==='nlg')?' '+lbTypeWords(lc):''; }
 function lbKindFor(lc){ var t=lbType(lc); return t==='iul'?'Indexed Universal Life (permanent) protection':t==='term'?'Term Life Protection':'Life Protection'; }
 function lbNum(v){ return +String(v==null?'':v).replace(/[^\d.]/g,'')||0; }
@@ -2369,6 +2374,19 @@ function lbWhoOpts(){ var C=S.client||{}, I=S.intake||{}, w=I.who||{}, o=[['p',(
   (I.kids||[]).forEach(function(k,i){ if(k&&(k.n||k.dob||k.age)) o.push(['k'+i,(enSplit(k.n)[0]||('Child '+(i+1)))+(k.age?' ('+k.age+')':'')]); });
   o.push(['several','Several — see notes']); return o; }
 function lbWhoName(id){ if(!id) return ''; if(id==='several') return 'several people'; var o=lbWhoOpts().filter(function(x){ return x[0]===id; })[0]; return o?o[1].replace(/ \((primary|spouse|\d+)\)$/,''):''; }
+/* What the agent still has to fill in on a typed-in living-benefit policy (Jesse, 10 Nov: a greyed-out row read as
+   "nothing to do"). Returns the to-do lines (red, above the fields) and the fields to ring in green until they're done.
+   Coverage counts as confirmed once it is changed, Enter is pressed on it, or the monthly is typed. */
+function lbTodo(lc,pre,lead){ lc=lc||{}; var todo=[], need={}, add=function(f,t){ need[pre+f]=1; todo.push(t); };
+  if(pre.indexOf('lb.x.')===0&&!lc.who) add('who','Pick who this policy covers');
+  if(pre.indexOf('lb.x.')===0&&!lc.carrier) add('carrier','Pick the carrier');
+  if(lc.carrier==='other'&&!String(lc.otherName||'').trim()) add('otherName','Type the carrier name');
+  if(lbManual(lc.carrier)&&!lc.ptype) add('ptype','Pick the plan: term, IUL or other');
+  var mk=pre.indexOf('lb.x.')===0?'monthly':'otherMonthly';
+  if(lc.carrier&&(lbManual(lc.carrier)||pre.indexOf('lb.x.')===0)&&!(lbNum(lc[mk])>0)) add(mk,'Type the monthly premium from '+(lc.carrier==='nlg'?'National Life’s':'the carrier’s')+' quote');
+  if(lc.carrier&&(lbManual(lc.carrier)||pre.indexOf('lb.x.')===0)&&!lc.covOk&&!(lbNum(lc[mk])>0)) add('face','Confirm the coverage — change it if needed, or click it and press Enter');
+  return {todo:todo,need:need,html:todo.length?'<div class="lbtodo"><b>'+(lead||'To finish')+':</b><ul>'+todo.map(function(x){ return '<li>'+x+'</li>'; }).join('')+'<li class="opt">Add notes if they’d help</li></ul></div>':''}; }
+function lbNeed(T,f){ return T.need[f]?' class="need"':''; }
 function lbxList(c){ return (c&&c.lb&&Array.isArray(c.lb.x))?c.lb.x:[]; }
 function pLBX(list){ if(!list.length) return {price:null,note:'add a policy'}; var tot=0;
   for(var i=0;i<list.length;i++){ var x=list[i]||{}, n='Additional policy '+(i+1)+': ';
@@ -8873,7 +8891,7 @@ function presentWire(doc,t){ scriptClean(doc); if(!doc||!doc.body) return 0; var
           +'<td>'+(oth?'<input data-lb="lb.'+w+'.face" inputmode="numeric" placeholder="$75,000" value="'+(+l.face?'$'+(+l.face).toLocaleString('en-US'):'')+'" style="width:110px">'
               :'<select data-lb="lb.'+w+'.face">'+['25000','50000','75000','100000','250000'].map(function(f){ return '<option value="'+f+'"'+(String(l.face)===f?' selected':'')+'>$'+(+f).toLocaleString('en-US')+'</option>'; }).join('')+'</select>')+'</td>'
           +'<td><select data-lb="lb.'+w+'.carrier">'+LB_CARRIERS.map(function(o2){ return '<option value="'+o2[0]+'"'+(l.carrier===o2[0]?' selected':'')+'>'+o2[1]+'</option>'; }).join('')+'</select>'
-            +(oth?'<div style="margin-top:4px;display:flex;gap:4px;flex-wrap:wrap">'+(l.carrier==='nlg'?'':'<input data-lb="lb.'+w+'.otherName" placeholder="carrier and product" value="'+ev(l.otherName)+'" style="width:150px">')+'<select data-lb="lb.'+w+'.ptype">'+[['','term or IUL?'],['term','Term'],['iul','IUL']].map(function(o3){ return '<option value="'+o3[0]+'"'+((l.ptype||'')===o3[0]?' selected':'')+'>'+o3[1]+'</option>'; }).join('')+'</select><input data-lb="lb.'+w+'.otherMonthly" inputmode="decimal" placeholder="$0.00 a month" value="'+(+l.otherMonthly?'$'+(+l.otherMonthly).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}):'')+'" style="width:100px"></div>':'')+'</td>'
+            +(oth?'<div style="margin-top:4px;display:flex;gap:4px;flex-wrap:wrap">'+(l.carrier==='nlg'?'':'<input data-lb="lb.'+w+'.otherName" placeholder="carrier and product" value="'+ev(l.otherName)+'" style="width:150px">')+'<select data-lb="lb.'+w+'.ptype">'+[['','Pick plan'],['term','Term'],['iul','IUL'],['other','Other']].map(function(o3){ return '<option value="'+o3[0]+'"'+((l.ptype||'')===o3[0]?' selected':'')+'>'+o3[1]+'</option>'; }).join('')+'</select><input data-lb="lb.'+w+'.otherMonthly" inputmode="decimal" placeholder="$0.00 a month" value="'+(+l.otherMonthly?'$'+(+l.otherMonthly).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}):'')+'" style="width:100px"></div>':'')+'</td>'
           +'<td><b>'+(mo!=null?fmt2(mo):'—')+'</b>'+(q.note&&!on?'<div class="pp-lbnote">'+esc(q.note)+'</div>':'')+'</td>'
           +'<td>'+(on?'<span class="pp-in">✓ In the package</span> <button type="button" class="pp-lbx" data-lbrm="'+w+'">remove</button>'
                   :(q.price!=null?'<button type="button" class="pp-lbadd" data-lbadd="'+w+'">＋ Add</button>':''))+'</td></tr>'; }).join('')
@@ -9354,29 +9372,30 @@ function pbControls(k,c){
     return '<div class="two"><div class="f">Cancer<select data-f="chas.cancer">'+pbOpts(pbAmt(a),c.chas.cancer)+'</select></div><div class="f">Heart attack &amp; stroke<select data-f="chas.hs">'+pbOpts(pbAmt(a),c.chas.hs)+'</select></div></div>'
     +'<div style="font-size:11.5px;color:var(--muted)">Two separate policies — if the budget shrinks, drop Heart &amp; Stroke first.</div>'; }
   if(k==='lbp'||k==='lbs'){ var w=k.slice(2), lc=c.lb[w], pp=lbPersons().filter(function(x){ return x.k===w; })[0], rr=pp?pLB1(pp,lc):null;
-    var fb=(rr&&rr.note)?'<div style="font-size:12px;color:var(--maroon);font-weight:600">'+rr.note+'</div>':'';
     var man=lbManual(lc.carrier), nlg=lc.carrier==='nlg', ev=function(x){ return String(x==null?'':x).replace(/"/g,'&quot;'); };
+    var T=man?lbTodo(lc,'lb.'+w+'.',pp?pp.tag:''):{todo:[],need:{},html:''};
+    var fb=man?T.html:((rr&&rr.note)?'<div style="font-size:12px;color:var(--maroon);font-weight:600">'+rr.note+'</div>':'');
     var cov=lbNum(lc.face), mon=lbNum(lc.otherMonthly);
-    return fb+'<div class="two">'+(man?'<div class="f">Coverage<input data-f="lb.'+w+'.face" inputmode="numeric" placeholder="$75,000" value="'+(cov?'$'+cov.toLocaleString('en-US'):'')+'"></div>'
+    return fb+'<div class="two">'+(man?'<div class="f">Coverage<input data-f="lb.'+w+'.face" data-cov="1"'+lbNeed(T,'lb.'+w+'.face')+' inputmode="numeric" placeholder="$75,000" value="'+(cov?'$'+cov.toLocaleString('en-US'):'')+'"></div>'
         :'<div class="f">Coverage<select data-f="lb.'+w+'.face">'+pbOpts([['25000','$25,000'],['50000','$50,000'],['75000','$75,000'],['100000','$100,000'],['250000','$250,000']],lc.face)+'</select></div>')
       +'<div class="f">Carrier<select data-f="lb.'+w+'.carrier">'+pbOpts(LB_CARRIERS,lc.carrier||'moo')+'</select></div></div>'
-    +(man?'<div class="two">'+(nlg?'':'<div class="f">Carrier name<input data-f="lb.'+w+'.otherName" placeholder="carrier and product" value="'+ev(lc.otherName)+'"></div>')
-          +'<div class="f">Plan<select data-f="lb.'+w+'.ptype">'+pbOpts([['','Pick: term or IUL'],['term','Term'],['iul','IUL (permanent)']],lc.ptype||'')+'</select></div>'
-          +'<div class="f">Monthly premium<input data-f="lb.'+w+'.otherMonthly" inputmode="decimal" placeholder="$0.00 a month" value="'+(mon?'$'+mon.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}):'')+'"></div></div>'
+    +(man?'<div class="two">'+(nlg?'':'<div class="f">Carrier name<input data-f="lb.'+w+'.otherName"'+lbNeed(T,'lb.'+w+'.otherName')+' placeholder="carrier and product" value="'+ev(lc.otherName)+'"></div>')
+          +'<div class="f">Plan<select data-f="lb.'+w+'.ptype"'+lbNeed(T,'lb.'+w+'.ptype')+'>'+pbOpts([['','Pick plan'],['term','Term'],['iul','IUL (permanent)'],['other','Other']],lc.ptype||'')+'</select></div>'
+          +'<div class="f">Monthly premium<input data-f="lb.'+w+'.otherMonthly"'+lbNeed(T,'lb.'+w+'.otherMonthly')+' inputmode="decimal" placeholder="$0.00 a month" value="'+(mon?'$'+mon.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}):'')+'"></div></div>'
         +'<div class="f">Notes<input data-f="lb.'+w+'.notes" placeholder="product, term length, anything the client should know" value="'+ev(lc.notes)+'"></div>'
         +'<div style="font-size:11.5px;color:var(--muted)">'+(nlg?'National Life Group: fill in the plan (term or IUL), the coverage and the monthly from National Life’s quote.':'Other carrier: type the carrier, the plan, the coverage and the monthly premium from that carrier’s own quote.')+'</div>'
         :'<div style="font-size:11.5px;color:var(--muted)">'+(lc.carrier==='iule'?'Mutual of Omaha IUL Express: indexed universal life with living benefits — permanent coverage, not a term. Ages 18–65, every state but New York.'
           :'20-year term with living benefits for this person. All faces $25K–$250K are priced: Mutual of Omaha to age 60, Americo 61–65. For National Life or another carrier, pick NLG or Other.')+'</div>'); }
   if(k==='lbx'){ var L=lbxList(c), ev2=function(x){ return String(x==null?'':x).replace(/"/g,'&quot;'); };
     return '<div class="lbxnote">All additional policies go here — the kids, or a second policy for anyone in the household. Price each one in the carrier’s own quote and type the monthly; they’re added together.</div>'
-      +L.map(function(x,i){ var pre='lb.x.'+i+'.', cov=lbNum(x.face), mon=lbNum(x.monthly), oth=x.carrier==='other', fixed=x.carrier&&!lbManual(x.carrier);
-        return '<div class="lbxpol"><div class="lbxhd"><b>Policy '+(i+1)+'</b><button type="button" class="pbib" data-act="lbxrm" data-i="'+i+'" title="Remove this policy" aria-label="Remove policy '+(i+1)+'">✕</button></div>'
-          +'<div class="two"><div class="f">Covers<select data-f="'+pre+'who">'+pbOpts([['','Pick who']].concat(lbWhoOpts()),x.who||'')+'</select></div>'
-          +'<div class="f">Carrier<select data-f="'+pre+'carrier">'+pbOpts([['','Pick a carrier']].concat(LB_CARRIERS),x.carrier||'')+'</select></div></div>'
-          +(oth?'<div class="f">Carrier name<input data-f="'+pre+'otherName" placeholder="carrier and product" value="'+ev2(x.otherName)+'"></div>':'')
-          +'<div class="two"><div class="f">Coverage<input data-f="'+pre+'face" inputmode="numeric" placeholder="$50,000" value="'+(cov?'$'+cov.toLocaleString('en-US'):'')+'"></div>'
-          +(fixed?'<div class="f">Plan<div style="padding:6px 0">'+lbTypeWords(x)+'</div></div>':'<div class="f">Plan<select data-f="'+pre+'ptype">'+pbOpts([['','Pick: term or IUL'],['term','Term'],['iul','IUL (permanent)']],x.ptype||'')+'</select></div>')+'</div>'
-          +'<div class="two"><div class="f">Monthly premium<input data-f="'+pre+'monthly" inputmode="decimal" placeholder="$0.00 a month" value="'+(mon?'$'+mon.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}):'')+'"></div>'
+      +L.map(function(x,i){ var pre='lb.x.'+i+'.', cov=lbNum(x.face), mon=lbNum(x.monthly), oth=x.carrier==='other', fixed=x.carrier&&!lbManual(x.carrier), T=lbTodo(x,pre);
+        return '<div class="lbxpol'+(T.todo.length?' todo':'')+'"><div class="lbxhd"><b>Policy '+(i+1)+'</b><button type="button" class="pbib" data-act="lbxrm" data-i="'+i+'" title="Remove this policy" aria-label="Remove policy '+(i+1)+'">✕</button></div>'+T.html
+          +'<div class="two"><div class="f">Covers<select data-f="'+pre+'who"'+lbNeed(T,pre+'who')+'>'+pbOpts([['','Pick who']].concat(lbWhoOpts()),x.who||'')+'</select></div>'
+          +'<div class="f">Carrier<select data-f="'+pre+'carrier"'+lbNeed(T,pre+'carrier')+'>'+pbOpts([['','Pick a carrier']].concat(LB_CARRIERS),x.carrier||'')+'</select></div></div>'
+          +(oth?'<div class="f">Carrier name<input data-f="'+pre+'otherName"'+lbNeed(T,pre+'otherName')+' placeholder="carrier and product" value="'+ev2(x.otherName)+'"></div>':'')
+          +'<div class="two"><div class="f">Coverage<input data-f="'+pre+'face" data-cov="1"'+lbNeed(T,pre+'face')+' inputmode="numeric" placeholder="$50,000" value="'+(cov?'$'+cov.toLocaleString('en-US'):'')+'"></div>'
+          +(fixed?'<div class="f">Plan<div style="padding:6px 0">'+lbTypeWords(x)+'</div></div>':'<div class="f">Plan<select data-f="'+pre+'ptype"'+lbNeed(T,pre+'ptype')+'>'+pbOpts([['','Pick plan'],['term','Term'],['iul','IUL (permanent)'],['other','Other']],x.ptype||'')+'</select></div>')+'</div>'
+          +'<div class="two"><div class="f">Monthly premium<input data-f="'+pre+'monthly"'+lbNeed(T,pre+'monthly')+' inputmode="decimal" placeholder="$0.00 a month" value="'+(mon?'$'+mon.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}):'')+'"></div>'
           +'<div class="f">Notes<input data-f="'+pre+'notes" placeholder="who exactly, term length, product" value="'+ev2(x.notes)+'"></div></div></div>'; }).join('')
       +'<button type="button" class="lbxadd" data-act="lbxadd">＋ Add another policy</button>'; }
   if(k==='hhc') return '<div class="f">Plan<select data-f="hhc">'+pbOpts([['Classic','Classic'],['Premier','Premier'],['Deluxe','Deluxe']],c.hhc)+'</select></div>';
@@ -9810,8 +9829,8 @@ function pbColHTML(T,anc){ var t=T[0], act=(t==='actual'), st=(S.client.state||'
       var live=byKpk[k]||byK[k], price=live?live.monthly:null;
       if(price==null){
         var typed=k==='lbx'||((k==='lbp'||k==='lbs')&&c.lb&&c.lb[k.slice(2)]&&lbManual(c.lb[k.slice(2)].carrier));   /* waiting for the agent to type, not unavailable */
-        html+='<div class="pbrow off"><div class="pbhead"><span class="nm">'+sl.name+'</span><span class="pr na">'+(typed?'fill in below':'not available')+'</span><button class="pbib" data-act="rm" data-k="'+k+'" title="Remove" aria-label="Remove '+sl.name+'">✕</button></div>'
-          +((k==='lbp'||k==='lbs')?'':'<div class="pbnote">'+pbWhyNot(k,c,st,age)+'</div>')
+        html+='<div class="pbrow '+(typed?'todo':'off')+'"><div class="pbhead"><span class="nm">'+sl.name+'</span><span class="pr na">'+(typed?'fill in below ↓':'not available')+'</span><button class="pbib" data-act="rm" data-k="'+k+'" title="Remove" aria-label="Remove '+sl.name+'">✕</button></div>'
+          +(typed?'':'<div class="pbnote">'+pbWhyNot(k,c,st,age)+'</div>')
           /* an unpriced row keeps its controls (Jesse, 2026-10-09): the agent can see which option failed and pick one that
              prices, or type an Other carrier's premium. A product the state does not sell never reaches this branch. */
           +(pbControls(k,c)?'<div class="pbbody" data-k="'+k+'">'+pbControls(k,c)+'</div>':'')+'</div>';
@@ -9887,6 +9906,7 @@ function pbColBind(col,rr,rd){
       if(k==='lbx'){ c.lb=c.lb||{}; if(!lbxList(c).length) c.lb.x=[{who:'',carrier:'',face:'',ptype:'',otherName:'',otherMonthly:'',monthly:'',notes:''}]; PB_OPEN[t+'|lbx']=true; rr(); return; }
       if(k==='hhc'&&!c.hhc) c.hhc=PB_DEFAULT.hhc; if(k==='chas'&&!(c.chas&&(c.chas.cancer||c.chas.hs))) c.chas=cfgClone(PB_DEFAULT.chas);
       PB_OPEN[t+'|'+k]=true; rr(); }; });
+    col.querySelectorAll('[data-cov]').forEach(function(el){ el.addEventListener('keydown',function(e){ if(e.key!=='Enter') return; e.preventDefault(); var c=effCfg(t), v=String(el.value).replace(/[^\d.]/g,''); pbSet(c,el.dataset.f,v); pbSet(c,el.dataset.f.replace(/face$/,'covOk'),'1'); rr(); }); });
     col.querySelectorAll('[data-act="lbxadd"]').forEach(function(b){ b.onclick=function(){ var c=effCfg(t); c.lb=c.lb||{}; c.lb.x=lbxList(c).concat([{who:'',carrier:'',face:'',ptype:'',otherName:'',monthly:'',notes:''}]); PB_OPEN[t+'|lbx']=true; rr(); }; });
     col.querySelectorAll('[data-act="lbxrm"]').forEach(function(b){ b.onclick=function(){ var c=effCfg(t); c.lb.x=lbxList(c).filter(function(x,i){ return i!==+b.dataset.i; }); if(!c.lb.x.length){ var pk=S.packages[t]; pk.dropped=pk.dropped||[]; if(pk.dropped.indexOf('lbx')<0) pk.dropped.push('lbx'); } rr(); }; });
     col.querySelectorAll('input.pbprice').forEach(function(inp){ inp.onchange=function(){ var v=parseFloat(inp.value); var pk=S.packages[t]; var pr=(pk.products||[]).filter(function(x){ return x.k===inp.dataset.k; })[0]; if(!pr) return;
@@ -9895,7 +9915,7 @@ function pbColBind(col,rr,rd){
     col.querySelectorAll('.pbbody select, .pbbody input[type="checkbox"], .pbbody input[data-f^="lb."]').forEach(function(el){ el.onchange=function(){ var c=effCfg(t);
       var val=el.type==='checkbox'?(el.checked?1:0):el.value; if(/^lb\.[ps]\.(face|otherMonthly)$/.test(el.dataset.f)||/^lb\.x\.\d+\.(face|monthly)$/.test(el.dataset.f)) val=String(val).replace(/[^\d.]/g,'');
       if(/^lb\.[ps]\.carrier$/.test(el.dataset.f)&&!lbManual(val)){ var lc0=c.lb&&c.lb[el.dataset.f.split('.')[1]]; if(lc0&&['25000','50000','75000','100000','250000'].indexOf(String(lc0.face))<0) lc0.face='50000'; }   // back to a rate-table face
-      pbSet(c,el.dataset.f,val);
+      pbSet(c,el.dataset.f,val); if(/^lb\.([ps]|x\.\d+)\.face$/.test(el.dataset.f)) pbSet(c,el.dataset.f.replace(/face$/,'covOk'),'1');
       var kk=el.closest('.pbbody').dataset.k, pr=(S.packages[t].products||[]).filter(function(x){ return x.k===kk; })[0]; if(pr) delete pr.manual;   // new options → rate-table price again
       if(el.dataset.f==='triadPlan'&&c.his){ c.his.ben=cignaHIS(c.triadPlan); }   // HI Select follows the Cigna deductible
       if(el.dataset.f==='chas.cancer'||el.dataset.f==='chas.hs'){ if(!c.chas.cancer&&!c.chas.hs){ var pk=S.packages[t]; pk.dropped=pk.dropped||[]; pk.dropped.push('chas'); } }
