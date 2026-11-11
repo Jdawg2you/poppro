@@ -1309,6 +1309,7 @@ body.client #classicWrap>summary{display:none}
     body:not(.client) .rail-x em{font-style:normal;font-size:11px;font-weight:800;margin-left:auto;background:#22a05a;color:#fff;border-radius:999px;padding:1px 7px}body:not(.client) .rail-x em:empty{display:none}
     body:not(.client) #railSetup.need{border-color:#22a05a;animation:agglow 1.8s ease-in-out infinite}
     body:not(.client) #railCollapse{margin-top:auto;font-size:12.5px;color:#aeb8c8;flex:none}
+    body:not(.client) #railSuggest{margin-top:auto;flex:none}body:not(.client) #railSuggest+#railCollapse{margin-top:0}   /* Suggest sits at the foot of the rail, just above Collapse (Jesse, 11 Nov) */
     body:not(.client) .rail-x:hover{background:#1c3657;color:#fff}
     body:not(.client) .rail-x.on{background:var(--gold);color:#10233e}body:not(.client) .rail-x.on .ri{color:#10233e}
     body.setup-open:not(.client) .stepper button.on{background:transparent;color:#d3dae6}body.setup-open:not(.client) .stepper button.on .n{color:#8d99ad}
@@ -1423,7 +1424,6 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
   <button type="button" id="railGuide" class="rail-x hidein-client" onclick="openSetup('guide')" title="The whole process, start to finish - and where to begin"><span class="ri">?</span><span class="rl">How to use MyPopPro</span></button>
   <button type="button" id="railNews" class="rail-x hidein-client" onclick="document.getElementById('newsBtn').click()" title="What’s new in MyPopPro"><span class="ri">✨</span><span class="rl">What’s new</span><em id="railNewsCount"></em></button>
   <button type="button" id="railSetup" class="rail-x hidein-client" onclick="openSetup('setup')" title="Your details: they go on every script, email and text"><span class="ri">⚙</span><span class="rl">Setup</span><em id="railSetupNeed"></em></button>
-  <button type="button" id="railSuggest" class="rail-x hidein-client" onclick="sgOpen()" title="See something? Say something. Send us an idea, a fix or wording that sounds off"><span class="ri">💡</span><span class="rl">Suggest an idea</span></button>
   <div class="stepper noprint" id="stepper">
     <button data-step="call"><span class="n">1</span> <span class="lgl">Discovery call</span><span class="sml">Call</span></button>
     <button data-step="intake"><span class="n">2</span> <span class="lgl">Intake / Profile</span><span class="sml">Intake</span></button>
@@ -1440,6 +1440,7 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
     <button type="button" class="rail-x" onclick="document.getElementById('saveBtn').click()"><span class="ri">💾</span><span class="rl">Save client</span></button>
     <button type="button" class="rail-x" onclick="document.getElementById('printBtn').click()"><span class="ri">⎙</span><span class="rl">Print quote</span></button>
   </div>
+  <button type="button" id="railSuggest" class="rail-x hidein-client" onclick="sgOpen()" title="See something? Say something. Send us an idea, a fix or wording that sounds off"><span class="ri">💡</span><span class="rl">Suggest an idea</span></button>
   <button type="button" id="railCollapse" class="rail-x" onclick="railToggle()" title="Make the sidebar narrow (or wide again)"><span class="ri">←</span><span class="rl">Collapse navigation</span></button>
   </nav>
 
