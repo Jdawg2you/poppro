@@ -135,6 +135,9 @@
   phone($('u_phone')); phone($('a_phone')); phone($('m_phone'));
   document.querySelectorAll('[data-to]').forEach(function(b){ b.onclick=function(){ show(b.dataset.to); }; });
   try{ var u=new URLSearchParams(location.search); if(u.get('signup')) show('sUp'); }catch(e){}
+  /* from the front door: it hands over the email, so go straight to sending the code */
+  setTimeout(function(){ try{ var u2=new URLSearchParams(location.search), em=sessionStorage.getItem('pp_em');
+    if(u2.get('go')&&em){ sessionStorage.removeItem('pp_em'); $('email').value=em; $('sEmail').requestSubmit(); } }catch(e){} },0);
 
   $('sEmail').onsubmit=function(e){ e.preventDefault(); var f=this; EM=$('email').value.trim().toLowerCase(); err(f,'');
     if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(EM)) return err(f,'Please enter a valid email address.');

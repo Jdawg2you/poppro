@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Welcome · MyPopPro</title>
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* Mock-up on the sandbox (Jesse, 11 Nov 2026): a two-door front page for anyone not signed in.
+     Returning agents sign in right here; new visitors take the tour (the landing page) and end at Get access. */
+  :root{ --navy:#0A1830; --panel:#0E1D3A; --panel2:#132650; --line:#22345C; --gold:#E8C547; --gold2:#F3D978; --red:#E23048; --ink:#F5F7FA; --mut:#9AA8C0; }
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;background:radial-gradient(1200px 620px at 72% -12%,#183566 0%,var(--navy) 62%);color:var(--ink);font:16px/1.55 Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+  .mockbar{background:#1f6b3b;color:#fff;text-align:center;font-size:13px;font-weight:700;padding:6px 10px}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+  header{display:flex;align-items:center;gap:12px;padding:26px 0 10px}
+  header a{display:flex;align-items:center;gap:12px;color:inherit;text-decoration:none}
+  header img{height:52px}
+  .bword b{font-size:26px;font-weight:800;letter-spacing:-.02em;display:flex;align-items:center;gap:7px}
+  .bword b em{font-style:normal;font-size:13px;font-weight:800;background:var(--gold);color:var(--navy);border-radius:6px;padding:4px 7px 3px;line-height:1}
+  .bword small{display:block;margin-top:6px;padding-top:5px;border-top:2px solid var(--red);width:max-content;font-size:11.5px;font-weight:700;color:var(--gold)}
+  h1{font-size:46px;line-height:1.08;letter-spacing:-.025em;margin:46px 0 12px;font-weight:800;text-align:center}
+  h1 span{color:var(--gold)}
+  .lede{color:var(--mut);text-align:center;font-size:18px;margin:0 auto 40px;max-width:640px}
+  .doors{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-bottom:34px}
+  .door{background:linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,0)) ,var(--panel);border:1px solid var(--line);border-radius:20px;padding:32px;display:flex;flex-direction:column;gap:12px}
+  .door.ret{border-color:rgba(232,197,71,.5);box-shadow:0 0 0 1px rgba(232,197,71,.12),0 24px 50px -24px rgba(0,0,0,.7)}
+  /* the icon: a thin gold line glyph inside a ringed medallion */
+  .medal{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;
+    background:radial-gradient(circle at 30% 25%,#1d3a6e,#0c1b37 70%);
+    box-shadow:inset 0 0 0 1.5px rgba(232,197,71,.65),0 0 0 6px rgba(232,197,71,.07),0 10px 24px -10px rgba(232,197,71,.45)}
+  .medal svg{width:28px;height:28px;stroke:var(--gold);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .kick{font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-top:6px}
+  .door h2{font-size:25px;line-height:1.2;margin:0;font-weight:800;letter-spacing:-.01em}
+  .door p{margin:0;color:var(--mut);font-size:15px}
+  label{font-size:13px;font-weight:700;color:#D7DEEA;margin-top:4px}
+  input{width:100%;font:inherit;font-size:16px;color:var(--ink);background:var(--navy);border:1.5px solid var(--line);border-radius:12px;padding:13px 14px;outline:none}
+  input:focus{border-color:var(--gold)}
+  .btn{display:block;text-align:center;font:inherit;font-weight:800;font-size:16px;border-radius:999px;padding:14px;cursor:pointer;border:0;text-decoration:none}
+  .btn.gold{background:var(--gold);color:var(--navy)}.btn.gold:hover{background:var(--gold2)}
+  .btn.ghost{background:transparent;color:var(--ink);border:1.5px solid rgba(232,197,71,.45)}.btn.ghost:hover{border-color:var(--gold);background:rgba(232,197,71,.06)}
+  .fine{font-size:13px;color:var(--mut)}
+  .fine a{color:var(--gold)}
+  .feat{margin:2px 0 6px;padding:0;list-style:none;display:grid;gap:10px}
+  .feat li{display:flex;gap:12px;align-items:flex-start;font-size:15px;color:#DCE3EE}
+  .feat svg{flex:none;width:18px;height:18px;margin-top:3px;stroke:var(--gold);fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+  .err{display:none;font-size:14px;color:#FFC9D1}
+  .foot{text-align:center;color:var(--mut);font-size:14px;padding:0 0 18px}
+  .foot b{color:var(--ink);font-weight:700}
+  .lock{display:flex;justify-content:center;align-items:center;gap:8px;color:var(--mut);font-size:13px;padding-bottom:44px}
+  .lock svg{width:15px;height:15px;stroke:var(--mut);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  @media (max-width:760px){ h1{font-size:33px;margin-top:28px} .doors{grid-template-columns:1fr} .door{padding:24px} }
+</style>
+</head>
+<body>
+<div class="mockbar">MOCK-UP on the sandbox · the front page anyone who isn’t signed in would see</div>
+<div class="wrap">
+  <header><a href="/"><img src="/assets/pop-shield.png" alt=""><span class="bword"><b>MyPop<em>PRO</em></b><small>Compare. Layer. Protect.</small></span></a></header>
+
+  <h1>Welcome to <span>MyPopPro</span></h1>
+  <p class="lede">From the first discovery call to the benefits review: build, present and enroll your client’s Package of Protection in one place.</p>
+
+  <div class="doors">
+    <form class="door ret" id="ret" novalidate>
+      <div class="medal" aria-hidden="true">
+        <!-- key -->
+        <svg viewBox="0 0 24 24"><circle cx="8" cy="15" r="4"/><path d="M10.85 12.15 19 4"/><path d="m18 5 2 2"/><path d="m15 8 2 2"/></svg>
+      </div>
+      <div class="kick">Returning agent</div>
+      <h2>I’ve used MyPopPro before</h2>
+      <p>Welcome back. Enter your email and we’ll send you a 6-digit sign-in code.</p>
+      <label for="em">Your email</label>
+      <input id="em" type="email" placeholder="you@youragency.com" autocomplete="email" inputmode="email">
+      <button class="btn gold" type="submit">Sign in →</button>
+      <div class="err" id="err"></div>
+      <p class="fine">You’ll stay signed in for 30 days on this device.</p>
+    </form>
+
+    <div class="door">
+      <div class="medal" aria-hidden="true">
+        <!-- compass -->
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5 5-2z"/></svg>
+      </div>
+      <div class="kick">New to MyPopPro</div>
+      <h2>See what it can do for you</h2>
+      <ul class="feat">
+        <li><svg viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>Prices the plans and builds Good / Better / Best</li>
+        <li><svg viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>Runs the presentation with you, screen by screen</li>
+        <li><svg viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>Writes your follow-ups and remembers every client</li>
+      </ul>
+      <a class="btn ghost" href="/">Take the tour →</a>
+      <p class="fine">Have an invite code? <a href="/signin/?signup=1">Get access</a></p>
+    </div>
+  </div>
+
+  <p class="foot"><b>Built by working agents, for working agents.</b> Updated most weeks.</p>
+  <p class="lock"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Signing in only checks who you are. Your clients’ information stays on your own computer.</p>
+</div>
+<script>
+/* Returning: hand the email to the sign-in page, which sends the code and shows the code screen. */
+document.getElementById('ret').onsubmit=function(e){ e.preventDefault();
+  var v=document.getElementById('em').value.trim().toLowerCase(), er=document.getElementById('err');
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)){ er.textContent='Please enter a valid email address.'; er.style.display='block'; return; }
+  try{ sessionStorage.setItem('pp_em',v); }catch(x){}
+  location.href='/signin/?go=1'; };
+</script>
+</body>
+</html>
