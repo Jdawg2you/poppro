@@ -53,23 +53,38 @@ function doPost(e) {
     if (d.a === 'verify') return out(verify(d));
     if (d.a === 'signup') return out(signup(d));
     if (d.a === 'request') return out(request(d));
+    if (d.a === 'profile') return out(profile(d));
     return out({ ok: false, error: 'unknown action' });
   } catch (err) {
     return out({ ok: false, error: 'Sign-in is having trouble. Please try again in a minute.', detail: String(err) });
   } finally { lock.releaseLock(); }
 }
 
-/* ---- returning member: email a 6-digit code ---- */
-function sendPin(d) {
-  if (!memberRow(d.email)) return { ok: true, member: false };
-  var c = CacheService.getScriptCache(), sentKey = 'sent:' + d.email, sent = +(c.get(sentKey) || 0);
+/* Every sign-in confirms the email with a 6-digit code (Jesse, 11 Nov: one person per login, no sharing).
+   kind: 'welcome' (an early user's first time), 'confirm' (a new sign-up), 'signin' (everyone else). */
+function mintPin(email, kind) {
+  var c = CacheService.getScriptCache(), sentKey = 'sent:' + email, sent = +(c.get(sentKey) || 0);
   if (sent >= 5) return { ok: false, error: 'Too many codes sent. Please wait an hour, or use the last code we emailed you.' };
   var pin = String(Math.floor(100000 + Math.random() * 900000));
-  c.put('pin:' + d.email, JSON.stringify({ h: hash(pin), tries: 0 }), 600);
+  c.put('pin:' + email, JSON.stringify({ h: hash(pin), tries: 0 }), 600);
   c.put(sentKey, String(sent + 1), 3600);
-  MailApp.sendEmail({ to: d.email, name: 'MyPopPro', subject: 'Your MyPopPro sign-in code: ' + pin,
-    body: 'Your MyPopPro sign-in code is ' + pin + '\n\nIt works for 10 minutes. If you did not ask for it, you can ignore this email.\n\n' + SITE });
-  return { ok: true, member: true };
+  var intro = kind === 'welcome' ? 'Welcome back, and thank you for being one of the first agents on MyPopPro.\n\nMyPopPro now has a sign-in. '
+    : kind === 'confirm' ? 'Welcome to MyPopPro. One step left: confirm this is your email. ' : '';
+  MailApp.sendEmail({ to: email, name: 'MyPopPro', subject: 'Your MyPopPro code: ' + pin,
+    body: intro + 'Your code is ' + pin + '\n\nEnter it on the MyPopPro page to stay signed in for 30 days on this device. It works for 10 minutes.' +
+      '\n\nIf you did not ask for it, you can ignore this email.\n\n' + SITE });
+  return { ok: true };
+}
+
+/* ---- returning member ---- */
+function sendPin(d) {
+  var r = memberRow(d.email);
+  if (!r) return { ok: true, member: false };
+  var row = tab(T.members).getRange(r, 1, 1, 9).getValues()[0];
+  var early = /^Early user/.test(String(row[5])) && !row[8];   /* never signed in under the new sign-in */
+  var m = mintPin(d.email, early ? 'welcome' : 'signin');
+  if (!m.ok) return m;
+  return { ok: true, member: true, early: early, name: String(row[1] || '').split(' ')[0] };
 }
 function verify(d) {
   var c = CacheService.getScriptCache(), k = 'pin:' + d.email, s = c.get(k);
@@ -78,26 +93,47 @@ function verify(d) {
   if (s.tries >= 5) { c.remove(k); return { ok: false, error: 'Too many tries. Ask for a new code.' }; }
   if (hash(String(d.pin || '')) !== s.h) { s.tries++; c.put(k, JSON.stringify(s), 600); return { ok: false, error: 'That code is not right. Check the email and try again.' }; }
   c.remove(k);
-  var r = memberRow(d.email); if (!r) return { ok: false, error: 'Your access has been removed. Sign up again with a current access code.' };
+  var r = memberRow(d.email);
+  if (!r) {                                     /* a new sign-up: the code proved the email, so they join now */
+    var p = c.get('signup:' + d.email);
+    if (!p) return { ok: false, error: 'Your access has been removed. Sign up again with a current invite code.' };
+    p = JSON.parse(p); c.remove('signup:' + d.email);
+    var cs = tab(T.codes), cv = rows(T.codes);
+    for (var i = 0; i < cv.length; i++) if (low(cv[i][0]).replace(/\s+/g, '') === p.code) cs.getRange(i + 2, 4).setValue((+cv[i][3] || 0) + 1);
+    r = addMember(p, p.how);
+  }
   var sh = tab(T.members); sh.getRange(r, 9).setValue(new Date());
-  return { ok: true, name: sh.getRange(r, 2).getValue() };
+  var row = sh.getRange(r, 1, 1, 9).getValues()[0], needs = [];
+  if (!String(row[3]).replace(/\D/g, '')) needs.push('npn');
+  if (String(row[2]).replace(/\D/g, '').length < 10) needs.push('phone');
+  return { ok: true, name: row[1], needs: needs };
 }
 
-/* ---- new agent with an access code ---- */
+/* ---- new agent with an invite code: check the code, then confirm the email ---- */
 function signup(d) {
   var code = low(d.code).replace(/\s+/g, '');
   if (!code) return { ok: false, needCode: true, error: 'Enter your invite code, or ask us for one below.' };
-  var sh = tab(T.codes), v = rows(T.codes);
+  if (memberRow(d.email)) { var m0 = mintPin(d.email, 'signin'); return m0.ok ? { ok: true, sent: true, already: true } : m0; }
+  var v = rows(T.codes);
   for (var i = 0; i < v.length; i++) {
     var active = v[i][2] === true || /^(true|yes|y|1)$/i.test(String(v[i][2]));
     if (low(v[i][0]).replace(/\s+/g, '') === code && active) {
-      sh.getRange(i + 2, 4).setValue((+v[i][3] || 0) + 1);
-      var r = addMember(d, 'Code ' + v[i][0] + (v[i][1] ? ' (' + v[i][1] + ')' : ''));
-      tab(T.members).getRange(r, 9).setValue(new Date());
-      return { ok: true };
+      CacheService.getScriptCache().put('signup:' + d.email, JSON.stringify({ email: d.email, name: d.name, phone: d.phone, npn: d.npn, team: d.team,
+        code: code, how: 'Code ' + v[i][0] + (v[i][1] ? ' (' + v[i][1] + ')' : '') }), 1800);
+      var m = mintPin(d.email, 'confirm');
+      return m.ok ? { ok: true, sent: true } : m;
     }
   }
   return { ok: false, badCode: true, error: 'That invite code isn’t working. Check it, or ask us for access below.' };
+}
+
+/* ---- a signed-in member fills in what we didn't have (NPN, phone). The Worker only sends the session's own email. ---- */
+function profile(d) {
+  var r = memberRow(d.email); if (!r) return { ok: false, error: 'Please sign in again.' };
+  var sh = tab(T.members), npn = String(d.npn || '').replace(/\D/g, ''), ph = String(d.phone || '').trim();
+  if (npn) sh.getRange(r, 4).setValue(npn);
+  if (ph.replace(/\D/g, '').length >= 10) sh.getRange(r, 3).setValue(ph);
+  return { ok: true };
 }
 
 /* ---- no code: ask Jesse ---- */
@@ -146,4 +182,21 @@ function setup() {
   if (!PropertiesService.getScriptProperties().getProperty('ACCESS_SECRET'))
     PropertiesService.getScriptProperties().setProperty('ACCESS_SECRET', Utilities.getUuid() + Utilities.getUuid());
   Logger.log('Secret: ' + PropertiesService.getScriptProperties().getProperty('ACCESS_SECRET'));
+}
+
+/* Run once from the editor at launch: everyone in the old "POP Pro Registrations" Sheet becomes a member tagged
+   "Early user" (one row per email, the latest registration wins). They sign in with their email and a 6-digit code,
+   then add their NPN. Safe to run again: existing members are skipped. */
+var REGISTRATIONS_ID = '1muwX6d7ju4gK4tgl1XJES8O6bCIQ4u0-vVMG0akYBpY';
+function importEarlyUsers() {
+  var v = SpreadsheetApp.openById(REGISTRATIONS_ID).getSheets()[0].getDataRange().getValues().slice(1), seen = {}, added = 0;
+  v.sort(function (a, b) { return new Date(b[0]) - new Date(a[0]); });
+  v.forEach(function (x) {
+    var email = low(x[2]); if (!/@/.test(email) || seen[email]) return; seen[email] = 1;
+    if (memberRow(email)) return;
+    tab(T.members).appendRow([email, String(x[1] || '').trim(), x[3] || '', '', String(x[4] || '').trim(), 'Early user (registered ' +
+      Utilities.formatDate(new Date(x[0]), Session.getScriptTimeZone(), 'd MMM yyyy') + ')', new Date(), 'Active', '']);
+    added++;
+  });
+  Logger.log('Early users added: ' + added + ' of ' + Object.keys(seen).length + ' emails');
 }

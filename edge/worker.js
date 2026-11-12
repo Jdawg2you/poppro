@@ -8,7 +8,7 @@
    Secrets (wrangler secret put): SESSION_KEY, ACCESS_SECRET, AUDIT_KEY. Var: ACCESS_URL (the Apps Script /exec URL). */
 
 const COOKIE = 'pp_s';
-const SESSION_DAYS = 60;          /* signed in this long on one device. Counted from when they signed in, so changing it
+const SESSION_DAYS = 30;          /* signed in this long on one device. Counted from when they signed in, so changing it
                                      (say to 30, or 5) applies to everyone at once, not just new sign-ins. */
 const RECHECK_HOURS = 12;         /* how often a session asks the Sheet whether the member is still active */
 
@@ -24,7 +24,7 @@ export default {
     const p = url.pathname;
 
     /* the sign-in cookie is Secure: plain http would sign people in and then forget them. www goes to the bare domain. */
-    if (url.protocol === 'http:' && !/^(localhost|127\.0\.0\.1)$/.test(url.hostname)) { url.protocol = 'https:'; return Response.redirect(url.toString(), 301); }
+    if (url.protocol === 'http:' && !env.LOCAL_DEV) { url.protocol = 'https:'; return Response.redirect(url.toString(), 301); }
     if (url.hostname === 'www.mypoppro.com') { url.hostname = 'mypoppro.com'; return Response.redirect(url.toString(), 301); }
 
     if (p.startsWith('/auth/')) return auth(req, env, url);
@@ -65,6 +65,13 @@ async function auth(req, env, url) {
   if (p === '/auth/me') { const s = await readSession(req, env); return json(s ? { ok: true, email: s.e, name: s.n } : { ok: false }); }
   if (req.method !== 'POST') return json({ ok: false, error: 'method' }, 405);
   if (!sameOrigin(req, url)) return json({ ok: false, error: 'origin' }, 403);
+  if (p === '/auth/profile') {                  /* signed in: fill in the NPN / phone we didn't have. Only their own row. */
+    const s = await readSession(req, env); if (!s) return json({ ok: false, error: 'Please sign in again.' }, 401);
+    let b = {}; try { b = await req.json(); } catch (e) {}
+    const npn = String(b.npn || '').replace(/\D/g, '');
+    if (b.npn !== undefined && !/^\d{4,10}$/.test(npn)) return json({ ok: false, error: 'Please enter your NPN (National Producer Number).' });
+    return json(await sheet(env, { a: 'profile', email: s.e, npn, phone: clip(b.phone, 30) }));
+  }
   let b = {}; try { b = await req.json(); } catch (e) { return json({ ok: false, error: 'bad request' }, 400); }
   const email = String(b.email || '').trim().toLowerCase();
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return json({ ok: false, error: 'Please enter a valid email address.' });
@@ -78,14 +85,13 @@ async function auth(req, env, url) {
   if (p === '/auth/verify') {                   /* the code they typed */
     const r = await sheet(env, { a: 'verify', email, pin: String(b.pin || '').replace(/\D/g, '') });
     if (!r.ok) return json(r);
-    return json({ ok: true }, 200, await makeCookie(env, url, { e: email, n: r.name || '', chk: Date.now() }));
+    return json({ ok: true, needs: r.needs || [] }, 200, await makeCookie(env, url, { e: email, n: r.name || '', chk: Date.now() }));
   }
-  if (p === '/auth/signup') {                   /* new: an invite code gets them straight in */
+  if (p === '/auth/signup') {                   /* new: invite code checked, then they confirm the email with a 6-digit code */
     if (!who.name) return json({ ok: false, error: 'Please enter your name.' });
     if (!/^\d{4,10}$/.test(who.npn.replace(/\D/g, ''))) return json({ ok: false, error: 'Please enter your NPN (National Producer Number).' });
     const r = await sheet(env, Object.assign({ a: 'signup', code: clip(b.code, 40), ip }, who));
-    if (!r.ok) return json(r);
-    return json({ ok: true }, 200, await makeCookie(env, url, { e: email, n: who.name, chk: Date.now() }));
+    return json(r);
   }
   if (p === '/auth/request') {                  /* no code: ask Jesse */
     if (!who.name) return json({ ok: false, error: 'Please enter your name.' });

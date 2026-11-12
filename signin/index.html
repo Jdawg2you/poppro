@@ -42,7 +42,7 @@
   <!-- 1. email -->
   <form class="step on" id="sEmail" novalidate>
     <h1>Sign in</h1>
-    <p class="sub">Enter your email. If you already have access we’ll email you a 6-digit code. If you’re new, you’ll set up access next.</p>
+    <p class="sub">Enter your email and we’ll send you a 6-digit code. New here? You’ll set up access next.</p>
     <label for="email">Email</label>
     <input id="email" type="email" autocomplete="email" inputmode="email" required>
     <button class="go" type="submit">Continue</button>
@@ -51,8 +51,8 @@
 
   <!-- 2. code from email -->
   <form class="step" id="sPin" novalidate>
-    <h1>Check your email</h1>
-    <p class="sub">We sent a 6-digit code to <b class="who"></b>. It works for 10 minutes.</p>
+    <h1 id="pinH">Check your email</h1>
+    <p class="sub" id="pinP"></p>
     <label for="pin">Sign-in code</label>
     <input id="pin" class="pin" inputmode="numeric" autocomplete="one-time-code" maxlength="6" required>
     <button class="go" type="submit">Sign in</button>
@@ -90,7 +90,17 @@
     <div class="alt">Have a code after all? <button type="button" class="link" data-to="sUp">Enter it here</button></div>
   </form>
 
-  <!-- 5. request sent -->
+  <!-- 5. what we didn't have: NPN (no early user gave one), phone -->
+  <form class="step" id="sMore" novalidate>
+    <h1>One last thing</h1>
+    <p class="sub" id="moreP"></p>
+    <div id="m_npnRow"><label for="m_npn">Your NPN <small>(National Producer Number)</small></label><input id="m_npn" inputmode="numeric"></div>
+    <div id="m_phoneRow"><label for="m_phone">Phone</label><input id="m_phone" type="tel" autocomplete="tel"></div>
+    <button class="go" type="submit">Open MyPopPro</button>
+    <div class="err"></div>
+  </form>
+
+  <!-- 6. request sent -->
   <div class="step" id="sSent">
     <h1>Request sent</h1>
     <p class="ok">Thanks. We’ll email <b class="who"></b> as soon as you’re approved. Then come back here and sign in.</p>
@@ -109,8 +119,20 @@
     .then(function(r){ return r.json(); }).catch(function(){ return {ok:false,error:'Can’t reach MyPopPro. Check your connection and try again.'}; }); }
   function enter(){ var p=location.pathname; location.replace((p==='/signin/'||p==='/signin')?'/tool/':location.href); }
   function who(){ document.querySelectorAll('.who').forEach(function(w){ w.textContent=EM; }); }
+  function esc(t){ var d=document.createElement('div'); d.textContent=t; return d.innerHTML; }
+  /* the code screen: an early user's welcome, a new sign-up's confirmation, or a plain sign-in */
+  function pinStep(kind,name){ var e='<b>'+esc(EM)+'</b>';
+    $('pinH').textContent = kind==='welcome' ? 'Welcome back'+(name?', '+name:'')+'!' : kind==='confirm' ? 'Confirm your email' : 'Check your email';
+    $('pinP').innerHTML = (kind==='welcome' ? 'Thanks for being one of the first agents on MyPopPro. It now has a sign-in. ' : '')
+      + 'We’ve sent a 6-digit code to '+e+'. Enter it here to stay signed in for 30 days on this device.';
+    $('pin').value=''; show('sPin'); }
+  var NEEDS=[];
+  function after(r){ NEEDS=r.needs||[]; if(!NEEDS.length) return enter();
+    var n=NEEDS.indexOf('npn')>-1, ph=NEEDS.indexOf('phone')>-1;
+    $('m_npnRow').style.display=n?'':'none'; $('m_phoneRow').style.display=ph?'':'none';
+    $('moreP').textContent='We don’t have your '+(n&&ph?'NPN or phone number':n?'NPN':'phone number')+' yet. You’ll only be asked once.'; show('sMore'); }
   function phone(el){ el.addEventListener('input',function(){ var d=el.value.replace(/\D/g,'').slice(0,10); el.value=d.length>6?'('+d.slice(0,3)+') '+d.slice(3,6)+'-'+d.slice(6):d.length>3?'('+d.slice(0,3)+') '+d.slice(3):d; }); }
-  phone($('u_phone')); phone($('a_phone'));
+  phone($('u_phone')); phone($('a_phone')); phone($('m_phone'));
   document.querySelectorAll('[data-to]').forEach(function(b){ b.onclick=function(){ show(b.dataset.to); }; });
   try{ var u=new URLSearchParams(location.search); if(u.get('signup')) show('sUp'); }catch(e){}
 
@@ -118,11 +140,11 @@
     if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(EM)) return err(f,'Please enter a valid email address.');
     busy(f,true); post('start',{email:EM}).then(function(r){ busy(f,false);
       if(!r.ok) return err(f,r.error);
-      who(); if(r.member){ $('pin').value=''; show('sPin'); } else { $('u_email').value=EM; $('a_email').value=EM; show('sUp'); } }); };
+      who(); if(r.member){ pinStep(r.early?'welcome':'signin', r.name); } else { $('u_email').value=EM; $('a_email').value=EM; show('sUp'); } }); };
 
   $('sPin').onsubmit=function(e){ e.preventDefault(); var f=this, pin=$('pin').value.replace(/\D/g,''); err(f,'');
     if(pin.length!==6) return err(f,'The code is 6 digits.');
-    busy(f,true); post('verify',{email:EM,pin:pin}).then(function(r){ if(r.ok) return enter(); busy(f,false); err(f,r.error); }); };
+    busy(f,true); post('verify',{email:EM,pin:pin}).then(function(r){ busy(f,false); if(r.ok) return after(r); err(f,r.error); }); };
   $('pin').addEventListener('input',function(){ if(this.value.replace(/\D/g,'').length===6) $('sPin').requestSubmit(); });
   $('resend').onclick=function(){ var f=$('sPin'); err(f,''); post('start',{email:EM}).then(function(r){ err(f, r.ok?'':r.error); if(r.ok){ var b=$('resend'); b.textContent='Sent ✓'; setTimeout(function(){ b.textContent='Send a new code'; },4000); } }); };
 
@@ -130,7 +152,11 @@
   function check(f,d){ if(!d.name) return 'Please enter your name.'; if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(d.email)) return 'Please enter a valid email address.'; if(!/^\d{4,10}$/.test(d.npn.replace(/\D/g,''))) return 'Please enter your NPN (National Producer Number).'; return ''; }
   $('sUp').onsubmit=function(e){ e.preventDefault(); var f=this, d=form('u'); d.code=$('u_code').value.trim(); err(f, check(f,d)); if(check(f,d)) return;
     if(!d.code) return err(f,'Enter your invite code, or ask us for access below.');
-    busy(f,true); post('signup',d).then(function(r){ if(r.ok) return enter(); busy(f,false); err(f,r.error); }); };
+    busy(f,true); post('signup',d).then(function(r){ busy(f,false); if(!r.ok) return err(f,r.error); EM=d.email; who(); pinStep(r.already?'signin':'confirm'); }); };
+  $('sMore').onsubmit=function(e){ e.preventDefault(); var f=this, body={}; err(f,'');
+    if(NEEDS.indexOf('npn')>-1){ body.npn=$('m_npn').value.replace(/\D/g,''); if(!/^\d{4,10}$/.test(body.npn)) return err(f,'Please enter your NPN (National Producer Number).'); }
+    if(NEEDS.indexOf('phone')>-1){ body.phone=$('m_phone').value.trim(); if(body.phone.replace(/\D/g,'').length<10) return err(f,'Please enter a 10-digit phone number.'); }
+    busy(f,true); post('profile',body).then(function(r){ busy(f,false); if(!r.ok) return err(f,r.error); enter(); }); };
   $('toAsk').onclick=function(){ ['name','email','phone','npn','team'].forEach(function(k){ if($('u_'+k).value) $('a_'+k).value=$('u_'+k).value; }); show('sAsk'); };
   $('sAsk').onsubmit=function(e){ e.preventDefault(); var f=this, d=form('a'); d.note=$('a_note').value.trim(); err(f, check(f,d)); if(check(f,d)) return;
     busy(f,true); post('request',d).then(function(r){ busy(f,false); if(!r.ok) return err(f,r.error); EM=d.email; who(); show('sSent'); }); };
