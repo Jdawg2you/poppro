@@ -22,6 +22,10 @@ export default {
     const url = new URL(req.url);
     const p = url.pathname;
 
+    /* the sign-in cookie is Secure: plain http would sign people in and then forget them. www goes to the bare domain. */
+    if (url.protocol === 'http:' && !/^(localhost|127\.0\.0\.1)$/.test(url.hostname)) { url.protocol = 'https:'; return Response.redirect(url.toString(), 301); }
+    if (url.hostname === 'www.mypoppro.com') { url.hostname = 'mypoppro.com'; return Response.redirect(url.toString(), 301); }
+
     if (p.startsWith('/auth/')) return auth(req, env, url);
     if (PUBLIC.some(r => r.test(p))) return env.ASSETS.fetch(req);
 
