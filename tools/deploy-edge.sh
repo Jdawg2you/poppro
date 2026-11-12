@@ -19,4 +19,4 @@ git -C $SRC archive --format=tar $BRANCH index.html favicon.ico assets tool sign
 [ -f $OUT/robots.txt ] || printf 'User-agent: *\nAllow: /$\nDisallow: /tool/\nDisallow: /signin/\n' > $OUT/robots.txt
 SHA=$(git -C $SRC rev-parse --short $BRANCH)
 echo "Deploying $TARGET @ $SHA ($(find $OUT -type f | wc -l | tr -d ' ') files)"
-cd $REPO/edge && npx --yes wrangler@4 deploy $ENVFLAG --message "$TARGET $SHA"
+cd $REPO/edge && npx --yes wrangler@4 deploy $ENVFLAG --var DEPLOYED_AT:$(date -u +%Y-%m-%dT%H:%M:%SZ) --message "$TARGET $SHA"

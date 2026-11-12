@@ -27,24 +27,35 @@ export default {
     if (url.hostname === 'www.mypoppro.com') { url.hostname = 'mypoppro.com'; return Response.redirect(url.toString(), 301); }
 
     if (p.startsWith('/auth/')) return auth(req, env, url);
-    if (PUBLIC.some(r => r.test(p))) return env.ASSETS.fetch(req);
+    if (PUBLIC.some(r => r.test(p))) return serve(req, env);
 
     /* our own audit scripts */
-    if (env.AUDIT_KEY && req.headers.get('x-pp-key') === env.AUDIT_KEY) return env.ASSETS.fetch(req);
+    if (env.AUDIT_KEY && req.headers.get('x-pp-key') === env.AUDIT_KEY) return serve(req, env);
 
     const s = await readSession(req, env);
     if (s) {
       if (Date.now() - s.chk > RECHECK_HOURS * 3600e3) {
         const r = await sheet(env, { a: 'check', email: s.e }).catch(() => null);
         if (r && r.ok && r.member === false) return signinPage(req, env, url, true);
-        if (r && r.ok) { const res = await env.ASSETS.fetch(req); return withCookie(res, await makeCookie(env, url, { e: s.e, n: s.n, chk: Date.now() })); }
+        if (r && r.ok) { const res = await serve(req, env); return withCookie(res, await makeCookie(env, url, { e: s.e, n: s.n, chk: Date.now() })); }
         /* the Sheet could not be reached: let them in, ask again next time */
       }
-      return env.ASSETS.fetch(req);
+      return serve(req, env);
     }
     return signinPage(req, env, url, false);
   },
 };
+
+/* Cloudflare's static files carry no Last-Modified. MyPopPro's "new version" check (ppUpdateCheck in tool/index.html)
+   compares that header with document.lastModified, so every response gets the deploy time (DEPLOYED_AT, set by
+   tools/deploy-edge.sh). Each deploy is then a new version, as each GitHub Pages push was. */
+async function serve(req, env) {
+  const res = await env.ASSETS.fetch(req);
+  if (!env.DEPLOYED_AT || res.headers.has('last-modified')) return res;
+  const r = new Response(res.body, res);
+  r.headers.set('Last-Modified', new Date(env.DEPLOYED_AT).toUTCString());
+  return r;
+}
 
 /* ---------- sign-in endpoints ---------- */
 async function auth(req, env, url) {
@@ -94,7 +105,7 @@ async function sheet(env, body) {
 async function signinPage(req, env, url, removed) {
   const accept = req.headers.get('accept') || '';
   if (!/text\/html/.test(accept) && req.method === 'GET' && !/\.html?$|\/$/.test(url.pathname)) return new Response('Sign in required', { status: 401 });
-  const page = await env.ASSETS.fetch(new Request(new URL('/signin/', url), req));
+  const page = await serve(new Request(new URL('/signin/', url), req), env);
   const h = new Headers(page.headers); h.set('Cache-Control', 'no-store');
   const res = new Response(page.body, { status: 200, headers: h });
   return removed ? withCookie(res, clearCookie(url)) : res;
