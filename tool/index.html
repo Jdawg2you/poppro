@@ -9158,23 +9158,26 @@ function buildEmail(){
   var agent=(S.client.agent||'').trim(), agency=(S.agency||'').trim(), book=String(S.agentBooking||'').trim(), site=String(S.agentWebsite||'').trim();
   var m0=function(n){ return '$'+Math.round(+n||0).toLocaleString('en-US'); };
   var subj='Your Healthcare Package of Protection'+(first!=='there'?', '+first:'');
-  /* what we compare against (Jesse's anchor), how many plans, and the marked plan */
+  /* what we compare against (Jesse's anchor) */
   var B=anchorBase(), ap=B?(B.k==='aca'?'the marketplace plan':'your current plan'):'';
-  var n=['good','better','best'].filter(function(x){ return (S.include||{})[x]!==false&&((S.packages||{})[x]||{}).products; }).length;
-  var opts=n>=3?'the three options':n===2?'the two options':'the plan';
-  var ch=chosenTier(), save='';
-  if(ch){ save='The '+TIER_NAME[ch]+' plan is the one we landed on';
+  /* Jesse, 11 Nov: we present ONE package now, so the email never says it was compared with three or that we
+     "landed on" one. It names what we shared and keeps the anchor savings (premiums, year, deductible). */
+  var shown=['good','better','best'].filter(function(x){ return (S.include||{})[x]!==false&&((S.packages||{})[x]||{}).products; });
+  var R0=S.rec&&S.rec.lineup===(S.lineup||'mh')&&shown.indexOf(S.rec.tier)>=0?S.rec.tier:null, pt=presentTier();
+  var ch=chosenTier()||R0||(shown.indexOf(pt)>=0?pt:shown[0])||null, save='';   /* the one plan they saw: chosen, presented, or on screen */
+  if(ch){ var vs=B?'Compared with '+ap+', ':'';
     var tt=tierTotals(ch), lbm=((tt.pk.products||[]).filter(function(p){ return isLBk(p.k); }).reduce(function(a,p){ return a+(+p.monthly||0); },0))+(+tt.pk.lb||0), prem=tt.mo-lbm,   /* same figure the script speaks */ mo=B?(+B.premOnly||0)-prem:0;
     /* premiums alone, then the deductible they would not carry: one person's, as the examples count it (Jesse, 9 Oct) */
     var EA=B?evAnchor():null, ded=EA&&EA.ded?+EA.ded:(B&&B.k==='cur'?+curIn().ded||0:0);
-    if(mo>=1){ save+=', and its premiums alone will save you about '+m0(mo)+' a month — '+m0(mo*12)+' over a year.';
+    if(mo>=1){ save=vs+'its premiums alone will save you about '+m0(mo)+' a month — '+m0(mo*12)+' over a year.';
       if(ded>0) save+=' Not to mention you wouldn’t have '+(B.k==='aca'?'the marketplace plan’s':'your current plan’s')+' '+m0(ded)+' deductible, so for the year you have the potential of saving about '+m0(mo*12+ded)+' on your basic coverage alone if anything out of the ordinary happens.'; }
-    else save+='.'+(ded>0&&B?' And you wouldn’t be carrying '+(B.k==='aca'?'the marketplace plan’s':'your current plan’s')+' '+m0(ded)+' deductible.':''); }
-  var L=brochList();
+    else save=(ded>0&&B?'And you wouldn’t be carrying '+(B.k==='aca'?'the marketplace plan’s':'your current plan’s')+' '+m0(ded)+' deductible.':''); }
+  var L=brochList(enrolledTier()||ch||undefined);   /* the brochures for that one plan, not all three */
   var body='Hi '+first+',\n\n'
     +'Thanks for your time today. As promised, here’s everything to look over.\n\n'
-    +(Q.pdf?'Attached is your Healthcare Package of Protection. It puts ':'Your Healthcare Package of Protection puts ')
-    +(ap?ap+' side by side with '+opts+' we talked through':opts+' we talked through side by side')+', and shows what each one costs you per month and what happens in a real hospital stay.'+(save?' '+save:'')+'\n\n'
+    +(Q.pdf?'Attached is your Healthcare Package of Protection, ':'Your Healthcare Package of Protection is ')
+    +'the plan we shared with you today. It shows what it costs you each month and what happens in a real hospital stay.'
+    +(save?' '+save:'')+'\n\n'
     +(L.list.length?(L.t==='all'?'The brochures for each part of these plans, if you’d like the full details:\n':'The brochures for the '+(TIER_NAME[L.t]||'')+' plan, if you’d like the full details:\n')+brochLines(L)+'\n\n':'')
     +(function(){ var ts=L.t==='all'?['good','better','best'].filter(function(x){ return (S.include||{})[x]!==false&&((S.packages||{})[x]||{}).products; }):[L.t];
       var any=ts.some(function(x){ return lbSummary(x).length; }); if(!any) return ''; var lk=ts.some(function(x){ return lbSummary(x).some(function(y){ return /Indexed|Whole/.test(y.kind||''); }); })?'life insurance':'term life insurance';
