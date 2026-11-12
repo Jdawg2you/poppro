@@ -8,7 +8,8 @@
    Secrets (wrangler secret put): SESSION_KEY, ACCESS_SECRET, AUDIT_KEY. Var: ACCESS_URL (the Apps Script /exec URL). */
 
 const COOKIE = 'pp_s';
-const SESSION_DAYS = 60;          /* signed in this long on one device */
+const SESSION_DAYS = 60;          /* signed in this long on one device. Counted from when they signed in, so changing it
+                                     (say to 30, or 5) applies to everyone at once, not just new sign-ins. */
 const RECHECK_HOURS = 12;         /* how often a session asks the Sheet whether the member is still active */
 
 const PUBLIC = [
@@ -37,7 +38,7 @@ export default {
       if (Date.now() - s.chk > RECHECK_HOURS * 3600e3) {
         const r = await sheet(env, { a: 'check', email: s.e }).catch(() => null);
         if (r && r.ok && r.member === false) return signinPage(req, env, url, true);
-        if (r && r.ok) { const res = await serve(req, env); return withCookie(res, await makeCookie(env, url, { e: s.e, n: s.n, chk: Date.now() })); }
+        if (r && r.ok) { const res = await serve(req, env); return withCookie(res, await makeCookie(env, url, { e: s.e, n: s.n, iat: s.iat, chk: Date.now() })); }
         /* the Sheet could not be reached: let them in, ask again next time */
       }
       return serve(req, env);
@@ -79,14 +80,16 @@ async function auth(req, env, url) {
     if (!r.ok) return json(r);
     return json({ ok: true }, 200, await makeCookie(env, url, { e: email, n: r.name || '', chk: Date.now() }));
   }
-  if (p === '/auth/signup') {                   /* new: an access code gets them straight in */
+  if (p === '/auth/signup') {                   /* new: an invite code gets them straight in */
     if (!who.name) return json({ ok: false, error: 'Please enter your name.' });
+    if (!/^\d{4,10}$/.test(who.npn.replace(/\D/g, ''))) return json({ ok: false, error: 'Please enter your NPN (National Producer Number).' });
     const r = await sheet(env, Object.assign({ a: 'signup', code: clip(b.code, 40), ip }, who));
     if (!r.ok) return json(r);
     return json({ ok: true }, 200, await makeCookie(env, url, { e: email, n: who.name, chk: Date.now() }));
   }
   if (p === '/auth/request') {                  /* no code: ask Jesse */
     if (!who.name) return json({ ok: false, error: 'Please enter your name.' });
+    if (!/^\d{4,10}$/.test(who.npn.replace(/\D/g, ''))) return json({ ok: false, error: 'Please enter your NPN (National Producer Number).' });
     const r = await sheet(env, Object.assign({ a: 'request', note: clip(b.note, 500), ip }, who));
     return json(r);
   }
@@ -119,7 +122,7 @@ const b64u = buf => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\
 const unb64u = s => Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0));
 
 async function makeCookie(env, url, data) {
-  data.exp = Date.now() + SESSION_DAYS * 864e5;
+  data.iat = data.iat || Date.now();
   const body = b64u(new TextEncoder().encode(JSON.stringify(data)));
   const sig = b64u(await crypto.subtle.sign('HMAC', await key(env), new TextEncoder().encode(body)));
   return `${COOKIE}=${body}.${sig}; Path=/; Max-Age=${SESSION_DAYS * 86400}; HttpOnly; Secure; SameSite=Lax${domainAttr(url)}`;
@@ -134,7 +137,8 @@ async function readSession(req, env) {
     const ok = await crypto.subtle.verify('HMAC', await key(env), unb64u(sig), new TextEncoder().encode(body));
     if (!ok) return null;
     const d = JSON.parse(new TextDecoder().decode(unb64u(body)));
-    if (!d.e || !(d.exp > Date.now())) return null;
+    const from = d.iat || (d.exp ? d.exp - 60 * 864e5 : 0);   /* cookies made before iat existed */
+    if (!d.e || !(from + SESSION_DAYS * 864e5 > Date.now())) return null;
     return d;
   } catch (e) { return null; }
 }

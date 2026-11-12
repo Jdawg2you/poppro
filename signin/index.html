@@ -63,16 +63,16 @@
   <!-- 3. new: sign up with an access code -->
   <form class="step" id="sUp" novalidate>
     <h1>Get access</h1>
-    <p class="sub">New to MyPopPro? Tell us who you are and enter your access code.</p>
+    <p class="sub">New to MyPopPro? Tell us who you are and enter your invite code.</p>
     <label for="u_name">Your name</label><input id="u_name" autocomplete="name" required>
     <label for="u_email">Email</label><input id="u_email" type="email" autocomplete="email" required>
     <div class="row"><div><label for="u_phone">Phone</label><input id="u_phone" type="tel" autocomplete="tel"></div>
-      <div><label for="u_npn">NPN <small>(optional)</small></label><input id="u_npn" inputmode="numeric"></div></div>
+      <div><label for="u_npn">NPN</label><input id="u_npn" inputmode="numeric"></div></div>
     <label for="u_team">What team are you part of?</label><input id="u_team" placeholder="Your agency or upline">
-    <label for="u_code">Access code</label><input id="u_code" autocapitalize="characters" autocomplete="off">
+    <label for="u_code">Invite code</label><input id="u_code" autocapitalize="characters" autocomplete="off">
     <button class="go" type="submit">Get access</button>
     <div class="err"></div>
-    <div class="alt">No access code? <button type="button" class="link" id="toAsk">Ask us for access</button></div>
+    <div class="alt">No invite code? <button type="button" class="link" id="toAsk">Ask us for access</button></div>
   </form>
 
   <!-- 4. no code: ask for access -->
@@ -82,7 +82,7 @@
     <label for="a_name">Your name</label><input id="a_name" autocomplete="name" required>
     <label for="a_email">Email</label><input id="a_email" type="email" autocomplete="email" required>
     <div class="row"><div><label for="a_phone">Phone</label><input id="a_phone" type="tel" autocomplete="tel"></div>
-      <div><label for="a_npn">NPN <small>(optional)</small></label><input id="a_npn" inputmode="numeric"></div></div>
+      <div><label for="a_npn">NPN</label><input id="a_npn" inputmode="numeric"></div></div>
     <label for="a_team">What team are you part of?</label><input id="a_team" placeholder="Your agency or upline">
     <label for="a_note">Anything we should know? <small>(optional)</small></label><input id="a_note">
     <button class="go" type="submit">Send request</button>
@@ -127,9 +127,9 @@
   $('resend').onclick=function(){ var f=$('sPin'); err(f,''); post('start',{email:EM}).then(function(r){ err(f, r.ok?'':r.error); if(r.ok){ var b=$('resend'); b.textContent='Sent ✓'; setTimeout(function(){ b.textContent='Send a new code'; },4000); } }); };
 
   function form(p){ return {name:$(p+'_name').value.trim(),email:$(p+'_email').value.trim().toLowerCase(),phone:$(p+'_phone').value.trim(),npn:$(p+'_npn').value.trim(),team:$(p+'_team').value.trim()}; }
-  function check(f,d){ if(!d.name) return 'Please enter your name.'; if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(d.email)) return 'Please enter a valid email address.'; return ''; }
+  function check(f,d){ if(!d.name) return 'Please enter your name.'; if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(d.email)) return 'Please enter a valid email address.'; if(!/^\d{4,10}$/.test(d.npn.replace(/\D/g,''))) return 'Please enter your NPN (National Producer Number).'; return ''; }
   $('sUp').onsubmit=function(e){ e.preventDefault(); var f=this, d=form('u'); d.code=$('u_code').value.trim(); err(f, check(f,d)); if(check(f,d)) return;
-    if(!d.code) return err(f,'Enter your access code, or ask us for access below.');
+    if(!d.code) return err(f,'Enter your invite code, or ask us for access below.');
     busy(f,true); post('signup',d).then(function(r){ if(r.ok) return enter(); busy(f,false); err(f,r.error); }); };
   $('toAsk').onclick=function(){ ['name','email','phone','npn','team'].forEach(function(k){ if($('u_'+k).value) $('a_'+k).value=$('u_'+k).value; }); show('sAsk'); };
   $('sAsk').onsubmit=function(e){ e.preventDefault(); var f=this, d=form('a'); d.note=$('a_note').value.trim(); err(f, check(f,d)); if(check(f,d)) return;

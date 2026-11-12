@@ -86,7 +86,7 @@ function verify(d) {
 /* ---- new agent with an access code ---- */
 function signup(d) {
   var code = low(d.code).replace(/\s+/g, '');
-  if (!code) return { ok: false, needCode: true, error: 'Enter your access code, or ask us for one below.' };
+  if (!code) return { ok: false, needCode: true, error: 'Enter your invite code, or ask us for one below.' };
   var sh = tab(T.codes), v = rows(T.codes);
   for (var i = 0; i < v.length; i++) {
     var active = v[i][2] === true || /^(true|yes|y|1)$/i.test(String(v[i][2]));
@@ -97,7 +97,7 @@ function signup(d) {
       return { ok: true };
     }
   }
-  return { ok: false, badCode: true, error: 'That access code isn’t working. Check it, or ask us for access below.' };
+  return { ok: false, badCode: true, error: 'That invite code isn’t working. Check it, or ask us for access below.' };
 }
 
 /* ---- no code: ask Jesse ---- */
