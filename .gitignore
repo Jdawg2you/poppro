@@ -1,1 +1,5 @@
 .unlazy/
+.edge-build/
+edge/.dev.vars
+edge/.wrangler/
+.wrangler/

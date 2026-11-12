@@ -1,0 +1,26 @@
+# MyPopPro on Cloudflare (Jesse, 11 Nov 2026). Deploy with tools/deploy-edge.sh live|sandbox - never by hand:
+# the script builds .edge-build/site from the right branch (main for live, present for sandbox) first.
+name = "mypoppro"
+main = "worker.js"
+compatibility_date = "2026-10-01"
+workers_dev = false
+routes = [
+  { pattern = "mypoppro.com/*", zone_name = "mypoppro.com" },
+  { pattern = "www.mypoppro.com/*", zone_name = "mypoppro.com" }
+]
+
+[assets]
+directory = "../.edge-build/site"
+binding = "ASSETS"
+run_worker_first = true
+html_handling = "auto-trailing-slash"
+not_found_handling = "404-page"
+
+[vars]
+ACCESS_URL = ""
+
+[env.sandbox]
+name = "mypoppro-sandbox"
+routes = [ { pattern = "sandbox.mypoppro.com/*", zone_name = "mypoppro.com" } ]
+[env.sandbox.vars]
+ACCESS_URL = ""
