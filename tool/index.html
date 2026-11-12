@@ -1080,6 +1080,9 @@
 .pbcol .ph .tt{font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--muted);text-transform:uppercase}
 .pbrow{margin:0 10px;border:1px solid #e6e1d4;border-radius:10px;background:#fff}
 .pbrow.off{opacity:.55}
+.pbrow.mecnudge{border-style:dashed;border-color:#c9a14a;background:#fffdf6}
+.pbrow.mecnudge .mecadd{font:inherit;font-size:12.5px;font-weight:700;border:1.5px solid var(--gold);background:#fff;color:#8a6a1f;border-radius:999px;padding:4px 11px;cursor:pointer;white-space:nowrap;margin-left:auto}
+.pbrow.mecnudge .mecadd:hover{background:var(--gold);color:#fff}
 .pbrow.todo{border-color:#c9a14a;background:#fffdf6}
 .pbrow.todo .pbhead .pr.na{color:#a3242a;font-weight:700}
 .lbtodo{color:#a3242a;font-size:12.5px;margin:2px 0 8px}
@@ -2305,6 +2308,19 @@ function pDVH(R,age,hh,cfg,st){
    (Platinum, Gold) and Cigna DPPO SA Plus (ManhattanLife runs on Careington — check the dentist). */
 var SPARKLE={states:'AL AR AZ CA CO CT DC DE FL GA IA ID IL IN KS KY LA MA MI MN MO MS NC NE NH NJ NM NV OH OK PA SC TN TX UT VA WI WV WY', rates:{i:69,s:129,c:159,f:199}, max:4500,
   enroll:'https://www.1enrollment.com/order/checkout.cfm?id=994524&pdid=48733', search:'https://bento.net/sparkle/'};
+/* ===== SB/A MEC Plan (USA Health Plans; SB/A Cooperative, administered by The Loomis Company) — Jesse, 12 Nov 2026 =====
+   California only, and only beside a Manhattan plan: Affordable Choice is not minimum essential coverage and California
+   charges a tax penalty without it. This group plan IS ACA minimum essential coverage, so it fills the gap. Three plans;
+   flat monthly rates by household (no age rating). Checked against Brochure - USA MEC Version 8-1 (L1224), p. 5.
+   The RX copay card add-on is never offered (Jesse: we already have an Rx plan). The brochure is agent-facing
+   ("only intended as an advertisement to licensed insurance Agents & Brokers"), so it opens from the benefits drawer
+   inside MyPopPro and never goes into a client email. */
+var MEC={rates:{'1':{i:99,s:135,c:125,f:159},'2':{i:119,s:165,c:159,f:209},'3':{i:149,s:209,c:219,f:275}},
+  adds:{'1':'ACA preventive care + ACA-mandated Rx at 100%','2':'Plan 1 + $0 Quest labs','3':'Plan 2 + $0 telemedicine, $35 primary care, $75 urgent care'},
+  sum:{'1':'ACA preventive care and ACA prescriptions at 100% · no deductible','2':'ACA preventive care at 100% · $0 Quest labs · no deductible','3':'ACA preventive care at 100% · $0 Quest labs · $0 telemedicine · $35 primary care · $75 urgent care'},
+  doc:'docs/sba-mec-brochure.pdf', form:'SB/A MEC brochure — for agents'};
+function mecFits(c,st){ return (st||(S.client||{}).state||'').toUpperCase().trim()==='CA'&&(!c||!c.base||c.base==='afc'); }
+function pMEC(hh,plan){ var r=MEC.rates[String(plan||'1')]; var v=r&&r[hh||'i']; return v==null?{price:null,note:'SB/A MEC: no rate for this plan and household'}:{price:v,note:''}; }
 function sparkleSold(st){ return SPARKLE.states.split(' ').indexOf((st||'').toUpperCase())>=0; }
 function mlDentalSold(st){ st=(st||'').toUpperCase(); return (ML_OFFERED.dvh||'').split(' ').indexOf(st)>=0||(ML_OFFERED.dvh7016||'').split(' ').indexOf(st)>=0; }
 /* Which dental plan the packages use: the agent's pick when the state sells it; otherwise ManhattanLife where
@@ -3087,7 +3103,7 @@ function brochFor(f,c){ var st=(S.client.state||'').toUpperCase(); if(f==='sdr')
 function brochList(t){ t=t||enrolledTier()||'all'; var tiers=t==='all'?['good','better','best'].filter(function(x){ return (S.include||{})[x]!==false&&((S.packages||{})[x]||{}).products; }):[t], seen={}, out=[], none=[];
   tiers.forEach(function(tt){ var pk=(S.packages||{})[tt]||{}, c=effCfg(tt);
   (pk.products||[]).forEach(function(p){ if(!((+p.monthly||0)>0)) return; var f=benFileFor(p.k,c), b=f&&brochFor(f,c), nm=(p.k==='base'&&tierNonMh(tt))?tierNonMh(tt).full:((PB_SLOTS.filter(function(x){ return x.k===p.k; })[0]||{}).name||p.name||'');
-    if(b){ if(!seen[b.url]){ seen[b.url]=1; out.push({name:f==='brightlife'?b.name:(nm||b.name),form:b.form,url:b.url}); } } else if(nm&&none.indexOf(nm)<0) none.push(nm); }); });
+    if(b){ if(!seen[b.url]){ seen[b.url]=1; out.push({name:f==='brightlife'?b.name:(nm||b.name),form:b.form,url:b.url}); } } else if(nm&&p.k!=='mec'&&none.indexOf(nm)<0) none.push(nm); }); });
   return {t:t,st:(S.client.state||'').toUpperCase(),list:out,none:none}; }
 function brochLines(L){ return L.list.map(function(b){ return '• '+b.name+': '+b.url; }).join('\n'); }
 function brochCopy(text,btn){ var lab=btn.innerHTML; var done=function(m){ btn.innerHTML=m; setTimeout(function(){ btn.innerHTML=lab; },2200); };
@@ -3435,6 +3451,7 @@ function buildTierProducts(c,byKey,extras){
   add('afc','Core Health Plan — AFC '+LVLNAME[c.afc], pAFC(R,st,age,hh,c.afc));
   if(c.sdr){ var sd=pSDR(R,st,age,hh,c.sdr,false);
   add('sdr','Specified Disease Rider — $'+(+c.sdr.max/1000)+'K / $'+((+(sd.ded||c.sdr.ded))/1000)+'K ded', sd); }
+  if(c.mec&&st==='CA') add('mec','SB/A MEC Plan '+c.mec+' — California minimum essential coverage', pMEC(hh,c.mec));
   }
   /* a product whose settings are empty (null - a file written outside MyPopPro, 21 Oct) is simply not offered, rather than crashing the Quote */
   if(c.his) add('his','Hospital Indemnity — HI Select $'+Number(+c.his.ben||10000).toLocaleString('en-US')+(c.his.outp?' + Outpatient $'+Number(c.his.outp).toLocaleString('en-US'):''), pHIS(R,st,age,hh,c.his));   /* the benefit chosen, not a fixed $10K (Health ZONE, 21 Oct: an export read $10K for a $2,000 plan) */
@@ -5916,7 +5933,7 @@ function gapSpokenName(k,list){ var sp=enSplit((S.client||{}).sname)[0]||'your s
   if(k==='lbp') return list.indexOf('lbs')>=0?'living benefits for both of you':'your living benefits';
   if(k==='lbs') return list.indexOf('lbp')>=0?'':sp+'’s living benefits';
   if(k==='lbx') return 'the additional living benefits';
-  return {afc:'Affordable Choice level',his:'hospital indemnity',acc:'accident coverage',gap:'out-of-pocket protection',chas:'cancer, heart attack and stroke coverage',sdr:'specified disease coverage',dvh:'dental',hhc:'home health care',lb:'living benefits'}[k]||''; }
+  return {mec:'the California MEC plan',afc:'Affordable Choice level',his:'hospital indemnity',acc:'accident coverage',gap:'out-of-pocket protection',chas:'cancer, heart attack and stroke coverage',sdr:'specified disease coverage',dvh:'dental',hhc:'home health care',lb:'living benefits'}[k]||''; }
 function gapSpoken(R,A){ var join=function(a){ a=a.filter(Boolean); return a.length<2?(a[0]||''):a.slice(0,-1).join(', ')+' and '+a[a.length-1]; };
   var G=gapOf(R,A), kk=function(kind){ return G.filter(function(g){ return g.kind===kind; }).map(function(g){ return g.key.replace(/^[pl]:/,''); }); };
   var miss=kk('declined'), low=kk('lowered'), out={missing:join(miss.map(function(k){ return gapSpokenName(k,miss); })),lowered:join(low.map(function(k){ return gapSpokenName(k,low); })),added:'',kind:''};
@@ -7073,6 +7090,9 @@ function glp1FromSuite(h){ var one=function(pre){ var k=function(f){ return h[pr
    items the agent hasn't opened yet (localStorage pp_news_seen = newest date they've seen). */
 var NEWS_DAYS=30;
 var NEWS=[
+ {d:'2026-11-12',t:'California: the SB/A MEC Plan beside Manhattan',h:[
+  ['California clients','When a California client is on a Manhattan plan, each package shows the SB/A MEC Plan. Affordable Choice isn’t minimum essential coverage, and California charges a tax penalty without it; this plan fills that gap. Click + Add, then pick Plan 1, 2 or 3. The price joins the package total, the Package of Protection, the client recap and the enrollment card.'],
+  ['Benefits','The ⓘ shows what each plan covers and its rates, with a link to the full brochure.']]},
  {d:'2026-11-12',t:'MyPopPro has a new home, plus a cleaner quote email',h:[
   ['Sign-in','MyPopPro now lives on its own server with a simple sign-in. Still free. Type your email, enter the 6-digit code we send, and you stay signed in for 30 days on that device. Your saved clients stay right where they were.'],
   ['Teammates','New agents on our team click Get access on mypoppro.com and use the team invite code. Please keep the code within our team.'],
@@ -7983,7 +8003,8 @@ function renderEnroll(){
     if(isLBk(p.k)){ var lco=(c.lb||{})[p.k.slice(2)]||{}; if(lbManual(lco.carrier)) return lbCarName(lco);
       var nm=String(p.name||''); if(/americo/i.test(nm)) return 'Americo'; if(/mutual|omaha/i.test(nm)) return 'Mutual of Omaha';   // the policy actually priced
       var lc=(c.lb||{})[p.k.slice(2)]||{}; return lc.carrier==='americo'?'Americo':'Mutual of Omaha'; }
-    if(p.k==='dvh'&&/Sparkle/.test(String(p.name||''))) return 'Sparkle Care Dental — USA Health Plans (1Enrollment)'; return 'ManhattanLife'; };
+    if(p.k==='dvh'&&/Sparkle/.test(String(p.name||''))) return 'Sparkle Care Dental — USA Health Plans (1Enrollment)';
+    if(p.k==='mec') return 'SB/A MEC Plan — USA Health Plans (separate group enrollment)'; return 'ManhattanLife'; };
   var rows=(pk.products||[]).filter(function(p){ return (+p.monthly||0)>0; }), groups={}, order=[];
   rows.forEach(function(p){ var g=carrierOf(p); if(!groups[g]){ groups[g]=[]; order.push(g); } groups[g].push(p); });
   var total=rows.reduce(function(s2,p){ return s2+(+p.monthly||0); },0);
@@ -8322,6 +8343,8 @@ function presentApplyPlan(t){ var pk=S.packages[t]||{}, c=effCfg(t), prods=(pk.p
   if(base.length) steps.push(c.base==='lifex'?{car:'LifeX — client enrollment',url:LIFEX_URL,why:'LifeX makes the client a LifeX employee; enroll on its page.',items:base}:c.base==='brightlife'?{car:'Bright Life — hire and enroll',url:BL_URL,why:'Bright Life hires the client as a Wellness Associate (a W-2 job) after its health form; enroll on its page. Cutoff the 20th for a 1st-of-month start; the premium drafts on the 15th.',items:base}:{car:'Cigna (USA Health / Triad) — 1Enrollment',url:CIGNA_URL,why:'Cigna enrolls through 1Enrollment.',items:base});
   var sp=prods.filter(function(p){ return p.k==='dvh'&&/Sparkle/.test(p.name); });
   if(sp.length) steps.push({car:'Sparkle Care Dental — 1Enrollment',url:SPARKLE.enroll,why:'Separate enrollment.',items:sp});
+  var me=prods.filter(function(p){ return p.k==='mec'; });
+  if(me.length) steps.push({car:'SB/A MEC Plan — USA Health Plans',url:'',why:'Separate group enrollment: SB/A Cooperative membership + the Group Health Application (no medical questions).',items:me});
   return steps; }
 function presentFields(){ var C=S.client||{}, I=S.intake||{}, ft=function(v){ var x=parseInt(v,10); return x>=48&&x<=84?Math.floor(x/12)+'′'+(x%12)+'″':''; };
   var kids=(I.kids||[]).filter(function(k){ return k&&(k.n||k.dob||k.age); }).map(function(k){ return [k.n,k.dob||(k.age?k.age+'y':'')].filter(Boolean).join(' '); }).join('; ');
@@ -9408,6 +9431,7 @@ var PB_SLOTS=[
  {k:'base',name:'Health plan'},
  {k:'afc', name:'Affordable Choice'},
  {k:'sdr', name:'Specified Disease Rider'},
+ {k:'mec', name:'SB/A MEC Plan (California)'},
  {k:'his', name:'Hospital Indemnity Select'},
  {k:'acc', name:'24-Hour Accident'},
  {k:'gap', name:'Out-of-Pocket Protection'},
@@ -9480,6 +9504,9 @@ function pbControls(k,c){
               :'<input data-f="'+pre+'monthly"'+lbNeed(T,pre+'monthly')+' inputmode="decimal" placeholder="$0.00 a month" value="'+(mon?'$'+mon.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}):'')+'">')+'</div>'
           +'<div class="f">Notes<input data-f="'+pre+'notes" placeholder="who exactly, term length, product" value="'+ev2(x.notes)+'"></div></div></div>'; }).join('')
       +'<button type="button" class="lbxadd" data-act="lbxadd">＋ Add another policy</button>'; }
+  if(k==='mec'){ var hk=householdKey();
+    return '<div class="f">Plan<select data-f="mec">'+pbOpts(['1','2','3'].map(function(n){ return [n,'Plan '+n+' — $'+MEC.rates[n][hk]+'/mo · '+MEC.adds[n]]; }),String(c.mec||'1'))+'</select></div>'
+      +'<div style="font-size:11.5px;color:var(--muted)">Affordable Choice isn’t minimum essential coverage, and California charges a tax penalty without it. This plan is — no deductible, guaranteed issue, no medical questions. A group plan through the SB/A Cooperative (USA Health Plans): a separate enrollment from ManhattanLife. No RX copay card — their prescriptions are covered elsewhere.</div>'; }
   if(k==='hhc') return '<div class="f">Plan<select data-f="hhc">'+pbOpts([['Classic','Classic'],['Premier','Premier'],['Deluxe','Deluxe']],c.hhc)+'</select></div>';
   if(k==='dvh'&&dentalCo()==='sparkle') return '<div class="two"><div class="f">Sparkle Care Dental<div style="padding:6px 0">$4,500 / member / yr · $50 deductible</div></div></div>';
   if(k==='dvh'&&dvhIs7016()) return '<div class="two"><div class="f">Annual max<select data-f="dvh.max">'+pbOpts(pbAmt(dvh7016Maxes()),dvh7016Max(c.dvh.max))+'</select></div><div class="f">Deductible<div style="padding:6px 0">$100 fixed</div></div></div>';
@@ -9499,6 +9526,7 @@ function pbSummary(k,c,live){
   if(k==='acc') return c.acc+' unit'+(c.acc>1?'s':'')+' · up to '+m(2000*c.acc)+' accident medical';
   if(k==='gap') return m(c.gap.daily)+'/day in hospital · '+m(c.gap.adm)+' admission'+(+c.gap.outp?' · '+m(c.gap.outp)+' outpatient':'')+(c.gap.ea?' · $250 ER':'');
   if(k==='chas') return [c.chas.cancer?'Cancer '+m(c.chas.cancer):'',c.chas.hs?'Heart attack & stroke '+m(c.chas.hs):''].filter(Boolean).join(' · ')+' lump sum';
+  if(k==='mec') return 'Plan '+(c.mec||'1')+' · '+MEC.sum[String(c.mec||'1')];
   if(k==='hhc') return c.hhc+' plan';
   if(k==='dvh'&&dentalCo()==='sparkle') return '$4,500 per member per year · $50 deductible · no waiting periods · Bento / Cigna DPPO network';
   if(k==='dvh'&&c.dvh&&dvhIs7016()) return m(dvh7016Max(c.dvh.max))+' annual max · $100 deductible · vision & hearing included (7016 plan)';
@@ -9521,11 +9549,11 @@ function pbReprice(){ autoPriceTiers(); fill(); compute(); autosave(); }
    product keeps the first beside it (differences highlighted) - that is the "Classic Plus or
    Elite?" comparison. A different product replaces it. */
 var BEN_DATA={}, BEN_VIEW=[];
-var BEN_FILE={afc:'afc',sdr:'sdr',his:'his',acc:'acc',gap:'gap',chas:'chas',hhc:'hhc',dvh:'dvh',lbp:'lb',lbs:'lb'};
+var BEN_FILE={mec:'mec',afc:'afc',sdr:'sdr',his:'his',acc:'acc',gap:'gap',chas:'chas',hhc:'hhc',dvh:'dvh',lbp:'lb',lbs:'lb'};
 function benFileFor(k,c){ if((k==='lbp'||k==='lbs')&&c.lb&&c.lb[k.slice(2)]&&(lbManual(c.lb[k.slice(2)].carrier)||c.lb[k.slice(2)].carrier==='iule')) return null;   /* no brochure for an Other carrier */
   if(k==='base') return c.base==='lifex'?'lifex':c.base==='triad'?'triad':c.base==='brightlife'?'brightlife':null; if(k==='hhc'&&hhcIsSelect()) return 'hhcs'; if(k==='dvh'&&dentalCo()==='sparkle') return 'sparkle'; if(k==='dvh'&&dvhIs7016()) return 'dvh7016'; return BEN_FILE[k]||null; }
 function benCol(k,c){ switch(k){
-  case 'afc': return c.afc; case 'acc': return String(c.acc||1); case 'hhc': return c.hhc; case 'dvh': return String((c.dvh&&c.dvh.max)||'');
+  case 'mec': return String(c.mec||'1'); case 'afc': return c.afc; case 'acc': return String(c.acc||1); case 'hhc': return c.hhc; case 'dvh': return String((c.dvh&&c.dvh.max)||'');
   case 'lbp': return (c.lb&&c.lb.p&&c.lb.p.carrier)||'moo'; case 'lbs': return (c.lb&&c.lb.s&&c.lb.s.carrier)||'moo';
   case 'base': return c.base==='lifex'?(c.lifexPlan||'$500 PPO'):c.base==='brightlife'?(c.blPlan||BL_DEFAULT):('Triad Cigna '+(c.triadPlan||'7350'));
   default: return '*'; } }
@@ -9574,7 +9602,7 @@ function benRender(){ var dr=$('benDrawer'); if(!dr) return;
       A.m.sections.forEach(function(s){ h+='<details class="bdmore"><summary>'+benEsc(s.title)+' <span>'+s.rows.length+'</span></summary>'+s.rows.map(function(r){ return '<div class="bdrow"><span>'+benEsc(r.label)+(r.note?'<i>'+benEsc(r.note)+'</i>':'')+'</span><b>'+benEsc(r.value)+'</b></div>'; }).join('')+'</details>'; });
       if(A.m.notes.length) h+='<details class="bdmore"><summary>Limitations &amp; waiting periods <span>'+A.m.notes.length+'</span></summary><ul class="bdnotes">'+A.m.notes.map(function(n){ return '<li>'+benEsc(n)+'</li>'; }).join('')+'</ul></details>';
       h+='<div class="bdsrc">From '+benEsc(A.m.code)+(A.m.page?' · p. '+benEsc(A.m.page):'')+'. Confirm exact benefits in the policy.</div>';
-      var brA=brochFor(A.f,A.cfg?JSON.parse(A.cfg):null); if(brA) h+='<a class="bdbroch" href="'+benEsc(brA.url)+'" target="_blank" rel="noopener">📄 Open the full brochure ('+benEsc(brA.form)+') ↗</a>';
+      var brA=brochFor(A.f,A.cfg?JSON.parse(A.cfg):null)||(A.f==='mec'?{url:MEC.doc,form:MEC.form}:null); if(brA) h+='<a class="bdbroch" href="'+benEsc(brA.url)+'" target="_blank" rel="noopener">📄 Open the full brochure ('+benEsc(brA.form)+') ↗</a>';
       if(!/^humana-/.test(A.f)) h+='<div class="bdtip">Tip: open ⓘ on another level of this product to see the two side by side.</div>'; }
   } else {
     if(!A.m||!B.m){ h+='<div class="bdempty">One of these plans has no brochure on file for '+(A.st||'this state')+'.</div>'; }
@@ -9901,8 +9929,11 @@ function pbColHTML(T,anc){ var t=T[0], act=(t==='actual'), st=(S.client.state||'
     PB_SLOTS.forEach(function(sl){
       var k=sl.k; if(k==='lbs'&&!pbHasSpouse()) return;
       var lbk=(k==='lbp'||k==='lbs')?k.slice(2):null;
-      var inCfg=k==='lbx'?lbxList(c).length>0:(k==='hhc'?!!c.hhc:k==='chas'?!!(c.chas&&(c.chas.cancer||c.chas.hs)):k==='sdr'?!!c.sdr:lbk?!!(c.lb&&c.lb[lbk]&&c.lb[lbk].face):true);
+      var inCfg=k==='mec'?!!c.mec:k==='lbx'?lbxList(c).length>0:(k==='hhc'?!!c.hhc:k==='chas'?!!(c.chas&&(c.chas.cancer||c.chas.hs)):k==='sdr'?!!c.sdr:lbk?!!(c.lb&&c.lb[lbk]&&c.lb[lbk].face):true);
       var isMH=!c.base||c.base==='afc';
+      if(k==='mec'){ if(!mecFits(c,st)) return; if(!c.mec||dropped.indexOf('mec')>=0){ addable.push(sl); if(act) return;
+          html+='<div class="pbrow mecnudge"><div class="pbhead"><span class="nm">'+sl.name+'<button type="button" class="pbinfo" data-ben="mec" title="Benefits — SB/A MEC Plan" aria-label="Benefits for the SB/A MEC Plan">i</button><span class="cov">California: Affordable Choice isn’t minimum essential coverage, so there’s a tax penalty without this. From $'+MEC.rates['1'][householdKey()]+'/mo.</span></span><button type="button" class="mecadd" data-act="addk" data-k="mec">＋ Add</button></div></div>';
+          return; } }
       if(k==='base'&&isMH) return; if((k==='afc'||k==='sdr')&&!isMH) return;
       if(k==='base') sl={k:'base',name:c.base==='lifex'?'LifeX health plan':c.base==='brightlife'?'Bright Life health plan':c.base==='aca'?'Their ACA plan':c.base==='amaze'?'Amaze telehealth':'Cigna (Triad) PPO'};
       if(k==='dvh'&&!act&&S.lineup!=='aca'){ if(dropped.indexOf('dvh')<0&&byK.dvh) sum+=+byK.dvh.monthly||0; return; }   // Dental: add-on bar below (ACA + protection: a row in the dental column, Jesse 4 Nov)
@@ -9986,8 +10017,10 @@ function pbColBind(col,rr,rd){
       if(k==='sdr'&&!c.sdr) c.sdr=cfgClone(PB_DEFAULT.sdr);
       if(k==='lb*'||k==='lbp'||k==='lbs'){ c.lb=c.lb||{}; (k==='lb*'?lbPersons().map(function(pp){ return pp.k; }):[k.slice(2)]).forEach(function(w){ if(!(c.lb[w]&&c.lb[w].face)) c.lb[w]=cfgClone(PB_DEFAULT.lb); pk.dropped=pk.dropped.filter(function(x){ return x!=='lb'+w; }); PB_OPEN[t+'|lb'+w]=true; }); rr(); return; }
       if(k==='lbx'){ c.lb=c.lb||{}; if(!lbxList(c).length) c.lb.x=[{who:'',carrier:'',face:'',ptype:'',otherName:'',otherMonthly:'',monthly:'',notes:''}]; PB_OPEN[t+'|lbx']=true; rr(); return; }
+      if(k==='mec'&&!c.mec) c.mec='1';
       if(k==='hhc'&&!c.hhc) c.hhc=PB_DEFAULT.hhc; if(k==='chas'&&!(c.chas&&(c.chas.cancer||c.chas.hs))) c.chas=cfgClone(PB_DEFAULT.chas);
       PB_OPEN[t+'|'+k]=true; rr(); }; });
+    col.querySelectorAll('[data-act="addk"]').forEach(function(b){ b.onclick=function(){ var sel=col.querySelector('[data-act="add"]'); if(!sel) return; sel.value=b.dataset.k; if(sel.onchange) sel.onchange(); }; });
     col.querySelectorAll('[data-cov]').forEach(function(el){ el.addEventListener('keydown',function(e){ if(e.key!=='Enter') return; e.preventDefault(); var c=effCfg(t), v=String(el.value).replace(/[^\d.]/g,''); pbSet(c,el.dataset.f,v); pbSet(c,el.dataset.f.replace(/face$/,'covOk'),'1'); rr(); }); });
     col.querySelectorAll('[data-act="lbxadd"]').forEach(function(b){ b.onclick=function(){ var c=effCfg(t); c.lb=c.lb||{}; c.lb.x=lbxList(c).concat([{who:'',carrier:'',face:'',ptype:'',otherName:'',monthly:'',notes:''}]); PB_OPEN[t+'|lbx']=true; rr(); }; });
     col.querySelectorAll('[data-act="lbxrm"]').forEach(function(b){ b.onclick=function(){ var c=effCfg(t); c.lb.x=lbxList(c).filter(function(x,i){ return i!==+b.dataset.i; }); if(!c.lb.x.length){ var pk=S.packages[t]; pk.dropped=pk.dropped||[]; if(pk.dropped.indexOf('lbx')<0) pk.dropped.push('lbx'); } rr(); }; });
@@ -10132,11 +10165,13 @@ function pbTierDefaults(t,lu,baseOverride){
 function pbResetTier(t){
   var lu=LINEUP_BASES[S.lineup]?S.lineup:(S.lineup==='custom'?null:'mh');
   var pk=S.packages[t], keepDvh=(pk.dropped||[]).indexOf('dvh')>=0&&!(lu==='aca'&&t==='best');   /* that column is the dental one */
+  var mecWas=((S.cfg||{})[t]||{}).mec||null, mecOff=(pk.dropped||[]).indexOf('mec')>=0;
   S.cfg=S.cfg||{};
   if(lu){ var d=pbTierDefaults(t,lu); S.cfg[t]=d.c; pk.dropped=(keepDvh?['dvh']:[]).concat(d.drop); }
   else { var pk0=(S.cfg[t]||{}).pick;   // Custom: back to the plan picked for this column, else keep its base
     if(pk0){ var d3=pbTierDefaults(pk0.t,pk0.ln); d3.c.pick=pk0; S.cfg[t]=d3.c; pk.dropped=(keepDvh?['dvh']:[]).concat(d3.drop); }
     else { var d2=pbTierDefaults(t,'mh',(S.cfg[t]||{}).base||'afc'); S.cfg[t]=d2.c; pk.dropped=(keepDvh?['dvh']:[]).concat(d2.drop); } }
+  if(mecWas) S.cfg[t].mec=mecWas; if(mecOff&&pk.dropped.indexOf('mec')<0) pk.dropped.push('mec');   /* the California MEC choice survives a reload, like dental */
   (pk.products||[]).forEach(function(p){ if(p.k) delete p.manual; });
   Object.keys(PB_OPEN).forEach(function(k){ if(k.indexOf(t+'|')===0) delete PB_OPEN[k]; });
 }
@@ -10155,6 +10190,7 @@ function pbWhyNot(k,c,st,age){
   try{
     if(k==='base'&&(c.base==='aca'||c.base==='amaze')) r={note:c.base==='aca'?'Add the marketplace premium on the ACA panel':''};
     else if(k==='base') r=c.base==='lifex'?pLIFEX(age,hh,c.lifexPlan||'$500 PPO'):c.base==='brightlife'?pBL(age,hh,c.blPlan||BL_DEFAULT,c):pTRIAD(age,hh,c.triadPlan||'7350');
+    else if(k==='mec') r=pMEC(hh,c.mec);
     else if(k==='afc') r=pAFC(R,st,age,hh,c.afc); else if(k==='sdr') r=pSDR(R,st,age,hh,c.sdr,false); else if(k==='his') r=pHIS(R,st,age,hh,c.his);
     else if(k==='acc') r=pACC(R,hh,c.acc); else if(k==='lbp'||k==='lbs'){ var pp=lbPersons().filter(function(x){ return 'lb'+x.k===k; })[0]; r=pp?pLB1(pp,c.lb[k.slice(2)]):{note:'no spouse covered'}; } else if(k==='lbx') r=pLBX(lbxList(c)); else if(k==='gap') r=pGAP(R,st,age,hh,c.gap); else if(k==='hhc') r=pHHC(R,st,age,c.hhc); else if(k==='chas') r=pCHAS(st,age,hh,c.chas);
   }catch(e){}

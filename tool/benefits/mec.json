@@ -1,0 +1,80 @@
+{
+  "product": "mec",
+  "name": "SB/A MEC Plan",
+  "carrier": "USA Health Plans (SB/A Cooperative; administered by The Loomis Company)",
+  "columns": {
+    "by": "plan",
+    "values": ["1", "2", "3"]
+  },
+  "brochures": [
+    {
+      "code": "SB/A MEC Plan brochure (USA Health Plans, L1224)",
+      "file": "Brochure - USA MEC Version 8-1.pdf (from Jesse, 12 Nov 2026), served as tool/docs/sba-mec-brochure.pdf",
+      "states": ["CA"],
+      "page": "1, 3-8",
+      "notes": [
+        "Only offered in MyPopPro for California clients on a Manhattan plan: Affordable Choice is not minimum essential coverage, and California charges a tax penalty for going without it. This plan is ACA minimum essential coverage, so it fills that gap.",
+        "A group plan: the client joins through the SB/A Cooperative (a non-profit agency cooperative) and completes the Group Health Application. Guaranteed issue, no medical questions. The agent must be appointed with USA Health Plans.",
+        "Preventive care is in network only (First Health PPO), limited to Family Practice, Internal Medicine and Pediatrics — office and other outpatient services.",
+        "Quest labs (Plans 2 and 3) are a separate subscription, not insurance. They do not cover labs ordered in the hospital, emergency (STAT) labs, testing sent to another lab, or esoteric tests such as fertility, bone marrow and spinal fluid. Imaging, X-ray, mammography and dental are not lab work.",
+        "Primary care and urgent care (Plan 3) are provided by HC2U, separate from the MEC plan. Telemedicine first; members book every appointment through the Patient Advocacy Line.",
+        "The RX copay card add-on is never included: the client's prescriptions are handled elsewhere.",
+        "The brochure is written for licensed agents. The Schedule of Benefits governs if anything differs."
+      ],
+      "sections": [
+        {
+          "title": "Plan basics",
+          "rows": [
+            { "label": "Deductible", "values": { "*": "None" }, "key": true },
+            { "label": "Out-of-pocket maximum", "values": { "*": "None" }, "key": true },
+            { "label": "ACA preventive care", "values": { "*": "Covered 100% — First Health Network, in network only" }, "key": true },
+            { "label": "ACA-mandated prescriptions (e.g. birth control)", "values": { "*": "Covered 100%" }, "key": true },
+            { "label": "Quest Diagnostics labs", "values": { "1": "Not included", "2": "$0 copay — unlimited outpatient labs at any Quest location", "3": "$0 copay — unlimited outpatient labs at any Quest location" }, "key": true },
+            { "label": "Telemedicine, 24/7", "values": { "1": "Not included", "2": "Not included", "3": "$0 consult fee — unlimited, English and Spanish" }, "key": true },
+            { "label": "Primary care office visit", "values": { "1": "Not included", "2": "Not included", "3": "$35 copay — unlimited (HC2U)" }, "key": true },
+            { "label": "Urgent care", "values": { "1": "Not included", "2": "Not included", "3": "$75 copay — unlimited (HC2U)" }, "key": true },
+            { "label": "Chronic disease management", "values": { "1": "Not included", "2": "Not included", "3": "13 of the most common chronic conditions, without a specialist (HC2U)" } },
+            { "label": "Annual maximum of covered services", "values": { "*": "No annual maximum" } },
+            { "label": "Waiting periods", "values": { "*": "None" } },
+            { "label": "Who can join", "values": { "*": "Guaranteed issue — no medical questions" } },
+            { "label": "Counts as ACA minimum essential coverage", "values": { "*": "Yes" } }
+          ]
+        },
+        {
+          "title": "Monthly rates",
+          "rows": [
+            { "label": "Member only", "values": { "1": "$99", "2": "$119", "3": "$149" } },
+            { "label": "Member + spouse", "values": { "1": "$135", "2": "$165", "3": "$209" } },
+            { "label": "Member + child(ren)", "values": { "1": "$125", "2": "$159", "3": "$219" } },
+            { "label": "Member + family", "values": { "1": "$159", "2": "$209", "3": "$275" } }
+          ]
+        },
+        {
+          "title": "Adult preventive services — covered 100%",
+          "rows": [
+            { "label": "Screenings and services", "values": { "*": "Abdominal aortic aneurysm · alcohol misuse · aspirin · blood pressure · cholesterol · colorectal cancer · depression · type 2 diabetes · diet counseling · obesity · sexually transmitted infections · syphilis · HIV · tobacco use · immunization vaccines" } }
+          ]
+        },
+        {
+          "title": "Women's preventive services — covered 100%",
+          "rows": [
+            { "label": "Screenings and services", "values": { "*": "Anemia · urinary tract bacteriuria · BRCA · mammography · breast cancer chemoprevention · breastfeeding · cervical cancer · chlamydia · contraception · domestic and interpersonal violence · folic acid supplements · gestational diabetes · gonorrhea · hepatitis B · HIV · HPV DNA test · osteoporosis · Rh incompatibility · tobacco use · sexually transmitted infections · syphilis · well-woman visits" } }
+          ]
+        },
+        {
+          "title": "Children's preventive services — covered 100%",
+          "rows": [
+            { "label": "Screenings and services", "values": { "*": "Alcohol and drug use · autism · behavioral · blood pressure · cervical dysplasia · congenital hypothyroidism · depression · developmental · dyslipidemia · fluoride supplements · gonorrhea · hearing · height, weight and BMI · hematocrit or hemoglobin · hemoglobinopathies or sickle cell · HIV · immunization vaccines · iron supplements · lead exposure · medical history · obesity · oral health · phenylketonuria (PKU) · sexually transmitted infections · tuberculin testing · vision" } }
+          ]
+        },
+        {
+          "title": "Quest labs — how they work (Plans 2 and 3)",
+          "rows": [
+            { "label": "Covered lab work", "values": { "1": "Not included in Plan 1", "2": "Over 1,200 outpatient tests: blood (cholesterol, CBC), urine, cytology and pathology (pap smears, biopsies), cultures", "3": "Over 1,200 outpatient tests: blood (cholesterol, CBC), urine, cytology and pathology (pap smears, biopsies), cultures" } },
+            { "label": "How to use it", "values": { "1": "—", "2": "Show the member ID card and ask for the lab work to go to Quest, or take a written order to any Quest Patient Service Center. Quest: 1-800-646-7788, QuestSelect.com", "3": "Show the member ID card and ask for the lab work to go to Quest, or take a written order to any Quest Patient Service Center. Quest: 1-800-646-7788, QuestSelect.com" } }
+          ]
+        }
+      ]
+    }
+  ]
+}
