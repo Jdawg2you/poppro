@@ -2213,7 +2213,8 @@ function pTRIAD(age,hh,plan){
   if(!TRI) return {price:null,note:'Cigna rates loading'};
   var bk=triadBook(), pl=bk.plans['Triad Cigna '+plan]; if(!pl) return {price:null,note:'Cigna plan '+plan+' not found'};
   var b=bandOf(TRI.bands,age); if(!b) return {price:null,note:'Cigna (Triad) is ages 18–64'};
-  return {price:pl.rates[b][BASE_TIER[hh]],note:'Pre-underwritten estimate — the approved rate can land higher after underwriting.'};
+  var adj=({EE:100,ES:200,EC:200,FAM:300})[BASE_TIER[hh]]||100;   /* 2027 guide, pp. 3-4: underwriting adjustments, higher or lower */
+  return {price:pl.rates[b][BASE_TIER[hh]],note:'Pre-underwritten estimate — after underwriting the approved rate can move up or down, typically by about $'+adj+'/mo.'};
 }
 function loadBaseRates(){
   [['rates/lifex-rates.json',function(j){LX=j;}],['rates/triad-rates.json',function(j){TRI=j;}],['rates/brightlife-rates.json',function(j){BLR=j;}]].forEach(function(x){
