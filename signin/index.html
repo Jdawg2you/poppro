@@ -167,7 +167,7 @@
     busy(f,true); post('profile',body).then(function(r){ busy(f,false); if(!r.ok) return err(f,r.error); enter(); }); };
   $('toAsk').onclick=function(){ ['name','email','phone','npn','team'].forEach(function(k){ if($('u_'+k).value) $('a_'+k).value=$('u_'+k).value; }); show('sAsk'); };
   $('sAsk').onsubmit=function(e){ e.preventDefault(); var f=this, d=form('a'); d.note=$('a_note').value.trim(); err(f, check(f,d)); if(check(f,d)) return;
-    busy(f,true); post('request',d).then(function(r){ busy(f,false); if(!r.ok) return err(f,r.error); EM=d.email; who(); show('sSent'); }); };
+    busy(f,true); post('request',d).then(function(r){ busy(f,false); if(!r.ok) return err(f,r.error); EM=d.email; who(); if(r.already) return pinStep('signin',r.name); show('sSent'); }); };
 })();
 </script>
 </body>

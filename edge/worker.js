@@ -87,6 +87,15 @@ async function auth(req, env, url) {
     if (!r.ok) return json(r);
     return json({ ok: true, needs: r.needs || [] }, 200, await makeCookie(env, url, { e: email, n: r.name || '', chk: Date.now() }));
   }
+  /* Jesse, 12 Nov: someone already in who uses Get access or Ask for access (with or without a code) is just signed in
+     as normal: no second row, no request to approve. They get the usual sign-in code. */
+  if (p === '/auth/signup' || p === '/auth/request') {
+    const c = await sheet(env, { a: 'check', email }).catch(() => null);
+    if (c && c.ok && c.member) {
+      const r = await sheet(env, { a: 'pin', email, ip });
+      return json(r.ok ? { ok: true, sent: true, already: true, name: r.name || '' } : r);
+    }
+  }
   if (p === '/auth/signup') {                   /* new: invite code checked, then they confirm the email with a 6-digit code */
     if (!who.name) return json({ ok: false, error: 'Please enter your name.' });
     if (!/^\d{4,10}$/.test(who.npn.replace(/\D/g, ''))) return json({ ok: false, error: 'Please enter your NPN (National Producer Number).' });
