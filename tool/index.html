@@ -9973,6 +9973,7 @@ function pbColHTML(T,anc){ var t=T[0], act=(t==='actual'), st=(S.client.state||'
     var lbAll=lbMissing.length===(pbHasSpouse()?2:1);
     if(lbAll&&lbMissing.length>1){ addable=addable.filter(function(sl){ return sl.k!=='lbp'&&sl.k!=='lbs'; }); addable.push({k:'lb*',name:'Living benefits (each covered adult)'}); }
     var lbxA=addable.filter(function(sl){ return sl.k==='lbx'; }); if(lbxA.length){ addable=addable.filter(function(sl){ return sl.k!=='lbx'; }).concat(lbxA); }   /* last, just above Other: any person, any carrier */
+    var mecA=addable.filter(function(sl){ return sl.k==='mec'; }); if(mecA.length){ addable=addable.filter(function(sl){ return sl.k!=='mec'; }).concat(mecA); }   /* Jesse, 12 Nov: after living benefits, just above Other: rarely used */
     html+='<div class="pbadd"><select data-act="add" aria-label="Add a product"><option value="">＋ Add product</option>'+addable.map(function(sl){ return '<option value="'+sl.k+'">'+sl.name+(blOn()&&c.base&&c.base!=='afc'&&!/^lb/.test(sl.k)?' (ManhattanLife)':'')+'</option>'; }).join('')
       +'<option value="other">Other — type in a product that isn’t listed…</option>'
       +unavail.map(function(n){ return '<option disabled>'+n+' — not sold in '+st+'</option>'; }).join('')+'</select>'
