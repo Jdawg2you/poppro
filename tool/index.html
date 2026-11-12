@@ -1080,9 +1080,6 @@
 .pbcol .ph .tt{font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--muted);text-transform:uppercase}
 .pbrow{margin:0 10px;border:1px solid #e6e1d4;border-radius:10px;background:#fff}
 .pbrow.off{opacity:.55}
-.pbrow.mecnudge{border-style:dashed;border-color:#c9a14a;background:#fffdf6}
-.pbrow.mecnudge .mecadd{font:inherit;font-size:12.5px;font-weight:700;border:1.5px solid var(--gold);background:#fff;color:#8a6a1f;border-radius:999px;padding:4px 11px;cursor:pointer;white-space:nowrap;margin-left:auto}
-.pbrow.mecnudge .mecadd:hover{background:var(--gold);color:#fff}
 .pbrow.todo{border-color:#c9a14a;background:#fffdf6}
 .pbrow.todo .pbhead .pr.na{color:#a3242a;font-weight:700}
 .lbtodo{color:#a3242a;font-size:12.5px;margin:2px 0 8px}
@@ -2309,8 +2306,8 @@ function pDVH(R,age,hh,cfg,st){
 var SPARKLE={states:'AL AR AZ CA CO CT DC DE FL GA IA ID IL IN KS KY LA MA MI MN MO MS NC NE NH NJ NM NV OH OK PA SC TN TX UT VA WI WV WY', rates:{i:69,s:129,c:159,f:199}, max:4500,
   enroll:'https://www.1enrollment.com/order/checkout.cfm?id=994524&pdid=48733', search:'https://bento.net/sparkle/'};
 /* ===== SB/A MEC Plan (USA Health Plans; SB/A Cooperative, administered by The Loomis Company) — Jesse, 12 Nov 2026 =====
-   California only, and only beside a Manhattan plan: Affordable Choice is not minimum essential coverage and California
-   charges a tax penalty without it. This group plan IS ACA minimum essential coverage, so it fills the gap. Three plans;
+   An add-on beside any Manhattan plan, every state, picked from + Add (Jesse, 12 Nov: no California framing; some
+   clients layer it for testing). ACA minimum essential coverage. Three plans;
    flat monthly rates by household (no age rating). Checked against Brochure - USA MEC Version 8-1 (L1224), p. 5.
    The RX copay card add-on is never offered (Jesse: we already have an Rx plan). The brochure is agent-facing
    ("only intended as an advertisement to licensed insurance Agents & Brokers"), so it opens from the benefits drawer
@@ -2319,7 +2316,7 @@ var MEC={rates:{'1':{i:99,s:135,c:125,f:159},'2':{i:119,s:165,c:159,f:209},'3':{
   adds:{'1':'ACA preventive care + ACA-mandated Rx at 100%','2':'Plan 1 + $0 Quest labs','3':'Plan 2 + $0 telemedicine, $35 primary care, $75 urgent care'},
   sum:{'1':'ACA preventive care and ACA prescriptions at 100% · no deductible','2':'ACA preventive care at 100% · $0 Quest labs · no deductible','3':'ACA preventive care at 100% · $0 Quest labs · $0 telemedicine · $35 primary care · $75 urgent care'},
   doc:'docs/sba-mec-brochure.pdf', form:'SB/A MEC brochure — for agents'};
-function mecFits(c,st){ return (st||(S.client||{}).state||'').toUpperCase().trim()==='CA'&&(!c||!c.base||c.base==='afc'); }
+function mecFits(c,st){ return !c||!c.base||c.base==='afc'; }   /* Jesse, 12 Nov: every state, beside any Manhattan plan */
 function pMEC(hh,plan){ var r=MEC.rates[String(plan||'1')]; var v=r&&r[hh||'i']; return v==null?{price:null,note:'SB/A MEC: no rate for this plan and household'}:{price:v,note:''}; }
 function sparkleSold(st){ return SPARKLE.states.split(' ').indexOf((st||'').toUpperCase())>=0; }
 function mlDentalSold(st){ st=(st||'').toUpperCase(); return (ML_OFFERED.dvh||'').split(' ').indexOf(st)>=0||(ML_OFFERED.dvh7016||'').split(' ').indexOf(st)>=0; }
@@ -3451,7 +3448,7 @@ function buildTierProducts(c,byKey,extras){
   add('afc','Core Health Plan — AFC '+LVLNAME[c.afc], pAFC(R,st,age,hh,c.afc));
   if(c.sdr){ var sd=pSDR(R,st,age,hh,c.sdr,false);
   add('sdr','Specified Disease Rider — $'+(+c.sdr.max/1000)+'K / $'+((+(sd.ded||c.sdr.ded))/1000)+'K ded', sd); }
-  if(c.mec&&st==='CA') add('mec','SB/A MEC Plan '+c.mec+' — California minimum essential coverage', pMEC(hh,c.mec));
+  if(c.mec) add('mec','SB/A MEC Plan '+c.mec+' — minimum essential coverage', pMEC(hh,c.mec));
   }
   /* a product whose settings are empty (null - a file written outside MyPopPro, 21 Oct) is simply not offered, rather than crashing the Quote */
   if(c.his) add('his','Hospital Indemnity — HI Select $'+Number(+c.his.ben||10000).toLocaleString('en-US')+(c.his.outp?' + Outpatient $'+Number(c.his.outp).toLocaleString('en-US'):''), pHIS(R,st,age,hh,c.his));   /* the benefit chosen, not a fixed $10K (Health ZONE, 21 Oct: an export read $10K for a $2,000 plan) */
@@ -5933,7 +5930,7 @@ function gapSpokenName(k,list){ var sp=enSplit((S.client||{}).sname)[0]||'your s
   if(k==='lbp') return list.indexOf('lbs')>=0?'living benefits for both of you':'your living benefits';
   if(k==='lbs') return list.indexOf('lbp')>=0?'':sp+'’s living benefits';
   if(k==='lbx') return 'the additional living benefits';
-  return {mec:'the California MEC plan',afc:'Affordable Choice level',his:'hospital indemnity',acc:'accident coverage',gap:'out-of-pocket protection',chas:'cancer, heart attack and stroke coverage',sdr:'specified disease coverage',dvh:'dental',hhc:'home health care',lb:'living benefits'}[k]||''; }
+  return {mec:'the MEC plan',afc:'Affordable Choice level',his:'hospital indemnity',acc:'accident coverage',gap:'out-of-pocket protection',chas:'cancer, heart attack and stroke coverage',sdr:'specified disease coverage',dvh:'dental',hhc:'home health care',lb:'living benefits'}[k]||''; }
 function gapSpoken(R,A){ var join=function(a){ a=a.filter(Boolean); return a.length<2?(a[0]||''):a.slice(0,-1).join(', ')+' and '+a[a.length-1]; };
   var G=gapOf(R,A), kk=function(kind){ return G.filter(function(g){ return g.kind===kind; }).map(function(g){ return g.key.replace(/^[pl]:/,''); }); };
   var miss=kk('declined'), low=kk('lowered'), out={missing:join(miss.map(function(k){ return gapSpokenName(k,miss); })),lowered:join(low.map(function(k){ return gapSpokenName(k,low); })),added:'',kind:''};
@@ -7090,8 +7087,8 @@ function glp1FromSuite(h){ var one=function(pre){ var k=function(f){ return h[pr
    items the agent hasn't opened yet (localStorage pp_news_seen = newest date they've seen). */
 var NEWS_DAYS=30;
 var NEWS=[
- {d:'2026-11-12',t:'California: the SB/A MEC Plan beside Manhattan',h:[
-  ['California clients','When a California client is on a Manhattan plan, each package shows the SB/A MEC Plan. Affordable Choice isn’t minimum essential coverage, and California charges a tax penalty without it; this plan fills that gap. Click + Add, then pick Plan 1, 2 or 3. The price joins the package total, the Package of Protection, the client recap and the enrollment card.'],
+ {d:'2026-11-12',t:'The SB/A MEC Plan beside Manhattan',h:[
+  ['Manhattan clients','The SB/A MEC Plan is now an add-on on any Manhattan package: minimum essential coverage with ACA preventive care at 100%, and $0 Quest labs on Plans 2 and 3. Pick it from + Add, then choose Plan 1, 2 or 3. The price joins the package total, the Package of Protection, the client recap and the enrollment card.'],
   ['Benefits','The ⓘ shows what each plan covers and its rates, with a link to the full brochure.']]},
  {d:'2026-11-12',t:'MyPopPro has a new home, plus a cleaner quote email',h:[
   ['Sign-in','MyPopPro now lives on its own server with a simple sign-in. Still free. Type your email, enter the 6-digit code we send, and you stay signed in for 30 days on that device. Your saved clients stay right where they were.'],
@@ -9431,7 +9428,7 @@ var PB_SLOTS=[
  {k:'base',name:'Health plan'},
  {k:'afc', name:'Affordable Choice'},
  {k:'sdr', name:'Specified Disease Rider'},
- {k:'mec', name:'SB/A MEC Plan (California)'},
+ {k:'mec', name:'SB/A MEC Plan'},
  {k:'his', name:'Hospital Indemnity Select'},
  {k:'acc', name:'24-Hour Accident'},
  {k:'gap', name:'Out-of-Pocket Protection'},
@@ -9506,7 +9503,7 @@ function pbControls(k,c){
       +'<button type="button" class="lbxadd" data-act="lbxadd">＋ Add another policy</button>'; }
   if(k==='mec'){ var hk=householdKey();
     return '<div class="f">Plan<select data-f="mec">'+pbOpts(['1','2','3'].map(function(n){ return [n,'Plan '+n+' — $'+MEC.rates[n][hk]+'/mo · '+MEC.adds[n]]; }),String(c.mec||'1'))+'</select></div>'
-      +'<div style="font-size:11.5px;color:var(--muted)">Affordable Choice isn’t minimum essential coverage, and California charges a tax penalty without it. This plan is — no deductible, guaranteed issue, no medical questions. A group plan through the SB/A Cooperative (USA Health Plans): a separate enrollment from ManhattanLife. No RX copay card — their prescriptions are covered elsewhere.</div>'; }
+      +'<div style="font-size:11.5px;color:var(--muted)">Minimum essential coverage — no deductible, guaranteed issue, no medical questions. ACA preventive care at 100%; Plans 2 and 3 add $0 Quest labs, so it layers well for clients who get a lot of testing done. A group plan through the SB/A Cooperative (USA Health Plans): a separate enrollment from ManhattanLife. No RX copay card — their prescriptions are covered elsewhere.</div>'; }
   if(k==='hhc') return '<div class="f">Plan<select data-f="hhc">'+pbOpts([['Classic','Classic'],['Premier','Premier'],['Deluxe','Deluxe']],c.hhc)+'</select></div>';
   if(k==='dvh'&&dentalCo()==='sparkle') return '<div class="two"><div class="f">Sparkle Care Dental<div style="padding:6px 0">$4,500 / member / yr · $50 deductible</div></div></div>';
   if(k==='dvh'&&dvhIs7016()) return '<div class="two"><div class="f">Annual max<select data-f="dvh.max">'+pbOpts(pbAmt(dvh7016Maxes()),dvh7016Max(c.dvh.max))+'</select></div><div class="f">Deductible<div style="padding:6px 0">$100 fixed</div></div></div>';
@@ -9931,9 +9928,7 @@ function pbColHTML(T,anc){ var t=T[0], act=(t==='actual'), st=(S.client.state||'
       var lbk=(k==='lbp'||k==='lbs')?k.slice(2):null;
       var inCfg=k==='mec'?!!c.mec:k==='lbx'?lbxList(c).length>0:(k==='hhc'?!!c.hhc:k==='chas'?!!(c.chas&&(c.chas.cancer||c.chas.hs)):k==='sdr'?!!c.sdr:lbk?!!(c.lb&&c.lb[lbk]&&c.lb[lbk].face):true);
       var isMH=!c.base||c.base==='afc';
-      if(k==='mec'){ if(!mecFits(c,st)) return; if(!c.mec||dropped.indexOf('mec')>=0){ addable.push(sl); if(act) return;
-          html+='<div class="pbrow mecnudge"><div class="pbhead"><span class="nm">'+sl.name+'<button type="button" class="pbinfo" data-ben="mec" title="Benefits — SB/A MEC Plan" aria-label="Benefits for the SB/A MEC Plan">i</button><span class="cov">California: Affordable Choice isn’t minimum essential coverage, so there’s a tax penalty without this. From $'+MEC.rates['1'][householdKey()]+'/mo.</span></span><button type="button" class="mecadd" data-act="addk" data-k="mec">＋ Add</button></div></div>';
-          return; } }
+      if(k==='mec'){ if(!mecFits(c,st)) return; if(!c.mec||dropped.indexOf('mec')>=0){ addable.push(sl); return; } }
       if(k==='base'&&isMH) return; if((k==='afc'||k==='sdr')&&!isMH) return;
       if(k==='base') sl={k:'base',name:c.base==='lifex'?'LifeX health plan':c.base==='brightlife'?'Bright Life health plan':c.base==='aca'?'Their ACA plan':c.base==='amaze'?'Amaze telehealth':'Cigna (Triad) PPO'};
       if(k==='dvh'&&!act&&S.lineup!=='aca'){ if(dropped.indexOf('dvh')<0&&byK.dvh) sum+=+byK.dvh.monthly||0; return; }   // Dental: add-on bar below (ACA + protection: a row in the dental column, Jesse 4 Nov)
@@ -10171,7 +10166,7 @@ function pbResetTier(t){
   else { var pk0=(S.cfg[t]||{}).pick;   // Custom: back to the plan picked for this column, else keep its base
     if(pk0){ var d3=pbTierDefaults(pk0.t,pk0.ln); d3.c.pick=pk0; S.cfg[t]=d3.c; pk.dropped=(keepDvh?['dvh']:[]).concat(d3.drop); }
     else { var d2=pbTierDefaults(t,'mh',(S.cfg[t]||{}).base||'afc'); S.cfg[t]=d2.c; pk.dropped=(keepDvh?['dvh']:[]).concat(d2.drop); } }
-  if(mecWas) S.cfg[t].mec=mecWas; if(mecOff&&pk.dropped.indexOf('mec')<0) pk.dropped.push('mec');   /* the California MEC choice survives a reload, like dental */
+  if(mecWas) S.cfg[t].mec=mecWas; if(mecOff&&pk.dropped.indexOf('mec')<0) pk.dropped.push('mec');   /* the MEC choice survives a reload, like dental */
   (pk.products||[]).forEach(function(p){ if(p.k) delete p.manual; });
   Object.keys(PB_OPEN).forEach(function(k){ if(k.indexOf(t+'|')===0) delete PB_OPEN[k]; });
 }
