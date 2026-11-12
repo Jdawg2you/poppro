@@ -17,10 +17,10 @@ html_handling = "auto-trailing-slash"
 not_found_handling = "404-page"
 
 [vars]
-ACCESS_URL = ""
+ACCESS_URL = "https://script.google.com/macros/s/AKfycbw34Ky6U6EyRx8r814a9rN4EXKB6BhSZb2uvoQUlSW-VCcS4YvuWM2hPgBJ3vmAzWS4/exec"
 
 [env.sandbox]
 name = "mypoppro-sandbox"
 routes = [ { pattern = "sandbox.mypoppro.com/*", zone_name = "mypoppro.com" } ]
 [env.sandbox.vars]
-ACCESS_URL = ""
+ACCESS_URL = "https://script.google.com/macros/s/AKfycbw34Ky6U6EyRx8r814a9rN4EXKB6BhSZb2uvoQUlSW-VCcS4YvuWM2hPgBJ3vmAzWS4/exec"
