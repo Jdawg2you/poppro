@@ -181,7 +181,7 @@ function setup() {
   addMember({ email: low(owner()), name: 'Jesse Stamm', team: 'Optimum' }, 'Owner');
   if (!PropertiesService.getScriptProperties().getProperty('ACCESS_SECRET'))
     PropertiesService.getScriptProperties().setProperty('ACCESS_SECRET', Utilities.getUuid() + Utilities.getUuid());
-  Logger.log('Secret: ' + PropertiesService.getScriptProperties().getProperty('ACCESS_SECRET'));
+  Logger.log('Setup done.');   /* the secret stays in Script Properties; never log it */
 }
 
 /* Run once from the editor at launch: everyone in the old "POP Pro Registrations" Sheet becomes a member tagged
