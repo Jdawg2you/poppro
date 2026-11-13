@@ -2586,9 +2586,12 @@ function lbCompute(){
 
 /* ===== RATE-SHEET AUTO-PRICING (rate sheet = source of truth; manual edits win once set) ===== */
 function ratingAge(){
-  var a=+S.client.page||0;
+  /* Rated on the OLDEST person on the plan (Jesse, 12 Nov: a younger client must never pull a couple into a cheaper
+     age band). An empty age box falls back to that person's date of birth, so a file that carries the spouse's DOB
+     but no age still prices on the spouse. */
+  var a=+S.client.page||+ageFromDOB(S.client.date)||0;
   var w=(S.intake&&S.intake.who)||{};
-  var b=w.spouse?(+S.client.sage||0):0;   // spouse age only counts when the spouse is actually covered
+  var b=w.spouse?(+S.client.sage||+ageFromDOB(S.client.sdob)||0):0;   // spouse age only counts when the spouse is actually covered
   return Math.max(a,b)||0;
 }
 function householdKey(){ var w=(S.intake&&S.intake.who)||{}; var sp=!!w.spouse,kd=!!w.kids; return sp&&kd?'f':(sp?'s':(kd?'c':'i')); }
