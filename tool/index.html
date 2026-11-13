@@ -2277,7 +2277,13 @@ function pHIS(R,st,age,hh,cfg){
   tot+=(g.fee||12)/12;
   return {price:Math.round(tot*100)/100,note:''};
 }
-function pACC(R,hh,units){ var t=R.acc.t[hh]; return t?{price:t[units-1],note:''}:{price:null,note:'accident rate n/a'}; }
+/* PAID Enhanced (Jesse, 13 Nov): ManhattanLife's accident plan where the 24-Hour Accident isn't sold. Product Availability
+   by State 062226: no 24-Hour Accident but PAID Enhanced in AK, CA, CO, DE, HI, ID and WA. Same monthly rates in all seven
+   brochures (PAIDEH-BR 0524 / 0223, 24-hour coverage option). MD and DC sell only the older PAID - not wired. */
+var PAID_STATES=['AK','CA','CO','DE','HI','ID','WA'], PAID_T={i:[18.33,22.00],s:[25.83,32.00],c:[25.83,32.00],f:[33.33,42.00]};
+function accPaid(st){ st=String(st==null?((S.client&&S.client.state)||''):st).toUpperCase().trim(); return PAID_STATES.indexOf(st)>=0; }
+function accName(st){ return accPaid(st)?'PAID Enhanced Accident':'24-Hour Accident'; }
+function pACC(R,hh,units){ if(accPaid()){ var q=PAID_T[hh]; return q?{price:q[(units||1)-1],note:''}:{price:null,note:'accident rate n/a'}; } var t=R.acc.t[hh]; return t?{price:t[units-1],note:''}:{price:null,note:'accident rate n/a'}; }
 function pDVH(R,age,hh,cfg,st){
   if(st&&dentalCo(st)==='sparkle') return pSPARKLE(hh,st);
   var pg=st&&prGroup(301,st);
@@ -2751,7 +2757,9 @@ function evMajor(p){ var parts=[], pays=0, days=+p.days||0, bal=Math.max(0,+p.ba
   if(p.his&&days>0){ add('Hospital Indemnity — '+evM(p.his.ben)+' per stay',p.his.ben); if(p.amb&&p.his.amb) add('Hospital Indemnity — ambulance ride',200); }
   if(p.gap&&days>0){ add('Out-of-Pocket — admission benefit',p.gap.adm); add('Out-of-Pocket — '+Math.min(days,10)+' day'+(Math.min(days,10)===1?'':'s')+' × '+evM(p.gap.daily),p.gap.daily*Math.min(days,10)); }
   if(p.gap&&p.er&&p.acc&&p.gap.ea) add('Out-of-Pocket — ER accident',250);
-  if(p.accU&&p.acc){ add('24-Hour Accident — medical expenses (up to '+evM(2000*p.accU)+')',Math.min(bal,2000*p.accU)); add('24-Hour Accident — '+Math.min(days,30)+' days × '+evM(150*p.accU),150*p.accU*Math.min(days,30)); }
+  if(p.accU&&p.acc&&accPaid()){ var u=p.accU; if(p.er) add('PAID Enhanced — emergency room',200); if(p.amb) add('PAID Enhanced — ambulance',100*u);
+    if(days>0){ add('PAID Enhanced — hospital admission',1000*u); add('PAID Enhanced — '+Math.min(days,365)+' day'+(days===1?'':'s')+' × '+evM(150*u),150*u*Math.min(days,365)); } }
+  else if(p.accU&&p.acc){ add('24-Hour Accident — medical expenses (up to '+evM(2000*p.accU)+')',Math.min(bal,2000*p.accU)); add('24-Hour Accident — '+Math.min(days,30)+' days × '+evM(150*p.accU),150*p.accU*Math.min(days,30)); }
   if(p.chas&&p.dx==='cancer') add('Cancer lump sum on diagnosis',p.chas.cancer); if(p.chas&&(p.dx==='heart'||p.dx==='stroke')) add((p.dx==='heart'?'Heart attack':'Stroke')+' lump sum on diagnosis',p.chas.hs);
   /* Medical Bill Saver negotiates a Manhattan client's bill down; a major-medical plan already has network pricing. */
   var negotiated=(!p.major&&+p.negotPct>0)?Math.round(bal*(1-(+p.negotPct)/100)*100)/100:null;
@@ -2766,7 +2774,11 @@ function evEveryday(p){ var c=Math.max(1,+p.count||1), ch=Math.max(0,+p.charge||
     else if(p.type==='er'){ per=a.er; n=lim(a.erN); what='ER visit'; } else if(p.type==='osurg'){ per=a.osurg; what='outpatient surgery'; } else if(p.type==='imaging'){ per=a.mri; what='MRI / CT scan'; }
     afcPay=per*n; if(a.outLimit) afcPay=Math.min(afcPay,a.outLimit); add('Affordable Choice — '+(n>1?n+' × ':'')+evM(per)+' per '+what,afcPay); }
   if(p.type==='osurg'){ add('Hospital Indemnity — outpatient surgery rider',+p.hisOutp||0); add('Out-of-Pocket — outpatient surgery benefit',+p.gapOutp||0); }
-  if(p.acc&&p.accU) add('24-Hour Accident — medical expenses (up to '+evM(2000*p.accU)+')',Math.min(bill,2000*p.accU));
+  if(p.acc&&p.accU&&accPaid()){ var pu=p.accU;   /* fixed amounts per the PAID Enhanced schedule, once per accident */
+    if(p.type==='er') add('PAID Enhanced — emergency room',200); else if(p.type==='urgent') add('PAID Enhanced — urgent care',225);
+    else if(p.type==='visit'){ add('PAID Enhanced — doctor visit',75*pu); if(c>1) add('PAID Enhanced — '+Math.min(c-1,pu>1?8:6)+' follow-up visit'+(c>2?'s':'')+' × '+evM(25*pu),25*pu*Math.min(c-1,pu>1?8:6)); }
+    else if(p.type==='imaging') add('PAID Enhanced — major diagnostic exam',100*pu); else if(p.type==='osurg') add('PAID Enhanced — outpatient surgery facility',100*pu); }
+  else if(p.acc&&p.accU) add('24-Hour Accident — medical expenses (up to '+evM(2000*p.accU)+')',Math.min(bill,2000*p.accU));
   if(p.acc&&p.type==='er'&&p.gapEa) add('Out-of-Pocket — ER accident benefit',250);
   var negotiated=(!p.major&&+p.negotPct>0)?Math.round(bill*(1-(+p.negotPct)/100)*100)/100:null, owe0=negotiated!=null?negotiated:bill;
   var oweParts=[];
@@ -2813,11 +2825,11 @@ function evScn(id){ var p=EV_SCENARIOS.filter(function(x){ return x.id===id; })[
 function evEvent(sc,o){ sc=sc||{}; o=o||{}; var b=evScnBill(sc), days=+sc.days||0, add=sc.add||{}, parts=[], pays=0, accUsed=0;
   var take=function(r){ (r.parts||[]).forEach(function(q){ parts.push(q); pays+=q.v; }); };
   if(b.main>0||days>0||sc.dx){ var mj=evMajor({bal:b.main,days:days,er:sc.er,amb:sc.amb,acc:sc.acc,dx:sc.dx,afc:o.afc,his:o.his,gap:o.gap,accU:o.accU,chas:o.chas});
-    take(mj); if(sc.acc&&o.accU) accUsed=Math.min(b.main,2000*o.accU); }
+    take(mj); if(sc.acc&&o.accU&&!accPaid()) accUsed=Math.min(b.main,2000*o.accU); }
   if(sc.surg&&days===0&&b.main>0) take(evEveryday({type:'osurg',charge:b.main,count:1,afc:o.afc,hisOutp:o.hisOutp,gapOutp:o.gapOutp}));
   EV_ADDONS.forEach(function(a){ var x=add[a[0]]; if(x&&+x.n>0&&+x.each>0) take(evEveryday({type:a[2],charge:+x.each,count:+x.n,afc:o.afc})); });
   /* The accident plan's medical benefit is one limit for the whole event, follow-up care included. */
-  if(sc.acc&&o.accU&&b.extra>0){ var rest=Math.max(0,2000*o.accU-accUsed), v=Math.min(b.extra,rest); if(v>0){ v=Math.round(v*100)/100; parts.push({lab:'24-Hour Accident — follow-up care (same limit)',v:v}); pays+=v; } }
+  if(sc.acc&&o.accU&&b.extra>0&&!accPaid()){ var rest=Math.max(0,2000*o.accU-accUsed), v=Math.min(b.extra,rest); if(v>0){ v=Math.round(v*100)/100; parts.push({lab:'24-Hour Accident — follow-up care (same limit)',v:v}); pays+=v; } }
   pays=Math.round(pays*100)/100;
   var negotiated=(!o.major&&+o.negotPct>0)?Math.round(b.total*(1-(+o.negotPct)/100)*100)/100:null, owe0;
   if(o.major){ var m=o.major, cop=0, pool=b.main;
@@ -3456,7 +3468,7 @@ function buildTierProducts(c,byKey,extras){
   if(c.mec) add('mec','SB/A MEC Plan '+c.mec+' — minimum essential coverage', pMEC(hh,c.mec));   /* any core plan (Jesse, 13 Nov) */
   /* a product whose settings are empty (null - a file written outside MyPopPro, 21 Oct) is simply not offered, rather than crashing the Quote */
   if(c.his) add('his','Hospital Indemnity — HI Select $'+Number(+c.his.ben||10000).toLocaleString('en-US')+(c.his.outp?' + Outpatient $'+Number(c.his.outp).toLocaleString('en-US'):''), pHIS(R,st,age,hh,c.his));   /* the benefit chosen, not a fixed $10K (Health ZONE, 21 Oct: an export read $10K for a $2,000 plan) */
-  if(c.acc) add('acc','Accident Cash — 24-Hr Accident ('+c.acc+' Unit)', pACC(R,hh,c.acc));
+  if(c.acc) add('acc','Accident Cash — '+(accPaid(st)?'PAID Enhanced Accident':'24-Hr Accident')+' ('+c.acc+' Unit)', pACC(R,hh,c.acc));
   if(c.gap) add('gap','Out-of-Pocket / Gap — $'+c.gap.daily+'/day · $'+c.gap.adm+' admission', pGAP(R,st,age,hh,c.gap));
   if(c.dvh){
   var dr=dvhRiders(c.dvh), dres=pDVH(R,age,hh,c.dvh,st);
@@ -3558,7 +3570,7 @@ function popSuggestions(tier){
   else if(dentalCo()==='sparkle'){}
   else if(c.dvh&&dvhIs7016()){ var t7=String(Math.max.apply(null,dvh7016Maxes().map(Number))); if(dvh7016Max(c.dvh.max)!==t7) cand('Raise Dental, Vision & Hearing to $'+Number(t7).toLocaleString('en-US'),function(x){ x.dvh.max=t7; }); }
   else if(c.dvh&&String(c.dvh.max)!=='5000') cand('Raise Dental · Vision · Hearing to $5,000',function(x){ x.dvh.max='5000'; });
-  if(!popMajorCover(tier)) cand(inBase('acc')?'Upgrade Accident to 2-Unit':'Add 24-Hour Accident (2-unit)',function(x){ if(inBase('acc')&&x.acc>=2) return false; x.acc=2; },null,null,['acc']);
+  if(!popMajorCover(tier)) cand(inBase('acc')?'Upgrade Accident to 2-Unit':'Add '+accName()+' (2-unit)',function(x){ if(inBase('acc')&&x.acc>=2) return false; x.acc=2; },null,null,['acc']);
   if(!inBase('hhc')) cand('Add Home Health Care (Deluxe)',function(x){ x.hhc='Deluxe'; },null,null,['hhc']);
   else if(c.hhc!=='Deluxe') cand('Upgrade Home Health Care to Deluxe',function(x){ x.hhc='Deluxe'; });
   list.sort(function(a,b){ return b.dScore-a.dScore; });
@@ -5849,7 +5861,7 @@ function cmpBen(k,c,live){ var m=function(v){ return '$'+Number(v||0).toLocaleSt
   if(k==='his'&&c.his){ var hd=BEN_DATA.his, hm=hd?benModel(hd,(S.client.state||'').toUpperCase(),benCol('his',c),c):null, hr=hm?evFlatRows(hm):[];
     var amt=function(re){ var r=hr.filter(function(x){ return re.test(x.label||''); })[0], mm=r&&String(r.value).match(/\$[\d,]+/); return mm?mm[0]:'included'; };
     return [['Day 1, per stay',m(c.his.ben)],['Outpatient surgery',+c.his.outp?m(c.his.outp):none],['ER or urgent care (injury)',amt(/^Emergency room/i)],['Ambulance',+c.his.amb?amt(/^Ambulance/i):none]]; }
-  if(k==='acc') return [['Units',String(c.acc||1)],['Accident medical, up to',m(2000*(+c.acc||1))]];
+  if(k==='acc') return accPaid()?[['Units',String(c.acc||1)],['Emergency room',m(200)],['Hospital admission',m(1000*(+c.acc||1))]]:[['Units',String(c.acc||1)],['Accident medical, up to',m(2000*(+c.acc||1))]];
   if(k==='gap'&&c.gap) return [['Per day in hospital',m(c.gap.daily)],['Admission',m(c.gap.adm)],['Outpatient',+c.gap.outp?m(c.gap.outp):none],['ER',c.gap.ea?'$250':none]];
   if(k==='chas'&&c.chas) return [['Cancer, lump sum',+c.chas.cancer?m(c.chas.cancer):none],['Heart attack & stroke, lump sum',+c.chas.hs?m(c.chas.hs):none]];
   if(k==='lbx'&&c.lb) return lbxList(c).map(function(x,i){ return ['Policy '+(i+1),lbxOne(x)]; });
@@ -6580,7 +6592,7 @@ function acaPresentHTML(t){ var PK=(S.lineup==='custom'&&effCfg(t).pick&&/^(aca|
   var pages=[];
   if(!vb){
     pages.push({t:'The ACA plan',h:acaSay+acaDo});
-    if(tp==='good') pages.push({t:'The accident plan',h:triadSay('“The marketplace plan is a good plan for you. The big thing is if you have an accident — you could have to come up with as much as that '+m(ded)+' deductible. So for <b>'+fmt2(sumP)+' a month</b> we add a 24-Hour Accident plan. If you get hurt, it pays you cash'+(has('acc')?' — '+esc(has('acc').sum.replace(/^\d+ units? · /,''))+'':'')+'.”')
+    if(tp==='good') pages.push({t:'The accident plan',h:triadSay('“The marketplace plan is a good plan for you. The big thing is if you have an accident — you could have to come up with as much as that '+m(ded)+' deductible. So for <b>'+fmt2(sumP)+' a month</b> we add '+(accPaid()?'a PAID Enhanced accident':'a 24-Hour Accident')+' plan. If you get hurt, it pays you cash'+(has('acc')?' — '+esc(has('acc').sum.replace(/^\d+ units? · /,''))+'':'')+'.”')
         +triadSay('“And you can get it no matter what your health is.”')
         +triadDo('<b>This column is for a health history the deductible buster can’t take.</b> If they can qualify, the buster (the middle column) is the better recommendation — say so.')
         +(P.length?li(P):'')});
@@ -6600,7 +6612,7 @@ function acaPresentHTML(t){ var PK=(S.lineup==='custom'&&effCfg(t).pick&&/^(aca|
         +triadDo(tp==='better'?'Virtual Basic A is for someone <b>healthy, but funds are tight</b>.':'Virtual Basic B is for someone <b>unhealthy, and funds are very tight</b>: the accident plan is the one they can get whatever their health.')});
     pages.push({t:'Amaze for everyday care',h:amaze});
     var prot=P.filter(function(p){ return p.k!=='base'; });
-    pages.push({t:tp==='better'?'Protection for the big things':'The accident plan',h:(tp==='better'?triadSay('“Amaze is for everyday care. For the big things — a hospital stay, an accident — we add three Manhattan plans that pay <i>you</i> cash:”'):triadSay('“Amaze is for everyday care. For an accident we add a 24-Hour Accident plan that pays <i>you</i> cash — and you can get it no matter what your health is.”'))
+    pages.push({t:tp==='better'?'Protection for the big things':'The accident plan',h:(tp==='better'?triadSay('“Amaze is for everyday care. For the big things — a hospital stay, an accident — we add three Manhattan plans that pay <i>you</i> cash:”'):triadSay('“Amaze is for everyday care. For an accident we add '+(accPaid()?'a PAID Enhanced accident':'a 24-Hour Accident')+' plan that pays <i>you</i> cash — and you can get it no matter what your health is.”'))
         +li(prot)+triadDo('These pay the client directly. They’re not health insurance: they don’t pay the hospital, they pay the client.')});
     pages.push({t:'The price',h:triadSay('“All together that’s <b>'+fmt2(pkMonthly(S.packages[t]||{}))+' a month</b>'+(ded&&net>pkMonthly(S.packages[t]||{})?' — against <b>'+fmt2(net)+'</b> for the marketplace plan alone':'')+'.”')
         +acaReceipt(t)
@@ -6671,7 +6683,7 @@ var CARRIER_STRIP_ON=true   /* live from the 4 Nov ship (Jesse: everything but t
 var CS_OPEN='';
 function csCfg(){ var c=cfgClone(TIERCFG.best); c.sdr=cfgClone(PB_DEFAULT.sdr); c.hhc=PB_DEFAULT.hhc; c.chas=cfgClone(PB_DEFAULT.chas); return c; }
 function csStateGaps(st,age){ if(typeof HF_RATES==='undefined'||!HF_RATES||!st) return []; var c=csCfg(), out=[];
-  [['afc','Affordable Choice'],['sdr','Specified Disease Rider'],['his','Hospital Indemnity Select'],['acc','24-Hour Accident'],['gap','Out-of-Pocket Protection'],['chas','Cancer / Heart Attack & Stroke'],['hhc','Home Health Care']]
+  [['afc','Affordable Choice'],['sdr','Specified Disease Rider'],['his','Hospital Indemnity Select'],['acc',accName()],['gap','Out-of-Pocket Protection'],['chas','Cancer / Heart Attack & Stroke'],['hhc','Home Health Care']]
     .forEach(function(x){ var why=''; try{ why=pbWhyNot(x[0],c,st,age); }catch(e){} if(/not sold in|not available in/.test(why)) out.push(x[1]); });
   return out; }
 function csVerdicts(){ var I=S.intake||{}, C=S.client||{}, st=String(C.state||'').toUpperCase().trim(), sp=!!(I.who&&I.who.spouse), age=+C.page||0, ml=[], cg=[], gaps=[];
@@ -7091,6 +7103,9 @@ function glp1FromSuite(h){ var one=function(pre){ var k=function(f){ return h[pr
    items the agent hasn't opened yet (localStorage pp_news_seen = newest date they've seen). */
 var NEWS_DAYS=30;
 var NEWS=[
+ {d:'2026-11-13',t:'PAID Enhanced accident where the 24-Hour Accident isn’t sold',h:[
+  ['Which states','In California, Alaska, Colorado, Delaware, Hawaii, Idaho and Washington, ManhattanLife doesn’t sell the 24-Hour Accident. The accident slot there is now PAID Enhanced, priced from its brochure: one unit $18.33 for one person up to $33.33 for a family, two units $22 to $42. Every other state keeps the 24-Hour Accident.'],
+  ['Everywhere it shows','The new name, price, benefits (ⓘ), brochure link, the event calculator’s figures and the scripts all follow the client’s state. PAID pays fixed cash amounts: $200 for the ER, $1,000 per unit to be admitted, $150 per unit per day in the hospital.']]},
  {d:'2026-11-13',t:'Cigna pricing: always the oldest person on the plan',h:[
   ['Age bands','Cigna (Triad) prices use the age of the oldest person covered. If an age box is empty, MyPopPro now works it out from that person’s date of birth, so a couple is never priced in the younger person’s band.'],
   ['2027 guide','Rates re-checked against the 2027 Classic Triad guide (all match). The $1,000 plan’s mental-health visit is now $30, per the 2027 guide. The note next to the price says the approved rate can move up or down after underwriting, typically about $100 for one person, $200 for a couple or a parent with children, $300 for a family.']]},
@@ -7722,7 +7737,7 @@ function renderRightFit(){ var el=$('rightFit'); if(!el) return; if(!RIGHT_FIT_O
   h+=step(path==='budget'?'on':(f.overBudget?'warn':''), 'Within budget?', !f.budget?'No budget on file':(f.overBudget?'Over budget':'Yes'),
     !f.budget?'Add their max monthly in the Intake to test this.':(f.overBudget?'Essential is '+fmt(f.goodMo)+'/mo against a budget of '+fmt(f.budget)+'/mo.<br>→ <b>BrightLife</b> (GOOD — formerly LifeX, Cigna network).':'Essential is '+fmt(f.goodMo)+'/mo against a budget of '+fmt(f.budget)+'/mo.'));
   h+=step(f.overBudget?'warn':'', 'Still unaffordable?', f.overBudget?'Follow the tree':'—',
-    'Re-check ACA / Medicaid / CHIP → <b>Amaze</b> ($99/mo per household, care access) → add <b>HI Select</b>, <b>24-hour accident</b> and <b>DVH</b> if eligible.');
+    'Re-check ACA / Medicaid / CHIP → <b>Amaze</b> ($99/mo per household, care access) → add <b>HI Select</b>, <b>'+(accPaid()?'PAID Enhanced accident':'24-hour accident')+'</b> and <b>DVH</b> if eligible.');
   el.innerHTML='<summary><span>Right-fit path</span><span class="rfpath">→ '+NAME[path]+'</span>'+(f.uw.length?'<span class="rfchip">'+f.uw.length+' underwriting '+(f.uw.length>1?'flags':'flag')+'</span>':'')+'</summary>'+
     '<ol>'+h+'</ol><div class="rfcheck"><b>Agent check before quoting:</b> state availability, current plan documents, eligibility, effective dates and total cost. This is a suggestion from the Intake, not an underwriting decision.</div>';
   var mm=$('rf_mm'); if(mm) mm.onchange=function(){ S.rightFit.mm=mm.checked; autosave(); renderRightFit(); };
@@ -7948,8 +7963,8 @@ function renderTree(){ var host=$('dtHost'); if(!host) return; var C=S.client||{
         +arrow(id==='vb'||id==='vbs','YES → THE SAFETY NET')
         +'<div class="dtf-node dtf-vb'+lit(id==='vb'||id==='vbs')+'"><div class="dtf-top"><span class="dtf-tag t-vb">SAFETY NET</span>'+(id==='vb'||id==='vbs'?'<span class="dtf-you">★ Right fit</span>':'')+'</div><div class="dtf-nm">Virtual Basic <small>(your virtual medical safety net)</small></div>'
           +'<div class="dtf-bd">First recheck ACA savings, Medicaid and CHIP. Then Amaze telehealth — '+fmt2(AMAZE_MO)+'/mo, care access, not hospital insurance — plus:</div>'
-          +'<div class="dtf-opts"><div class="dtf-opt'+(id==='vb'?' on':'')+(sick?' off':'')+'"><b>A · Real out-of-pocket protection</b><span>They pass ManhattanLife’s questions: + Hospital Indemnity, Out-of-Pocket and 24-hour accident.</span><em>'+fmt(AMAZE_MO+P.vbAdd.sum)+'/mo</em>'+(sick?'<i>ManhattanLife won’t take them</i>':qb('vb'))+'</div>'
-          +'<div class="dtf-opt'+(id==='vbs'?' on':'')+'"><b>B · Basic protection — too unhealthy for A</b><span>+ accident only. ManhattanLife’s 24-hour accident shown; the guaranteed-acceptance 5Star or TrioMed accident is on the exception path.</span><em>'+fmt(AMAZE_MO+P.vbAcc.sum)+'/mo</em>'+qb('vbs')+'</div></div>'
+          +'<div class="dtf-opts"><div class="dtf-opt'+(id==='vb'?' on':'')+(sick?' off':'')+'"><b>A · Real out-of-pocket protection</b><span>They pass ManhattanLife’s questions: + Hospital Indemnity, Out-of-Pocket and '+(accPaid()?'PAID Enhanced accident':'24-hour accident')+'.</span><em>'+fmt(AMAZE_MO+P.vbAdd.sum)+'/mo</em>'+(sick?'<i>ManhattanLife won’t take them</i>':qb('vb'))+'</div>'
+          +'<div class="dtf-opt'+(id==='vbs'?' on':'')+'"><b>B · Basic protection — too unhealthy for A</b><span>+ accident only. ManhattanLife’s '+(accPaid()?'PAID Enhanced accident':'24-hour accident')+' shown; the guaranteed-acceptance 5Star or TrioMed accident is on the exception path.</span><em>'+fmt(AMAZE_MO+P.vbAcc.sum)+'/mo</em>'+qb('vbs')+'</div></div>'
           +'<div class="dtf-bd" style="margin-top:6px">Really unhealthy and needs real medical, not just a net? <b>◀ Exception path.</b></div></div>'
       +'</div>'
     +'</div>'
@@ -9437,7 +9452,7 @@ var PB_SLOTS=[
  {k:'sdr', name:'Specified Disease Rider'},
  {k:'mec', name:'SB/A MEC Plan'},
  {k:'his', name:'Hospital Indemnity Select'},
- {k:'acc', name:'24-Hour Accident'},
+ {k:'acc', get name(){ return accName(); }},
  {k:'gap', name:'Out-of-Pocket Protection'},
  {k:'chas',name:'Cancer / Heart Attack & Stroke'},
  {k:'lbp', name:'Living benefits — Primary'},
@@ -9527,7 +9542,7 @@ function pbSummary(k,c,live){
   if(k==='afc') return LVLNAME[c.afc]+' plan';
   if(k==='sdr') return m(c.sdr.max)+' annual max · '+m(c.sdr.ded)+' deductible';
   if(k==='his') return m(c.his.ben)+' per hospital stay'+(+c.his.outp?' · '+m(c.his.outp)+' outpatient surgery':'')+' · ambulance';
-  if(k==='acc') return c.acc+' unit'+(c.acc>1?'s':'')+' · up to '+m(2000*c.acc)+' accident medical';
+  if(k==='acc') return c.acc+' unit'+(c.acc>1?'s':'')+(accPaid()?' · '+m(200)+' ER · '+m(1000*c.acc)+' hospital admission':' · up to '+m(2000*c.acc)+' accident medical');
   if(k==='gap') return m(c.gap.daily)+'/day in hospital · '+m(c.gap.adm)+' admission'+(+c.gap.outp?' · '+m(c.gap.outp)+' outpatient':'')+(c.gap.ea?' · $250 ER':'');
   if(k==='chas') return [c.chas.cancer?'Cancer '+m(c.chas.cancer):'',c.chas.hs?'Heart attack & stroke '+m(c.chas.hs):''].filter(Boolean).join(' · ')+' lump sum';
   if(k==='mec') return 'Plan '+(c.mec||'1')+' · '+MEC.sum[String(c.mec||'1')];
@@ -9555,7 +9570,7 @@ function pbReprice(){ autoPriceTiers(); fill(); compute(); autosave(); }
 var BEN_DATA={}, BEN_VIEW=[];
 var BEN_FILE={mec:'mec',afc:'afc',sdr:'sdr',his:'his',acc:'acc',gap:'gap',chas:'chas',hhc:'hhc',dvh:'dvh',lbp:'lb',lbs:'lb'};
 function benFileFor(k,c){ if((k==='lbp'||k==='lbs')&&c.lb&&c.lb[k.slice(2)]&&(lbManual(c.lb[k.slice(2)].carrier)||c.lb[k.slice(2)].carrier==='iule')) return null;   /* no brochure for an Other carrier */
-  if(k==='base') return c.base==='lifex'?'lifex':c.base==='triad'?'triad':c.base==='brightlife'?'brightlife':null; if(k==='hhc'&&hhcIsSelect()) return 'hhcs'; if(k==='dvh'&&dentalCo()==='sparkle') return 'sparkle'; if(k==='dvh'&&dvhIs7016()) return 'dvh7016'; return BEN_FILE[k]||null; }
+  if(k==='base') return c.base==='lifex'?'lifex':c.base==='triad'?'triad':c.base==='brightlife'?'brightlife':null; if(k==='hhc'&&hhcIsSelect()) return 'hhcs'; if(k==='dvh'&&dentalCo()==='sparkle') return 'sparkle'; if(k==='dvh'&&dvhIs7016()) return 'dvh7016'; if(k==='acc'&&accPaid()) return 'paid'; return BEN_FILE[k]||null; }
 function benCol(k,c){ switch(k){
   case 'mec': return String(c.mec||'1'); case 'afc': return c.afc; case 'acc': return String(c.acc||1); case 'hhc': return c.hhc; case 'dvh': return String((c.dvh&&c.dvh.max)||'');
   case 'lbp': return (c.lb&&c.lb.p&&c.lb.p.carrier)||'moo'; case 'lbs': return (c.lb&&c.lb.s&&c.lb.s.carrier)||'moo';
@@ -9839,7 +9854,7 @@ var TIER_NAME={};
 var TIER_NAME0={good:'Essential',better:'Complete',best:'Comprehensive'};
 ['good','better','best'].forEach(function(t){ Object.defineProperty(TIER_NAME,t,{enumerable:true,get:function(){ try{ if(S&&S.lineup==='custom'){ var c=S.cfg&&S.cfg[t]; if(c&&c.pick&&c.pick.short) return c.pick.short; } }catch(e){} return TIER_NAME0[t]; }}); });
 /* The ACA and Virtual Basic lineups aren't Essential / Complete / Comprehensive - the client reads what each column is (Kyle, 4 Nov). */
-var LINEUP_NAMES={aca:{good:['ACA + accident','24-Hour Accident'],better:['ACA + deductible buster','Hospital + Out-of-Pocket'],best:['ACA + deductible buster + dental','Deductible buster + dental']},
+var LINEUP_NAMES={aca:{get good(){ return ['ACA + accident',accName()]; },better:['ACA + deductible buster','Hospital + Out-of-Pocket'],best:['ACA + deductible buster + dental','Deductible buster + dental']},
   vb:{good:['The ACA plan','The marketplace plan alone'],better:['Virtual Basic A','Real out-of-pocket protection','healthy, but funds are tight'],best:['Virtual Basic B','Basic protection','unhealthy, and funds are very tight']}};
 /* "▶ Present Comprehensive Plan" - the plan's name in italics; one label for the builder's button and the one under Send the quote */
 /* Jesse, 4 Nov: the button names what is being presented - "Present Bright Life plan", "Present Manhattan plan",

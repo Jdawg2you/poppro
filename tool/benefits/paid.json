@@ -1,0 +1,734 @@
+{
+  "product": "paid",
+  "name": "PAID Enhanced (Personal Accident Indemnity Delivery)",
+  "carrier": "ManhattanLife",
+  "columns": {
+    "by": "units",
+    "values": [
+      "1",
+      "2"
+    ]
+  },
+  "tokens": {},
+  "brochures": [
+    {
+      "code": "PAIDEH-BR_0524",
+      "file": "PAIDEH-BR_0524 (CA Accident Insurance (PAID Enhanced) - PAID Enhanced Brochure).pdf",
+      "states": [
+        "AK",
+        "CA",
+        "HI",
+        "ID",
+        "WA"
+      ],
+      "page": "4-6",
+      "notes": [
+        "An accident-only policy that pays cash on a fixed schedule, in addition to any other insurance.",
+        "MyPopPro quotes the 24-hour coverage option (on and off the job); an off-the-job-only option is also filed.",
+        "Issue ages 18 - 84; guaranteed renewable for life, subject to ManhattanLife's right to change premium rates.",
+        "Choose one or two units. Individual, Individual & Spouse, Individual & Child(ren), and Family.",
+        "Optional Annual Wellness Benefit Rider ($60 per covered person per year) is not approved in CA, ID, MI, MO, PA or WA, and is not included in MyPopPro's price."
+      ],
+      "sections": [
+        {
+          "title": "Emergency and doctor",
+          "rows": [
+            {
+              "label": "Emergency Room Treatment",
+              "values": {
+                "1": "$200",
+                "2": "$200"
+              },
+              "key": true,
+              "note": "Treatment sought within 72 hours of the covered accident."
+            },
+            {
+              "label": "Urgent Care Facility",
+              "values": {
+                "1": "$225",
+                "2": "$225"
+              },
+              "key": true,
+              "note": "Within 60 days of the covered accident. Once per covered accident."
+            },
+            {
+              "label": "Physician's Office Visit",
+              "values": {
+                "1": "$75",
+                "2": "$150"
+              },
+              "note": "Within 60 days of the covered accident. Once per covered accident."
+            },
+            {
+              "label": "Physician Follow-up Office Visits",
+              "values": {
+                "1": "$25 / max 6",
+                "2": "$50 / max 8"
+              },
+              "note": "First follow-up within 30 days of the initial office visit."
+            },
+            {
+              "label": "Chiropractor Visit",
+              "values": {
+                "1": "$35 per day",
+                "2": "$70 per day"
+              },
+              "note": "Maximum 5 visits per covered accident."
+            },
+            {
+              "label": "Physical Therapy",
+              "values": {
+                "1": "$35 per treatment",
+                "2": "$70 per treatment"
+              },
+              "note": "Up to 10 treatments per covered accident, per covered person; must start within 30 days and take place within six months of the accident."
+            },
+            {
+              "label": "X-Ray",
+              "values": {
+                "1": "$50",
+                "2": "$100"
+              },
+              "note": "Maximum 1 per calendar year."
+            },
+            {
+              "label": "Major Diagnostic Exams (CT, MRI, MRA, EEG, angiogram)",
+              "values": {
+                "1": "$100 per calendar year",
+                "2": "$200 per calendar year"
+              }
+            },
+            {
+              "label": "Ambulatory Surgical Center / Outpatient Hospital Facility",
+              "values": {
+                "1": "$100",
+                "2": "$200"
+              },
+              "note": "Maximum 1 per accident."
+            },
+            {
+              "label": "Concussion",
+              "values": {
+                "1": "$100",
+                "2": "$200"
+              },
+              "note": "Diagnosed by a physician. Once per covered accident."
+            }
+          ]
+        },
+        {
+          "title": "Hospital",
+          "rows": [
+            {
+              "label": "Hospital / ICU Admission",
+              "values": {
+                "1": "$1,000 (ICU direct: +$500)",
+                "2": "$2,000 (ICU direct: +$1,000)"
+              },
+              "key": true,
+              "note": "Confined within 180 days (minimum 20 hours). Once per covered accident."
+            },
+            {
+              "label": "Hospital Confinement",
+              "values": {
+                "1": "$150 per day",
+                "2": "$300 per day"
+              },
+              "key": true,
+              "note": "Confined within 180 days. Maximum of 365 days."
+            },
+            {
+              "label": "Hospital Intensive Care Unit Confinement",
+              "values": {
+                "1": "$300 per day",
+                "2": "$600 per day"
+              },
+              "note": "Within 30 days of the accident; maximum 15 days; paid in addition to hospital confinement."
+            },
+            {
+              "label": "Rehabilitation Unit — Admission",
+              "values": {
+                "1": "$500",
+                "2": "$1,000"
+              },
+              "note": "First day transferred to a rehabilitation unit; not paid on the same day(s) as hospital confinement."
+            },
+            {
+              "label": "Rehabilitation Unit",
+              "values": {
+                "1": "$150 per day",
+                "2": "$150 per day"
+              },
+              "note": "Limited to 30 days per confinement and 60 days per calendar year."
+            },
+            {
+              "label": "Coma",
+              "values": {
+                "1": "$5,000",
+                "2": "$10,000"
+              },
+              "note": "Comatose in a hospital at least seven days. Once per covered accident."
+            },
+            {
+              "label": "Lodging (companion)",
+              "values": {
+                "1": "$100 per night",
+                "2": "$100 per night"
+              },
+              "note": "Insured confined more than 100 miles from home. Maximum 30 days."
+            },
+            {
+              "label": "Transportation",
+              "values": {
+                "1": "$300 round trip",
+                "2": "$300 round trip"
+              },
+              "note": "Hospital more than 100 miles round trip from home. Three round trips per covered accident."
+            }
+          ]
+        },
+        {
+          "title": "Ambulance",
+          "rows": [
+            {
+              "label": "Ground Ambulance",
+              "values": {
+                "1": "$100",
+                "2": "$200"
+              },
+              "key": true,
+              "note": "Within 90 days. Once per covered accident."
+            },
+            {
+              "label": "Air Ambulance",
+              "values": {
+                "1": "$1,000",
+                "2": "$2,000"
+              },
+              "note": "Within 48 hours. Once per covered accident."
+            }
+          ]
+        },
+        {
+          "title": "Injuries",
+          "rows": [
+            {
+              "label": "Fractures",
+              "values": {
+                "1": "$25 – $2,500",
+                "2": "$50 – $5,000"
+              },
+              "key": true,
+              "note": "Surgical or non-surgical reduction within 90 days; the policy has the full schedule."
+            },
+            {
+              "label": "Dislocations",
+              "values": {
+                "1": "$50 – $2,000",
+                "2": "$100 – $4,000"
+              },
+              "note": "Diagnosed within 90 days; the policy has the full schedule."
+            },
+            {
+              "label": "Lacerations",
+              "values": {
+                "1": "$50 – $400",
+                "2": "$100 – $800"
+              },
+              "note": "Repaired by a physician within 72 hours; based on length."
+            },
+            {
+              "label": "Burns",
+              "values": {
+                "1": "Up to $10,000",
+                "2": "Up to $20,000"
+              },
+              "note": "Treated within 72 hours; by size and degree."
+            },
+            {
+              "label": "Surgery (thoracic, open abdominal)",
+              "values": {
+                "1": "$1,000 (exploratory $100)",
+                "2": "$2,000 (exploratory $200)"
+              },
+              "note": "Within 72 hours to repair internal injuries. Hernia repair not covered."
+            },
+            {
+              "label": "Tendon / Ligament / Rotator Cuff",
+              "values": {
+                "1": "$500 (exploratory $100)",
+                "2": "$1,000 (exploratory $200)"
+              },
+              "note": "Surgical repair within 90 days."
+            },
+            {
+              "label": "Knee Cartilage — Torn",
+              "values": {
+                "1": "$500 (exploratory $100)",
+                "2": "$1,000 (exploratory $200)"
+              },
+              "note": "Treated within 60 days; repaired within 180 days."
+            },
+            {
+              "label": "Ruptured Disc",
+              "values": {
+                "1": "$500",
+                "2": "$1,000"
+              },
+              "note": "Once per covered accident."
+            },
+            {
+              "label": "Eye Injury",
+              "values": {
+                "1": "$200",
+                "2": "$200"
+              },
+              "note": "Requires surgery or removal of a foreign object, within 90 days."
+            },
+            {
+              "label": "Emergency Dental Work",
+              "values": {
+                "1": "$150 crown / $50 extraction",
+                "2": "$300 crown / $100 extraction"
+              },
+              "note": "Once per covered accident."
+            },
+            {
+              "label": "Gunshot Wounds (primary insured)",
+              "values": {
+                "1": "$500",
+                "2": "$500"
+              },
+              "note": "Confinement within 24 hours and surgery within 72 hours."
+            },
+            {
+              "label": "Blood, Plasma, and Platelets",
+              "values": {
+                "1": "$300 insured / $200 spouse or child",
+                "2": "$300 insured / $200 spouse or child"
+              },
+              "note": "Within 90 days. Once per covered accident."
+            },
+            {
+              "label": "Epidural Pain Management",
+              "values": {
+                "1": "$100, up to twice",
+                "2": "$100, up to twice"
+              },
+              "note": "Per covered accident, per covered person."
+            },
+            {
+              "label": "Appliances (wheelchair, brace, walker, crutches)",
+              "values": {
+                "1": "$125",
+                "2": "$125"
+              },
+              "note": "Per covered accident, per covered person."
+            },
+            {
+              "label": "Prosthesis",
+              "values": {
+                "1": "$750",
+                "2": "$1,500"
+              },
+              "note": "Once per covered accident, per covered person."
+            }
+          ]
+        },
+        {
+          "title": "Death, dismemberment and paralysis",
+          "rows": [
+            {
+              "label": "Accidental Death",
+              "values": {
+                "1": "$25,000 insured / $10,000 spouse / $5,000 child",
+                "2": "$50,000 insured / $20,000 spouse / $10,000 child"
+              },
+              "note": "Within 90 days of the accident. Doubled on a common carrier (plane, bus, train)."
+            },
+            {
+              "label": "Accidental Dismemberment",
+              "values": {
+                "1": "$625 – $40,000",
+                "2": "$625 – $40,000"
+              },
+              "note": "Once per covered person, per covered accident."
+            },
+            {
+              "label": "Paraplegia",
+              "values": {
+                "1": "$2,500",
+                "2": "$5,000"
+              }
+            },
+            {
+              "label": "Quadriplegia",
+              "values": {
+                "1": "$5,000",
+                "2": "$10,000"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "code": "PAIDEH-BR_0223",
+      "file": "PAIDEH-BR_0223 (CO Accident Insurance (PAID Enhanced) - PAID Enhanced Brochure).pdf",
+      "states": [
+        "CO",
+        "DE"
+      ],
+      "page": "4-6",
+      "notes": [
+        "An accident-only policy that pays cash on a fixed schedule, in addition to any other insurance.",
+        "MyPopPro quotes the 24-hour coverage option (on and off the job); an off-the-job-only option is also filed.",
+        "Issue ages 18 - 84; guaranteed renewable for life, subject to ManhattanLife's right to change premium rates.",
+        "Choose one or two units. Individual, Individual & Spouse, Individual & Child(ren), and Family.",
+        "Optional Annual Wellness Benefit Rider ($60 per covered person per year) is not approved in CA, ID, MI, MO, PA or WA, and is not included in MyPopPro's price."
+      ],
+      "sections": [
+        {
+          "title": "Emergency and doctor",
+          "rows": [
+            {
+              "label": "Emergency Room Treatment",
+              "values": {
+                "1": "$200",
+                "2": "$200"
+              },
+              "key": true,
+              "note": "Treatment sought within 72 hours of the covered accident."
+            },
+            {
+              "label": "Urgent Care Facility",
+              "values": {
+                "1": "$225",
+                "2": "$225"
+              },
+              "key": true,
+              "note": "Within 60 days of the covered accident. Once per covered accident."
+            },
+            {
+              "label": "Physician's Office Visit",
+              "values": {
+                "1": "$75",
+                "2": "$150"
+              },
+              "note": "Within 60 days of the covered accident. Once per covered accident."
+            },
+            {
+              "label": "Physician Follow-up Office Visits",
+              "values": {
+                "1": "$25 / max 6",
+                "2": "$50 / max 8"
+              },
+              "note": "First follow-up within 30 days of the initial office visit."
+            },
+            {
+              "label": "Chiropractor Visit",
+              "values": {
+                "1": "$35 per day",
+                "2": "$70 per day"
+              },
+              "note": "Maximum 5 visits per covered accident."
+            },
+            {
+              "label": "Physical Therapy",
+              "values": {
+                "1": "$35 per treatment",
+                "2": "$70 per treatment"
+              },
+              "note": "Up to 10 treatments per covered accident, per covered person; must start within 30 days and take place within six months of the accident."
+            },
+            {
+              "label": "X-Ray",
+              "values": {
+                "1": "$50",
+                "2": "$100"
+              },
+              "note": "Maximum 1 per calendar year."
+            },
+            {
+              "label": "Major Diagnostic Exams (CT, MRI, MRA, EEG, angiogram)",
+              "values": {
+                "1": "$100 per calendar year",
+                "2": "$200 per calendar year"
+              }
+            },
+            {
+              "label": "Ambulatory Surgical Center / Outpatient Hospital Facility",
+              "values": {
+                "1": "$100",
+                "2": "$200"
+              },
+              "note": "Maximum 1 per accident."
+            },
+            {
+              "label": "Concussion",
+              "values": {
+                "1": "$100",
+                "2": "$200"
+              },
+              "note": "Diagnosed by a physician. Once per covered accident."
+            }
+          ]
+        },
+        {
+          "title": "Hospital",
+          "rows": [
+            {
+              "label": "Hospital / ICU Admission",
+              "values": {
+                "1": "$1,000 (ICU direct: +$500)",
+                "2": "$2,000 (ICU direct: +$1,000)"
+              },
+              "key": true,
+              "note": "Confined within 180 days (minimum 20 hours). Once per covered accident."
+            },
+            {
+              "label": "Hospital Confinement",
+              "values": {
+                "1": "$150 per day",
+                "2": "$300 per day"
+              },
+              "key": true,
+              "note": "Confined within 180 days. Maximum of 365 days."
+            },
+            {
+              "label": "Hospital Intensive Care Unit Confinement",
+              "values": {
+                "1": "$300 per day",
+                "2": "$600 per day"
+              },
+              "note": "Within 30 days of the accident; maximum 15 days; paid in addition to hospital confinement."
+            },
+            {
+              "label": "Rehabilitation Unit — Admission",
+              "values": {
+                "1": "$500",
+                "2": "$1,000"
+              },
+              "note": "First day transferred to a rehabilitation unit; not paid on the same day(s) as hospital confinement."
+            },
+            {
+              "label": "Rehabilitation Unit",
+              "values": {
+                "1": "$150 per day",
+                "2": "$150 per day"
+              },
+              "note": "Limited to 30 days per confinement and 60 days per calendar year."
+            },
+            {
+              "label": "Coma",
+              "values": {
+                "1": "$5,000",
+                "2": "$10,000"
+              },
+              "note": "Comatose in a hospital at least seven days. Once per covered accident."
+            },
+            {
+              "label": "Lodging (companion)",
+              "values": {
+                "1": "$100 per night",
+                "2": "$100 per night"
+              },
+              "note": "Insured confined more than 100 miles from home. Maximum 30 days."
+            },
+            {
+              "label": "Transportation",
+              "values": {
+                "1": "$300 round trip",
+                "2": "$300 round trip"
+              },
+              "note": "Hospital more than 100 miles round trip from home. Three round trips per covered accident."
+            }
+          ]
+        },
+        {
+          "title": "Ambulance",
+          "rows": [
+            {
+              "label": "Ground Ambulance",
+              "values": {
+                "1": "$100",
+                "2": "$200"
+              },
+              "key": true,
+              "note": "Within 90 days. Once per covered accident."
+            },
+            {
+              "label": "Air Ambulance",
+              "values": {
+                "1": "$1,000",
+                "2": "$2,000"
+              },
+              "note": "Within 48 hours. Once per covered accident."
+            }
+          ]
+        },
+        {
+          "title": "Injuries",
+          "rows": [
+            {
+              "label": "Fractures",
+              "values": {
+                "1": "$25 – $2,500",
+                "2": "$50 – $5,000"
+              },
+              "key": true,
+              "note": "Surgical or non-surgical reduction within 90 days; the policy has the full schedule."
+            },
+            {
+              "label": "Dislocations",
+              "values": {
+                "1": "$50 – $2,000",
+                "2": "$100 – $4,000"
+              },
+              "note": "Diagnosed within 90 days; the policy has the full schedule."
+            },
+            {
+              "label": "Lacerations",
+              "values": {
+                "1": "$50 – $400",
+                "2": "$100 – $800"
+              },
+              "note": "Repaired by a physician within 72 hours; based on length."
+            },
+            {
+              "label": "Burns",
+              "values": {
+                "1": "Up to $10,000",
+                "2": "Up to $20,000"
+              },
+              "note": "Treated within 72 hours; by size and degree."
+            },
+            {
+              "label": "Surgery (thoracic, open abdominal)",
+              "values": {
+                "1": "$1,000 (exploratory $100)",
+                "2": "$2,000 (exploratory $200)"
+              },
+              "note": "Within 72 hours to repair internal injuries. Hernia repair not covered."
+            },
+            {
+              "label": "Tendon / Ligament / Rotator Cuff",
+              "values": {
+                "1": "$500 (exploratory $100)",
+                "2": "$1,000 (exploratory $200)"
+              },
+              "note": "Surgical repair within 90 days."
+            },
+            {
+              "label": "Knee Cartilage — Torn",
+              "values": {
+                "1": "$500 (exploratory $100)",
+                "2": "$1,000 (exploratory $200)"
+              },
+              "note": "Treated within 60 days; repaired within 180 days."
+            },
+            {
+              "label": "Ruptured Disc",
+              "values": {
+                "1": "$500",
+                "2": "$1,000"
+              },
+              "note": "Once per covered accident."
+            },
+            {
+              "label": "Eye Injury",
+              "values": {
+                "1": "$200",
+                "2": "$200"
+              },
+              "note": "Requires surgery or removal of a foreign object, within 90 days."
+            },
+            {
+              "label": "Emergency Dental Work",
+              "values": {
+                "1": "$150 crown / $50 extraction",
+                "2": "$300 crown / $100 extraction"
+              },
+              "note": "Once per covered accident."
+            },
+            {
+              "label": "Gunshot Wounds (primary insured)",
+              "values": {
+                "1": "$500",
+                "2": "$500"
+              },
+              "note": "Confinement within 24 hours and surgery within 72 hours."
+            },
+            {
+              "label": "Blood, Plasma, and Platelets",
+              "values": {
+                "1": "$300 insured / $200 spouse or child",
+                "2": "$300 insured / $200 spouse or child"
+              },
+              "note": "Within 90 days. Once per covered accident."
+            },
+            {
+              "label": "Epidural Pain Management",
+              "values": {
+                "1": "$100, up to twice",
+                "2": "$100, up to twice"
+              },
+              "note": "Per covered accident, per covered person."
+            },
+            {
+              "label": "Appliances (wheelchair, brace, walker, crutches)",
+              "values": {
+                "1": "$125",
+                "2": "$125"
+              },
+              "note": "Per covered accident, per covered person."
+            },
+            {
+              "label": "Prosthesis",
+              "values": {
+                "1": "$750",
+                "2": "$1,500"
+              },
+              "note": "Once per covered accident, per covered person."
+            }
+          ]
+        },
+        {
+          "title": "Death, dismemberment and paralysis",
+          "rows": [
+            {
+              "label": "Accidental Death",
+              "values": {
+                "1": "$25,000 insured / $10,000 spouse / $5,000 child",
+                "2": "$50,000 insured / $20,000 spouse / $10,000 child"
+              },
+              "note": "Within 90 days of the accident. Doubled on a common carrier (plane, bus, train)."
+            },
+            {
+              "label": "Accidental Dismemberment",
+              "values": {
+                "1": "$625 – $40,000",
+                "2": "$625 – $40,000"
+              },
+              "note": "Once per covered person, per covered accident."
+            },
+            {
+              "label": "Paraplegia",
+              "values": {
+                "1": "$2,500",
+                "2": "$5,000"
+              }
+            },
+            {
+              "label": "Quadriplegia",
+              "values": {
+                "1": "$5,000",
+                "2": "$10,000"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

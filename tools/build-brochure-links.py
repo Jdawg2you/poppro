@@ -15,7 +15,7 @@ import csv, json, os, subprocess, sys, collections, glob
 HERE = os.path.dirname(os.path.abspath(__file__))
 LIB = os.path.expanduser('~/Library/CloudStorage/GoogleDrive-jessestamm@gmail.com/My Drive/Optimum Carrier Library')
 OUT = os.path.join(HERE, '..', 'tool', 'brochures.json')
-KEYS = ['afc', 'his', 'acc', 'gap', 'chas', 'hhc', 'hhcs', 'dvh', 'dvh7016']   # ManhattanLife products in the builder
+KEYS = ['afc', 'his', 'acc', 'paid', 'gap', 'chas', 'hhc', 'hhcs', 'dvh', 'dvh7016']   # ManhattanLife products in the builder
 
 rows = [r for r in csv.DictReader(open(os.path.join(LIB, 'manifest.csv'))) if r['carrier'] == 'ManhattanLife']
 # ids whose file has no Drive-for-Desktop xattr locally, confirmed one by one with the Drive API (title + "anyone" reader)
