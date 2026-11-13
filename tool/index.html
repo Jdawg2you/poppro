@@ -2317,7 +2317,7 @@ var MEC={rates:{'1':{i:99,s:135,c:125,f:159},'2':{i:119,s:165,c:159,f:209},'3':{
   adds:{'1':'ACA preventive care + ACA-mandated Rx at 100%','2':'Plan 1 + $0 Quest labs','3':'Plan 2 + $0 telemedicine, $35 primary care, $75 urgent care'},
   sum:{'1':'ACA preventive care and ACA prescriptions at 100% · no deductible','2':'ACA preventive care at 100% · $0 Quest labs · no deductible','3':'ACA preventive care at 100% · $0 Quest labs · $0 telemedicine · $35 primary care · $75 urgent care'},
   doc:'docs/sba-mec-brochure.pdf', form:'SB/A MEC brochure — for agents'};
-function mecFits(c,st){ return !c||!c.base||c.base==='afc'; }   /* Jesse, 12 Nov: every state, beside any Manhattan plan */
+function mecFits(c,st){ return true; }   /* Jesse, 13 Nov: every state, every package (Manhattan, Cigna, Bright Life, ACA...) */
 function pMEC(hh,plan){ var r=MEC.rates[String(plan||'1')]; var v=r&&r[hh||'i']; return v==null?{price:null,note:'SB/A MEC: no rate for this plan and household'}:{price:v,note:''}; }
 function sparkleSold(st){ return SPARKLE.states.split(' ').indexOf((st||'').toUpperCase())>=0; }
 function mlDentalSold(st){ st=(st||'').toUpperCase(); return (ML_OFFERED.dvh||'').split(' ').indexOf(st)>=0||(ML_OFFERED.dvh7016||'').split(' ').indexOf(st)>=0; }
@@ -3452,8 +3452,8 @@ function buildTierProducts(c,byKey,extras){
   add('afc','Core Health Plan — AFC '+LVLNAME[c.afc], pAFC(R,st,age,hh,c.afc));
   if(c.sdr){ var sd=pSDR(R,st,age,hh,c.sdr,false);
   add('sdr','Specified Disease Rider — $'+(+c.sdr.max/1000)+'K / $'+((+(sd.ded||c.sdr.ded))/1000)+'K ded', sd); }
-  if(c.mec) add('mec','SB/A MEC Plan '+c.mec+' — minimum essential coverage', pMEC(hh,c.mec));
   }
+  if(c.mec) add('mec','SB/A MEC Plan '+c.mec+' — minimum essential coverage', pMEC(hh,c.mec));   /* any core plan (Jesse, 13 Nov) */
   /* a product whose settings are empty (null - a file written outside MyPopPro, 21 Oct) is simply not offered, rather than crashing the Quote */
   if(c.his) add('his','Hospital Indemnity — HI Select $'+Number(+c.his.ben||10000).toLocaleString('en-US')+(c.his.outp?' + Outpatient $'+Number(c.his.outp).toLocaleString('en-US'):''), pHIS(R,st,age,hh,c.his));   /* the benefit chosen, not a fixed $10K (Health ZONE, 21 Oct: an export read $10K for a $2,000 plan) */
   if(c.acc) add('acc','Accident Cash — 24-Hr Accident ('+c.acc+' Unit)', pACC(R,hh,c.acc));
@@ -7095,7 +7095,7 @@ var NEWS=[
   ['Age bands','Cigna (Triad) prices use the age of the oldest person covered. If an age box is empty, MyPopPro now works it out from that person’s date of birth, so a couple is never priced in the younger person’s band.'],
   ['2027 guide','Rates re-checked against the 2027 Classic Triad guide (all match). The $1,000 plan’s mental-health visit is now $30, per the 2027 guide. The note next to the price says the approved rate can move up or down after underwriting, typically about $100 for one person, $200 for a couple or a parent with children, $300 for a family.']]},
  {d:'2026-11-12',t:'The SB/A MEC Plan beside Manhattan',h:[
-  ['Manhattan clients','The SB/A MEC Plan is now an add-on on any Manhattan package: minimum essential coverage with ACA preventive care at 100%, and $0 Quest labs on Plans 2 and 3. Pick it from + Add, then choose Plan 1, 2 or 3. The price joins the package total, the Package of Protection, the client recap and the enrollment card.'],
+  ['Any package','The SB/A MEC Plan is now an add-on on every package (Manhattan, Cigna, Bright Life and the rest), in the Package builder and when you edit the plan at Enroll: minimum essential coverage with ACA preventive care at 100%, and $0 Quest labs on Plans 2 and 3. Pick it from + Add, then choose Plan 1, 2 or 3. The price joins the package total, the Package of Protection, the client recap and the enrollment card.'],
   ['Benefits','The ⓘ shows what each plan covers and its rates, with a link to the full brochure.']]},
  {d:'2026-11-12',t:'MyPopPro has a new home, plus a cleaner quote email',h:[
   ['Sign-in','MyPopPro now lives on its own server with a simple sign-in. Still free. Type your email, enter the 6-digit code we send, and you stay signed in for 30 days on that device. Your saved clients stay right where they were.'],
@@ -9954,7 +9954,7 @@ function pbColHTML(T,anc){ var t=T[0], act=(t==='actual'), st=(S.client.state||'
       sum+=+price||0; var open=PB_OPEN[t+'|'+k], edited=!!(live&&live.manual);
       var prHtml=open?'<span class="pr"><span style="font-weight:600;color:var(--muted)">$</span><input class="pbprice" type="number" step="0.01" min="0" data-k="'+k+'" value="'+(+price).toFixed(2)+'" aria-label="Monthly price for '+sl.name+'"></span>'
                     :'<span class="pr">'+pbMoney(price)+'</span>';
-      var mlTag=(blOn()&&c.base&&c.base!=='afc'&&k!=='base'&&!isLBk(k))?'<span class="mltag" title="This product is ManhattanLife’s, not '+(c.base==='brightlife'?'Bright Life':c.base==='triad'?'Cigna':'the base carrier')+'’s">ManhattanLife</span>':'';
+      var mlTag=(blOn()&&c.base&&c.base!=='afc'&&k!=='base'&&!isLBk(k)&&k!=='mec')?'<span class="mltag" title="This product is ManhattanLife’s, not '+(c.base==='brightlife'?'Bright Life':c.base==='triad'?'Cigna':'the base carrier')+'’s">ManhattanLife</span>':'';
       var info=benFileFor(k,c)?'<button type="button" class="pbinfo" data-ben="'+k+'" title="Benefits — '+sl.name+'" aria-label="Benefits for '+sl.name+'">i</button>':'';
       var hf=histFam(), hm=histSelf(), hiK=HIST_KEYS.indexOf(k)>=0, selfLB=(k==='lbp'||k==='lbs')&&hm.length;
       html+='<div class="pbrow'+(edited?' edited':'')+(hf.any&&hiK?' hist':'')+(selfLB?' histself':'')+'"><div class="pbhead"><span class="nm">'+sl.name+mlTag+info+(edited?' <span class="edtag">edited</span>':'')+'<span class="cov">'+esc(pbSummary(k,c,live)||'')+'</span>'+(k==='base'&&c.base==='aca'?acaTermsTag():'')+'</span>'+prHtml
@@ -9981,7 +9981,7 @@ function pbColHTML(T,anc){ var t=T[0], act=(t==='actual'), st=(S.client.state||'
     if(lbAll&&lbMissing.length>1){ addable=addable.filter(function(sl){ return sl.k!=='lbp'&&sl.k!=='lbs'; }); addable.push({k:'lb*',name:'Living benefits (each covered adult)'}); }
     var lbxA=addable.filter(function(sl){ return sl.k==='lbx'; }); if(lbxA.length){ addable=addable.filter(function(sl){ return sl.k!=='lbx'; }).concat(lbxA); }   /* last, just above Other: any person, any carrier */
     var mecA=addable.filter(function(sl){ return sl.k==='mec'; }); if(mecA.length){ addable=addable.filter(function(sl){ return sl.k!=='mec'; }).concat(mecA); }   /* Jesse, 12 Nov: after living benefits, just above Other: rarely used */
-    html+='<div class="pbadd"><select data-act="add" aria-label="Add a product"><option value="">＋ Add product</option>'+addable.map(function(sl){ return '<option value="'+sl.k+'">'+sl.name+(blOn()&&c.base&&c.base!=='afc'&&!/^lb/.test(sl.k)?' (ManhattanLife)':'')+'</option>'; }).join('')
+    html+='<div class="pbadd"><select data-act="add" aria-label="Add a product"><option value="">＋ Add product</option>'+addable.map(function(sl){ return '<option value="'+sl.k+'">'+sl.name+(blOn()&&c.base&&c.base!=='afc'&&!/^lb/.test(sl.k)&&sl.k!=='mec'?' (ManhattanLife)':'')+'</option>'; }).join('')
       +'<option value="other">Other — type in a product that isn’t listed…</option>'
       +unavail.map(function(n){ return '<option disabled>'+n+' — not sold in '+st+'</option>'; }).join('')+'</select>'
       +(unavail.length?'<div class="pbna">Not sold in '+st+': '+unavail.join(', ')+'</div>':'')+'</div>';
