@@ -3459,7 +3459,13 @@ function isRateDriven(nm){
    every reprice; Jesse, 9 Oct: remove them. An agent's own product now comes in through Add product -> Other. */
 var LEGACY_PLACEHOLDERS=(function(){ var n={}; ['good','better','best'].forEach(function(t){ defProducts(t).forEach(function(p){ n[p.name]=1; }); }); return n; })();
 function manualExtras(prev){ return (prev||[]).filter(function(p){ return !p.k && (p.other || (!isRateDriven(p.name) && !LEGACY_PLACEHOLDERS[p.name])); }); }
-function effCfg(t){ S.cfg=S.cfg||{}; if(!S.cfg[t]) S.cfg[t]=cfgClone(TIERCFG[t]); return S.cfg[t]; }
+function effCfg(t){ S.cfg=S.cfg||{}; if(!S.cfg[t]) S.cfg[t]=cfgClone(TIERCFG[t]); mecAutoCA(S.cfg[t]); return S.cfg[t]; }
+/* California: the SB/A MEC Plan comes pre-added to every Manhattan column (Jesse, 16 Nov) - Plan 1, the same default as + Add.
+   Removing it still works (it goes to the dropped list); other packages keep it as an option. Leaving CA, or switching
+   the column off Manhattan, takes back only the MEC that was added automatically. */
+function mecAutoCA(c){ if(!c) return; var ca=String((S.client&&S.client.state)||'').toUpperCase().trim()==='CA', mh=(c.base||'afc')==='afc';
+  if(ca&&mh&&c.mec==null){ c.mec='1'; c.mecAuto=1; }
+  else if(c.mecAuto&&!(ca&&mh)){ delete c.mec; delete c.mecAuto; } }
 /* Pure builder — returns a priced products array for a config. Does not mutate state. */
 function buildTierProducts(c,byKey,extras){
   var st=(S.client.state||'').toUpperCase().trim(), age=ratingAge(), hh=householdKey(), R=HF_RATES, out=[];
@@ -3483,7 +3489,7 @@ function buildTierProducts(c,byKey,extras){
   if(c.mec) add('mec','SB/A MEC Plan '+c.mec+' — minimum essential coverage', pMEC(hh,c.mec));   /* any core plan (Jesse, 13 Nov) */
   /* a product whose settings are empty (null - a file written outside MyPopPro, 21 Oct) is simply not offered, rather than crashing the Quote */
   if(c.his) add('his','Hospital Indemnity — HI Select $'+Number(+c.his.ben||10000).toLocaleString('en-US')+(c.his.outp?' + Outpatient $'+Number(c.his.outp).toLocaleString('en-US'):''), pHIS(R,st,age,hh,c.his));   /* the benefit chosen, not a fixed $10K (Health ZONE, 21 Oct: an export read $10K for a $2,000 plan) */
-  if(c.acc) add('acc','Accident Cash — '+(accPaid(st)?accName(st):'24-Hr Accident')+' ('+c.acc+' Unit)', pACC(R,hh,c.acc));
+  if(c.acc) add('acc',(accPaid(st)?'Accident Cash ('+accName(st).replace(/ Accident$/,'')+')':'Accident Cash')+' — '+(accPaid(st)?accName(st):'24-Hr Accident')+' ('+c.acc+' Unit)', pACC(R,hh,c.acc));
   if(c.gap) add('gap','Out-of-Pocket / Gap — $'+c.gap.daily+'/day · $'+c.gap.adm+' admission', pGAP(R,st,age,hh,c.gap));
   if(c.dvh){
   var dr=dvhRiders(c.dvh), dres=pDVH(R,age,hh,c.dvh,st);
@@ -7118,6 +7124,9 @@ function glp1FromSuite(h){ var one=function(pre){ var k=function(f){ return h[pr
    items the agent hasn't opened yet (localStorage pp_news_seen = newest date they've seen). */
 var NEWS_DAYS=30;
 var NEWS=[
+ {d:'2026-11-16',t:'California: the MEC plan comes with every Manhattan package',h:[
+  ['Pre-added','For a California client, the SB/A MEC Plan (Plan 1) is already in each Manhattan column of the Package builder. Change the plan level or remove it like any other line. Bright Life, Cigna and the other packages still have it under + Add.'],
+  ['PAID on the plan cards','The good / better / best cards now say which accident plan it is: “Accident Cash (PAID Enhanced)” or “Accident Cash (PAID)” where the 24-Hour Accident isn’t sold.']]},
  {d:'2026-11-16',t:'Accident and Affordable Choice follow ManhattanLife’s latest state maps',h:[
   ['PAID Enhanced','Where ManhattanLife doesn’t sell the 24-Hour Accident, the accident slot is PAID Enhanced: California, Alaska, Hawaii, Idaho and Washington (issue ages 18-84), Colorado and Delaware (18-64). One unit $18.33 for one person up to $33.33 for a family; two units $22 to $42. Every other state keeps the 24-Hour Accident.'],
   ['Maryland and DC','The earlier PAID plan (ages 18-69, same price, smaller benefits: $500 per unit to be admitted, $100 per unit per day).'],
@@ -10201,7 +10210,7 @@ function pbTierDefaults(t,lu,baseOverride){
 function pbResetTier(t){
   var lu=LINEUP_BASES[S.lineup]?S.lineup:(S.lineup==='custom'?null:'mh');
   var pk=S.packages[t], keepDvh=(pk.dropped||[]).indexOf('dvh')>=0&&!(lu==='aca'&&t==='best');   /* that column is the dental one */
-  var mecWas=((S.cfg||{})[t]||{}).mec||null, mecOff=(pk.dropped||[]).indexOf('mec')>=0;
+  var mecWas=(((S.cfg||{})[t]||{}).mecAuto?null:((S.cfg||{})[t]||{}).mec)||null,   /* an auto-added CA MEC is re-decided for the new column, not carried as a choice */ mecOff=(pk.dropped||[]).indexOf('mec')>=0;
   S.cfg=S.cfg||{};
   if(lu){ var d=pbTierDefaults(t,lu); S.cfg[t]=d.c; pk.dropped=(keepDvh?['dvh']:[]).concat(d.drop); }
   else { var pk0=(S.cfg[t]||{}).pick;   // Custom: back to the plan picked for this column, else keep its base
