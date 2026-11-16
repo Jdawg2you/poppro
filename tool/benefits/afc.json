@@ -32,6 +32,7 @@
         "NE",
         "NV",
         "OK",
+        "OR",
         "SC",
         "TN",
         "WI",
@@ -2418,9 +2419,7 @@
     {
       "code": "AFC18-BR_0424",
       "file": "AFC18-BR_0424 (OR Affordable Choice - Affordable Choice 18 Brochure).pdf",
-      "states": [
-        "OR"
-      ],
+      "states": [],
       "page": "4",
       "sections": [
         {
