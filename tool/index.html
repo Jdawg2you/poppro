@@ -2533,6 +2533,18 @@ function pHHC(R,st,age,col){
   var row=g.base[bandHHC(age)]; if(!row||row[col]==null) return {price:null,note:'HHC rate n/a'};
   return {price:row[col],note:'',prod:g.prod};
 }
+/* Home Health Care is PER PERSON (Jesse, 17 Nov): each spouse is their own policy, priced at their own age.
+   No spousal discount yet - the HHC guide names one but not its percentage (asked of ManhattanLife). */
+function pHHCHH(R,st,col){
+  var w=(S.intake&&S.intake.who)||{};
+  var a=+S.client.page||+ageFromDOB(S.client.date)||0;
+  var b=w.spouse?(+S.client.sage||+ageFromDOB(S.client.sdob)||0):0;
+  var p=pHHC(R,st,a,col); if(!w.spouse||p.price==null) return p;
+  if(!b) return {price:null,note:'Home Health Care is per person - add the spouse’s age to price their policy'};
+  var s=pHHC(R,st,b,col); if(s.price==null) return {price:null,note:'Spouse: '+(s.note||'no Home Health Care rate at age '+b)};
+  return {price:Math.round((p.price+s.price)*100)/100,prod:p.prod,pp:true,
+    note:'Per person - two policies: primary $'+p.price.toFixed(2)+' (age '+a+') + spouse $'+s.price.toFixed(2)+' (age '+b+'). Spousal discount not applied yet.'};
+}
 
 
 /* ===== LIVING BENEFITS RATES (20-Year Term, monthly) =====
@@ -3526,7 +3538,7 @@ function buildTierProducts(c,byKey,extras){
   if(c.dvh){
   var dr=dvhRiders(c.dvh), dres=pDVH(R,age,hh,c.dvh,st);
   add('dvh',dres.sparkle?'Sparkle Care Dental — $4,500 per member per year':dres.plan7016?'Dental, Vision & Hearing (7016) — $'+(+dres.max/1000)+'K':'DVH Select — Dental $'+(+c.dvh.max/1000)+'K'+(dr.vis?' + Vision':'')+(dr.hear?' + Hearing':''), dres); }
-  if(c.hhc){ var hr=pHHC(R,st,age,c.hhc); add('hhc','Home Health Care'+(hr.prod==='Select'?' Select':'')+' — HHC '+c.hhc, hr); }
+  if(c.hhc){ var hr=pHHCHH(R,st,c.hhc); add('hhc','Home Health Care'+(hr.prod==='Select'?' Select':'')+' — HHC '+c.hhc+(hr.pp?' · per person, 2 policies':''), hr); }
   if(c.lb){ lbPersons().forEach(function(pp){ var lc=c.lb[pp.k]; if(!lc||!lc.face) return;
     var r=pLB1(pp,lc); add('lb'+pp.k,lbManual(lc.carrier)?'Living Benefits — '+pp.tag+' '+lbFaceLabel(lc.face)+lbTypeTag(lc)+' ('+(r.carrier||lbCarName(lc))+')':'Living Benefits — '+pp.tag+' $'+(+lc.face/1000)+'K '+lbKindName(r.carrier&&/IUL/.test(r.carrier)?'iule':lc.carrier)+' ('+(r.carrier||'')+')', r); });
     if(lbxList(c).length) add('lbx',lbxName(lbxList(c)),pLBX(lbxList(c))); }
@@ -7159,7 +7171,8 @@ var NEWS=[
  {d:'2026-11-17',t:'ManhattanLife prices checked against the carrier’s own rate sheets',h:[
   ['24-Hour Accident','Each state now has its own rate. Before, every state got one generic table: a Minnesota family at 2 units showed $108.07 instead of $90.00.'],
   ['Out-of-Pocket','Two or three children now price as the carrier’s “up to 3 children” rate, not the one-child rate, and each child past three adds the extra-child rate. Pennsylvania’s admission benefit has its own rates. Choosing “None” for outpatient no longer blanks the price.'],
-  ['Hospital Indemnity','Priced from the carrier’s rate guide for every state, including Minnesota and South Dakota’s lower ambulance charge and each state’s own policy fee.'],
+  ['Hospital Indemnity','Priced from the carrier’s rate guide for every state. Minnesota follows ManhattanLife’s own quote tool, which uses the standard ambulance charge and $12 fee: a family at 46 with $10,000 is $179.13, against the portal’s $179.10.'],
+  ['Home Health Care is per person','Each spouse is their own policy, priced at their own age, and the quote line says “per person, 2 policies”. Before, a couple was quoted as one policy. The spousal discount isn’t applied yet.'],
   ['Specified Disease Rider','South Dakota’s rider was about 15% low and now matches the rate guide. The rider is quoted only for ages 18–64, the same as the plan.'],
   ['Cancer / Heart Attack & Stroke and dental','Nebraska, New Hampshire and Washington no longer show $0.00 or “not available” at some ages. Ohio, South Dakota, Utah and West Virginia dental now prices the vision and hearing riders.']]},
  {d:'2026-11-16',t:'California: the MEC plan comes with every Manhattan package',h:[
@@ -10275,7 +10288,7 @@ function pbWhyNot(k,c,st,age){
     else if(k==='base') r=c.base==='lifex'?pLIFEX(age,hh,c.lifexPlan||'$500 PPO'):c.base==='brightlife'?pBL(age,hh,c.blPlan||BL_DEFAULT,c):pTRIAD(age,hh,c.triadPlan||'7350');
     else if(k==='mec') r=pMEC(hh,c.mec);
     else if(k==='afc') r=pAFC(R,st,age,hh,c.afc); else if(k==='sdr') r=pSDR(R,st,age,hh,c.sdr,false); else if(k==='his') r=pHIS(R,st,age,hh,c.his);
-    else if(k==='acc') r=pACC(R,hh,c.acc); else if(k==='lbp'||k==='lbs'){ var pp=lbPersons().filter(function(x){ return 'lb'+x.k===k; })[0]; r=pp?pLB1(pp,c.lb[k.slice(2)]):{note:'no spouse covered'}; } else if(k==='lbx') r=pLBX(lbxList(c)); else if(k==='gap') r=pGAP(R,st,age,hh,c.gap); else if(k==='hhc') r=pHHC(R,st,age,c.hhc); else if(k==='chas') r=pCHAS(st,age,hh,c.chas);
+    else if(k==='acc') r=pACC(R,hh,c.acc); else if(k==='lbp'||k==='lbs'){ var pp=lbPersons().filter(function(x){ return 'lb'+x.k===k; })[0]; r=pp?pLB1(pp,c.lb[k.slice(2)]):{note:'no spouse covered'}; } else if(k==='lbx') r=pLBX(lbxList(c)); else if(k==='gap') r=pGAP(R,st,age,hh,c.gap); else if(k==='hhc') r=pHHCHH(R,st,c.hhc); else if(k==='chas') r=pCHAS(st,age,hh,c.chas);
   }catch(e){}
   return (r&&r.note)||'No rate for this client.';
 }
