@@ -2272,6 +2272,9 @@ function pHIS(R,st,age,hh,cfg){
   var g=rGrp(HIS_GUIDE.g,st); if(!g) return {price:null,note:'HI Select is not sold in '+st};
   var b=g.base[String(age)]; if(!b) return {price:null,note:'HI Select is issued ages 18–89'};
   if(b.d1==null) return {price:null,note:'HI Select 1-day is for ages 18–64 in '+st+'; older clients take the 3, 6 or 10-day plan (not in the builder yet)'};
+  /* More than 3 children: ManhattanLife charges for the extra children (Jesse confirmed with them, 17 Nov; the portal
+     took a MN family from $178.10 to $271.08 at the 4th child). The charge isn't published yet, so don't guess it. */
+  if((hh==='c'||hh==='f')&&kidsList().length>3) return {price:null,note:'Hospital Indemnity with more than 3 children: see carrier. ManhattanLife charges for each child past three; get the price from their quote tool.'};
   var tf=HIS_GUIDE.tf[hh]||1, ben=Math.max(50,Math.min(10000,+cfg.ben||10000));
   var tot=(b.d1*(ben/50)+(b.amb||0)+(b.em||0))*0.0833*tf;   // ambulance is part of every base plan
   if(+cfg.outp){ var rd=g.rid[String(age)]||{}; if(rd.outp==null) return {price:null,note:'HI Select outpatient surgical rider is not available'+(st==='CT'?' in CT':' at age '+age)}; tot+=rd.outp*(+cfg.outp/250)*0.0833*tf; }
@@ -7171,7 +7174,7 @@ var NEWS=[
  {d:'2026-11-17',t:'ManhattanLife prices checked against the carrier’s own rate sheets',h:[
   ['24-Hour Accident','Each state now has its own rate. Before, every state got one generic table: a Minnesota family at 2 units showed $108.07 instead of $90.00.'],
   ['Out-of-Pocket','Two or three children now price as the carrier’s “up to 3 children” rate, not the one-child rate, and each child past three adds the extra-child rate. Pennsylvania’s admission benefit has its own rates. Choosing “None” for outpatient no longer blanks the price.'],
-  ['Hospital Indemnity','Priced from the carrier’s rate guide for every state. Minnesota follows ManhattanLife’s own quote tool, which uses the standard ambulance charge and $12 fee: a family at 46 with $10,000 is $179.13, against the portal’s $179.10.'],
+  ['Hospital Indemnity','Priced from the carrier’s rate guide for every state. Minnesota follows ManhattanLife’s own quote tool, which uses the standard ambulance charge and $12 fee: a family at 46 with $10,000 is $179.13, against the portal’s $179.10. With more than 3 children the line says “see carrier”, because ManhattanLife charges for each child past three and hasn’t published the rate yet. Type in the price from their quote tool.'],
   ['Home Health Care is per person','Each spouse is their own policy, priced at their own age, and the quote line says “per person, 2 policies”. Before, a couple was quoted as one policy. The spousal discount isn’t applied yet.'],
   ['Specified Disease Rider','South Dakota’s rider was about 15% low and now matches the rate guide. The rider is quoted only for ages 18–64, the same as the plan.'],
   ['Cancer / Heart Attack & Stroke and dental','Nebraska, New Hampshire and Washington no longer show $0.00 or “not available” at some ages. Ohio, South Dakota, Utah and West Virginia dental now prices the vision and hearing riders.']]},
@@ -10037,7 +10040,7 @@ function pbColHTML(T,anc){ var t=T[0], act=(t==='actual'), st=(S.client.state||'
       var live=byKpk[k]||byK[k], price=live?live.monthly:null;
       if(price==null){
         var typed=k==='lbx'||((k==='lbp'||k==='lbs')&&c.lb&&c.lb[k.slice(2)]&&lbManual(c.lb[k.slice(2)].carrier));   /* waiting for the agent to type, not unavailable */
-        html+='<div class="pbrow '+(typed?'todo':'off')+'"><div class="pbhead"><span class="nm">'+sl.name+'</span><span class="pr na">'+(typed?'fill in below ↓':'not available')+'</span><button class="pbib" data-act="rm" data-k="'+k+'" title="Remove" aria-label="Remove '+sl.name+'">✕</button></div>'
+        html+='<div class="pbrow '+(typed?'todo':'off')+'"><div class="pbhead"><span class="nm">'+sl.name+'</span><span class="pr na">'+(typed?'fill in below ↓':(/see carrier/.test(pbWhyNot(k,c,st,age))?'see carrier':'not available'))+'</span><button class="pbib" data-act="rm" data-k="'+k+'" title="Remove" aria-label="Remove '+sl.name+'">✕</button></div>'
           +(typed?'':'<div class="pbnote">'+pbWhyNot(k,c,st,age)+'</div>')
           /* an unpriced row keeps its controls (Jesse, 2026-10-09): the agent can see which option failed and pick one that
              prices, or type an Other carrier's premium. A product the state does not sell never reaches this branch. */
