@@ -1574,10 +1574,30 @@ function condKey(c){ return "dx_"+String(c).toLowerCase().replace(/[^a-z0-9]+/g,
    started - one or two is controlled, three is questionable, four is a knockout. Asking
    for a date as well would add a question to the most common, least important condition. */
 var NO_DATE={"High blood pressure":1};
+/* Jesse, 18 Nov: a surgery or procedure must ask WHAT it was and what it was for, not only when. Transplant,
+   angioplasty/bypass, valve replacement, pacemaker, shunt, amputation, the pending-surgery row and anything typed
+   in ("knee surgery") asked "When?" and nothing else. Named ones get their own question; any other condition that
+   reads like a procedure gets "What was it for?". */
+var COND_WHAT={
+ "Angioplasty / bypass":{k:"_which",l:"Which",opt:["","Angioplasty","Bypass","Both"]},
+ "Transplant":{l:"Which organ, and why"},
+ "Organ Transplant":{l:"Which organ, and why"},
+ "Valve Replacement":{l:"Which valve, and why"},
+ "Heart surgery":{l:"What was done, and why"},
+ "Defibrillator / pacemaker":{l:"What it was for"},
+ "Pacemaker":{l:"What it was for"},
+ "Shunt":{l:"Where, and what it was for"},
+ "Amputation Due to Disease":{l:"What, and the disease behind it"},
+ "Surgery Pending, Suggested or Completed but Not Released From Doctor’s Care":{l:"What surgery, what for, and where they are with it"}
+};
+var COND_PROC_RE=/surg|transplant|replac|bypass|angioplast|implant|pacemaker|defib|shunt|amputat|procedure|operation|removed|ectomy|otomy|oscopy|plasty|repair|fusion|graft|ostomy|resection|ablation/i;
 function condFollow(c){
   var fu=(PF_FOLLOW[c]||[]).slice();
   var hasWhen=fu.some(function(f){ return /^(when|diagnosed)/i.test(f.l||""); });
   if(!hasWhen && !NO_DATE[c]) fu.unshift({k:condKey(c), l:"When? (month and year)", drv:true});
+  var cw=COND_WHAT[c];
+  if(cw) fu.push({k:condKey(c)+(cw.k||"_what"), l:cw.l, opt:cw.opt});
+  else if(COND_PROC_RE.test(c)) fu.push({k:condKey(c)+"_what", l:"What was it for"});
   return fu;
 }
 /* Card-scoped by default: each card names its own conditions with {{c:}} and only asks the
