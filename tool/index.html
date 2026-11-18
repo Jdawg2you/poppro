@@ -2165,7 +2165,8 @@ function prVal(tbl,key,hh,age){
 }
 function prMoney(n){ return '$'+Number(n).toLocaleString('en-US'); }
 /* ===== BASE-PLAN ALTERNATIVES: LifeX and Cigna (Triad) — flat rate books by age band and tier =====
-   rates/lifex-rates.json  (LifeX Rate Book V4 6.15.26)   rates/triad-rates.json (USA Health Plans, Classic Triad 2027 Rate & Benefit Guide) */
+   rates/lifex-rates.json  (LifeX Rate Book V4 6.15.26)   rates/triad-rates.json (USA Health Plans, Classic Triad 2027 Rate & Benefit Guide — 1099 edition, which is what the
+   enrolment cart charges; the non-1099 2027 book sits unused at plans_2027_w2) */
 var LX=null, TRI=null;
 var BASE_TIER={i:'EE',s:'ES',c:'EC',f:'FAM'};
 function bandOf(bands,age){ for(var i=0;i<bands.length;i++){ var p=bands[i].split('-'); if(age>=+p[0]&&age<=+p[1]) return bands[i]; } return null; }
@@ -2176,7 +2177,10 @@ function pLIFEX(age,hh,plan){
   return {price:pl.rates[b][BASE_TIER[hh]],note:'Screen with the LifeX questionnaire first — pregnancy is a decline, and the client becomes a W-2 LifeX employee.'};
 }
 /* Which Cigna (Triad) rate book (Jesse, 27 Oct): the 2027 sheet applies to effective dates 12/1/26 and after; an
-   earlier effective date on the Intake keeps the 2026 rates. No date = the current book (apps after the 15th start the 1st after next). */
+   earlier effective date on the Intake keeps the 2026 rates. No date = the current book (apps after the 15th start the 1st after next).
+   17 Nov 2026: `plans` now holds the 1099 book, verified against a live USAHP cart ($1,792.98, family of five, 18-39, 7350).
+   The older, cheaper 2027 schedule is kept at TRI.plans_2027_w2 and is deliberately NOT selectable here — if a client is
+   ever put on a non-1099 application, price from that book by hand and say which book was used. */
 function triadBook(){ if(!TRI) return {plans:{},y:''}; var iso=triadEffISO();
   if(iso&&TRI.plans_2026&&TRI.effective_from&&iso<TRI.effective_from) return {plans:TRI.plans_2026,y:'2026'};
   return {plans:TRI.plans,y:'2027'}; }
@@ -7171,6 +7175,10 @@ function glp1FromSuite(h){ var one=function(pre){ var k=function(f){ return h[pr
    items the agent hasn't opened yet (localStorage pp_news_seen = newest date they've seen). */
 var NEWS_DAYS=30;
 var NEWS=[
+ {d:'2026-11-18',t:'Cigna (Triad) now quotes the rate book the enrollment cart charges',h:[
+  ['The 1099 book','Cigna prices come from the 2027 “Classic Triad – 1099” rate guide, the one the USA Health Plans enrollment cart actually charges. A family of five aged 18–39 on the 7350 plan is $1,792.98, matching a live cart, against the $1,683.15 we showed before.'],
+  ['Higher on every plan','The book we used before was 2.5% to 35% low, most on the richest plans: the 1000 Copay family plan at 60–64 is $824.84 a month more. Benefits, deductibles and copays are unchanged; only the premium moved.'],
+  ['Effective dates before 1 December','An Intake effective date before 1 December 2026 still prices from the 2026 rates, as before.']]},
  {d:'2026-11-17',t:'ManhattanLife prices checked against the carrier’s own rate sheets',h:[
   ['24-Hour Accident','Each state now has its own rate. Before, every state got one generic table: a Minnesota family at 2 units showed $108.07 instead of $90.00.'],
   ['Out-of-Pocket','Two or three children now price as the carrier’s “up to 3 children” rate, not the one-child rate, and each child past three adds the extra-child rate. Pennsylvania’s admission benefit has its own rates. Choosing “None” for outpatient no longer blanks the price.'],

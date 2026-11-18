@@ -73,7 +73,58 @@ the signing stage.
 Copay plans: **1000 · 1500 · 2500 · 3500 · 5000 · 7350**
 HSA-compatible: **3500 HSA · 5000 HSA**
 
-## Monthly rates — pre-underwritten, 2027
+## Monthly rates — pre-underwritten, 2027 (1099 book — THIS IS WHAT THE CART CHARGES)
+
+🔴 **Two different 2027 schedules exist.** The USAHP enrollment cart is headed **“Classic Triad –
+1099 Application”** and prices from the tables below. `Classic_Triad_2027_Rate_Guide.pdf` is a
+**separate, cheaper** schedule — same benefits, same deductibles, same copays, same drug tiers,
+lower premium on every one of its 128 cells. Verified 2026-11-17 against a live cart: family of
+five, ages 18–39, 7350 Copay → cart **$1,792.98** = the 1099 book exactly; the other book says
+$1,683.15. The understatement runs **+2.5% to +35.3%**, worst on the richest plans
+(1000 Copay family 60–64: **+$824.84/month**). MyPopPro quotes the 1099 book
+(`rates/triad-rates.json` → `plans`); the other is kept at `plans_2027_w2` and is not quoted.
+
+⚠️ On the 9 Nov carrier call Russ read the employee-only 18–39 average as **$642.05**, which is the
+**non-1099** figure (the 1099 book says $659.47). So both books are live at the carrier. Ask USAHP
+which application a given client goes on before quoting anything but the 1099 numbers.
+
+**Age 18–39**
+
+| Tier | 1000 | 1500 | 2500 | 3500 | 5000 | 3500 HSA | 5000 HSA | 7350 |
+|---|---|---|---|---|---|---|---|---|
+| EE | 1079.48 | 993.95 | 945.81 | 844.64 | 794.61 | 718.27 | 685.47 | 659.47 |
+| ES | 2272.02 | 2081.10 | 1974.15 | 1747.70 | 1636.23 | 1464.96 | 1391.82 | 1333.96 |
+| EC | 1838.15 | 1686.43 | 1601.40 | 1421.49 | 1332.89 | 1196.86 | 1138.73 | 1092.73 |
+| FAM | 3080.03 | 2818.13 | 2671.66 | 2360.72 | 2207.92 | 1972.58 | 1872.27 | 1792.98 |
+
+**Age 40–49**
+
+| Tier | 1000 | 1500 | 2500 | 3500 | 5000 | 3500 HSA | 5000 HSA | 7350 |
+|---|---|---|---|---|---|---|---|---|
+| EE | 1159.23 | 1066.52 | 1014.39 | 904.68 | 850.47 | 767.65 | 732.11 | 703.94 |
+| ES | 2452.18 | 2245.05 | 2129.07 | 1883.32 | 1762.41 | 1576.53 | 1497.18 | 1434.42 |
+| EC | 1981.13 | 1816.55 | 1724.34 | 1529.13 | 1433.03 | 1285.40 | 1222.34 | 1172.46 |
+| FAM | 3328.15 | 3043.93 | 2885.02 | 2547.51 | 2381.70 | 2126.23 | 2017.38 | 1931.34 |
+
+**Age 50–59**
+
+| Tier | 1000 | 1500 | 2500 | 3500 | 5000 | 3500 HSA | 5000 HSA | 7350 |
+|---|---|---|---|---|---|---|---|---|
+| EE | 1249.92 | 1149.06 | 1092.37 | 972.96 | 913.99 | 823.82 | 785.15 | 754.52 |
+| ES | 2657.05 | 2431.49 | 2305.23 | 2037.56 | 1905.91 | 1703.40 | 1616.99 | 1548.67 |
+| EC | 2143.73 | 1964.51 | 1864.15 | 1651.53 | 1546.91 | 1386.09 | 1317.43 | 1263.13 |
+| FAM | 3610.32 | 3300.71 | 3127.64 | 2759.94 | 2579.33 | 2300.97 | 2182.39 | 2088.69 |
+
+**Age 60–64**
+
+| Tier | 1000 | 1500 | 2500 | 3500 | 5000 | 3500 HSA | 5000 HSA | 7350 |
+|---|---|---|---|---|---|---|---|---|
+| EE | 1401.43 | 1286.93 | 1222.64 | 1087.02 | 1020.10 | 917.64 | 873.76 | 839.00 |
+| ES | 2999.30 | 2742.94 | 2599.52 | 2295.21 | 2145.62 | 1915.34 | 1817.15 | 1739.52 |
+| EC | 2415.35 | 2211.69 | 2097.71 | 1856.02 | 1737.16 | 1554.30 | 1476.28 | 1414.59 |
+| FAM | 4081.70 | 3729.67 | 3532.96 | 3114.80 | 2909.48 | 2592.88 | 2458.06 | 2351.54 |
+
+### The non-1099 2027 book (`plans_2027_w2`) — not quoted, kept for reference
 
 **Age 18–39**
 
@@ -110,7 +161,6 @@ HSA-compatible: **3500 HSA · 5000 HSA**
 | ES | 2216.82 | 2081.61 | 1955.24 | 1837.14 | 1726.77 | 1651.68 | 1580.17 | 1512.07 |
 | EC | 2012.42 | 1890.58 | 1776.71 | 1670.29 | 1570.83 | 1503.17 | 1438.73 | 1377.37 |
 | FAM | 3256.86 | 3054.79 | 2865.93 | 2689.43 | 2524.48 | 2412.26 | 2305.39 | 2203.61 |
-
 
 ## 🔴 2027 rates — what changed, measured
 
