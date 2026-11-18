@@ -7178,7 +7178,8 @@ var NEWS=[
  {d:'2026-11-18',t:'Cigna (Triad) now quotes the rate book the enrollment cart charges',h:[
   ['The 1099 book','Cigna prices come from the 2027 “Classic Triad – 1099” rate guide, the one the USA Health Plans enrollment cart actually charges. A family of five aged 18–39 on the 7350 plan is $1,792.98, matching a live cart, against the $1,683.15 we showed before.'],
   ['Higher on every plan','The book we used before was 2.5% to 35% low, most on the richest plans: the 1000 Copay family plan at 60–64 is $824.84 a month more. Benefits, deductibles and copays are unchanged; only the premium moved.'],
-  ['Effective dates before 1 December','An Intake effective date before 1 December 2026 still prices from the 2026 rates, as before.']]},
+  ['Effective dates before 1 December','An Intake effective date before 1 December 2026 still prices from the 2026 rates, as before.'],
+  ['Dental shows in the package it’s in','When dental is added to a package (“Add to all three packages”), it now appears as its own line in that column, with its coverage, price and ✕ to remove it. Before, its price was counted in Monthly with no line on screen, so the lines you could see came up short of the total.']]},
  {d:'2026-11-17',t:'ManhattanLife prices checked against the carrier’s own rate sheets',h:[
   ['24-Hour Accident','Each state now has its own rate. Before, every state got one generic table: a Minnesota family at 2 units showed $108.07 instead of $90.00.'],
   ['Out-of-Pocket','Two or three children now price as the carrier’s “up to 3 children” rate, not the one-child rate, and each child past three adds the extra-child rate. Pennsylvania’s admission benefit has its own rates. Choosing “None” for outpatient no longer blanks the price.'],
@@ -10042,7 +10043,10 @@ function pbColHTML(T,anc){ var t=T[0], act=(t==='actual'), st=(S.client.state||'
       if(k==='mec'){ if(!mecFits(c,st)) return; if(!c.mec||dropped.indexOf('mec')>=0){ addable.push(sl); return; } }
       if(k==='base'&&isMH) return; if((k==='afc'||k==='sdr')&&!isMH) return;
       if(k==='base') sl={k:'base',name:c.base==='lifex'?'LifeX health plan':c.base==='brightlife'?'Bright Life health plan':c.base==='aca'?'Their ACA plan':c.base==='amaze'?'Amaze telehealth':'Cigna (Triad) PPO'};
-      if(k==='dvh'&&!act&&S.lineup!=='aca'){ if(dropped.indexOf('dvh')<0&&byK.dvh) sum+=+byK.dvh.monthly||0; return; }   // Dental: add-on bar below (ACA + protection: a row in the dental column, Jesse 4 Nov)
+      /* Dental: while it's out of the package it lives in the add-on bar below. Once it's IN a package it is a row like any
+         other product - name, coverage, price, ✕ (Jesse, 18 Nov: it was counted in Monthly with no row, and a client letter
+         went out $197.67 light). A state with no dental keeps quiet here; the bar says so. */
+      if(k==='dvh'&&!act&&S.lineup!=='aca'&&(dropped.indexOf('dvh')>=0||/not sold in|not available in [A-Z]{2}$/.test(pbWhyNot(k,c,st,age)))) return;
       var why=pbWhyNot(k,c,st,age); if(/not sold in|not available in [A-Z]{2}$/.test(why)){ if(k!=='base'&&!isLBk(k)) unavail.push(sl.name); return; }   // never offer what the state doesn't sell - but say so
       if(!inCfg||dropped.indexOf(k)>=0){ addable.push(sl); return; }
       var live=byKpk[k]||byK[k], price=live?live.monthly:null;

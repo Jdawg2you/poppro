@@ -35,7 +35,17 @@ const TEST = `(async function(){
   ok(pr&&pr.monthly===41.5&&pr.name.indexOf('$75K (Corebridge QoL Flex)')>=0,'Other carrier priced as typed: '+(pr&&pr.name));
   ok(!same('best'),'Other carrier: '+same('best'));
   c.lb.p.otherMonthly=''; pbReprice(); ok(!S.packages.best.products.some(function(p){ return p.k==='lbp'&&+p.monthly>0; }),'no premium typed yet: nothing invented');
-  return {n:4, fails:fails};
+  /* 18 Nov: what the agent SEES must add up to Monthly. Dental in the package was counted with no row (OK family, -$197.67). */
+  var rowsAddUp=function(lab){ document.querySelectorAll('#sec_builder .pbcol').forEach(function(col){ var s=[].slice.call(col.querySelectorAll('.pbrow .pr')).reduce(function(a,p){ return a+(parseFloat(p.textContent.replace(/[^0-9.]/g,''))||0); },0), m=parseFloat(((col.querySelector('.pbtot span')||{}).textContent||'').replace(/[^0-9.]/g,''))||0;
+    ok(Math.abs(s-m)<0.005, lab+' '+col.dataset.t+': rows on screen $'+s.toFixed(2)+' vs Monthly $'+m.toFixed(2)); }); };
+  S=blankState(); applySuiteClient({first:'P',last:'Q',state:'OK',age:'46',dob:'01/01/1980',kids:[{age:10},{age:8}],health:{}}); S.intake.who.spouse=true; S.intake.who.kids=true; S.client.sname='Sam'; S.client.sage=45;
+  ['good','better','best'].forEach(function(t){ S.include[t]=true; }); goStep('quote'); renderBuilder(); autoPriceTiers(); renderBuilder(); await wait(200);
+  ok(document.querySelectorAll('#sec_builder .pbcol').length===3,'builder rendered three columns');
+  rowsAddUp('dental as add-on');
+  var inc=document.querySelector('[data-act="dvhinc"]'); inc.checked=true; inc.onchange(); renderBuilder(); await wait(300);
+  ok(document.querySelectorAll('#sec_builder .pbcol [data-act="rm"][data-k="dvh"]').length===3,'dental in all three packages shows a dental row in each');
+  rowsAddUp('dental in the packages');
+  return {n:5, fails:fails};
 })()`;
 
 try {
