@@ -344,7 +344,9 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
    presentOpen(); await w(200); var ph=document.getElementById('presentHost').textContent;
    ok(/Cigna PPO 2500/.test(ph)&&/Cigna is the network/.test(ph)&&!document.getElementById('prFrame'),'Present shows the Triad presentation, not the ManhattanLife script');
    ok(triadDedNum('best')===2500&&String(triadVal('best',/^Calendar-year deductible/)).indexOf('$2,500/individual')===0,'…with the 2500 plan’s own deductible from the SBC');
-   for(var i=0;i<4;i++){ var nx=document.querySelector('#presentHost .trd-nav .next'); if(nx) nx.click(); await w(60); }
+   /* 19 Nov: Amaze rides with every Cigna package and has its own page before the busters - walk to the busters page by name */
+   var sawAmaze=false; for(var i=0;i<8;i++){ var cur=document.getElementById('presentHost').textContent; if(/Everyday care — Amaze/.test(cur)&&/doctor on your phone/.test(cur)) sawAmaze=true; if(/The one thing this plan doesn’t do is the deductible/.test(cur)) break; var nx=document.querySelector('#presentHost .trd-nav .next'); if(nx) nx.click(); await w(60); }
+   ok(sawAmaze,'a Cigna package presents Amaze on its own Everyday care page');
    ph=document.getElementById('presentHost').textContent; ok(/HI Select|Hospital Indemnity/.test(ph)&&/enough to cover the whole/.test(ph),'the deductible-buster page explains HI Select against the deductible: '+ph.slice(ph.indexOf('busters'),ph.indexOf('busters')+90));
    goStep('enroll'); await w(200); var eb=document.getElementById('enTriad');
    ok(eb&&eb.style.display!=='none'&&/EIN/.test(eb.textContent)&&/by [A-Z][a-z]+ 15/.test(eb.textContent)&&/signed by [A-Z][a-z]+ 25/.test(eb.textContent)&&document.getElementById('enScriptEnd').style.display==='none','Enroll shows the Triad steps (EIN, by the 15th, by the 25th) and hides the ManhattanLife wrap-up');

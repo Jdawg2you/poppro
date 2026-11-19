@@ -3176,6 +3176,7 @@ brochLoad();   /* fetch once at start, so the email and the drawer have the link
    Optimum Carrier Library/Bright Life/_all-states. Only the PPO 1250 has one: a saved VL plan lists no brochure. */
 var BL_BROCHURE={'PPO 1250':{id:'1Y33ehroKRCJhO_oN3_jswXybOeUVVihf',form:'Health Shield PPO 1250 · V1.110226'}};
 function brochFor(f,c){ var st=(S.client.state||'').toUpperCase(); if(f==='sdr') f='afc';   /* the rider is described in the Affordable Choice brochure */
+  if(f==='amaze') return {name:'Amaze',form:'What Amaze includes',url:amazeDoc('overview')};   /* Amaze's own member sheet, hosted here */
   if(f==='brightlife'){ var bl=BL_BROCHURE[(c&&c.blPlan)||BL_DEFAULT]; return bl&&bl.id?{name:'Bright Life — Health Shield PPO 1250',form:bl.form,url:'https://drive.google.com/file/d/'+bl.id+'/view'}:null; }
   return (BROCH&&BROCH[st]&&BROCH[st][f])||null; }
 /* Jesse, 9 Oct: a marked plan -> that plan's brochures; nothing marked -> every plan shown (t is then 'all') */
@@ -3236,7 +3237,8 @@ function renderBrochBox(){ var host=$('brochBox'); if(!host) return; if(!BROCH){
 var RXVALET_URL='https://manhattanlife.myeasycare2go.com/login', RXVALET_PHONE='1-855-798-2538', RXVALET_HOW='in your EasyCare2go login (Group ID mlins2023)';
 /* Amaze clients (Jesse, 5 Nov): Amaze is their virtual care. They don't get EasyCare2go pitched too - even when they also have
    ManhattanLife plans, we promote Amaze's virtual health, not EasyCare2go's. Rx Valet (pharmacy, not telehealth) stays. */
-function amazeIn(t){ try{ return !!t&&!!(S.cfg||{})[t==='actual'?(S.actual||{}).from:t]&&(effCfg(t)||{}).base==='amaze'; }catch(e){ return false; } }
+function amazeIn(t){ try{ if(!t||!(S.cfg||{})[t==='actual'?(S.actual||{}).from:t]) return false; var c=effCfg(t)||{}; if(c.base==='amaze') return true;
+  var pk=(S.packages||{})[t]||{}; return !!c.amz&&(pk.dropped||[]).indexOf('amz')<0&&(pk.products||[]).some(function(p){ return p.k==='amz'&&(+p.monthly||0)>0; }); }catch(e){ return false; } }   /* the Cigna add-on too (19 Nov) */
 /* Jesse, 5 Nov (clarity): with Amaze we describe Amaze's virtual care and say nothing about EasyCare2go at all - two
    telehealth services would confuse them. Rx Valet comes in Amaze's own bundle ("Amaze Concierge TeleHealth with
    RxValet"), so for an Amaze client it is told as part of Amaze, never as an EasyCare2go login. */
@@ -3319,7 +3321,7 @@ function enrollTextPlain(t){ t=t||chosenTier()||S.activeTab||'best'; var c=effCf
   (pk.products||[]).forEach(function(p){ if(!((+p.monthly||0)>0)||isLBk(p.k)) return; var sl=PB_SLOTS.filter(function(x){ return x.k===p.k; })[0];
     if(p.k==='afc') lines.push('Affordable Choice (your core health plan)');
     else if(p.k==='base'&&c.base==='aca') return;   /* they apply for the marketplace plan themselves - it's its own line below */
-    else if(p.k==='base'&&c.base==='amaze') lines.push('Amaze telehealth (your everyday care)'+(amazeLink()?' — sign up: '+amazeLink():''));
+    else if((p.k==='base'&&c.base==='amaze')||p.k==='amz') lines.push('Amaze telehealth (your everyday care)'+(amazeLink()?' — sign up: '+amazeLink():''));
     else if(p.k==='base') lines.push((c.base==='triad'?'Cigna PPO '+(c.triadPlan||'7350'):c.base==='lifex'?'LifeX PPO':c.base==='brightlife'?blPlanName(c):'Health plan')+' (your core health plan)');
     else lines.push(sl?sl.name:String(p.name||'').split(' — ')[0]); });
   LB.forEach(function(x){ lines.push((x.face?'$'+x.face.toLocaleString('en-US')+' ':'')+'Living Benefits'+(both?' for '+x.who:'')+' ('+x.carrier+')'); });
@@ -3510,7 +3512,14 @@ function isRateDriven(nm){
    every reprice; Jesse, 9 Oct: remove them. An agent's own product now comes in through Add product -> Other. */
 var LEGACY_PLACEHOLDERS=(function(){ var n={}; ['good','better','best'].forEach(function(t){ defProducts(t).forEach(function(p){ n[p.name]=1; }); }); return n; })();
 function manualExtras(prev){ return (prev||[]).filter(function(p){ return !p.k && (p.other || (!isRateDriven(p.name) && !LEGACY_PLACEHOLDERS[p.name])); }); }
-function effCfg(t){ S.cfg=S.cfg||{}; if(!S.cfg[t]) S.cfg[t]=cfgClone(TIERCFG[t]); mecAutoCA(S.cfg[t]); return S.cfg[t]; }
+function effCfg(t){ S.cfg=S.cfg||{}; if(!S.cfg[t]) S.cfg[t]=cfgClone(TIERCFG[t]); mecAutoCA(S.cfg[t]); amzAutoCigna(S.cfg[t]); return S.cfg[t]; }
+/* Cigna has no telehealth in its plan documents (none of the 14 SBCs or the 2027 rate guides mentions it), so Amaze comes
+   pre-added to every Cigna column (Jesse, 19 Nov) - its own line, $99.99, the (i) with its benefits. Removing it still works
+   (dropped list). Only Cigna: a ManhattanLife client already has Rx Valet through EasyCare2go, and Bright Life has its own
+   telemedicine. Switching the column off Cigna takes back only the Amaze that was added automatically. */
+function amzAutoCigna(c){ if(!c) return; var cg=c.base==='triad';
+  if(cg&&c.amz==null){ c.amz=1; c.amzAuto=1; }
+  else if(c.amzAuto&&!cg){ delete c.amz; delete c.amzAuto; } }
 /* California: the SB/A MEC Plan comes pre-added to every Manhattan column (Jesse, 16 Nov) - Plan 1, the same default as + Add.
    Removing it still works (it goes to the dropped list); other packages keep it as an option. Leaving CA, or switching
    the column off Manhattan, takes back only the MEC that was added automatically. */
@@ -3537,6 +3546,7 @@ function buildTierProducts(c,byKey,extras){
   if(c.sdr){ var sd=pSDR(R,st,age,hh,c.sdr,false);
   add('sdr','Specified Disease Rider — $'+(+c.sdr.max/1000)+'K / $'+((+(sd.ded||c.sdr.ded))/1000)+'K ded', sd); }
   }
+  if(c.amz&&c.base!=='amaze') add('amz','Amaze — everyday care (membership, not insurance)', {price:AMAZE_MO,note:''});
   if(c.mec) add('mec','SB/A MEC Plan '+c.mec+' — minimum essential coverage', pMEC(hh,c.mec));   /* any core plan (Jesse, 13 Nov) */
   /* a product whose settings are empty (null - a file written outside MyPopPro, 21 Oct) is simply not offered, rather than crashing the Quote */
   if(c.his) add('his','Hospital Indemnity — HI Select $'+Number(+c.his.ben||10000).toLocaleString('en-US')+(c.his.outp?' + Outpatient $'+Number(c.his.outp).toLocaleString('en-US'):''), pHIS(R,st,age,hh,c.his));   /* the benefit chosen, not a fixed $10K (Health ZONE, 21 Oct: an export read $10K for a $2,000 plan) */
@@ -3685,7 +3695,7 @@ function popInputsFor(c,prods){ c=c||{}; prods=prods||[];
               :{oop:fam?18400:9200,ded:bd,copay:true,visit:50,urgent:90,er:1000,adm:2500,osurg:2500,imaging:500}; x.base='brightlife'; }
   if(has('base')&&c.base==='aca'){ var aa=S.aca||{}, acap=((typeof ACA26!=='undefined'&&ACA26.moop)||{}).self||10600;
     x.major={oop:+aa.oop||acap,ded:+aa.ded||7500,coins:+aa.coins||40,visit:+aa.copay||0,urgent:+aa.copay||0}; x.base='aca'; }
-  if(has('base')&&c.base==='amaze') x.tele=true;
+  if((has('base')&&c.base==='amaze')||has('amz')) x.tele=true;
   if(has('his')&&c.his){ x.his={ben:+c.his.ben||0,amb:+c.his.amb||0}; x.hisOutp=+c.his.outp||0; }
   if(has('gap')&&c.gap){ x.gap={daily:+c.gap.daily||0,adm:+c.gap.adm||0,ea:+c.gap.ea||0}; x.gapOutp=+c.gap.outp||0; }
   if(has('acc')) x.accU=+c.acc||1;
@@ -3766,7 +3776,7 @@ function computePop(tier){ var s=popStrengths(tier), w=popWeights(tier); return 
 function popPositives(tier){
   var s=computePop(tier).s, pos=[];
   if(popMajorCover(tier)&&!s.provisional) pos.push('Major medical — a big hospital bill stops at about '+fmt(s.exposure.severe)+' out of pocket');
-  if(s.everyday>=70&&effCfg(tier).base==='amaze') pos.push('Doctor any time by phone or video, no fee per visit (Amaze)');
+  if(effCfg(tier).base==='amaze'?s.everyday>=70:amazeIn(tier)) pos.push('Doctor any time by phone or video, no fee per visit (Amaze)');
   if(s.preventive>=100&&popMajorCover(tier)) pos.push('Preventive care covered in full');
   if(s.cat>=75) pos.push('Strong hospitalization &amp; catastrophic protection');
   if(s.critC>=90&&s.critH>=90) pos.push('Cancer + heart/stroke lump sum in place');
@@ -6458,6 +6468,7 @@ function triadBusters(t){ var c=effCfg(t), ded=triadDedNum(t), out=[];
     else if(p.k==='dvh') b='Dental and vision — the Cigna plan doesn’t cover adult dental.';
     else if(isLBk(p.k)) b='Living benefits — life insurance they can draw on during a serious illness.';
     else if(p.k==='hhc') b='Home health care cash after a hospital stay.';
+    else if(p.k==='amz') b='<b>Amaze</b> — everyday care. A doctor any time by phone, video or message, no fee per visit, for '+(householdKey()==='i'?'them':'the whole household')+'. The Cigna plan has no telehealth, so this is how they reach a doctor at 2 a.m. without an urgent-care copay or the deductible. A membership, not insurance; Rx Valet prescription discounts come with it.';
     else return;
     out.push({k:p.k,name:p.name,m:m,b:b}); });
   return out; }
@@ -6507,7 +6518,7 @@ function triadRateNote(){ var t=chosenTier(), q=triadPremium(t), r=triadRange(),
 
 /* ---------- PRESENT ---------- */
 function triadPresentHTML(t){ var first=triadFirst(), plan=triadPlanOf(t), ded=triadVal(t,/^Calendar-year deductible/), oop=triadVal(t,/^Out-of-pocket maximum/), pc=triadVal(t,/^Primary care/), sp=triadVal(t,/^Specialist/), uc=triadVal(t,/^Urgent care/),
-  er=triadVal(t,/^Emergency room/), hosp=triadVal(t,/^Hospital facility/), rx=triadVal(t,/^Generic \/ preferred/,true).split(';')[0], prem=triadPremium(t), r=triadRange(), bus=triadBusters(t).filter(function(x){ return !isLBk(x.k); }), tot=pkMonthly(S.packages[t]||{});
+  er=triadVal(t,/^Emergency room/), hosp=triadVal(t,/^Hospital facility/), rx=triadVal(t,/^Generic \/ preferred/,true).split(';')[0], prem=triadPremium(t), r=triadRange(), bus=triadBusters(t).filter(function(x){ return !isLBk(x.k)&&x.k!=='amz'; }), tot=pkMonthly(S.packages[t]||{});
   var docs=[S.intake.docs1,S.intake.docs2,S.intake.docs3].filter(Boolean), meds=(S.intake.medList||[]).map(function(m){ return m.name; }).filter(Boolean);
   var pages=[
    {t:'Why this plan',h:triadSay('“'+esc(first)+', this is real major medical. It’s a PPO on the <b>Cigna network</b> — doctors, specialists and hospitals across the country — with an <b>unlimited lifetime benefit</b> and a hard ceiling on what you can spend in a year: <b>'+esc(oop)+'</b>. Once you hit that, covered in-network care is paid in full for the rest of the year.”')
@@ -6520,6 +6531,12 @@ function triadPresentHTML(t){ var first=triadFirst(), plan=triadPlanOf(t), ded=t
       +triadDo('<a href="'+TRIAD_PROVIDER_URL+'" target="_blank" rel="noopener">Cigna provider search ↗</a> — choose <b>“Employer or School”</b>, continue as a guest, then pick <b>“PPO, Choice Fund PPO”</b>. Out of network still pays (40% after the deductible, and they can be balance-billed).')},
    {t:'Prescriptions',h:triadSay('“Prescriptions run through TrueScripts: '+esc(rx)+' for a month’s supply.”')
       +(meds.length?triadDo('Check each one on the formulary now: '+meds.map(esc).join(', ')+'. Specialty drugs are 50% with prior authorization — say so before they sign, not after.'):triadDo('No medications on the Intake. Ask once more — the formulary decides what they pay.'))+triadDocs(t)},
+   (amazeIn(t)?{t:'Everyday care — Amaze',h:(function(){ var fam=householdKey()!=='i';   /* 19 Nov: Cigna's documents carry no telehealth; Amaze fills it */
+      return triadSay('“One thing this plan doesn’t include is a doctor on your phone. So I’ve added <b>Amaze</b>'+benI(t,'amz','Amaze')+'. It’s a membership, not insurance: for <b>'+fmt2(AMAZE_MO)+' a month</b>'+(fam?' — one price for you, your spouse and your kids up to 26 —':'')+' you can reach a doctor any time, day or night, by phone, video or message. No appointment, and no fee per visit.”')
+       +triadSay('“They can diagnose and treat you, prescribe, and order tests and referrals, and their patient advocates help with medical bills and insurance questions. So at 2 a.m., before you drive to urgent care or the ER, you call Amaze first.”')
+       +triadDo('<b>Show them:</b> <a href="'+amazeDoc('overview')+'" target="_blank" rel="noopener">What Amaze includes — one page ↗</a>. Share your screen, or text them the link.')
+       +triadDo('Rx Valet prescription discounts come with Amaze — a price to check a drug against before filling it. Quote no savings figure.')
+       +triadDo('<b>Don’t sell it as a copay saver.</b> '+fmt2(AMAZE_MO)+' a month is '+fmt2(AMAZE_MO*12)+' a year; it buys a doctor any time, not cheaper routine visits.'+(triadIsHsa(t)?' On this HSA plan every visit is deductible + 20%, so here it does replace real money.':'')+' Never call it insurance, and don’t repeat Amaze’s own usage or ER percentages.'); })()}:null),
    {t:'HI / busters / living benefits',long:'Hospital indemnity / deductible busters / living benefits',h:lbMatchNote()+(bus.length?triadSay('“The one thing this plan doesn’t do is the deductible — that’s on you. So we put cash plans next to it that pay <i>you</i> when the big thing happens:”')
       +'<ul class="trd-bus">'+bus.map(function(x){ return '<li><b>'+esc(x.name)+'</b>'+benI(t,x.k,x.name)+' <small>'+x.m+'</small><br>'+x.b+'</li>'; }).join('')+'</ul>'
       +triadDo('These are ManhattanLife plans — they pay the client directly, on top of the Cigna plan, and they’re a separate application with their own underwriting.'):triadSay('“The one thing this plan doesn’t do is the deductible — that’s on you.”')
@@ -6540,7 +6557,7 @@ function triadPresentHTML(t){ var first=triadFirst(), plan=triadPlanOf(t), ded=t
        +qa('Is this real coverage?','Yes — it’s Minimum Essential Coverage and meets Minimum Value. It isn’t a marketplace plan, so there’s no subsidy on it.'); })()},
    {t:'Next steps',h:(function(){ var d=triadDates(); return triadSay('“Here’s how it goes: we apply by <b>'+d.submit+'</b>, they review your health, and if you’re approved you’ll get a final offer that has to be signed by <b>'+d.sign+'</b> — miss that and there’s no coverage. Your start date is usually the 1st of the next month — <b>'+d.start+'</b> — and the offer confirms it.”')
       +triadDo('Before you apply: <b>they must be self-employed with their own EIN</b> — no EIN, no Cigna plan. If they don’t have one, it’s free and instant on the <a href="'+TRIAD_EIN_URL+'" target="_blank" rel="noopener">IRS site ↗</a>.')
-      +'<button type="button" class="btn-gold" onclick="enrollAsPresented()">Go to Enroll →</button>'; })()}];
+      +'<button type="button" class="btn-gold" onclick="enrollAsPresented()">Go to Enroll →</button>'; })()}].filter(Boolean);
   return '<div class="pr-top"><div><h3>Presenting the <em class="pr-plan">Cigna PPO '+esc(plan)+'</em> to '+esc(first)+'</h3><small>Agent-only. Figures come from the 2027 rate and benefit guide for the '+esc(plan)+' plan.</small></div>'
     +presentBubbles(t)+'<button type="button" data-pr="quote" style="font:inherit;font-weight:700;border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 13px;cursor:pointer">← Back to the Quote</button></div>'
     +'<div class="trd">'+triadSteps(pages,'prpg',1)+'</div>'; }
@@ -6918,15 +6935,19 @@ function pkHasMl(t){ return ((S.packages[t]||{}).products||[]).some(function(p){
    the 25th, and the rate set at approval. */
 function triadEnrollEmail(t){ var L=brochList(t), first=triadFirst(), plan=triadPlanOf(t), d=triadDates(), q=triadPremium(t), r=triadRange(), fam=householdKey()!=='i',
   agent=(S.client.agent||'').trim(), agency=(S.agency||'').trim(), book=String(S.agentBooking||'').trim(), site=String(S.agentWebsite||'').trim(), LB=lbSummary(t), ml=pkHasMl(t);
+  /* Amaze rides with Cigna (19 Nov): its own section with the agent's sign-up link, not filed under ManhattanLife, and no
+     EasyCare2go beside it - two telehealth services confuse people (Jesse, 5 Nov). Rx Valet is told as part of Amaze. */
+  var az=amazeIn(t), am=amazeLink(), azDoc=amazeDoc('overview'), Lml={t:L.t,st:L.st,none:L.none,list:L.list.filter(function(b){ return b.url!==azDoc; })};
   var body='Hi '+first+',\n\n'
     +'Congratulations, and thank you for applying today! It was a real pleasure working with you — you’ve done something good for yourself'+(fam?' and your family':'')+'.\n\n'
     +'Here’s what happens next with your Cigna PPO '+plan+' plan:\n'
     +'1. The plan reviews your application. It’s fully underwritten, which is part of why the price is what it is — and it means approval isn’t automatic.\n'
     +'2. When you’re approved, you’ll get a final offer by email. It has to be signed by '+d.sign+'. If it isn’t signed by then, there’s no coverage — so watch for it, and tell me the moment it arrives.\n\n'   /* Jesse, 9 Nov: no rate-range line in the client's email */
     +'YOUR PLAN DOCUMENTS\nPlan summary: '+triadDrive(TRIAD_SBC[plan]||TRIAD_SBC['3500'])+'\nPrescription list (summary): '+triadDrive(TRIAD_FORMULARY_SUM)+'\nFind a Cigna PPO doctor: '+TRIAD_PROVIDER_URL+'\n\n'
-    +(L.list.length?'Your ManhattanLife plans are reviewed on their own. Here are their brochures:\n'+brochLines(L)+'\n\n':'')
+    +(az?'AMAZE — YOUR EVERYDAY CARE\n'+amazeLines(fam).join(' ')+'\n'+(am?'Sign up here: '+am+'\nSetting up the app, step by step: '+amazeDoc('setup'):'I’ll send you the Amaze sign-up link separately.')+'\nWhat Amaze includes: '+azDoc+'\n\n':'')
+    +(Lml.list.length?'Your ManhattanLife plans are reviewed on their own. Here are their brochures:\n'+brochLines(Lml)+'\n\n':'')
     +(LB.length?'Your plan also includes living benefits:\n'+LB.map(function(x){ return '• '+x.who+' — '+(x.face?'$'+x.face.toLocaleString('en-US')+' of ':'')+(x.term?x.term+' ':'')+'Living Benefits coverage with '+x.kind+' with '+x.carrier; }).join('\n')+'\n'+LB_BLURB+'\n\n':'')
-    +(ml?'Your ManhattanLife plans also come with:\n• EasyCare2go — '+AFC_PARTNER_EMAIL['EasyCare2go']+'\n• Rx Valet — '+AFC_PARTNER_EMAIL['Rx Valet']+'\n\n':'')
+    +(ml&&!az?'Your ManhattanLife plans also come with:\n• EasyCare2go — '+AFC_PARTNER_EMAIL['EasyCare2go']+'\n• Rx Valet — '+AFC_PARTNER_EMAIL['Rx Valet']+'\n\n':'')
     +'Once it’s signed, we’ll book a short benefits review before your start date: your card, your doctors, your prescriptions, and the one rule that matters most (getting big things approved first).'+(book?' If anything comes up before then, you can book a time here: '+book+' — or just call or text me.':' If anything comes up before then, just call or text me.')+'\n\n'
     +'And know that I’m your agent for life. Whenever you have a question, a claim or a change in your life, I’m the person to call.\n\n'
     +'Best,\n'+(agent||agency)+(agent&&agency?'\n'+agency:'')+(S.agentPhone?'\n'+S.agentPhone:'')+(S.agentEmail?'\n'+S.agentEmail:'')+(site?'\n'+site:'')+(String(S.agentNPN||'').trim()?'\nNational Producer Number: '+String(S.agentNPN).trim():'');
@@ -7180,6 +7201,7 @@ var NEWS=[
   ['Higher on every plan','The book we used before was 2.5% to 35% low, most on the richest plans: the 1000 Copay family plan at 60–64 is $824.84 a month more. Benefits, deductibles and copays are unchanged; only the premium moved.'],
   ['Effective dates before 1 December','An Intake effective date before 1 December 2026 still prices from the 2026 rates, as before.'],
   ['Dental shows in the package it’s in','When dental is added to a package (“Add to all three packages”), it now appears as its own line in that column, with its coverage, price and ✕ to remove it. Before, its price was counted in Monthly with no line on screen, so the lines you could see came up short of the total.'],
+  ['Amaze comes with every Cigna package','Cigna’s plan documents include no telehealth, so every Cigna package now carries <b>Amaze</b> as its own line: $99.99 a month for the household, a doctor any time by phone, video or message, no fee per visit. Tap ⓘ for everything it includes, with a link to Amaze’s own one-page sheet at the bottom. ✕ takes it out of a package and ＋ Add puts it back. It is not added to ManhattanLife packages, which already come with Rx Valet through EasyCare2go, or to Bright Life, which has its own telemedicine. No Amaze prescription list exists yet, so the slide-out says so rather than guessing.'],
   ['Every surgery asks what it was for','In the Discovery call’s health questions, a surgery or procedure now asks what it was, not only when: a transplant asks which organ and why, angioplasty or bypass asks which, a valve replacement asks which valve, a pacemaker or shunt asks what it was for, and a pending surgery asks what it is and where they are with it. Anything you type in yourself, like “knee surgery”, asks “What was it for” too. The answer goes into the client profile with the condition.']]},
  {d:'2026-11-17',t:'ManhattanLife prices checked against the carrier’s own rate sheets',h:[
   ['24-Hour Accident','Each state now has its own rate. Before, every state got one generic table: a Minnesota family at 2 units showed $108.07 instead of $90.00.'],
@@ -8114,7 +8136,7 @@ function renderEnroll(){
       var nm=String(p.name||''); if(/americo/i.test(nm)) return 'Americo'; if(/mutual|omaha/i.test(nm)) return 'Mutual of Omaha';   // the policy actually priced
       var lc=(c.lb||{})[p.k.slice(2)]||{}; return lc.carrier==='americo'?'Americo':'Mutual of Omaha'; }
     if(p.k==='dvh'&&/Sparkle/.test(String(p.name||''))) return 'Sparkle Care Dental — USA Health Plans (1Enrollment)';
-    if(p.k==='mec') return 'SB/A MEC Plan — USA Health Plans (separate group enrollment)'; return 'ManhattanLife'; };
+    if(p.k==='mec') return 'SB/A MEC Plan — USA Health Plans (separate group enrollment)'; if(p.k==='amz') return 'Amaze — care access, not insurance'; return 'ManhattanLife'; };
   var rows=(pk.products||[]).filter(function(p){ return (+p.monthly||0)>0; }), groups={}, order=[];
   rows.forEach(function(p){ var g=carrierOf(p); if(!groups[g]){ groups[g]=[]; order.push(g); } groups[g].push(p); });
   var total=rows.reduce(function(s2,p){ return s2+(+p.monthly||0); },0);
@@ -9539,6 +9561,7 @@ function bindInputs(){
 var PB_OPEN={};
 var PB_SLOTS=[
  {k:'base',name:'Health plan'},
+ {k:'amz', name:'Amaze — everyday care'},
  {k:'afc', name:'Affordable Choice'},
  {k:'sdr', name:'Specified Disease Rider'},
  {k:'mec', name:'SB/A MEC Plan'},
@@ -9636,6 +9659,7 @@ function pbSummary(k,c,live){
   if(k==='acc') return c.acc+' unit'+(c.acc>1?'s':'')+(accPaid()?' · '+m(200)+' ER · '+m(paidSched().admit*c.acc)+' hospital admission':' · up to '+m(2000*c.acc)+' accident medical');
   if(k==='gap') return m(c.gap.daily)+'/day in hospital · '+m(c.gap.adm)+' admission'+(+c.gap.outp?' · '+m(c.gap.outp)+' outpatient':'')+(c.gap.ea?' · $250 ER':'');
   if(k==='chas') return [c.chas.cancer?'Cancer '+m(c.chas.cancer):'',c.chas.hs?'Heart attack & stroke '+m(c.chas.hs):''].filter(Boolean).join(' · ')+' lump sum';
+  if(k==='amz') return fmt2(AMAZE_MO)+'/mo for the household · doctor any time by phone, video or message, no fee per visit';
   if(k==='mec') return 'Plan '+(c.mec||'1')+' · '+MEC.sum[String(c.mec||'1')];
   if(k==='hhc') return c.hhc+' plan';
   if(k==='dvh'&&dentalCo()==='sparkle') return '$4,500 per member per year · $50 deductible · no waiting periods · Bento / Cigna DPPO network';
@@ -9659,7 +9683,7 @@ function pbReprice(){ autoPriceTiers(); fill(); compute(); autosave(); }
    product keeps the first beside it (differences highlighted) - that is the "Classic Plus or
    Elite?" comparison. A different product replaces it. */
 var BEN_DATA={}, BEN_VIEW=[];
-var BEN_FILE={mec:'mec',afc:'afc',sdr:'sdr',his:'his',acc:'acc',gap:'gap',chas:'chas',hhc:'hhc',dvh:'dvh',lbp:'lb',lbs:'lb'};
+var BEN_FILE={amz:'amaze',mec:'mec',afc:'afc',sdr:'sdr',his:'his',acc:'acc',gap:'gap',chas:'chas',hhc:'hhc',dvh:'dvh',lbp:'lb',lbs:'lb'};
 function benFileFor(k,c){ if((k==='lbp'||k==='lbs')&&c.lb&&c.lb[k.slice(2)]&&(lbManual(c.lb[k.slice(2)].carrier)||c.lb[k.slice(2)].carrier==='iule')) return null;   /* no brochure for an Other carrier */
   if(k==='base') return c.base==='lifex'?'lifex':c.base==='triad'?'triad':c.base==='brightlife'?'brightlife':null; if(k==='hhc'&&hhcIsSelect()) return 'hhcs'; if(k==='dvh'&&dentalCo()==='sparkle') return 'sparkle'; if(k==='dvh'&&dvhIs7016()) return 'dvh7016'; if(k==='acc'&&accPaid()) return accKind()==='leg'?'paidleg':'paid'; return BEN_FILE[k]||null; }
 function benCol(k,c){ switch(k){
@@ -9711,7 +9735,7 @@ function benRender(){ var dr=$('benDrawer'); if(!dr) return;
       h+='<div class="bdsec"><div class="bdt">Key benefits</div>'+A.m.key.map(function(r){ return '<div class="bdrow"><span>'+benEsc(r.label)+(r.note?'<i>'+benEsc(r.note)+'</i>':'')+'</span><b>'+benEsc(r.value)+'</b></div>'; }).join('')+'</div>';
       A.m.sections.forEach(function(s){ h+='<details class="bdmore"><summary>'+benEsc(s.title)+' <span>'+s.rows.length+'</span></summary>'+s.rows.map(function(r){ return '<div class="bdrow"><span>'+benEsc(r.label)+(r.note?'<i>'+benEsc(r.note)+'</i>':'')+'</span><b>'+benEsc(r.value)+'</b></div>'; }).join('')+'</details>'; });
       if(A.m.notes.length) h+='<details class="bdmore"><summary>Limitations &amp; waiting periods <span>'+A.m.notes.length+'</span></summary><ul class="bdnotes">'+A.m.notes.map(function(n){ return '<li>'+benEsc(n)+'</li>'; }).join('')+'</ul></details>';
-      h+='<div class="bdsrc">From '+benEsc(A.m.code)+(A.m.page?' · p. '+benEsc(A.m.page):'')+'. Confirm exact benefits in the policy.</div>';
+      h+='<div class="bdsrc">From '+benEsc(A.m.code)+(A.m.page?' · p. '+benEsc(A.m.page):'')+'. '+(A.f==='amaze'?'A membership, not a policy — confirm details with Amaze.':'Confirm exact benefits in the policy.')+'</div>';
       var brA=brochFor(A.f,A.cfg?JSON.parse(A.cfg):null)||(A.f==='mec'?{url:MEC.doc,form:MEC.form}:null); if(brA) h+='<a class="bdbroch" href="'+benEsc(brA.url)+'" target="_blank" rel="noopener">📄 Open the full brochure ('+benEsc(brA.form)+') ↗</a>';
       if(!/^humana-/.test(A.f)) h+='<div class="bdtip">Tip: open ⓘ on another level of this product to see the two side by side.</div>'; }
   } else {
@@ -10039,8 +10063,9 @@ function pbColHTML(T,anc){ var t=T[0], act=(t==='actual'), st=(S.client.state||'
     PB_SLOTS.forEach(function(sl){
       var k=sl.k; if(k==='lbs'&&!pbHasSpouse()) return;
       var lbk=(k==='lbp'||k==='lbs')?k.slice(2):null;
-      var inCfg=k==='mec'?!!c.mec:k==='lbx'?lbxList(c).length>0:(k==='hhc'?!!c.hhc:k==='chas'?!!(c.chas&&(c.chas.cancer||c.chas.hs)):k==='sdr'?!!c.sdr:lbk?!!(c.lb&&c.lb[lbk]&&c.lb[lbk].face):true);
+      var inCfg=k==='amz'?!!c.amz:k==='mec'?!!c.mec:k==='lbx'?lbxList(c).length>0:(k==='hhc'?!!c.hhc:k==='chas'?!!(c.chas&&(c.chas.cancer||c.chas.hs)):k==='sdr'?!!c.sdr:lbk?!!(c.lb&&c.lb[lbk]&&c.lb[lbk].face):true);
       var isMH=!c.base||c.base==='afc';
+      if(k==='amz'&&(isMH||c.base==='amaze'||c.base==='aca')) return;   /* Amaze rides with a major-medical plan, never a ManhattanLife one */
       if(k==='mec'){ if(!mecFits(c,st)) return; if(!c.mec||dropped.indexOf('mec')>=0){ addable.push(sl); return; } }
       if(k==='base'&&isMH) return; if((k==='afc'||k==='sdr')&&!isMH) return;
       if(k==='base') sl={k:'base',name:c.base==='lifex'?'LifeX health plan':c.base==='brightlife'?'Bright Life health plan':c.base==='aca'?'Their ACA plan':c.base==='amaze'?'Amaze telehealth':'Cigna (Triad) PPO'};
@@ -10063,7 +10088,7 @@ function pbColHTML(T,anc){ var t=T[0], act=(t==='actual'), st=(S.client.state||'
       sum+=+price||0; var open=PB_OPEN[t+'|'+k], edited=!!(live&&live.manual);
       var prHtml=open?'<span class="pr"><span style="font-weight:600;color:var(--muted)">$</span><input class="pbprice" type="number" step="0.01" min="0" data-k="'+k+'" value="'+(+price).toFixed(2)+'" aria-label="Monthly price for '+sl.name+'"></span>'
                     :'<span class="pr">'+pbMoney(price)+'</span>';
-      var mlTag=(blOn()&&c.base&&c.base!=='afc'&&k!=='base'&&!isLBk(k)&&k!=='mec')?'<span class="mltag" title="This product is ManhattanLife’s, not '+(c.base==='brightlife'?'Bright Life':c.base==='triad'?'Cigna':'the base carrier')+'’s">ManhattanLife</span>':'';
+      var mlTag=(blOn()&&c.base&&c.base!=='afc'&&k!=='base'&&!isLBk(k)&&k!=='mec'&&k!=='amz')?'<span class="mltag" title="This product is ManhattanLife’s, not '+(c.base==='brightlife'?'Bright Life':c.base==='triad'?'Cigna':'the base carrier')+'’s">ManhattanLife</span>':'';
       var info=benFileFor(k,c)?'<button type="button" class="pbinfo" data-ben="'+k+'" title="Benefits — '+sl.name+'" aria-label="Benefits for '+sl.name+'">i</button>':'';
       var hf=histFam(), hm=histSelf(), hiK=HIST_KEYS.indexOf(k)>=0, selfLB=(k==='lbp'||k==='lbs')&&hm.length;
       html+='<div class="pbrow'+(edited?' edited':'')+(hf.any&&hiK?' hist':'')+(selfLB?' histself':'')+'"><div class="pbhead"><span class="nm">'+sl.name+mlTag+info+(edited?' <span class="edtag">edited</span>':'')+'<span class="cov">'+esc(pbSummary(k,c,live)||'')+'</span>'+(k==='base'&&c.base==='aca'?acaTermsTag():'')+'</span>'+prHtml
@@ -10090,7 +10115,7 @@ function pbColHTML(T,anc){ var t=T[0], act=(t==='actual'), st=(S.client.state||'
     if(lbAll&&lbMissing.length>1){ addable=addable.filter(function(sl){ return sl.k!=='lbp'&&sl.k!=='lbs'; }); addable.push({k:'lb*',name:'Living benefits (each covered adult)'}); }
     var lbxA=addable.filter(function(sl){ return sl.k==='lbx'; }); if(lbxA.length){ addable=addable.filter(function(sl){ return sl.k!=='lbx'; }).concat(lbxA); }   /* last, just above Other: any person, any carrier */
     var mecA=addable.filter(function(sl){ return sl.k==='mec'; }); if(mecA.length){ addable=addable.filter(function(sl){ return sl.k!=='mec'; }).concat(mecA); }   /* Jesse, 12 Nov: after living benefits, just above Other: rarely used */
-    html+='<div class="pbadd"><select data-act="add" aria-label="Add a product"><option value="">＋ Add product</option>'+addable.map(function(sl){ return '<option value="'+sl.k+'">'+sl.name+(blOn()&&c.base&&c.base!=='afc'&&!/^lb/.test(sl.k)&&sl.k!=='mec'?' (ManhattanLife)':'')+'</option>'; }).join('')
+    html+='<div class="pbadd"><select data-act="add" aria-label="Add a product"><option value="">＋ Add product</option>'+addable.map(function(sl){ return '<option value="'+sl.k+'">'+sl.name+(blOn()&&c.base&&c.base!=='afc'&&!/^lb/.test(sl.k)&&sl.k!=='mec'&&sl.k!=='amz'?' (ManhattanLife)':'')+'</option>'; }).join('')
       +'<option value="other">Other — type in a product that isn’t listed…</option>'
       +unavail.map(function(n){ return '<option disabled>'+n+' — not sold in '+st+'</option>'; }).join('')+'</select>'
       +(unavail.length?'<div class="pbna">Not sold in '+st+': '+unavail.join(', ')+'</div>':'')+'</div>';
@@ -10130,6 +10155,7 @@ function pbColBind(col,rr,rd){
       if(k==='lb*'||k==='lbp'||k==='lbs'){ c.lb=c.lb||{}; (k==='lb*'?lbPersons().map(function(pp){ return pp.k; }):[k.slice(2)]).forEach(function(w){ if(!(c.lb[w]&&c.lb[w].face)) c.lb[w]=cfgClone(PB_DEFAULT.lb); pk.dropped=pk.dropped.filter(function(x){ return x!=='lb'+w; }); PB_OPEN[t+'|lb'+w]=true; }); rr(); return; }
       if(k==='lbx'){ c.lb=c.lb||{}; if(!lbxList(c).length) c.lb.x=[{who:'',carrier:'',face:'',ptype:'',otherName:'',otherMonthly:'',monthly:'',notes:''}]; PB_OPEN[t+'|lbx']=true; rr(); return; }
       if(k==='mec'&&!c.mec) c.mec='1';
+      if(k==='amz') c.amz=1;
       if(k==='hhc'&&!c.hhc) c.hhc=PB_DEFAULT.hhc; if(k==='chas'&&!(c.chas&&(c.chas.cancer||c.chas.hs))) c.chas=cfgClone(PB_DEFAULT.chas);
       PB_OPEN[t+'|'+k]=true; rr(); }; });
     col.querySelectorAll('[data-act="addk"]').forEach(function(b){ b.onclick=function(){ var sel=col.querySelector('[data-act="add"]'); if(!sel) return; sel.value=b.dataset.k; if(sel.onchange) sel.onchange(); }; });
@@ -10303,6 +10329,7 @@ function pbWhyNot(k,c,st,age){
     if(k==='base'&&(c.base==='aca'||c.base==='amaze')) r={note:c.base==='aca'?'Add the marketplace premium on the ACA panel':''};
     else if(k==='base') r=c.base==='lifex'?pLIFEX(age,hh,c.lifexPlan||'$500 PPO'):c.base==='brightlife'?pBL(age,hh,c.blPlan||BL_DEFAULT,c):pTRIAD(age,hh,c.triadPlan||'7350');
     else if(k==='mec') r=pMEC(hh,c.mec);
+    else if(k==='amz') r={price:AMAZE_MO,note:''};
     else if(k==='afc') r=pAFC(R,st,age,hh,c.afc); else if(k==='sdr') r=pSDR(R,st,age,hh,c.sdr,false); else if(k==='his') r=pHIS(R,st,age,hh,c.his);
     else if(k==='acc') r=pACC(R,hh,c.acc); else if(k==='lbp'||k==='lbs'){ var pp=lbPersons().filter(function(x){ return 'lb'+x.k===k; })[0]; r=pp?pLB1(pp,c.lb[k.slice(2)]):{note:'no spouse covered'}; } else if(k==='lbx') r=pLBX(lbxList(c)); else if(k==='gap') r=pGAP(R,st,age,hh,c.gap); else if(k==='hhc') r=pHHCHH(R,st,c.hhc); else if(k==='chas') r=pCHAS(st,age,hh,c.chas);
   }catch(e){}

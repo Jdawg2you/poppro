@@ -1,0 +1,238 @@
+{
+  "product": "amaze",
+  "name": "Amaze — everyday care",
+  "carrier": "Amaze Health (Denver, CO) — a membership, not insurance",
+  "columns": {
+    "by": "plan",
+    "values": [
+      "*"
+    ]
+  },
+  "brochures": [
+    {
+      "code": "Amaze's member sheet (What Amaze includes + Setting up your account) and Amaze's own Support FAQ",
+      "file": "tool/docs/amaze-overview.pdf and amaze-setup.pdf (from Jesse via Health ZONE, 7 Nov 2026); amazehealth.com Support FAQ read 27 Oct 2026 (Health Insurance/_reference/AMAZE-HEALTH.md)",
+      "states": [
+        "*"
+      ],
+      "page": "1",
+      "notes": [
+        "Amaze is a membership for everyday care, not insurance. It does not pay hospital, ER, surgery or specialist bills — that is what the Cigna plan is for.",
+        "The price is $99.99 a month from the October training. Kyle quotes $99, and Amaze's own site prints no price. Click the price on the row to change it if the client's figure differs.",
+        "Do not sell it as a copay saver: $99.99 a month is $1,199.88 a year, and five primary-care visits on Cigna 7350 cost $250 in copays. It buys any-time access and breadth. On the HSA plans, where every visit is deductible + 20%, it does replace real money.",
+        "No prescription list is on file for Amaze or Rx Valet. Check a drug's price in the Rx Valet app; do not quote a savings percentage or a pharmacy count.",
+        "Second opinions are not a stated feature anywhere in Amaze's material — do not promise one.",
+        "Do not repeat Amaze's own usage or ER-reduction percentages; they are company claims.",
+        "If the membership is cancelled the free features stay (search, video library, symptom checker); the medical care is what the subscription buys.",
+        "Enrol through your own Amaze sign-up link (Setup). The link decides who is credited."
+      ],
+      "sections": [
+        {
+          "title": "What it is",
+          "rows": [
+            {
+              "label": "What it is",
+              "values": {
+                "*": "A membership for everyday care — not insurance. Coordinated, concierge-style care and navigation support"
+              },
+              "key": true
+            },
+            {
+              "label": "Who it covers",
+              "values": {
+                "*": "One flat monthly price for the household: you, your spouse or partner, and children up to age 26"
+              },
+              "key": true
+            },
+            {
+              "label": "Price",
+              "values": {
+                "*": "$99.99 a month for the household"
+              },
+              "note": "From training — Amaze's site prints no price",
+              "key": true
+            },
+            {
+              "label": "Fee per visit",
+              "values": {
+                "*": "None — copay-free access to all Amaze services, unlimited"
+              },
+              "key": true
+            },
+            {
+              "label": "How you reach a doctor",
+              "values": {
+                "*": "Phone, video or in-app message, 24/7/365 — no appointment needed"
+              },
+              "key": true
+            }
+          ]
+        },
+        {
+          "title": "Medical care",
+          "rows": [
+            {
+              "label": "Virtual primary care",
+              "values": {
+                "*": "Included"
+              },
+              "key": true
+            },
+            {
+              "label": "Virtual urgent care",
+              "values": {
+                "*": "Included"
+              },
+              "key": true
+            },
+            {
+              "label": "Prescriptions, tests and referrals",
+              "values": {
+                "*": "Their medical team can diagnose, treat, prescribe, and order tests and referrals"
+              },
+              "key": true
+            },
+            {
+              "label": "Chronic disease management",
+              "values": {
+                "*": "Included"
+              }
+            },
+            {
+              "label": "Mental health services",
+              "values": {
+                "*": "Included"
+              }
+            },
+            {
+              "label": "Unlimited follow-up",
+              "values": {
+                "*": "Included"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Specialized programs",
+          "rows": [
+            {
+              "label": "Weight management",
+              "values": {
+                "*": "Included"
+              }
+            },
+            {
+              "label": "Lifestyle medications",
+              "values": {
+                "*": "Listed by Amaze as a program"
+              },
+              "note": "No medication list on file — ask Amaze what it covers"
+            },
+            {
+              "label": "Smoking cessation",
+              "values": {
+                "*": "Included"
+              }
+            },
+            {
+              "label": "Virtual orthopedic support",
+              "values": {
+                "*": "Included"
+              }
+            },
+            {
+              "label": "Virtual dental support",
+              "values": {
+                "*": "Included — advice by video, not dental work or dental insurance"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Prescriptions",
+          "rows": [
+            {
+              "label": "Rx Valet prescription discounts",
+              "values": {
+                "*": "Comes with the Amaze membership"
+              },
+              "note": "From the October training (Amaze Concierge TeleHealth with RxValet); not printed on Amaze's sheet. No savings figure is ever quoted",
+              "key": true
+            },
+            {
+              "label": "Drug list",
+              "values": {
+                "*": "Not on file — check each drug's price in the Rx Valet app"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Help beyond the doctor",
+          "rows": [
+            {
+              "label": "Billing advocacy",
+              "values": {
+                "*": "Patient advocates help with medical bills"
+              }
+            },
+            {
+              "label": "Insurance support",
+              "values": {
+                "*": "Help with coverage questions and finding a specialist"
+              }
+            },
+            {
+              "label": "ER alert",
+              "values": {
+                "*": "The app may send a notification when you arrive at an emergency room, so you can check with Amaze first"
+              },
+              "note": "Amaze: location is not stored, monitored or shared"
+            },
+            {
+              "label": "Languages",
+              "values": {
+                "*": "Over 80; the app can be set to Spanish"
+              }
+            },
+            {
+              "label": "Family access",
+              "values": {
+                "*": "Add family in the app (menu → Add family member); each member's access can be Edit, View or none"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Contacts",
+          "rows": [
+            {
+              "label": "Member support",
+              "values": {
+                "*": "(720) 575-6614"
+              }
+            },
+            {
+              "label": "Account questions",
+              "values": {
+                "*": "(866) 826-2934 · Account.Admin@amazehealth.com"
+              }
+            },
+            {
+              "label": "App support",
+              "values": {
+                "*": "App.Support@AmazePBC.com"
+              }
+            },
+            {
+              "label": "Log in",
+              "values": {
+                "*": "app.amazepbc.com, or the Amaze Health app"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
