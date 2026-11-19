@@ -2134,7 +2134,7 @@ function afcRateSt(st){ return AFC_GENERIC_RATES[st]||st; }
    (data/ml-portal/ml-portal-map-2026-09-28.json). A state with no loaded rates never borrows
    another state's table: the price stays blank and the note says whether the product is sold there. */
 var ML_OFFERED={
- sdr:'AL AR AZ DE FL GA HI IA IL KY LA ME MI MN MO MS MT NC NE NV OH OK OR RI SC SD TN WI WV WY',   /* OR: AFC map 111626 */
+ sdr:'AL AR AZ DE FL GA HI IA IL KY LA ME MI MN MO MS MT NC NE NV OH OK OR RI SC SD TN TX WI WV WY',   /* OR: AFC map 111626. TX: launched 19 Oct 2026 as its own policy, sold only with Affordable Choice (ManhattanLife bulletin) - no TX rates loaded yet */
  gap:'AK AL AR AZ CA FL GA HI IA IL IN KY LA MD ME MI MN MO MS MT NC ND NE NM NV OH OK PA SC SD TN TX WA WI WV WY',
  chas:'AK AL AR AZ CA CO CT DC FL GA HI IA ID IL IN KS KY LA MD ME MI MN MO MS MT NC ND NE NH NV OH OK OR PA RI SC SD TN TX UT VT WA WI WV',
  afc:'AK AL AR AZ CA DE FL GA HI IA IL IN KY LA MD ME MI MN MO MS MT NC ND NE NM NV OH OK OR PA RI SC SD TN TX UT VA WI WV WY',
@@ -2259,7 +2259,7 @@ function pSDR(R,st,age,hh,cfg,esc){ var rs=afcRateSt(st);
     if(!Object.keys(pg.riders||{}).some(function(k){ return k.indexOf('Specified Disease Rider')===0; })) return {price:null,note:notLoaded('sdr','Specified Disease Rider',st)};
     return {price:null,note:'Specified Disease Rider not available at age '+age+' in '+st}; }
   var g=rGrp(R.sdr.g,rs), fb='';
-  if(!g) return {price:null,note:notLoaded('sdr','Specified Disease Rider',st)};
+  if(!g) return {price:null,note:notLoaded('sdr','Specified Disease Rider',st)+(st==='TX'?'. In Texas it is its own policy (since 19 Oct 2026), sold only with an Affordable Choice policy':'')};
   var ded=cfg.ded; if(esc) ded=DEDSTEP[ded]||ded;
   var m=g.m[cfg.max]; if(!m||!m[ded]) return {price:null,note:'SDR level unavailable'};
   var row=m[ded][bandAFC(age)]; if(!row) return {price:null,note:'SDR rate n/a'};
@@ -7201,6 +7201,7 @@ var NEWS=[
   ['Higher on every plan','The book we used before was 2.5% to 35% low, most on the richest plans: the 1000 Copay family plan at 60–64 is $824.84 a month more. Benefits, deductibles and copays are unchanged; only the premium moved.'],
   ['Effective dates before 1 December','An Intake effective date before 1 December 2026 still prices from the 2026 rates, as before.'],
   ['Dental shows in the package it’s in','When dental is added to a package (“Add to all three packages”), it now appears as its own line in that column, with its coverage, price and ✕ to remove it. Before, its price was counted in Monthly with no line on screen, so the lines you could see came up short of the total.'],
+  ['Specified Disease in Texas','ManhattanLife launched Specified Disease in Texas on 19 October. In Texas it is its own policy, not a rider, and is sold only with Affordable Choice. It now shows under ＋ Add for Texas clients, marked as needing a portal quote: the Texas rates aren’t loaded yet, so get the price in the ManhattanLife portal and add it with ＋ Add → Other.'],
   ['Bright Life packages start with more protection','Every Bright Life column now starts with Hospital Indemnity at <b>$10,000 a stay and $1,500 outpatient</b>, plus <b>Out-of-Pocket Protection</b>: $100 a day in hospital, $2,500 on admission and $3,000 for outpatient surgery, with no ER rider. Change or remove any of it in the column as before.'],
   ['Amaze comes with every Cigna package','Cigna’s plan documents include no telehealth, so every Cigna package now carries <b>Amaze</b> as its own line: $99 a month for the household, a doctor any time by phone, video or message, no fee per visit. Tap ⓘ for everything it includes, with a link to Amaze’s own welcome sheet at the bottom. ✕ takes it out of a package and ＋ Add puts it back. It is not added to ManhattanLife packages, which already come with Rx Valet through EasyCare2go, or to Bright Life, which has its own telemedicine. Amaze publishes no drug list for the membership, so the slide-out points to Rx Valet’s own price search rather than guessing.'],
   ['Every surgery asks what it was for','In the Discovery call’s health questions, a surgery or procedure now asks what it was, not only when: a transplant asks which organ and why, angioplasty or bypass asks which, a valve replacement asks which valve, a pacemaker or shunt asks what it was for, and a pending surgery asks what it is and where they are with it. Anything you type in yourself, like “knee surgery”, asks “What was it for” too. The answer goes into the client profile with the condition.']]},
