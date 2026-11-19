@@ -9604,6 +9604,7 @@ function pbControls(k,c){
   if(k==='his') return '<div class="two"><div class="f">Per hospital stay<select data-f="his.ben">'+pbOpts(pbAmt([1000,2000,3000,4000,5000,6000,7000,8000,9000,10000]),c.his.ben)+'</select></div><div class="f">Outpatient surgery<select data-f="his.outp">'+pbOpts(pbAmt([0,250,500,750,1000,1250,1500]),c.his.outp)+'</select></div></div>'
     +'<div style="font-size:11.5px;color:var(--muted)">Ambulance ($200 a ride) is included.</div>';
   if(k==='acc') return '<div class="f">Coverage<select data-f="acc">'+pbOpts([[1,'1 unit'],[2,'2 units']],c.acc)+'</select></div>';
+  if((k==='gap'&&!c.gap)||(k==='his'&&!c.his)) return '';
   if(k==='gap') return '<div class="two"><div class="f">Hospital stay<select data-f="gap.daily">'+pbOpts([['100','$100 / day'],['200','$200 / day']],c.gap.daily)+'</select></div><div class="f">Admission<select data-f="gap.adm">'+pbOpts(pbAmt([2500,5000,6350]),c.gap.adm)+'</select></div></div>'
     +'<div class="two"><div class="f">Outpatient surgery<select data-f="gap.outp">'+pbOpts(pbAmt([0,1000,2000,3000]),c.gap.outp)+'</select></div><div class="f">ER accident<select data-f="gap.ea">'+pbOpts([[1,'$250'],[0,'None']],c.gap.ea?1:0)+'</select></div></div>';
   if(k==='chas'){ var a=[0]; for(var v=5000;v<=75000;v+=5000) a.push(v);
@@ -10064,7 +10065,7 @@ function pbColHTML(T,anc){ var t=T[0], act=(t==='actual'), st=(S.client.state||'
     PB_SLOTS.forEach(function(sl){
       var k=sl.k; if(k==='lbs'&&!pbHasSpouse()) return;
       var lbk=(k==='lbp'||k==='lbs')?k.slice(2):null;
-      var inCfg=k==='amz'?!!c.amz:k==='mec'?!!c.mec:k==='lbx'?lbxList(c).length>0:(k==='hhc'?!!c.hhc:k==='chas'?!!(c.chas&&(c.chas.cancer||c.chas.hs)):k==='sdr'?!!c.sdr:lbk?!!(c.lb&&c.lb[lbk]&&c.lb[lbk].face):true);
+      var inCfg=k==='gap'?!!c.gap:k==='his'?!!c.his:k==='amz'?!!c.amz:k==='mec'?!!c.mec:k==='lbx'?lbxList(c).length>0:(k==='hhc'?!!c.hhc:k==='chas'?!!(c.chas&&(c.chas.cancer||c.chas.hs)):k==='sdr'?!!c.sdr:lbk?!!(c.lb&&c.lb[lbk]&&c.lb[lbk].face):true);
       var isMH=!c.base||c.base==='afc';
       if(k==='amz'&&(isMH||c.base==='amaze'||c.base==='aca')) return;   /* Amaze rides with a major-medical plan, never a ManhattanLife one */
       if(k==='mec'){ if(!mecFits(c,st)) return; if(!c.mec||dropped.indexOf('mec')>=0){ addable.push(sl); return; } }
@@ -10157,6 +10158,8 @@ function pbColBind(col,rr,rd){
       if(k==='lbx'){ c.lb=c.lb||{}; if(!lbxList(c).length) c.lb.x=[{who:'',carrier:'',face:'',ptype:'',otherName:'',otherMonthly:'',monthly:'',notes:''}]; PB_OPEN[t+'|lbx']=true; rr(); return; }
       if(k==='mec'&&!c.mec) c.mec='1';
       if(k==='amz') c.amz=1;
+      if(k==='gap'&&!c.gap) c.gap=c.base==='brightlife'?{daily:'100',adm:'2500',outp:'3000',ea:0}:cfgClone((TIERCFG[t]||TIERCFG.good).gap);   /* 19 Nov hotfix: older Bright Life saves carry gap:null */
+      if(k==='his'&&!c.his) c.his=c.base==='brightlife'?{ben:10000,amb:1,outp:1500}:cfgClone((TIERCFG[t]||TIERCFG.good).his);
       if(k==='hhc'&&!c.hhc) c.hhc=PB_DEFAULT.hhc; if(k==='chas'&&!(c.chas&&(c.chas.cancer||c.chas.hs))) c.chas=cfgClone(PB_DEFAULT.chas);
       PB_OPEN[t+'|'+k]=true; rr(); }; });
     col.querySelectorAll('[data-act="addk"]').forEach(function(b){ b.onclick=function(){ var sel=col.querySelector('[data-act="add"]'); if(!sel) return; sel.value=b.dataset.k; if(sel.onchange) sel.onchange(); }; });
