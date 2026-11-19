@@ -10,17 +10,17 @@
   },
   "brochures": [
     {
-      "code": "Amaze's member sheet (What Amaze includes + Setting up your account) and Amaze's own Support FAQ",
-      "file": "tool/docs/amaze-overview.pdf and amaze-setup.pdf (from Jesse via Health ZONE, 7 Nov 2026); amazehealth.com Support FAQ read 27 Oct 2026 (Health Insurance/_reference/AMAZE-HEALTH.md)",
+      "code": "Amaze's Welcome to Amaze sheet (7 pages), its member sheet (What Amaze includes + Setting up your account) and its Support FAQ",
+      "file": "tool/docs/amaze-welcome.pdf (from Jesse, 19 Nov 2026); amaze-overview.pdf and amaze-setup.pdf (via Health ZONE, 7 Nov 2026); amazehealth.com Support FAQ read 27 Oct 2026",
       "states": [
         "*"
       ],
       "page": "1",
       "notes": [
         "Amaze is a membership for everyday care, not insurance. It does not pay hospital, ER, surgery or specialist bills — that is what the Cigna plan is for.",
-        "The package lists Amaze at $99.99 a month, so the total is never short. On the call it is fine to say about $99. Amaze's own site prints no price; click the price on the row to change it if the client's figure differs.",
-        "Do not sell it as a copay saver: $99.99 a month is $1,199.88 a year, and five primary-care visits on Cigna 7350 cost $250 in copays. It buys any-time access and breadth. On the HSA plans, where every visit is deductible + 20%, it does replace real money.",
-        "No prescription list is on file for Amaze or Rx Valet. Check a drug's price in the Rx Valet app; do not quote a savings percentage or a pharmacy count.",
+        "Amaze is $99 a month for the household (Jesse, 19 Nov). Amaze's own site prints no price; click the price on the row to change it if the client's figure differs.",
+        "Do not sell it as a copay saver: $99 a month is $1,188 a year, and five primary-care visits on Cigna 7350 cost $250 in copays. It buys any-time access and breadth. On the HSA plans, where every visit is deductible + 20%, it does replace real money.",
+        "Amaze publishes no drug list for the membership. Look up a client's drug on Rx Valet's own search (myrxvalet.com/medications) or in the Rx Valet app; do not quote a savings percentage or a pharmacy count. The 1,100-generic $0 list and the 37-drug ACUTE program found online belong to other plans built on Amaze (Strategic Health Share, Capstone Plus) — do not promise either.",
         "Second opinions are not a stated feature anywhere in Amaze's material — do not promise one.",
         "Do not repeat Amaze's own usage or ER-reduction percentages; they are company claims.",
         "If the membership is cancelled the free features stay (search, video library, symptom checker); the medical care is what the subscription buys.",
@@ -47,15 +47,14 @@
             {
               "label": "Price",
               "values": {
-                "*": "$99.99 a month for the household"
+                "*": "$99 a month for the household"
               },
-              "note": "Listed at $99.99 so the total is never short; say about $99 on the call",
               "key": true
             },
             {
               "label": "Fee per visit",
               "values": {
-                "*": "None — copay-free access to all Amaze services, unlimited"
+                "*": "$0 per visit, every time — Amaze does not bill you or your insurance"
               },
               "key": true
             },
@@ -88,7 +87,7 @@
             {
               "label": "Prescriptions, tests and referrals",
               "values": {
-                "*": "Their medical team can diagnose, treat, prescribe, and order tests and referrals"
+                "*": "Their medical team can diagnose, treat, prescribe and refill, and order imaging, lab tests and therapy"
               },
               "key": true
             },
@@ -101,6 +100,19 @@
             {
               "label": "Mental health services",
               "values": {
+                "*": "Short-term support for depression, mood disorders, anxiety, ADHD, insomnia and grief, including bridge therapy and medication management; help finding longer-term care that fits your budget"
+              },
+              "note": "After hours, Amaze aims to schedule a mental health provider within 12 hours of your message"
+            },
+            {
+              "label": "Virtual physicals",
+              "values": {
+                "*": "Included"
+              }
+            },
+            {
+              "label": "Prenatal and postnatal support",
+              "values": {
                 "*": "Included"
               }
             },
@@ -108,6 +120,12 @@
               "label": "Unlimited follow-up",
               "values": {
                 "*": "Included"
+              }
+            },
+            {
+              "label": "If you need to be seen in person",
+              "values": {
+                "*": "Their patient advocates help you decide where to go, find imaging, labs or a specialist that fit your budget, and follow up until it is resolved"
               }
             }
           ]
@@ -162,8 +180,9 @@
             {
               "label": "Drug list",
               "values": {
-                "*": "Not on file — check each drug's price in the Rx Valet app"
-              }
+                "*": "Amaze publishes none for the membership. Look up a drug's price at myrxvalet.com/medications or in the Rx Valet app"
+              },
+              "note": "Do not promise a drug is free"
             }
           ]
         },
@@ -171,9 +190,9 @@
           "title": "Help beyond the doctor",
           "rows": [
             {
-              "label": "Billing advocacy",
+              "label": "Medical bill and EOB support",
               "values": {
-                "*": "Patient advocates help with medical bills"
+                "*": "Patient advocates help you read and question medical bills and Explanation of Benefits statements"
               }
             },
             {
@@ -196,6 +215,12 @@
               }
             },
             {
+              "label": "Health Education Center",
+              "values": {
+                "*": "Learn.Amaze in the app (Resources → Education center): blood pressure, diabetes, heart, sleep, nutrition, stress, women's and men's health and more"
+              }
+            },
+            {
               "label": "Family access",
               "values": {
                 "*": "Add family in the app (menu → Add family member); each member's access can be Edit, View or none"
@@ -211,6 +236,13 @@
               "values": {
                 "*": "(720) 575-6614"
               }
+            },
+            {
+              "label": "Login and username help",
+              "values": {
+                "*": "720-577-5251"
+              },
+              "note": "From the Welcome to Amaze sheet"
             },
             {
               "label": "Account questions",
