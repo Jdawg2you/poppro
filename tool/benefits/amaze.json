@@ -18,7 +18,7 @@
       "page": "1",
       "notes": [
         "Amaze is a membership for everyday care, not insurance. It does not pay hospital, ER, surgery or specialist bills — that is what the Cigna plan is for.",
-        "The price is $99.99 a month from the October training. Kyle quotes $99, and Amaze's own site prints no price. Click the price on the row to change it if the client's figure differs.",
+        "The package lists Amaze at $99.99 a month, so the total is never short. On the call it is fine to say about $99. Amaze's own site prints no price; click the price on the row to change it if the client's figure differs.",
         "Do not sell it as a copay saver: $99.99 a month is $1,199.88 a year, and five primary-care visits on Cigna 7350 cost $250 in copays. It buys any-time access and breadth. On the HSA plans, where every visit is deductible + 20%, it does replace real money.",
         "No prescription list is on file for Amaze or Rx Valet. Check a drug's price in the Rx Valet app; do not quote a savings percentage or a pharmacy count.",
         "Second opinions are not a stated feature anywhere in Amaze's material — do not promise one.",
@@ -49,7 +49,7 @@
               "values": {
                 "*": "$99.99 a month for the household"
               },
-              "note": "From training — Amaze's site prints no price",
+              "note": "Listed at $99.99 so the total is never short; say about $99 on the call",
               "key": true
             },
             {
