@@ -2128,13 +2128,17 @@ function pAFC(R,st,age,hh,lvl){ var rs=afcRateSt(st);
 }
 /* Oregon launched Affordable Choice with the Specified Disease Rider on the generic rates for the policy and the rider
    (ManhattanLife producer email; AFC map 111626). Its old portal pull was the earlier Affordable Choice 18 table. */
+/* Texas Specified Disease (Jesse, 19 Nov): its own policy, launched 19 Oct 2026, sold only with Affordable Choice. Rates from the
+   Texas brochure SD-TXBR 0626 page 3 - they are NOT the 27-state table (family 40-49, $250K/$50K: $123.06 vs $108.13).
+   Family rates include up to four children; each extra child adds the Child rate. */
+HF_RATES.sdr.g.push({"st":["TX"],"src":"SD-TXBR 0626 (Texas Specified Disease brochure, policy form AS7006POL-TX)","m":{"250000":{"25000":{"18-29":{"i":26.36,"s":52.71,"c":62.54,"f":97.94},"30-39":{"i":36.9,"s":73.8,"c":73.08,"f":119.02},"40-49":{"i":81.7,"s":163.4,"c":117.88,"f":208.63},"50-64":{"i":192.72,"s":385.45,"c":228.91,"f":430.68}},"50000":{"18-29":{"i":15.37,"s":30.73,"c":37.6,"f":58.52},"30-39":{"i":21.51,"s":43.03,"c":43.74,"f":70.82},"40-49":{"i":47.64,"s":95.27,"c":69.87,"f":123.06},"50-64":{"i":112.37,"s":224.73,"c":134.6,"f":252.52}},"75000":{"18-29":{"i":10.26,"s":20.52,"c":25.62,"f":39.72},"30-39":{"i":14.37,"s":28.73,"c":29.72,"f":47.93},"40-49":{"i":31.81,"s":63.62,"c":47.17,"f":82.81},"50-64":{"i":75.03,"s":150.07,"c":90.39,"f":169.26}},"100000":{"18-29":{"i":7.13,"s":14.26,"c":17.97,"f":27.81},"30-39":{"i":9.98,"s":19.97,"c":20.82,"f":33.51},"40-49":{"i":22.11,"s":44.22,"c":32.94,"f":57.76},"50-64":{"i":52.15,"s":104.3,"c":62.99,"f":117.84}}},"500000":{"25000":{"18-29":{"i":29.32,"s":58.65,"c":71.2,"f":111.0},"30-39":{"i":41.05,"s":82.1,"c":82.93,"f":134.46},"40-49":{"i":90.9,"s":181.8,"c":132.78,"f":234.15},"50-64":{"i":214.42,"s":428.85,"c":256.3,"f":481.2}},"50000":{"18-29":{"i":18.33,"s":36.67,"c":46.26,"f":71.58},"30-39":{"i":25.67,"s":51.33,"c":53.6,"f":86.25},"40-49":{"i":56.83,"s":113.67,"c":84.77,"f":148.58},"50-64":{"i":134.06,"s":268.13,"c":162.0,"f":303.04}},"75000":{"18-29":{"i":13.23,"s":26.46,"c":34.28,"f":52.78},"30-39":{"i":18.52,"s":37.04,"c":39.57,"f":63.36},"40-49":{"i":41.01,"s":82.02,"c":62.06,"f":108.33},"50-64":{"i":96.73,"s":193.46,"c":117.79,"f":219.78}},"100000":{"18-29":{"i":10.1,"s":20.2,"c":26.63,"f":40.87},"30-39":{"i":14.14,"s":28.28,"c":30.67,"f":48.95},"40-49":{"i":31.31,"s":62.61,"c":47.84,"f":83.28},"50-64":{"i":73.85,"s":147.69,"c":90.38,"f":168.36}}}},"child":{"250000":{"25000":30.15,"50000":18.53,"75000":12.8,"100000":9.03},"500000":{"25000":34.9,"50000":23.28,"75000":17.55,"100000":13.78}}});
 var AFC_GENERIC_RATES={OR:'AL',HI:'AL'};   /* HI: the rate guide (AFC-RATES 0626) prices Hawaii in the generic table; the portal pull had grouped it with AK (audit 17 Nov) */
 function afcRateSt(st){ return AFC_GENERIC_RATES[st]||st; }
 /* Where ManhattanLife sells each product, from the agent portal pull of 2026-09-28
    (data/ml-portal/ml-portal-map-2026-09-28.json). A state with no loaded rates never borrows
    another state's table: the price stays blank and the note says whether the product is sold there. */
 var ML_OFFERED={
- sdr:'AL AR AZ DE FL GA HI IA IL KY LA ME MI MN MO MS MT NC NE NV OH OK OR RI SC SD TN TX WI WV WY',   /* OR: AFC map 111626. TX: launched 19 Oct 2026 as its own policy, sold only with Affordable Choice (ManhattanLife bulletin) - no TX rates loaded yet */
+ sdr:'AL AR AZ DE FL GA HI IA IL KY LA ME MI MN MO MS MT NC NE NV OH OK OR RI SC SD TN TX WI WV WY',   /* OR: AFC map 111626. TX: launched 19 Oct 2026 as its own policy, sold only with Affordable Choice; priced from SD-TXBR 0626 */
  gap:'AK AL AR AZ CA FL GA HI IA IL IN KY LA MD ME MI MN MO MS MT NC ND NE NM NV OH OK PA SC SD TN TX WA WI WV WY',
  chas:'AK AL AR AZ CA CO CT DC FL GA HI IA ID IL IN KS KY LA MD ME MI MN MO MS MT NC ND NE NH NV OH OK OR PA RI SC SD TN TX UT VT WA WI WV',
  afc:'AK AL AR AZ CA DE FL GA HI IA IL IN KY LA MD ME MI MN MO MS MT NC ND NE NM NV OH OK OR PA RI SC SD TN TX UT VA WI WV WY',
@@ -2259,10 +2263,12 @@ function pSDR(R,st,age,hh,cfg,esc){ var rs=afcRateSt(st);
     if(!Object.keys(pg.riders||{}).some(function(k){ return k.indexOf('Specified Disease Rider')===0; })) return {price:null,note:notLoaded('sdr','Specified Disease Rider',st)};
     return {price:null,note:'Specified Disease Rider not available at age '+age+' in '+st}; }
   var g=rGrp(R.sdr.g,rs), fb='';
-  if(!g) return {price:null,note:notLoaded('sdr','Specified Disease Rider',st)+(st==='TX'?'. In Texas it is its own policy (since 19 Oct 2026), sold only with an Affordable Choice policy':'')};
+  if(!g) return {price:null,note:notLoaded('sdr','Specified Disease Rider',st)};
   var ded=cfg.ded; if(esc) ded=DEDSTEP[ded]||ded;
   var m=g.m[cfg.max]; if(!m||!m[ded]) return {price:null,note:'SDR level unavailable'};
   var row=m[ded][bandAFC(age)]; if(!row) return {price:null,note:'SDR rate n/a'};
+  var xk=(g.child&&hh==='f')?Math.max(0,(kidsList()||[]).length-4):0;   /* TX: family covers four children, each extra one adds the Child rate */
+  if(xk) return {price:Math.round((row[hh]+xk*g.child[cfg.max][ded])*100)/100,note:fb,ded:ded};
   return {price:row[hh],note:fb,ded:ded};
 }
 /* HI Select is priced from ManhattanLife's rate guide (HIS-RATES 0725), never the 28 Sep portal pull (Jesse, 17 Nov): the
@@ -7201,7 +7207,7 @@ var NEWS=[
   ['Higher on every plan','The book we used before was 2.5% to 35% low, most on the richest plans: the 1000 Copay family plan at 60–64 is $824.84 a month more. Benefits, deductibles and copays are unchanged; only the premium moved.'],
   ['Effective dates before 1 December','An Intake effective date before 1 December 2026 still prices from the 2026 rates, as before.'],
   ['Dental shows in the package it’s in','When dental is added to a package (“Add to all three packages”), it now appears as its own line in that column, with its coverage, price and ✕ to remove it. Before, its price was counted in Monthly with no line on screen, so the lines you could see came up short of the total.'],
-  ['Specified Disease in Texas','ManhattanLife launched Specified Disease in Texas on 19 October. In Texas it is its own policy, not a rider, and is sold only with Affordable Choice. It now shows under ＋ Add for Texas clients, marked as needing a portal quote: the Texas rates aren’t loaded yet, so get the price in the ManhattanLife portal and add it with ＋ Add → Other.'],
+  ['Specified Disease in Texas','ManhattanLife launched Specified Disease in Texas on 19 October. In Texas it is its own policy, not a rider, and is sold only with Affordable Choice. It now shows under ＋ Add for Texas clients and prices from the Texas brochure’s own rate table, which is higher than most states (a family in their 40s on $250,000 / $50,000: $123.06 a month).'],
   ['Bright Life packages start with more protection','Every Bright Life column now starts with Hospital Indemnity at <b>$10,000 a stay and $1,500 outpatient</b>, plus <b>Out-of-Pocket Protection</b>: $100 a day in hospital, $2,500 on admission and $3,000 for outpatient surgery, with no ER rider. Change or remove any of it in the column as before.'],
   ['Amaze comes with every Cigna package','Cigna’s plan documents include no telehealth, so every Cigna package now carries <b>Amaze</b> as its own line: $99 a month for the household, a doctor any time by phone, video or message, no fee per visit. Tap ⓘ for everything it includes, with a link to Amaze’s own welcome sheet at the bottom. ✕ takes it out of a package and ＋ Add puts it back. It is not added to ManhattanLife packages, which already come with Rx Valet through EasyCare2go, or to Bright Life, which has its own telemedicine. Amaze publishes no drug list for the membership, so the slide-out points to Rx Valet’s own price search rather than guessing.'],
   ['Every surgery asks what it was for','In the Discovery call’s health questions, a surgery or procedure now asks what it was, not only when: a transplant asks which organ and why, angioplasty or bypass asks which, a valve replacement asks which valve, a pacemaker or shunt asks what it was for, and a pending surgery asks what it is and where they are with it. Anything you type in yourself, like “knee surgery”, asks “What was it for” too. The answer goes into the client profile with the condition.']]},
