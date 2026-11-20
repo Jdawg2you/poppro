@@ -3183,6 +3183,7 @@ brochLoad();   /* fetch once at start, so the email and the drawer have the link
 var BL_BROCHURE={'PPO 1250':{id:'1Y33ehroKRCJhO_oN3_jswXybOeUVVihf',form:'Health Shield PPO 1250 · V1.110226'}};
 function brochFor(f,c){ var st=(S.client.state||'').toUpperCase(); if(f==='sdr') f='afc';   /* the rider is described in the Affordable Choice brochure */
   if(f==='amaze') return {name:'Amaze',form:'Welcome to Amaze — everything it includes',url:amazeDoc('welcome')};   /* Amaze's own 7-page welcome sheet (Jesse, 19 Nov), hosted here */
+  if(f==='triad'){ var tp=String((c&&c.triadPlan)||'7350'); return {name:'Cigna — Triad Cigna PPO '+tp,form:'Summary of Benefits — Triad Cigna '+tp,url:triadDrive(TRIAD_SBC[tp]||TRIAD_SBC['7350'])}; }   /* Jesse, 20 Nov: the Cigna slide-out's document is the plan's Summary of Benefits (7350 by default) */
   if(f==='brightlife'){ var bl=BL_BROCHURE[(c&&c.blPlan)||BL_DEFAULT]; return bl&&bl.id?{name:'Bright Life — Health Shield PPO 1250',form:bl.form,url:'https://drive.google.com/file/d/'+bl.id+'/view'}:null; }
   return (BROCH&&BROCH[st]&&BROCH[st][f])||null; }
 /* Jesse, 9 Oct: a marked plan -> that plan's brochures; nothing marked -> every plan shown (t is then 'all') */
@@ -7222,6 +7223,7 @@ var NEWS=[
   ['Higher on every plan','The book we used before was 2.5% to 35% low, most on the richest plans: the 1000 Copay family plan at 60–64 is $824.84 a month more. Benefits, deductibles and copays are unchanged; only the premium moved.'],
   ['Effective dates before 1 December','An Intake effective date before 1 December 2026 still prices from the 2026 rates, as before.'],
   ['Dental shows in the package it’s in','When dental is added to a package (“Add to all three packages”), it now appears as its own line in that column, with its coverage, price and ✕ to remove it. Before, its price was counted in Monthly with no line on screen, so the lines you could see came up short of the total.'],
+  ['Cigna’s ⓘ opens its Summary of Benefits','The full-document link at the bottom of the Cigna slide-out now opens the Summary of Benefits for the plan in the package (7350 unless you pick another deductible).'],
   ['Find a doctor, with a how-to video','The quote email, the approval email and the Benefits Review (screen and recap email) now give the client their network’s provider search — First Health for ManhattanLife, Cigna PPO for Cigna and most Bright Life plans, PHCS for Bright Life’s Visit Limit plans — with a short video showing how to search it.'],
   ['Copy the quote email','In Send the quote, the third button is now <b>📋 Copy email</b>: it copies the To line, subject and letter so you can paste them anywhere. Gmail and Outlook still open a filled-in email.'],
   ['Specified Disease in Texas','ManhattanLife launched Specified Disease in Texas on 19 October. In Texas it is its own policy, not a rider, and is sold only with Affordable Choice. It now shows under ＋ Add for Texas clients and prices from the Texas brochure’s own rate table, which is higher than most states (a family in their 40s on $250,000 / $50,000: $123.06 a month).'],
