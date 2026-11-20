@@ -6459,7 +6459,7 @@ function netOf(t){ if(!t||!S.packages||!S.packages[t]) return null; var c=effCfg
   if(b&&NONMH[b]) return null;
   var ks=((S.packages[t]||{}).products||[]).map(function(p){ return p.k; });
   return (ks.indexOf('afc')>=0||ks.indexOf('his')>=0)?NET_SEARCH.fh:null; }
-function netLines(t,lead){ var n=netOf(t); if(!n) return []; return [(lead||'Find a doctor in your network ('+n.name+')')+': '+n.url,(n.how?n.how+' ':'')+'How to search, in a short video: '+n.video]; }
+function netLines(t,lead){ var n=netOf(t); if(!n) return []; return [(lead||'Find a doctor in your network ('+n.name+')')+': '+n.url,(n.how?n.how+' ':'')+'Here’s a short video showing how: '+n.video]; }
 /* From the 2026 SBCs: Acuity is the plan contact (complete terms, grievances) - NOT stated to be the precert line;
    TrueScripts is the specialty-drug prior-authorization contact. */
 var TRIAD_ACUITY='Acuity · 1-888-932-4365 · acuity-grp.com', TRIAD_TRUESCRIPTS='TrueScripts · 844-257-1955';
@@ -9368,7 +9368,7 @@ function buildEmail(){
     +'the plan we shared with you today. It shows what it costs you each month and what happens in a real hospital stay.'
     +(save?' '+save:'')+'\n\n'
     +(L.list.length?(L.t==='all'?'The brochures for each part of these plans, if you’d like the full details:\n':'The brochures for the '+(TIER_NAME[L.t]||'')+' plan, if you’d like the full details:\n')+brochLines(L)+'\n\n':'')
-    +(function(){ var nl=netLines(ch,'Before you decide, check that your doctors are in the '+(netOf(ch)||{}).name+' network'); return nl.length?nl.join('\n')+'\n\n':''; })()
+    +(function(){ var nl=netLines(ch,'Is your doctor in the '+(netOf(ch)||{}).name+' network? Check here'); return nl.length?nl.join('\n')+'\n\n':''; })()
     +(function(){ var ts=L.t==='all'?['good','better','best'].filter(function(x){ return (S.include||{})[x]!==false&&((S.packages||{})[x]||{}).products; }):[L.t];
       var any=ts.some(function(x){ return lbSummary(x).length; }); if(!any) return ''; var lk=ts.some(function(x){ return lbSummary(x).some(function(y){ return /Indexed|Whole/.test(y.kind||''); }); })?'life insurance':'term life insurance';
       return (L.t==='all'?'These plans as shown can include living benefits — '+lk+' that does more than a death benefit. ':'The '+TIER_NAME[L.t]+' plan as shown includes living benefits — '+lk+' that does more than a death benefit. ')+LB_BLURB+'\n\n'; })()
