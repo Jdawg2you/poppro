@@ -648,6 +648,9 @@
   .modal.wl-card{background:var(--cream,#faf6ec);border-radius:16px}
   .wl-body{max-height:calc(100vh - 230px);overflow:auto}
   .wl-you{margin:18px 20px 0;padding-top:14px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}.wl-you b{font-family:var(--serif);color:var(--navy);font-size:17px;margin-right:6px}.wl-you i{font-style:normal}.wl-you i.needfill-sum{color:#17824a;font-weight:700}
+  /* Client screen (sandbox, 20 Nov): Setup photo/logo + the remote on Present */
+  .agimgs{grid-column:1/-1}.agimg-row{display:flex;gap:18px;flex-wrap:wrap;margin:4px 0}.agimg{display:flex;align-items:center;gap:10px}.agimg-pv{width:120px;height:64px;border:1px dashed var(--line);border-radius:8px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#fff;font-size:11px;color:var(--muted)}.agimg-pv.round{width:64px;border-radius:50%}.agimg-pv img{max-width:100%;max-height:100%;object-fit:contain}.agimg-pv.round img{width:100%;height:100%;object-fit:cover}.agimg-btn{padding:6px 12px;font-size:13px;font-weight:600;color:var(--navy);background:#fff;border:1.5px solid var(--navy);border-radius:8px;cursor:pointer}.agimg-x{font-size:12px;border:0;background:none;color:var(--muted);text-decoration:underline;cursor:pointer}.agimg-err{color:#b71c1c;font-size:13px;font-weight:600;margin:4px 0}.agimg-help{font-size:13px;margin-top:4px}.agimg-help summary{cursor:pointer;font-weight:600;color:var(--navy)}.agimg-help ol{margin:6px 0 0 18px;padding:0}.agimg-help li{margin:4px 0}
+  .sh-bar{border:2px solid #1f6b3b;background:#eefaf2;border-radius:12px;padding:10px 14px;margin:10px 0}.sh-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.sh-new{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;background:#1f6b3b;color:#fff;border-radius:5px;padding:2px 6px}.sh-open{font:inherit;font-weight:700;background:var(--navy);color:#fff;border:0;border-radius:8px;padding:7px 14px;cursor:pointer}.sh-fol{display:flex;gap:6px;align-items:center;font-weight:600;font-size:14px}.sh-st{font-size:13px;color:var(--muted)}.sh-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.sh-chips button{font:inherit;font-size:13px;font-weight:600;border:1px solid #1f6b3b;background:#fff;color:#1f6b3b;border-radius:999px;padding:4px 11px;cursor:pointer}.sh-chips button.on{background:#1f6b3b;color:#fff}
   /* Setup file (Jesse, 5 Nov): the agent's details in one small file of their own - client files no longer carry them */
   .wl-you{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 6px}.wl-you .sf-btns{margin-left:auto;display:flex;gap:8px;align-self:center}
   .sf-btns button{padding:7px 14px;font-size:13px;font-weight:600;color:var(--navy);background:#fff;border:1.5px solid var(--navy);border-radius:8px;cursor:pointer}.sf-btns button:hover{background:var(--navy);color:#fff}
@@ -2011,6 +2014,19 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
       <div class="fld"><label>Direction Rx code <small>the client enters it for 30% off</small></label><input id="in_adrxcode" placeholder="4-MEM-26-6 (used if blank)"></div>
       <div class="fld"><label>Amaze sign-up link <small>your own — where clients join Amaze</small></label><input id="in_aamazelink" placeholder="your Amaze member sign-up link"></div>
       <div class="fld agbio"><label>Your bio <small>who you are · read at the start of every discovery call (2.3) · empty = the default</small></label><textarea id="in_abio" rows="4" placeholder="Leave empty to use the default"></textarea><button type="button" class="picbtn" id="bioDefault">Use the default</button></div>
+      <div class="fld agimgs" id="agImgs" style="display:none"><label>Your photo and logo <small>shown on the client screen when you present · kept in this browser and your Setup file, never in a client file</small></label>
+        <div class="agimg-row">
+          <div class="agimg"><div class="agimg-pv round" id="ag_photo_pv"></div><label class="agimg-btn">Choose photo<input type="file" accept="image/*" id="in_aphoto" hidden></label><button type="button" class="agimg-x" data-agx="photo">Remove</button></div>
+          <div class="agimg"><div class="agimg-pv" id="ag_logo_pv"></div><label class="agimg-btn">Choose logo<input type="file" accept="image/*" id="in_alogo" hidden></label><button type="button" class="agimg-x" data-agx="logo">Remove</button></div>
+        </div>
+        <small class="fhint">Any size is fine — MyPopPro shrinks it for you.</small>
+        <div class="agimg-err" id="agImgErr"></div>
+        <details class="agimg-help"><summary>Photo or logo won’t load?</summary><ol>
+          <li><b>A photo from an iPhone</b> is often a HEIC file, which browsers can’t open. Open the photo on your phone, take a screenshot of it, and upload the screenshot.</li>
+          <li><b>On a Mac:</b> open the picture in Preview, choose <b>File → Export</b>, set Format to <b>JPEG</b>, save, and upload that file.</li>
+          <li><b>Your logo from your website:</b> right-click the logo, choose <b>Save Image As</b>, and upload the saved file.</li>
+          <li>Still stuck? Any .jpg or .png file works.</li></ol></details>
+      </div>
     </div>
     <div class="goatgrab" id="goatGrab">
       <b>Don&rsquo;t have the last three yet? All three are free.</b> <span class="freetag">NO COST</span>
@@ -5506,7 +5522,7 @@ function suiteFromNavProfile(P){
 }
 /* The agent's own details (agency, name, phone, email) belong to whoever is running the tool, not to a
    file. A loaded file keeps them unless it carries its own - loading a client never wipes the agent. */
-function agentOf(st){ return {agency:st.agency, agent:(st.client||{}).agent, phone:st.agentPhone, email:st.agentEmail, npn:st.agentNPN, web:st.agentWebsite, card:st.agentCard, book:st.agentBooking, ben:st.agentBenefits, drxl:st.agentDrxLink, drxc:st.agentDrxCode, hs:st.agentHsLink, amz:st.agentAmazeLink, bio:st.agentBio}; }
+function agentOf(st){ return {agency:st.agency, agent:(st.client||{}).agent, phone:st.agentPhone, email:st.agentEmail, npn:st.agentNPN, web:st.agentWebsite, card:st.agentCard, book:st.agentBooking, ben:st.agentBenefits, drxl:st.agentDrxLink, drxc:st.agentDrxCode, hs:st.agentHsLink, amz:st.agentAmazeLink, bio:st.agentBio, photo:st.agentPhoto, logo:st.agentLogo}; }
 /* Agent setup folds closed once agency, name, phone and email are all in; it opens again if any of those four is
    missing. NPN, website and booking are optional and never hold it open. (Jesse, 2026-10-08) */
 /* Jesse, 2026-10-09: the fold now waits for ALL of them, not the four the tool cannot run without.
@@ -5533,7 +5549,7 @@ function agentGlow(){ var empty=[]; AGENT_BOXES.forEach(function(b){ var el=$(b[
 function agentSetupFold(){ var miss=agentSetupMissing(), b=$('setupBtn'), n=$('setupNeed'); if(b){ b.classList.toggle('need',!!miss.length); b.title=miss.length?'Still to fill in: '+miss.join(', '):'Your agency, name, phone, email, NPN and links'; } if(n) n.textContent=miss.length?String(miss.length):''; if(typeof setupTabsPaint==='function') setupTabsPaint(); var rs=$('railSetup'), rn=$('railSetupNeed'); if(rs){ rs.classList.toggle('need',!!miss.length); rs.title=b?b.title:''; } if(rn) rn.textContent=miss.length?String(miss.length):'';
   var ws=$('wlSetupState'); if(ws){ ws.textContent=miss.length?miss.length+' to fill in':'✓ Done'; ws.className=miss.length?'todo':''; }
   var d=$('agentSetup'); if(d) d.classList.toggle('goat-skipped',goatSkipped()); var sf=$('setupFile'); if(sf) sf.classList.toggle('empty',setupEmpty()); agentGlow(); }
-function fillAgent(){ $('in_agency').value=S.agency||'HealthFirst'; $('in_agent').value=(S.client||{}).agent||''; $('in_aphone').value=S.agentPhone||''; $('in_aemail').value=S.agentEmail||''; $('in_anpn').value=S.agentNPN||''; $('in_aweb').value=S.agentWebsite||''; $('in_acard').value=S.agentCard||''; $('in_abook').value=S.agentBooking||''; $('in_abenefits').value=S.agentBenefits||''; $('in_adrxlink').value=S.agentDrxLink||''; $('in_adrxcode').value=S.agentDrxCode||''; if($('in_ahslink')) $('in_ahslink').value=S.agentHsLink||''; if($('in_aamazelink')) $('in_aamazelink').value=S.agentAmazeLink||''; $('in_abio').value=S.agentBio||''; agentSetupFold(); }
+function fillAgent(){ $('in_agency').value=S.agency||'HealthFirst'; $('in_agent').value=(S.client||{}).agent||''; $('in_aphone').value=S.agentPhone||''; $('in_aemail').value=S.agentEmail||''; $('in_anpn').value=S.agentNPN||''; $('in_aweb').value=S.agentWebsite||''; $('in_acard').value=S.agentCard||''; $('in_abook').value=S.agentBooking||''; $('in_abenefits').value=S.agentBenefits||''; $('in_adrxlink').value=S.agentDrxLink||''; $('in_adrxcode').value=S.agentDrxCode||''; if($('in_ahslink')) $('in_ahslink').value=S.agentHsLink||''; if($('in_aamazelink')) $('in_aamazelink').value=S.agentAmazeLink||''; $('in_abio').value=S.agentBio||''; agentSetupFold();  agImgPaint(); }
 /* Only the agent fields - captureIntake() would also read the client boxes, which are stale off the Intake step. */
 function readAgent(){ S.agency=($('in_agency').value||'').trim()||'HealthFirst'; S.client=S.client||{}; S.client.agent=$('in_agent').value; S.agentPhone=$('in_aphone').value; S.agentEmail=$('in_aemail').value; S.agentNPN=($('in_anpn').value||'').trim(); S.agentWebsite=($('in_aweb').value||'').trim(); S.agentCard=($('in_acard').value||'').trim(); S.agentBooking=($('in_abook').value||'').trim(); S.agentBenefits=($('in_abenefits').value||'').trim(); S.agentDrxLink=($('in_adrxlink').value||'').trim(); S.agentDrxCode=($('in_adrxcode').value||'').trim(); S.agentHsLink=(($('in_ahslink')||{}).value||'').trim(); S.agentAmazeLink=(($('in_aamazelink')||{}).value||'').trim(); S.agentBio=($('in_abio').value||'').trim(); agentSetupFold(); autosave(); }
 /* a saved navigator profile's life-insurance answers as one note line - the same as the navigator's lifeNowLine() */
@@ -7541,7 +7557,7 @@ function keepAgent(ag){
   S.client=S.client||{}; if(ag.agent && !S.client.agent) S.client.agent=ag.agent;
   if(ag.phone && !S.agentPhone) S.agentPhone=ag.phone;
   if(ag.email && !S.agentEmail) S.agentEmail=ag.email;
-  if(ag.npn && !S.agentNPN) S.agentNPN=ag.npn; if(ag.web && !S.agentWebsite) S.agentWebsite=ag.web; if(ag.card && !S.agentCard) S.agentCard=ag.card; if(ag.book && !S.agentBooking) S.agentBooking=ag.book; if(ag.ben && !S.agentBenefits) S.agentBenefits=ag.ben; if(ag.drxl && !S.agentDrxLink) S.agentDrxLink=ag.drxl; if(ag.drxc && !S.agentDrxCode) S.agentDrxCode=ag.drxc; if(ag.hs && !S.agentHsLink) S.agentHsLink=ag.hs; if(ag.amz && !S.agentAmazeLink) S.agentAmazeLink=ag.amz; if(ag.bio && !S.agentBio) S.agentBio=ag.bio; }
+  if(ag.npn && !S.agentNPN) S.agentNPN=ag.npn; if(ag.web && !S.agentWebsite) S.agentWebsite=ag.web; if(ag.card && !S.agentCard) S.agentCard=ag.card; if(ag.book && !S.agentBooking) S.agentBooking=ag.book; if(ag.ben && !S.agentBenefits) S.agentBenefits=ag.ben; if(ag.drxl && !S.agentDrxLink) S.agentDrxLink=ag.drxl; if(ag.drxc && !S.agentDrxCode) S.agentDrxCode=ag.drxc; if(ag.hs && !S.agentHsLink) S.agentHsLink=ag.hs; if(ag.amz && !S.agentAmazeLink) S.agentAmazeLink=ag.amz; if(ag.bio && !S.agentBio) S.agentBio=ag.bio; if(ag.photo && !S.agentPhoto) S.agentPhoto=ag.photo; if(ag.logo && !S.agentLogo) S.agentLogo=ag.logo; }
 /* Portable client file (Jesse, 14 Oct): one file per client opens in POP Pro or the Script Navigator. A POP Pro save
    carries the whole navigator call (S.nav); a navigator save carries the POP Pro quote it came with (_pop). Opening a
    navigator file: its POP Pro quote is the base and the navigator's answers - the newer save - go on top. */
@@ -7550,12 +7566,12 @@ function navOnlyOf(p){ var o={}; Object.keys(p||{}).forEach(function(k){ if(k!==
    saved without the agent's details, and opening any client file - Kyle's, an assistant's, an old one that still carries
    someone's Setup - leaves this browser's Setup exactly as it was. The agent's details live in their own Setup file
    ("Save my Setup"), which puts them back after a cleared browser or on a new computer. */
-var AGENT_KEYS=['agency','agentPhone','agentEmail','agentNPN','agentWebsite','agentCard','agentBooking','agentBenefits','agentDrxLink','agentDrxCode','agentHsLink','agentAmazeLink','agentBio'];
+var AGENT_KEYS=['agency','agentPhone','agentEmail','agentNPN','agentWebsite','agentCard','agentBooking','agentBenefits','agentDrxLink','agentDrxCode','agentHsLink','agentAmazeLink','agentBio','agentPhoto','agentLogo'];
 function stripAgent(d){ AGENT_KEYS.forEach(function(k){ delete d[k]; }); if(d.client) delete d.client.agent; return d; }
 function setAgent(ag){ ag=ag||{}; var t=function(v){ return v==null?'':String(v); };
   S.agency=t(ag.agency).trim()||'HealthFirst'; S.client=S.client||{}; S.client.agent=t(ag.agent);
   S.agentPhone=t(ag.phone); S.agentEmail=t(ag.email); S.agentNPN=t(ag.npn); S.agentWebsite=t(ag.web); S.agentCard=t(ag.card); S.agentBooking=t(ag.book);
-  S.agentBenefits=t(ag.ben); S.agentDrxLink=t(ag.drxl); S.agentDrxCode=t(ag.drxc); S.agentHsLink=t(ag.hs); S.agentAmazeLink=t(ag.amz); S.agentBio=t(ag.bio); }
+  S.agentBenefits=t(ag.ben); S.agentDrxLink=t(ag.drxl); S.agentDrxCode=t(ag.drxc); S.agentHsLink=t(ag.hs); S.agentAmazeLink=t(ag.amz); S.agentBio=t(ag.bio); S.agentPhoto=t(ag.photo); S.agentLogo=t(ag.logo); }
 function setupEmpty(){ return !String((S.client||{}).agent||'').trim() && !String(S.agentPhone||'').trim() && !String(S.agentEmail||'').trim(); }
 function isSetupFile(o){ return !!o && o.format==='mypoppro-setup' && !!o.agent && typeof o.agent==='object'; }
 function saveSetup(){ if($('in_agent')) readAgent(); var ag=agentOf(S);
@@ -8729,6 +8745,7 @@ function renderPresent(){ var host=$('presentHost'); if(!host) return; if(triadF
   var who=(T['client.first']||'the client')+(S.client&&S.client.sname?' & '+enSplit(S.client.sname)[0]:'');
   var h='<div class="pr-top"><div><h3>Presenting the <em class="pr-plan">'+esc(TIER_NAME[t])+'</em> plan to '+esc(who)+'</h3><small>Agent-only — never on Client View or the printout. Blue blanks fill from this quote; red ones are missing.</small></div>'
     +presentBubbles(t)+'<button type="button" data-pr="quote" style="font:inherit;font-weight:700;border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 13px;cursor:pointer">← Back to the Quote</button></div>';
+  if(SHOW_ON) h+='<div class="sh-bar" id="showBar"></div>';   /* client screen remote - sandbox only */
   h+=histStrip('present')+covClockBar();
   h+='<div class="pr-prog" id="prChips"></div><div class="pr-grid"><div>'
     +'<iframe id="prFrame" src="presentation.html" title="Presentation script" style="width:100%;border:1px solid var(--line);border-radius:12px;background:#fff;min-height:200px"></iframe>'
@@ -8742,7 +8759,7 @@ function renderPresent(){ var host=$('presentHost'); if(!host) return; if(triadF
     +((effCfg(t).base||'afc')==='afc'?'<div class="box" id="prClaims">'+prClaimsHTML()+'</div>':'')
     +'<div class="box" id="prStories">'+PR_STORY_HEAD+'</div>'
     +'</div></div><div id="prPop" style="display:none"></div>';
-  host.innerHTML=h; presentWhyBox(t); presentDrxBox();
+  host.innerHTML=h; presentWhyBox(t); presentDrxBox(); if(SHOW_ON) showBarPaint();
   var fr=$('prFrame');
   fr.onload=function(){ try{ var doc=fr.contentDocument; scriptClean(doc); presentPaginate(doc);
       benLoadSafe('afc').then(function(){ presentWire(doc,t); presentGo(+S.present.pg||0); });
@@ -8760,7 +8777,117 @@ function renderPresent(){ var host=$('presentHost'); if(!host) return; if(triadF
   host.querySelectorAll('[data-show]').forEach(function(b){ b.onclick=function(){ presentShow(b.dataset.show); }; });
 }
 /* flip to a screen without reloading the script (its state, notes and picks stay put) */
-function presentGo(pg){ var pages=presentPages(), nav=presentNav(), t=presentTier(); if(nav.indexOf(pg)<0) pg=nav[0]; S.present.pg=pg;
+/* ===== Client screen (Jesse, 20 Nov 2026): a second window the agent shares on the screenshare - one scrolling,
+   personal presentation built from the plan being presented, with the agent's photo, logo and details. Sections appear
+   only for what is in the package; the window follows the Present script unless the agent turns that off, and the
+   remote jumps it anywhere. Never shows medications (Jesse: they stay in the script). Benefit rows come from the same
+   benefits files as the ⓘ slide-outs - nothing typed here. SANDBOX ONLY until Jesse names the release: SHOW_ON is
+   false on mypoppro.com. ===== */
+var SHOW_ON=/^(localhost|127\.0\.0\.1)$/.test(location.hostname)||location.port==='8767'||location.hostname==='sandbox.mypoppro.com';
+var SHOW_WIN=null, SHOW_AT='';
+var SHOW_FOLLOW={open:'hello',reason:'why',price:'why',networks:'doctors',questions:'plan',coverage:'plan',rx:'everyday',catastrophic:'protect',bonus:'everyday','bonus-rx':'everyday',close:'cost','lb-pivot':'lb','lb-price':'lb',boldstep:'cost',lifeapp:'next',wrapup:'next',posttext:'next'};
+var SHOW_GROUPS=[{id:'plan',t:'Your health plan',s:'Your plan',ks:['base','afc','sdr','mec']},{id:'protect',t:'If something big happens',s:'Big events',ks:['his','gap','acc','chas','hhc']},{id:'everyday',t:'Everyday care',s:'Everyday',ks:['amz','dvh']}];
+function showFollowOn(){ try{ return localStorage.getItem('mpp_show_follow')!=='0'; }catch(e){ return true; } }
+function showE(x){ return esc(x==null?'':x); }
+function showNames(){ var C=S.client||{}, n=[enSplit(C.pname)[0],enSplit(C.sname)[0]].concat(kidsList().map(function(k){ return String(k.n||'').trim().split(/\s+/)[0]; })).filter(Boolean);
+  return n.length<2?(n[0]||''):n.slice(0,-1).join(', ')+' and '+n[n.length-1]; }
+function showProds(t){ return (((S.packages||{})[t]||{}).products||[]).filter(function(p){ return (+p.monthly||0)>0; }); }
+function showDocs(t){ var I=S.intake||{}, net=netOf(t), out=[]; if(!net) return out;
+  [1,2,3].forEach(function(n){ var nm=String(I['docs'+n]||'').trim(); if(nm&&docNetRead(n)===true) out.push(nm); }); return out; }   /* only doctors checked IN the network */
+/* the sections this package gets, in order - synchronous, so the remote can list them */
+function showPlan(t){ var ks=showProds(t).map(function(p){ return isLBk(p.k)?'lb':p.k; }), L=[{id:'hello',s:'Hello'}];
+  if(presentWhy(S.intake||{})) L.push({id:'why',s:'What matters'});
+  if(showDocs(t).length) L.push({id:'doctors',s:'Your doctors'});
+  SHOW_GROUPS.forEach(function(g){ if(g.ks.some(function(k){ return ks.indexOf(k)>=0; })) L.push({id:g.id,s:g.s}); });
+  if(ks.indexOf('lb')>=0) L.push({id:'lb',s:'Living benefits'});
+  L.push({id:'cost',s:'What it costs'},{id:'next',s:'Next steps'}); return L; }
+function showName(p){ var sl=PB_SLOTS.filter(function(x){ return x.k===p.k; })[0]; return String((p.k==='base'&&tierNonMh(presentTier()))?tierNonMh(presentTier()).full:(sl?sl.name:p.name)||'').split(' — ')[0]; }
+function showCard(t,p){ var c=effCfg(t), f=benFileFor(p.k,c), st=(S.client.state||'').toUpperCase(), nm=showName(p);
+  var card=function(m){ var rows=m?m.key.slice(0,5):[]; return '<div class="card"><h3>'+showE(nm)+'</h3>'+(rows.length?rows.map(function(r){ return '<div class="row"><span>'+showE(r.label)+'</span><b>'+showE(r.value)+'</b></div>'; }).join(''):'<p class="muted">Included in your plan.</p>')+'</div>'; };
+  if(!f) return Promise.resolve(card(null));
+  return benLoad(f).then(function(d){ var m=null; try{ m=benModel(d,st,benCol(p.k,c),benCfg(p.k,c)); }catch(e){} return card(m); }).catch(function(){ return card(null); }); }
+/* living benefits: the triggers as their own cards, in the carrier's words from the benefits file (not the underwriting rows) */
+function showLbCards(t,p){ var c=effCfg(t), f=benFileFor(p.k,c), st=(S.client.state||'').toUpperCase(); if(!f) return Promise.resolve('');
+  return benLoad(f).then(function(d){ var m=null; try{ m=benModel(d,st,benCol(p.k,c),benCfg(p.k,c)); }catch(e){} if(!m) return '';
+    return ['Chronic illness','Critical illness','Terminal illness','How much can be accelerated'].map(function(lb){ var r=m.key.filter(function(x){ return x.label===lb; })[0]; if(!r) return '';
+      return '<div class="card"><h3>'+showE(lb==='How much can be accelerated'?'How much you can use':lb)+'</h3><p class="muted" style="margin:0">'+showE(String(r.value).replace(/^Included at no additional cost — /,'').replace(/^./,function(x){ return x.toUpperCase(); }))+'</p></div>'; }).join(''); }).catch(function(){ return ''; }); }
+function showBuild(t){ var C=S.client||{}, I=S.intake||{}, plan=showPlan(t), has=function(id){ return plan.some(function(x){ return x.id===id; }); }, prods=showProds(t);
+  var agent=String(C.agent||'').trim(), agency=String(S.agency||'').trim(), ph=String(S.agentPhone||'').trim(), em=String(S.agentEmail||'').trim(), npn=String(S.agentNPN||'').trim(), book=String(S.agentBooking||'').trim();
+  var photo=S.agentPhoto||'', logo=S.agentLogo||'', names=showNames(), net=netOf(t);
+  var jobs=SHOW_GROUPS.map(function(g){ var ps=prods.filter(function(p){ return g.ks.indexOf(p.k)>=0; }); return Promise.all(ps.map(function(p){ return showCard(t,p); })); });
+  var lbp=prods.filter(function(p){ return isLBk(p.k); })[0];
+  jobs.push(lbp?showLbCards(t,lbp):Promise.resolve(''));
+  return Promise.all(jobs).then(function(R){ var sec=function(id,eyebrow,title,body){ return has(id)?'<section id="s-'+id+'"><div class="in"><div class="eyebrow">'+showE(eyebrow)+'</div><h2>'+title+'</h2>'+body+'</div></section>':''; };
+    var h='';
+    h+='<section id="s-hello" class="hello"><div class="in">'+(logo?'<img class="logo" src="'+logo+'" alt="">':'')
+      +'<div class="hl">'+(photo?'<img class="photo" src="'+photo+'" alt="">':'')+'<div><div class="eyebrow">Your health coverage</div><h1>'+(names?'Prepared for '+showE(names):'Your plan, explained')+'</h1>'
+      +(agent?'<p class="lead">by <b>'+showE(agent)+'</b>'+(agency?', '+showE(agency):'')+'</p>':'')+(npn?'<p class="muted">Licensed insurance agent · National Producer Number '+showE(npn)+'</p>':'')+'</div></div></div></section>';
+    var why=presentWhy(I); h+=sec('why','In your words','What matters to you','<p class="quote">“'+showE(why)+'”</p><p class="lead">Everything that follows is built around that.</p>');
+    h+=sec('doctors','Checked for you','Your doctors',showDocs(t).map(function(d){ return '<div class="doc"><span class="check">✓</span><div><b>'+showE(d)+'</b><br><span class="muted">In the '+showE(net.name)+' network</span></div></div>'; }).join(''));
+    SHOW_GROUPS.forEach(function(g,i){ var extra='';
+      if(g.id==='protect'&&(effCfg(t).base||'afc')==='afc'&&typeof PR_CLAIMS!=='undefined') extra='<h3 class="sub">Real claims on this kind of plan</h3><div class="cards">'+PR_CLAIMS.map(function(c){ return '<div class="card claim"><h3>'+showE(c.t)+'</h3><p class="big2">'+showE(c.sum)+'</p></div>'; }).join('')+'</div><p class="muted small">One client’s plan. What yours pays depends on your own benefits.</p>';
+      h+=sec(g.id,g.id==='plan'?'Your coverage':g.id==='protect'?'Hospital, surgery, accidents':'Day to day',g.t,'<div class="cards">'+R[i].join('')+'</div>'+extra); });
+    if(has('lb')){ var L=lbSummary(t);
+      h+=sec('lb','Paid to you','Living benefits','<div class="cards">'+L.map(function(x){ return '<div class="card lbc"><div class="eyebrow">'+showE(x.who)+'</div><p class="big">$'+Math.round(x.face||0).toLocaleString('en-US')+'</p><p class="muted">'+showE(x.kind)+(x.carrier?' · '+showE(x.carrier):'')+'</p></div>'; }).join('')+'</div>'
+        +'<p class="lead">Health insurance pays the doctors and hospitals. Living benefits pay <b>you</b>, to use however you need, if a serious illness or injury qualifies. What you use comes off the amount your family would receive.</p>'+(R[R.length-1]?'<div class="cards">'+R[R.length-1]+'</div>':'')); }
+    var tt=tierTotals(t), lbm=((tt.pk.products||[]).filter(function(p){ return isLBk(p.k); }).reduce(function(a,p){ return a+(+p.monthly||0); },0))+(+tt.pk.lb||0), prem=tt.mo-lbm, B=anchorBase(), now=B?+B.premOnly||0:0, save=now-prem;
+    var cmp=(B&&now>0&&save>=1)?'<div class="cmp"><div><span class="muted">'+(B.k==='aca'?'The marketplace plan':'Your current plan')+'</span><p class="big strike">'+fmt2(now)+'</p></div><div class="arrow">→</div><div><span class="muted">This plan’s health coverage</span><p class="big">'+fmt2(prem)+'</p></div></div><p class="lead">That’s <b>'+fmt2(save)+'</b> less a month — <b>'+fmt2(save*12)+'</b> over a year.</p>':'';
+    h+=sec('cost','Your monthly total','What it costs',cmp+'<div class="total"><span>Your monthly total</span><b>'+fmt2(tt.mo)+'</b></div>'+(lbm>0?'<p class="muted">Includes '+fmt2(lbm)+' a month for living benefits.</p>':''));
+    h+=sec('next','Here for you','How I work for you',(String(S.agentBio||'').trim()?'<p class="lead">'+showE(String(S.agentBio).trim())+'</p>':'')
+      +'<ul class="ticks"><li>There’s no fee for my help.</li><li>When you need to use your plan, call me first.</li><li>We’ll look at it together every year.</li></ul>'
+      +'<div class="contact">'+(photo?'<img class="photo sm" src="'+photo+'" alt="">':'')+'<div><b>'+showE(agent)+'</b>'+(agency?'<br>'+showE(agency):'')+(ph?'<br>'+showE(ph):'')+(em?'<br>'+showE(em):'')+'</div></div>'
+      +(book?'<p><a class="btn" href="'+showE(/^https?:/i.test(book)?book:'https://'+book)+'" target="_blank" rel="noopener">Book a time with me</a></p>':''));
+    var foot=(agent||ph)?'<div class="foot">'+(photo?'<img src="'+photo+'" alt="">':'')+'<span><b>'+showE(agent)+'</b>'+(agency?' · '+showE(agency):'')+'</span>'+(ph?'<span class="fr">'+showE(ph)+'</span>':'')+'</div>':'';
+    return '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+showE(names?'Your plan — '+names:'Your health plan')+'</title><style>'+SHOW_CSS+'</style></head><body>'+h+foot+'</body></html>'; }); }
+var SHOW_CSS='*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:#faf6ec;color:#1d2433;font:18px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}'
+ +'section{min-height:92vh;padding:56px 7vw 80px;border-bottom:1px solid #e8e1cf;display:flex;align-items:center}.in{width:100%;max-width:1080px;margin:0 auto}'
+ +'h1{font:600 clamp(32px,5vw,58px)/1.1 Georgia,"Times New Roman",serif;color:#14284b;margin:6px 0 12px}h2{font:600 clamp(28px,4vw,46px)/1.15 Georgia,"Times New Roman",serif;color:#14284b;margin:0 0 22px}'
+ +'.eyebrow{font-weight:700;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:#a87f1f;margin-bottom:8px}.lead{font-size:clamp(18px,2vw,23px);line-height:1.5;max-width:52em}.muted{color:#5b6475}.small{font-size:14px}'
+ +'.hello .logo{max-height:76px;max-width:320px;display:block;margin-bottom:34px}.hl{display:flex;align-items:center;gap:34px;flex-wrap:wrap}.photo{width:170px;height:170px;border-radius:50%;object-fit:cover;border:5px solid #fff;box-shadow:0 2px 12px rgba(20,40,75,.15)}.photo.sm{width:84px;height:84px;border-width:3px}'
+ +'.quote{font:italic 500 clamp(24px,3.2vw,38px)/1.35 Georgia,serif;color:#14284b;border-left:5px solid #c79a2b;padding-left:24px;margin:0 0 22px}'
+ +'.doc{display:flex;gap:16px;align-items:center;background:#fff;border:1px solid #e6dfcc;border-radius:14px;padding:16px 20px;margin-bottom:12px;font-size:21px}.check{color:#1f7a46;font-size:30px;font-weight:700}'
+ +'.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px;margin-bottom:18px}.card{background:#fff;border:1px solid #e6dfcc;border-radius:14px;padding:18px 22px}.card h3{font:600 21px Georgia,serif;color:#14284b;margin:0 0 8px}'
+ +'.row{display:flex;justify-content:space-between;gap:16px;padding:9px 0;border-top:1px solid #f0ebde;font-size:16px}.row span{color:#5b6475}.row b{text-align:right;font-weight:600}'
+ +'h3.sub{font:600 22px Georgia,serif;color:#14284b;margin:26px 0 12px}.claim .big2{font-size:19px;font-weight:600;color:#1f7a46;margin:0}'
+ +'.big{font:600 clamp(36px,5vw,60px)/1.05 Georgia,serif;color:#14284b;margin:4px 0}.strike{text-decoration:line-through;color:#8a8f99}.cmp{display:flex;align-items:center;gap:28px;flex-wrap:wrap;margin-bottom:12px}.arrow{font-size:40px;color:#c79a2b}'
+ +'.total{display:flex;justify-content:space-between;align-items:baseline;background:#14284b;color:#fff;border-radius:14px;padding:20px 26px;max-width:620px;margin-top:10px}.total span{font-size:19px}.total b{font:600 40px Georgia,serif}'
+ +'.ticks{list-style:none;padding:0;font-size:21px}.ticks li{padding:6px 0 6px 34px;position:relative}.ticks li:before{content:"✓";position:absolute;left:0;color:#1f7a46;font-weight:700}'
+ +'.contact{display:flex;gap:18px;align-items:center;font-size:19px;margin:18px 0}.btn{display:inline-block;background:#c79a2b;color:#14284b;font-weight:700;padding:14px 26px;border-radius:10px;text-decoration:none}'
+ +'.foot{position:sticky;bottom:0;background:#14284b;color:#fff;display:flex;align-items:center;gap:12px;padding:10px 7vw;font-size:15px}.foot img{width:34px;height:34px;border-radius:50%;object-fit:cover}.foot .fr{margin-left:auto}';
+function showLive(){ return !!(SHOW_WIN&&!SHOW_WIN.closed); }
+function showOpen(){ var w=window.open('','mppClientScreen','width=1180,height=820');
+  if(!w){ alert('Your browser blocked the client screen. Allow pop-ups for MyPopPro (the icon at the right of the address bar), then click again.'); return; }
+  SHOW_WIN=w; showWrite(); try{ w.focus(); }catch(e){} }
+function showWrite(){ if(!showLive()) return; var t=presentTier(), w=SHOW_WIN;
+  showBuild(t).then(function(html){ if(!showLive()) return; w.document.open(); w.document.write(html); w.document.close(); if(SHOW_AT) setTimeout(function(){ showGo(SHOW_AT,true); },60); showBarPaint(); }); }
+function showGo(id,instant){ if(!showLive()) return; var el=SHOW_WIN.document.getElementById('s-'+id); if(!el) return; SHOW_AT=id;
+  try{ el.scrollIntoView({behavior:instant?'instant':'smooth',block:'start'}); }catch(e){ el.scrollIntoView(); } showBarPaint(); }
+/* called by presentGo: the client screen follows the script page, if the agent wants it to */
+function showFollow(sc){ if(!SHOW_ON||!showFollowOn()||!showLive()) return; var id=SHOW_FOLLOW[sc]; if(id) showGo(id); }
+function showBarPaint(){ var bar=$('showBar'); if(!bar) return; var t=presentTier(), live=showLive(), plan=showPlan(t);
+  bar.innerHTML='<div class="sh-top"><b>🖥 Client screen</b><span class="sh-new">sandbox</span>'
+    +'<button type="button" class="sh-open" data-sh="open">'+(live?'↻ Refresh it':'Open client screen')+'</button>'
+    +'<label class="sh-fol"><input type="checkbox" data-sh="follow"'+(showFollowOn()?' checked':'')+'> Follow my script</label>'
+    +'<span class="sh-st">'+(live?'Open — share <b>that</b> window, not this one.':'Opens a second window for you to share. Your script stays here.')+'</span></div>'
+    +(live?'<div class="sh-chips">'+plan.map(function(x){ return '<button type="button" data-shgo="'+x.id+'" class="'+(x.id===SHOW_AT?'on':'')+'">'+showE(x.s)+'</button>'; }).join('')+'</div>':'');
+  bar.querySelector('[data-sh="open"]').onclick=function(){ if(showLive()) showWrite(); else showOpen(); };
+  bar.querySelector('[data-sh="follow"]').onchange=function(){ try{ localStorage.setItem('mpp_show_follow',this.checked?'1':'0'); }catch(e){} if(this.checked){ var pg=presentPages()[+((S.present||{}).pg)||0]; if(pg) showFollow(pg.sc); } };
+  bar.querySelectorAll('[data-shgo]').forEach(function(b){ b.onclick=function(){ showGo(b.dataset.shgo); }; }); }
+/* Setup: the agent's photo and logo - shrunk in this browser, kept with the Setup (browser + Setup file), never in a client file */
+function agImgPaint(){ var box=$('agImgs'); if(!box) return; box.style.display=SHOW_ON?'':'none';
+  [['photo','agentPhoto'],['logo','agentLogo']].forEach(function(x){ var pv=$('ag_'+x[0]+'_pv'), v=S[x[1]]||''; if(pv) pv.innerHTML=v?'<img src="'+v+'" alt="">':'<span>'+(x[0]==='photo'?'No photo yet':'No logo yet')+'</span>';
+    var rm=box.querySelector('[data-agx="'+x[0]+'"]'); if(rm) rm.style.display=v?'':'none'; }); }
+function agImgLoad(kind,file){ var err=$('agImgErr'); if(err) err.innerHTML=''; if(!file) return;
+  var bad=function(){ if(err) err.innerHTML='That file didn’t load'+(/heic|heif/i.test((file.name||'')+' '+(file.type||''))?' — it’s an iPhone (HEIC) photo, which browsers can’t open':'')+'. Open <b>“Photo or logo won’t load?”</b> just below for a 30-second fix.'; var hp=document.querySelector('#agImgs .agimg-help'); if(hp) hp.open=true; };
+  var url=URL.createObjectURL(file), im=new Image();
+  im.onload=function(){ try{ var max=kind==='photo'?400:600, sc=Math.min(1,max/Math.max(im.naturalWidth,im.naturalHeight)), w=Math.max(1,Math.round(im.naturalWidth*sc)), h=Math.max(1,Math.round(im.naturalHeight*sc)), cv=document.createElement('canvas');
+      cv.width=w; cv.height=h; var cx=cv.getContext('2d'); if(kind==='photo'){ cx.fillStyle='#fff'; cx.fillRect(0,0,w,h); } cx.drawImage(im,0,0,w,h);
+      var data=kind==='photo'?cv.toDataURL('image/jpeg',0.85):cv.toDataURL('image/png'); if(data.length>350000) data=cv.toDataURL('image/jpeg',0.85);
+      if(kind==='photo') S.agentPhoto=data; else S.agentLogo=data; URL.revokeObjectURL(url); autosave(); agImgPaint(); if(showLive()) showWrite(); }catch(e){ bad(); } };
+  im.onerror=function(){ URL.revokeObjectURL(url); bad(); }; im.src=url; }
+document.addEventListener('change',function(e){ var id=e.target&&e.target.id; if(id==='in_aphoto'||id==='in_alogo'){ agImgLoad(id==='in_aphoto'?'photo':'logo',e.target.files&&e.target.files[0]); e.target.value=''; } });
+document.addEventListener('click',function(e){ var b=e.target&&e.target.closest&&e.target.closest('[data-agx]'); if(!b) return; if(b.dataset.agx==='photo') S.agentPhoto=''; else S.agentLogo=''; autosave(); agImgPaint(); });
+function presentGo(pg){ var pages=presentPages(), nav=presentNav(), t=presentTier(); if(nav.indexOf(pg)<0) pg=nav[0]; S.present.pg=pg; if(SHOW_ON&&pages[pg]) showFollow(pages[pg].sc);
   if(pages[pg]&&pages[pg].sc==='lb-price'&&S.rec&&!S.rec.lbOffered){ S.rec.lbOffered=true; } autosave();
   var fr=$('prFrame'), doc=fr&&fr.contentDocument, pos=nav.indexOf(pg);
   presentShowPage(doc,pg); try{ presentWire(doc,t); }catch(e){}
