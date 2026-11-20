@@ -6312,7 +6312,7 @@ function reviewEmail(){ var t=reviewT()||chosenTier(), R=reviewState(), C=S.clie
   sec('GOOD TO KNOW',['Your temporary ID card is in the member portal from day one — use that. Your physical ManhattanLife ID cards come in the mail about 10 days after your start date.',
     labsLine(t),
     /* every link from the call is in the recap (Jesse, 24 Oct): finding a doctor and a dentist, by the services chart */
-    (function(){ var P=reviewProducts(t); return (P.afc||P.his)?'Find a doctor in your network (First Health): https://providerlocator.firsthealth.com/home/index — at the front desk, say you’re on the First Health network.':''; })(),
+    (function(){ var P=reviewProducts(t); return (P.afc||P.his)?'Find a doctor in your network (First Health): '+NET_SEARCH.fh.url+' — at the front desk, say you’re on the First Health network. How to search, in a short video: '+NET_SEARCH.fh.video:''; })(),
     (function(){ var P=reviewProducts(t); return P.dvh?'Find a dentist (Careington network): https://manhattanlife.solutionssimplified.com/':''; })()]);
   var rm=R.month||(R.eff?MONTHS[+String(R.eff).slice(5,7)-1]:''); if(rm) sec('YOUR ANNUAL REVIEW',['It’s on my calendar for '+rm+'. I’ll reach out — nothing for you to do.']);
   L.push(''); L.push('If anyone you know is paying too much for coverage, or has none, I’d be grateful for the introduction.');
@@ -6329,6 +6329,7 @@ function approvedMsgs(){ var R=reviewState(), C=S.client||{}, first=((C.pname||'
   if(eff) L.push('Your coverage starts: '+eff); if(prem>0) L.push('Your monthly premium: '+fmt2(prem)+(R.draft?', drafted on '+reviewDate(R.draft):''));
   var res=reviewLink(); if(res) L.push('','How to use your new health plan: '+res,'That’s your home base for everything — what to do now, how to find a doctor, who to call. Bookmark it; we’ll open it together on our call.');   /* the link the Benefits Review's screen 3 asks them to click (Jesse, 23 Oct) */
   L.push('','Your temporary ID card is in the member portal from day one: https://clients.manhattanlife.com — your physical ManhattanLife ID cards come in the mail about 10 days after your start date.');
+  var nl=netLines(chosenTier()); if(nl.length){ L.push(''); nl.forEach(function(x){ L.push(x); }); }
   /* every registration link is in the approval email, so the review call can say so (Jesse, 24 Oct) */
   var RP=reviewProducts(chosenTier()), reg=['Member portal (your ID card and claims): https://clients.manhattanlife.com',
     amazeIn(chosenTier())?'Amaze — your doctor any time by phone, video or message, with Rx Valet prescription discounts: '+amazeSignup():'EasyCare2go — 24/7 telehealth, and your Rx Valet prescription savings inside the same login: https://manhattanlife.myeasycare2go.com/login · Group ID mlins2023',
@@ -6443,7 +6444,21 @@ var TRIAD_SBC={'1000':'1IsUaoaOEElitukIQUYrAHFaFtgM-avdO','1500':'186pV59okJdncr
 var TRIAD_FORMULARY='1DmTwOw1re4DOU43LhSb-UmvRZPcKYrjC', TRIAD_FORMULARY_SUM='1z7kAij9QS6LE21_wd4hJ_d75zUkccho5';
 var TRIAD_AGENT={uw:'1YNYvHZ4Mb9X_JnjWg5yKN9zcsBcOp1Op',hq:'16hY4PhI1Z0uiERFlZdp9SdGQVwiFRMvN',rates:'1lKxUiOur10YonLnaZhOgKvuNbTPdgR6S',rates27:'1TFVtZaD59iHWnOQ8VnYHhezFUv2iX4Jc'};   /* rates27: Classic_Triad_2027_Rate_Guide.pdf (Carrier Library, Triad Cigna/_agent-guides) */   /* private - agent only */
 var TRIAD_EIN_URL='https://www.irs.gov/businesses/small-businesses-self-employed/get-an-employer-identification-number';
-var TRIAD_PROVIDER_URL='https://hcpdirectory.cigna.com/';
+var TRIAD_PROVIDER_URL='https://hcpdirectory.cigna.com/web/public/consumer/directory';
+/* Provider search per network, each with Jesse's how-to video (Jesse, 20 Nov 2026; every link checked 200 that day).
+   In the quote email, the approval email and the Benefits Review. */
+var NET_SEARCH={
+  fh:{name:'First Health',url:'https://providerlocator.firsthealth.com/LocateProvider/LocateProviderSearch/',video:'https://www.loom.com/share/c3bcb06f75cd49889f910a8e707a2626'},
+  phcs:{name:'PHCS (MultiPlan)',url:'https://providersearch.multiplan.com/',video:'https://www.loom.com/share/4dfd3aca550c470cb5eee1a2c190a164'},
+  cigna:{name:'Cigna PPO',url:TRIAD_PROVIDER_URL,video:'https://www.loom.com/share/0c93861a208c4e0ca8aec2ed87368615',how:'Choose "Employer or School", enter the ZIP code and the kind of provider, continue as a guest (no login needed), then enter the ZIP code again and click Continue.'}};
+/* The doctor network of a package: Cigna (Triad), Bright Life by plan (VL = PHCS, the rest Cigna), ManhattanLife = First Health. LifeX and the ACA have none here. */
+function netOf(t){ if(!t||!S.packages||!S.packages[t]) return null; var c=effCfg(t)||{}, b=c.base;
+  if(b==='triad') return NET_SEARCH.cigna;
+  if(b==='brightlife'){ var pl=(typeof BLR!=='undefined'&&BLR&&BLR.plans)?BLR.plans[c.blPlan||BL_DEFAULT]:null; return pl&&pl.net==='PHCS'?NET_SEARCH.phcs:NET_SEARCH.cigna; }
+  if(b&&NONMH[b]) return null;
+  var ks=((S.packages[t]||{}).products||[]).map(function(p){ return p.k; });
+  return (ks.indexOf('afc')>=0||ks.indexOf('his')>=0)?NET_SEARCH.fh:null; }
+function netLines(t,lead){ var n=netOf(t); if(!n) return []; return [(lead||'Find a doctor in your network ('+n.name+')')+': '+n.url,(n.how?n.how+' ':'')+'How to search, in a short video: '+n.video]; }
 /* From the 2026 SBCs: Acuity is the plan contact (complete terms, grievances) - NOT stated to be the precert line;
    TrueScripts is the specialty-drug prior-authorization contact. */
 var TRIAD_ACUITY='Acuity · 1-888-932-4365 · acuity-grp.com', TRIAD_TRUESCRIPTS='TrueScripts · 844-257-1955';
@@ -6534,7 +6549,7 @@ function triadPresentHTML(t){ var first=triadFirst(), plan=triadPlanOf(t), ded=t
       +triadSay('“For the big things — a hospital stay, surgery, an MRI, the ER — you pay the <b>'+esc(ded)+'</b> deductible first, then <b>'+esc(hosp)+'</b> of the rest, up to the '+esc(oop)+' cap.”')
       +triadDo('<b>The calendar trap — say it now, not after:</b> the deductible and the cap run January 1 to December 31, whatever the start date — the plan summary’s own header reads <b>“Coverage Period: 01/01/2026 – 12/31/2026”</b>; show them. Starting mid-year means a full deductible for part of a year, then another in January. A November start can mean two full deductibles inside two months.')},
    {t:'Your doctors',h:(docs.length?triadSay('“You mentioned '+docs.map(esc).join(', ')+'. Let’s check them on the Cigna PPO list together.”'):triadSay('“Who do you see now? Let’s check them on the Cigna PPO list together.”'))
-      +triadDo('<a href="'+TRIAD_PROVIDER_URL+'" target="_blank" rel="noopener">Cigna provider search ↗</a> — choose <b>“Employer or School”</b>, continue as a guest, then pick <b>“PPO, Choice Fund PPO”</b>. Out of network still pays (40% after the deductible, and they can be balance-billed).')},
+      +triadDo('<a href="'+TRIAD_PROVIDER_URL+'" target="_blank" rel="noopener">Cigna provider search ↗</a> — choose <b>“Employer or School”</b>, continue as a guest, then pick <b>“PPO, Choice Fund PPO”</b> (<a href="'+NET_SEARCH.cigna.video+'" target="_blank" rel="noopener">▶ how-to video</a>). Out of network still pays (40% after the deductible, and they can be balance-billed).')},
    {t:'Prescriptions',h:triadSay('“Prescriptions run through TrueScripts: '+esc(rx)+' for a month’s supply.”')
       +(meds.length?triadDo('Check each one on the formulary now: '+meds.map(esc).join(', ')+'. Specialty drugs are 50% with prior authorization — say so before they sign, not after.'):triadDo('No medications on the Intake. Ask once more — the formulary decides what they pay.'))+triadDocs(t)},
    (amazeIn(t)?{t:'Everyday care — Amaze',h:(function(){ var fam=householdKey()!=='i';   /* 19 Nov: Cigna's documents carry no telehealth; Amaze fills it */
@@ -7026,7 +7041,7 @@ function amazeEnrollHTML(t){ var first=triadFirst(), am=amazeLink(), bus=((S.pac
 function triadReviewHTML(t){ var first=triadFirst(), plan=triadPlanOf(t), st=triadState(), ded=triadVal(t,/^Calendar-year deductible/), oop=triadVal(t,/^Out-of-pocket maximum/), rx=triadVal(t,/^Generic \/ preferred/,true).split(';')[0], bus=triadBusters(t);
   var pages=[
    {t:'Your card',h:triadSay('“Your Triad member card should be with you'+(st.member?' — member ID <b>'+esc(st.member)+'</b>':'')+'. Show it everywhere: the doctor, the pharmacy, the hospital. The Cigna logo on it is what tells them you’re in network.”')+triadDo('Plan contact for the full terms of coverage and any complaint: <b>'+TRIAD_ACUITY+'</b>.')+triadTick('card','They have the card (or the ID)')},
-   {t:'Finding a doctor',h:triadSay('“Before any new doctor, check they’re Cigna PPO.”')+triadDo('<a href="'+TRIAD_PROVIDER_URL+'" target="_blank" rel="noopener">Cigna provider search ↗</a> — “Employer or School”, continue as a guest, then “PPO, Choice Fund PPO”. Do it with them on the call for their main doctor.')+triadTick('doc','Looked up their doctor together')},
+   {t:'Finding a doctor',h:triadSay('“Before any new doctor, check they’re Cigna PPO.”')+triadDo('<a href="'+TRIAD_PROVIDER_URL+'" target="_blank" rel="noopener">Cigna provider search ↗</a> — “Employer or School”, continue as a guest, then “PPO, Choice Fund PPO”. Do it with them on the call for their main doctor. <a href="'+NET_SEARCH.cigna.video+'" target="_blank" rel="noopener">▶ How-to video</a> (it’s in their email too).')+triadTick('doc','Looked up their doctor together')},
    {t:'Precertification',h:triadSay('“This is the one that costs people money. Before a <b>hospital stay, surgery, an MRI or CT, home health, skilled nursing, hospice or medical equipment</b>, the doctor’s office has to get approval from the plan first. If nobody does, the plan pays <b>half</b> — up to <b>$2,500</b> out of your pocket.”')+triadDo('Tell them: ask the office “have you precertified this?” every time — and call the number on the back of the card if unsure.')+triadTick('precert','Explained precertification')},
    {t:'Prescriptions',h:triadSay('“Prescriptions go through TrueScripts: '+esc(rx)+'. Use an in-network pharmacy — out-of-network pharmacies aren’t covered.”')+triadDo('Specialty drugs are 50% and need prior authorization — <b>'+TRIAD_TRUESCRIPTS+'</b>.')+triadDocs(t)+triadTick('rx','Checked their medications on the formulary')},
    {t:'The deductible',h:triadSay('“Your deductible is <b>'+esc(ded)+'</b> and your cap is <b>'+esc(oop)+'</b>. Both reset on <b>January 1</b> — whatever month you started.”')+triadTick('ded','Explained the calendar-year reset')},
@@ -7044,7 +7059,7 @@ function triadEmail(t){ var first=triadFirst(), plan=triadPlanOf(t), st=triadSta
    +'• The deductible and the maximum reset every January 1, whatever month you started.\n• This plan is Minimum Essential Coverage.\n\n'
    +'BEFORE A HOSPITAL STAY, SURGERY, MRI/CT, HOME HEALTH OR EQUIPMENT\nAsk the doctor’s office to get it precertified. If it isn’t, the plan pays half — up to $2,500 out of your pocket. Call the number on the back of your card if you’re unsure.\n\n'
    +'SPECIALTY DRUGS\nThey need prior authorization: TrueScripts, 844-257-1955.\n\nYOUR PLAN’S CONTACT\nAcuity, 1-888-932-4365 (acuity-grp.com) — the full terms of your coverage.\n\n'
-   +'FINDING A DOCTOR\n'+TRIAD_PROVIDER_URL+'\nChoose "Employer or School", continue as a guest, then "PPO, Choice Fund PPO".\n\n'
+   +'FINDING A DOCTOR\n'+TRIAD_PROVIDER_URL+'\nChoose "Employer or School", enter your ZIP code and the kind of provider, continue as a guest (no login needed), enter your ZIP code again, then pick "PPO, Choice Fund PPO".\nHow to search, in a short video: '+NET_SEARCH.cigna.video+'\n\n'
    +'YOUR DOCUMENTS\nPlan summary: '+triadDrive(TRIAD_SBC[plan]||TRIAD_SBC['3500'])+'\nFormulary (summary): '+triadDrive(TRIAD_FORMULARY_SUM)+'\nFormulary (full): '+triadDrive(TRIAD_FORMULARY)+'\n'
    +'YOUR CARE CARD\nYour doctors and the plan’s numbers on one card — open it on your phone or print it: '+careCardLink()+'\n'
    +(bus.length?'\nYOUR DEDUCTIBLE BUSTERS (ManhattanLife — these pay you directly)\n'+bus.map(function(x){ return '• '+x.name+': '+x.b.replace(/<[^>]+>/g,''); }).join('\n')+'\nWhen one of these happens, send me the bill or discharge papers and I’ll help you file.\n':'')
@@ -7105,7 +7120,7 @@ function renderReview(){ var host=$('reviewHost'); if(!host) return; var t=chose
    +'<div class="pr-rail"><div class="box rv-ticks" id="rvTicks"></div>'
    +'<div class="box"><b>Open before you dial</b>'
    +(reviewLink()?'<a class="rv-a" href="'+esc(reviewLink())+'" target="_blank" rel="noopener">Their resource page ↗</a>':'<span class="rv-miss">No resource page yet — add yours in ⚙ Setup</span>')
-   +'<a class="rv-a" href="https://clients.manhattanlife.com" target="_blank" rel="noopener">ManhattanLife portal ↗</a>'+(afcInPk(S.packages[enrolledTier()==='actual'?(S.actual||{}).from:enrolledTier()]||{})?'<a class="rv-a" href="https://providerlocator.firsthealth.com/home/index" target="_blank" rel="noopener">First Health locator ↗</a>':'')+'<a class="rv-a" href="'+RXVALET_URL+'" target="_blank" rel="noopener">Rx Valet — via EasyCare2go ↗</a></div>'
+   +'<a class="rv-a" href="https://clients.manhattanlife.com" target="_blank" rel="noopener">ManhattanLife portal ↗</a>'+(afcInPk(S.packages[enrolledTier()==='actual'?(S.actual||{}).from:enrolledTier()]||{})?'<a class="rv-a" href="'+NET_SEARCH.fh.url+'" target="_blank" rel="noopener">First Health locator ↗</a><a class="rv-a" href="'+NET_SEARCH.fh.video+'" target="_blank" rel="noopener">▶ How-to video</a>':'')+'<a class="rv-a" href="'+RXVALET_URL+'" target="_blank" rel="noopener">Rx Valet — via EasyCare2go ↗</a></div>'
    +'</div></div>'
    +'<div class="rv-mail"><div class="rv-ch">Recap email + text <small>— the last step: send it within the hour, the call promised it. It builds itself from the call: the plan, their care card link, what was set up and what’s still to do. Then text them that it’s on its way.</small></div>'
    +'<textarea id="rvEmailTxt" rows="22"></textarea><div class="rv-cbtns"><button type="button" class="picbtn" id="rvMailCopy">📋 Copy the email</button><button type="button" class="picbtn" id="rvMailOpen">✉️ Open in my email</button><button type="button" class="picbtn" id="rvMailGmail">Open in Gmail ↗</button><button type="button" class="picbtn" id="rvMailOutlook">Open in Outlook ↗</button><button type="button" class="picbtn" id="rvMailReset" hidden>↺ Rebuild from the page</button><a class="picbtn" id="rvMailSms" href="#">💬 Text: recap sent</a>'+sentTick('rvMail')+sentTick('rvText')+((S.intake||{}).email?'':'<span class="rv-miss">No email on the Intake — the To line will be blank.</span>')+'</div></div>';
@@ -7207,6 +7222,7 @@ var NEWS=[
   ['Higher on every plan','The book we used before was 2.5% to 35% low, most on the richest plans: the 1000 Copay family plan at 60–64 is $824.84 a month more. Benefits, deductibles and copays are unchanged; only the premium moved.'],
   ['Effective dates before 1 December','An Intake effective date before 1 December 2026 still prices from the 2026 rates, as before.'],
   ['Dental shows in the package it’s in','When dental is added to a package (“Add to all three packages”), it now appears as its own line in that column, with its coverage, price and ✕ to remove it. Before, its price was counted in Monthly with no line on screen, so the lines you could see came up short of the total.'],
+  ['Find a doctor, with a how-to video','The quote email, the approval email and the Benefits Review (screen and recap email) now give the client their network’s provider search — First Health for ManhattanLife, Cigna PPO for Cigna and most Bright Life plans, PHCS for Bright Life’s Visit Limit plans — with a short video showing how to search it.'],
   ['Copy the quote email','In Send the quote, the third button is now <b>📋 Copy email</b>: it copies the To line, subject and letter so you can paste them anywhere. Gmail and Outlook still open a filled-in email.'],
   ['Specified Disease in Texas','ManhattanLife launched Specified Disease in Texas on 19 October. In Texas it is its own policy, not a rider, and is sold only with Affordable Choice. It now shows under ＋ Add for Texas clients and prices from the Texas brochure’s own rate table, which is higher than most states (a family in their 40s on $250,000 / $50,000: $123.06 a month).'],
   ['Bright Life packages start with more protection','Every Bright Life column now starts with Hospital Indemnity at <b>$10,000 a stay and $1,500 outpatient</b>, plus <b>Out-of-Pocket Protection</b>: $100 a day in hospital, $2,500 on admission and $3,000 for outpatient surgery, with no ER rider. Change or remove any of it in the column as before.'],
@@ -9349,6 +9365,7 @@ function buildEmail(){
     +'the plan we shared with you today. It shows what it costs you each month and what happens in a real hospital stay.'
     +(save?' '+save:'')+'\n\n'
     +(L.list.length?(L.t==='all'?'The brochures for each part of these plans, if you’d like the full details:\n':'The brochures for the '+(TIER_NAME[L.t]||'')+' plan, if you’d like the full details:\n')+brochLines(L)+'\n\n':'')
+    +(function(){ var nl=netLines(ch,'Before you decide, check that your doctors are in the '+(netOf(ch)||{}).name+' network'); return nl.length?nl.join('\n')+'\n\n':''; })()
     +(function(){ var ts=L.t==='all'?['good','better','best'].filter(function(x){ return (S.include||{})[x]!==false&&((S.packages||{})[x]||{}).products; }):[L.t];
       var any=ts.some(function(x){ return lbSummary(x).length; }); if(!any) return ''; var lk=ts.some(function(x){ return lbSummary(x).some(function(y){ return /Indexed|Whole/.test(y.kind||''); }); })?'life insurance':'term life insurance';
       return (L.t==='all'?'These plans as shown can include living benefits — '+lk+' that does more than a death benefit. ':'The '+TIER_NAME[L.t]+' plan as shown includes living benefits — '+lk+' that does more than a death benefit. ')+LB_BLURB+'\n\n'; })()
