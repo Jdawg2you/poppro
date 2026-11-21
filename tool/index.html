@@ -650,6 +650,7 @@
   .wl-you{margin:18px 20px 0;padding-top:14px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}.wl-you b{font-family:var(--serif);color:var(--navy);font-size:17px;margin-right:6px}.wl-you i{font-style:normal}.wl-you i.needfill-sum{color:#17824a;font-weight:700}
   /* Client screen (sandbox, 20 Nov): Setup photo/logo + the remote on Present */
   .agimgs{grid-column:1/-1}.agimg-row{display:flex;gap:18px;flex-wrap:wrap;margin:4px 0}.agimg{display:flex;align-items:center;gap:10px}.agimg-pv{width:120px;height:64px;border:1px dashed var(--line);border-radius:8px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#fff;font-size:11px;color:var(--muted)}.agimg-pv.round{width:64px;border-radius:50%}.agimg-pv img{max-width:100%;max-height:100%;object-fit:contain}.agimg-pv.round img{width:100%;height:100%;object-fit:cover}.agimg-btn{padding:6px 12px;font-size:13px;font-weight:600;color:var(--navy);background:#fff;border:1.5px solid var(--navy);border-radius:8px;cursor:pointer}.agimg-x{font-size:12px;border:0;background:none;color:var(--muted);text-decoration:underline;cursor:pointer}.agimg-err{color:#b71c1c;font-size:13px;font-weight:600;margin:4px 0}.agcrop{display:none;position:fixed;inset:0;background:rgba(10,20,40,.55);z-index:3000;align-items:center;justify-content:center}.agcrop.open{display:flex}.agcrop-card{background:#fff;border-radius:14px;padding:18px 22px;width:300px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center}.agcrop-card b{font-size:17px;color:var(--navy)}.agcrop-card small{color:var(--muted);font-size:12.5px}.agcrop-vp{position:relative;width:240px;height:240px;border-radius:50%;overflow:hidden;background:#eee;cursor:grab;touch-action:none;margin:6px 0;box-shadow:0 0 0 3px var(--navy)}.agcrop-vp:active{cursor:grabbing}.agcrop-vp img{position:absolute;max-width:none;user-select:none;pointer-events:none}.agcrop-z{display:flex;align-items:center;gap:8px;width:100%;font-weight:700;color:var(--navy)}.agcrop-z input{flex:1}.agcrop-btns{display:flex;gap:10px;margin-top:6px}.agcrop-btns button{font:inherit;font-weight:700;padding:8px 16px;border-radius:8px;border:1.5px solid var(--navy);background:#fff;color:var(--navy);cursor:pointer}.agcrop-btns button.go{background:var(--navy);color:#fff}.agimg-help{font-size:13px;margin-top:4px}.agimg-help summary{cursor:pointer;font-weight:600;color:var(--navy)}.agimg-help ol{margin:6px 0 0 18px;padding:0}.agimg-help li{margin:4px 0}
+  .sh-pick{margin-top:8px;font-size:13.5px}.sh-pick summary{cursor:pointer;font-weight:700;color:#1f6b3b}.sh-pick label{display:block;margin:4px 0 0 4px;cursor:pointer}
   .sh-bar{border:2px solid #1f6b3b;background:#eefaf2;border-radius:12px;padding:10px 14px;margin:10px 0}.sh-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.sh-new{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;background:#1f6b3b;color:#fff;border-radius:5px;padding:2px 6px}.sh-open{font:inherit;font-weight:700;background:var(--navy);color:#fff;border:0;border-radius:8px;padding:7px 14px;cursor:pointer}.sh-fol{display:flex;gap:6px;align-items:center;font-weight:600;font-size:14px}.sh-st{font-size:13px;color:var(--muted)}.sh-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.sh-chips button{font:inherit;font-size:13px;font-weight:600;border:1px solid #1f6b3b;background:#fff;color:#1f6b3b;border-radius:999px;padding:4px 11px;cursor:pointer}.sh-chips button.on{background:#1f6b3b;color:#fff}
   /* Setup file (Jesse, 5 Nov): the agent's details in one small file of their own - client files no longer carry them */
   .wl-you{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 6px}.wl-you .sf-btns{margin-left:auto;display:flex;gap:8px;align-self:center}
@@ -8704,7 +8705,11 @@ var PR_STORY_HEAD='<b>Story repository (who to tell)</b>';
 var PR_CLAIMS=[
   {f:'01-green-imaging-two-xrays',t:'Two X-rays at a cash price',sum:'Paid $150 · got back $500 · $350 ahead',how:'She paid the imaging center’s $75 cash price per X-ray, uploaded the receipt in the ManhattanLife Easy Upload app, and the plan paid its X-ray benefit to her.'},
   {f:'02-two-doctor-visits-with-xrays',t:'Two doctor visits, each with an X-ray',sum:'Bill $1,360.50 · she paid $0 · $650 check to her',how:'The First Health network discount took the doctor’s bill from $1,360.50 to $200. The plan paid the doctor that $200 and sent the rest of its benefit to her.'},
-  {f:'03-outpatient-surgery',t:'An outpatient surgery',sum:'Bill $3,313 · she paid $0 · $803.02 check to her',how:'The network discount took $3,313 down to $233.75 (93% off). The plan paid that directly, and the rest of its $1,036.77 surgery benefit went to her. It was paid even though it fell in the pre-existing condition period; ManhattanLife said it may review later claims in that window.'}];
+  {f:'03-outpatient-surgery',t:'An outpatient surgery',sum:'Bill $3,313 · she paid $0 · $803.02 check to her',how:'The network discount took $3,313 down to $233.75 (93% off). The plan paid that directly, and the rest of its $1,036.77 surgery benefit went to her. It was paid even though it fell in the pre-existing condition period; ManhattanLife said it may review later claims in that window.'},
+  /* Jesse, 20 Nov: three more EOBs, redacted to flat pictures (no text layer) - names, addresses, policy/claim/check numbers removed */
+  {f:'04-skin-surgery-dermatology',t:'A skin surgery at the dermatologist',sum:'Bill $300 · she paid $0 · $4,678.44 check to her',how:'Skin surgery plus the lab work: the First Health discount took $145.44 off the $300 bill, the plan paid the doctor, and the rest of its $5,300 in benefits came to her - even though it was in the pre-existing condition period.',rule:'That client’s plan level - surgery pays by schedule, so quote the figures in their plan. Never a client’s name.'},
+  {f:'05-foot-surgery',t:'Surgery on his foot',sum:'Bill $500 · he paid $0 · $3,500 check to him',how:'The plan paid a $4,000 surgery benefit: $500 to the orthopedic doctor and $3,500 to him, even though it was in the pre-existing condition period.',rule:'That client’s plan level - surgery pays by schedule, so quote the figures in their plan. Never a client’s name.'},
+  {f:'06-ct-scan',t:'A CT scan',sum:'Bill $142 · he paid $0 · $449.82 check to him',how:'The First Health discount took the bill to $50.18, which went to the imaging center; the rest of the plan’s $500 CT benefit came to him.',rule:'A $500 CT benefit is Classic Plus; Elite pays $600 and Elite Plus $700 on the standard schedule - quote their plan. Never a client’s name.'}];
 var PR_CLAIMS_HEAD='<b>Real claims — pictures to text</b>';
 function prClaimsHTML(){ return PR_CLAIMS_HEAD+PR_CLAIMS.map(function(c,i){ return '<button type="button" data-claim="'+i+'">🧾 '+esc(c.t)+'<small style="display:block;color:#17824a;font-weight:700">'+esc(c.sum)+'</small></button>'; }).join(''); }
 function prClaimCopy(c,btn){ var src='claims/'+c.f+'.jpg';
@@ -8723,7 +8728,7 @@ function prClaimOpen(i){ var c=PR_CLAIMS[i], pop=$('prPop'), src='claims/'+c.f;
       :'<p class="pr-clact"><a href="'+src+'.jpg" target="_blank" rel="noopener">Open to view ↗</a><a href="'+src+'.pdf" target="_blank" rel="noopener">⬇ Open / download PDF</a></p><p style="font-size:12.5px;color:var(--muted);margin:-4px 0 8px">📋 Copy works on mypoppro.com. On this preview: right-click the picture (or press and hold on a phone) → Copy image.</p>')
     +'<p><b>What happened:</b> '+esc(c.how)+'</p>'
     +'<p style="font-size:13px;color:var(--muted)"><b>Why they come out ahead:</b> the First Health network shrinks the bill first, the plan pays a fixed dollar amount, and the difference goes to the client.</p>'
-    +'<p class="rule">This client’s plan paid $175 per office visit and $250 per X-ray. What a plan pays depends on the level they choose — quote the figures in their plan. All three are outpatient: don’t apply these discounts to a hospital stay. Never a client’s name.</p></div>';
+    +'<p class="rule">'+(c.rule?esc(c.rule):'This client’s plan paid $175 per office visit and $250 per X-ray. What a plan pays depends on the level they choose — quote the figures in their plan. All three are outpatient: don’t apply these discounts to a hospital stay. Never a client’s name.')+'</p></div>';
   pop.style.display='block'; pop.querySelector('.x').onclick=function(){ pop.style.display='none'; };
   var cb=pop.querySelector('[data-cc]'); if(cb) cb.onclick=function(){ prClaimCopy(c,cb); }; }
 /* "Enrolling with plan edits" (Jesse, 17 Oct): the card + side-by-side open under the script; edits never touch the quote */
@@ -8785,7 +8790,7 @@ function renderPresent(){ var host=$('presentHost'); if(!host) return; var shb=S
    benefits files as the ⓘ slide-outs - nothing typed here. SANDBOX ONLY until Jesse names the release: SHOW_ON is
    false on mypoppro.com. ===== */
 var SHOW_ON=/^(localhost|127\.0\.0\.1)$/.test(location.hostname)||location.port==='8767'||location.hostname==='sandbox.mypoppro.com';
-var SHOW_WIN=null, SHOW_AT='';
+var SHOW_WIN=null, SHOW_AT='', SHOW_PICK_OPEN=false;
 function showFollowOn(){ try{ return localStorage.getItem('mpp_show_follow')!=='0'; }catch(e){ return true; } }
 function showE(x){ return esc(x==null?'':x); }
 function showNames(){ var C=S.client||{}, n=[enSplit(C.pname)[0],enSplit(C.sname)[0]].concat(kidsList().map(function(k){ return String(k.n||'').trim().split(/\s+/)[0]; })).filter(Boolean);
@@ -8816,18 +8821,23 @@ function showRow(rows,re){ var r=(rows||[]).filter(function(x){ return re.test(x
 /* the carrier we are recommending - the health plan's, else the first product's */
 function showCarrier(t){ var c=effCfg(t), nm=tierNonMh(t), net=netOf(t);
   if(c.base==='aca'&&evHas(t,'base')) return {name:'Keep the marketplace plan',plan:'Marketplace plan + protection',facts:['We add the protection it leaves out.'],net:null};   /* an ACA package keeps their marketplace plan (Kyle, 4 Nov) */
-  if(nm) return {name:nm.name,plan:c.base==='triad'?'Cigna PPO '+(c.triadPlan||'7350'):c.base==='brightlife'?'Bright Life '+(c.blPlan||BL_DEFAULT):nm.full,facts:[],net:net};
+  var CIGNA_NET='The Cigna PPO network: more than a million doctors and specialists and over 6,000 hospitals nationwide.';
+  if(c.base==='triad') return {name:'Cigna',plan:'Cigna PPO '+(c.triadPlan||'7350'),facts:[CIGNA_NET,'Major medical PPO coverage, through USA Health.'],net:null};
+  if(c.base==='brightlife') return {name:'Bright Life',plan:'Bright Life '+(c.blPlan||BL_DEFAULT),facts:['You join Bright Life Health & Wellness as a Wellness Associate, and that gives you their employee health plan.'].concat(net&&net.name==='Cigna PPO'?[CIGNA_NET]:[]),net:net&&net.name==='Cigna PPO'?null:net};
+  if(nm) return {name:nm.name,plan:nm.full,facts:[],net:net};
   if(evHas(t,'afc')) return {name:'ManhattanLife',plan:'Affordable Choice '+showLevel(c),facts:['Around since 1850 — one of the oldest insurers in the country.'],net:net};
   var p=showProds(t)[0]; return p?{name:'',plan:showName(p),facts:[],net:net}:null; }
 /* "Your coverage": vague, high-level bullets (Jesse's quote email): the overview for every plan, then this plan's own */
-function showCoverage(t){ var c=effCfg(t), rows=showAfcRows(t), out={all:[],mine:[]}, has=function(k){ return evHas(t,k); };
+function showCoverage(t){ var c=effCfg(t), rows=showAfcRows(t), out={all:[],mine:[],extra:[]}, has=function(k){ return evHas(t,k); };
   if(rows){ var n=afcEventNums(rows), lim=showRow(rows,/^Lifetime Maximum/i), rx=evMoney(showRow(rows,/^Prescription Benefit/i));
-    out.all.push('No deductible','No coinsurance','Pays you a set amount for each covered service, whatever the bill');
+    var yr=showRow(rows,/calendar year limit$/i).replace(/\s.*$/,''), rxr=(rows||[]).filter(function(x){ return /^Prescription Benefit/i.test(x.label); })[0], rxCap=rxr&&evMoney(rxr.note);
+    out.all.push('No deductible','No coinsurance','Pays from day one');
+    if(yr) out.all.push(yr+' a year for the big things, like a major hospital stay');
     if(lim) out.all.push(lim.replace(/\s.*$/,'')+' lifetime maximum');
-    if(n.visitN) out.mine.push(n.visitN+' doctor visits a year'+(showRow(rows,/^Rollover/i)?' — unused visits roll over':''));
+    if(n.visitN) out.mine.push(n.visitN+' doctor visits a year'+(n.visit?' — covers the first $'+n.visit+' of each visit':'')+(showRow(rows,/^Rollover/i)?'; unused visits roll over':''));
     if(n.urgentN&&n.erN&&n.urgentN===n.erN&&n.urgent===n.er&&/^Emergency Room or Urgent/i.test((rows.filter(function(x){ return /^Emergency Room/i.test(x.label); })[0]||{}).label||'')) out.mine.push('Emergency room or urgent care');
     else { if(n.urgentN) out.mine.push(n.urgentN+' urgent care visit'+(n.urgentN>1?'s':'')+' a year'); if(n.erN) out.mine.push(n.erN+' emergency room visit'+(n.erN>1?'s':'')+' a year'); }
-    if(rx) out.mine.push('Prescriptions — $'+rx+' toward each day you fill one');
+    if(rx) out.mine.push('Prescriptions — $'+rx+' a day'+(rxCap?', up to $'+rxCap.toLocaleString('en-US')+' a year':''));
     if(showRow(rows,/^Preventa?tive/i)) out.mine.push('Preventive screenings — colonoscopy, Pap and PSA');
     out.mine.push('Hospital stays and surgery, inpatient or outpatient');
     if(showRow(rows,/^(Laboratory|Radiology)/i)) out.mine.push('Labs, X-rays, MRI and CT scans');
@@ -8839,24 +8849,33 @@ function showCoverage(t){ var c=effCfg(t), rows=showAfcRows(t), out={all:[],mine
   /* virtual care: Amaze clients hear only Amaze (Jesse, 5 Nov); every ManhattanLife client has EasyCare2go */
   if(has('amz')) out.mine.push('Amaze virtual care, from your phone');
   else if(rows) out.mine.push('Unlimited telehealth through EasyCare2go — sickness, dermatology and mental health');
+  /* the member extras, only where ManhattanLife's services chart gives them (labsHas; CareGuide is Affordable Choice only) */
+  if(rows||evHas(t,'his')||evHas(t,'acc')||evHas(t,'chas')||evHas(t,'hhc')){ var lb=labsHas(t), ex=['Rx Valet prescription discounts']; if(lb.gi) ex.push('Green Imaging'); if(lb.dl) ex.push('DirectLabs'); if(rows) ex.push('CareGuide');
+    out.extra=ex; }
   showProds(t).forEach(function(p){ if(p.k!=='amz'&&SHOW_ADDON[p.k]) out.mine.push(p.k==='acc'?showName(p)+' — pays toward accident care, follow-up visits included':SHOW_ADDON[p.k]); });
   return out; }
 /* the two examples picked on the Quote, exactly as the Quote computes them for this plan */
 function showExamples(t){ var out=[]; [0,1].forEach(function(i){ var sc=(S.ev||[])[i]; if(!sc) return; var bill=evScnBill(sc).total; if(!(bill>0)) return;
+    if(showOff('ev'+i)) return;
     var r=evEvent(sc,Object.assign({},evTierPack(t),{negotPct:negApplies(i,bill)?S.negot.pct:0})); out.push({desc:sc.desc||'An example',bill:bill,r:r}); }); return out; }
+/* Jesse, 20 Nov: the agent picks which examples and claims go on the client screen (a flag per item, kept with the client file) */
+function showOff(k){ return !!(((S.present||{}).showOff||{})[k]); }
+function showPickHTML(t){ var items=[]; [0,1].forEach(function(i){ var sc=(S.ev||[])[i]; if(sc&&evScnBill(sc).total>0) items.push(['ev'+i,'Example: '+(sc.desc||'Example '+(i+1))]); });
+  if(showAfcRows(t)){ var keep=(S.present||{}).showOff; S.present=S.present||{}; S.present.showOff={}; showClaims(t).forEach(function(c){ items.push(['claim:'+c.id,'Claim: '+c.t]); }); S.present.showOff=keep; }
+  return items.length?'<details class="sh-pick"'+(SHOW_PICK_OPEN?' open':'')+'><summary>What to show</summary>'+items.map(function(x){ return '<label><input type="checkbox" data-shpick="'+esc(x[0])+'"'+(showOff(x[0])?'':' checked')+'> '+esc(x[1])+'</label>'; }).join('')+'</details>':''; }
 /* Real claims (Jesse, 20 Nov): the X-ray and doctor-visit claims re-priced at THIS plan's amounts, from the state's brochure;
    the surgeries as they were paid on that client's plan. The foot surgery is the client from 20 Nov - picture still to come. */
 function showClaims(t){ var rows=showAfcRows(t); if(!rows) return [];
   var xr=(evMoneyAll(showRow(rows,/^Radiology/i)).slice(-1)[0])||0, out=[];
-  if(xr){ var back=2*xr; out.push({t:'Two X-rays at a cash price',sum:'Paid $150 · your plan pays $'+back.toLocaleString('en-US')+(back>150?' · $'+(back-150).toLocaleString('en-US')+' ahead':''),how:'She paid the imaging center’s $75 cash price for each X-ray and uploaded the receipt. On your plan, each X-ray pays $'+xr+'.'}); }
+  if(xr){ var back=2*xr; out.push({id:'xray',t:'Two X-rays at a cash price',sum:'Paid $150 · your plan pays $'+back.toLocaleString('en-US')+(back>150?' · $'+(back-150).toLocaleString('en-US')+' ahead':''),how:'She paid the imaging center’s $75 cash price for each X-ray and uploaded the receipt. On your plan, each X-ray pays $'+xr+'.'}); }
   /* simple and clean (Jesse, 20 Nov): four on the screen - the two re-priced at their plan, the two biggest checks. The doctor-visit
      and $3,313 surgery claims stay in the agent's Real claims box. */
   /* CT scan EOB (Jul 2026): $142 bill, network price $50.18 paid to the imaging center, the rest of the CT benefit to the client */
-  var ct=(evMoneyAll(showRow(rows,/^Radiology/i))[2])||0; if(ct>50.18) out.push({t:'A CT scan',sum:'Bill $142 · paid $0 · $'+(Math.round((ct-50.18)*100)/100).toLocaleString('en-US',{minimumFractionDigits:2})+' check to you',how:'The network discount took the bill to $50.18 and the imaging center was paid that. Your plan pays $'+ct+' for a CT scan, so the rest comes to you.'});
+  var ct=(evMoneyAll(showRow(rows,/^Radiology/i))[2])||0; if(ct>50.18) out.push({id:'ct',t:'A CT scan',sum:'Bill $142 · paid $0 · $'+(Math.round((ct-50.18)*100)/100).toLocaleString('en-US',{minimumFractionDigits:2})+' check to you',how:'The network discount took the bill to $50.18 and the imaging center was paid that. Your plan pays $'+ct+' for a CT scan, so the rest comes to you.'});
   /* dermatology EOB (Mar 2026): skin surgery + pathology, $300 bill, $5,300 paid in all - schedule-based, so as paid */
-  out.push({t:'A skin surgery at the dermatologist',sum:'Bill $300 · paid $0 · $4,678.44 check to her',how:'A $300 bill for the surgery and the lab work. The plan paid the doctor, then sent her the rest of its $5,300 in benefits, even though it was in the pre-existing condition period. As paid on that client’s plan.'});
-  out.push({t:'Surgery on his foot',sum:'Bill $500 · paid $0 · $3,500 check to him',how:'The doctor was paid the $500 and the other $3,500 went to the client, even though it was in the pre-existing condition period. As paid on that client’s plan.'});
-  return out; }
+  out.push({id:'skin',t:'A skin surgery at the dermatologist',sum:'Bill $300 · paid $0 · $4,678.44 check to her',how:'A $300 bill for the surgery and the lab work. The plan paid the doctor, then sent her the rest of its $5,300 in benefits, even though it was in the pre-existing condition period. As paid on that client’s plan.'});
+  out.push({id:'foot',t:'Surgery on his foot',sum:'Bill $500 · paid $0 · $3,500 check to him',how:'The doctor was paid the $500 and the other $3,500 went to the client, even though it was in the pre-existing condition period. As paid on that client’s plan.'});
+  return out.filter(function(c){ return !showOff('claim:'+c.id); }); }
 /* everything else they get, said beside the price (Jesse: "plus living benefits, plus no deductible, plus…") */
 function showPluses(t){ var c=effCfg(t), o=evTierPack(t), out=[], L=lbSummary(t)||[];
   if(evHas(t,'afc')) out.push('No deductible to get through first');
@@ -8901,7 +8920,7 @@ function showBuild(t){ var C=S.client||{}, I=S.intake||{}, plan=showPlan(t), has
     var K=showCarrier(t); if(K) h+=sec('carrier','What I recommend',showE(K.name||K.plan),(K.name?'<p class="lead big3">'+showE(K.plan)+'</p>':'')
       +K.facts.map(function(f){ return '<p class="lead">'+showE(f)+'</p>'; }).join('')+(K.net?'<p class="lead">Doctors and hospitals through the <b>'+showE(K.net.name)+'</b> network.</p>':''));
     /* 4. your coverage - bullets */
-    var V=showCoverage(t); h+=sec('plan','Your coverage',showE((K&&K.plan)||'Your plan'),(V.all.length?'<div class="pill">'+V.all.map(function(x){ return '<span>'+showE(x)+'</span>'; }).join('')+'</div>':'')+li(V.mine));
+    var V=showCoverage(t); h+=sec('plan','Your coverage',showE((K&&K.plan)||'Your plan'),(V.all.length?'<div class="pill">'+V.all.map(function(x){ return '<span>'+showE(x)+'</span>'; }).join('')+'</div>':'')+li(V.mine)+(V.extra.length?'<p class="muted">Also included: '+showE(V.extra.join(' · '))+'</p>':''));
     h+=sec('doctors','Checked for you','Your doctors',showDocs(t).map(function(d){ return '<div class="doc"><span class="check">✓</span><div><b>'+showE(d)+'</b><br><span class="muted">In the '+showE(net.name)+' network</span></div></div>'; }).join(''));
     /* 5. the examples from the Quote, every layer */
     h+=sec('examples','If something happens','What it would pay','<div class="cards">'+showExamples(t).map(function(x){ var r=x.r;
@@ -8919,9 +8938,8 @@ function showBuild(t){ var C=S.client||{}, I=S.intake||{}, plan=showPlan(t), has
     var P=showPluses(t);
     h+=sec('cost','Your monthly total','What it costs',cmp+'<div class="total"><span>Your monthly total</span><b>'+fmt2(tt.mo)+'</b></div>'+(lbm>0?'<p class="muted">Includes '+fmt2(lbm)+' a month for living benefits.</p>':'')+(P.length?'<h3 class="sub">Plus</h3>'+li(P):''));
     /* 6. the close (Jesse: always assume it - keep them in qualifying mode) */
-    h+=sec('next','Next step','Let’s get you approved','<p class="lead">The one thing I can’t promise is that you’re accepted. Just like you’re choosing them, the carrier has to approve you — and the only way to know is to apply.</p>'
+    h+=sec('next','Next step','Let’s get you approved','<p class="lead">The next step is your application, and we’ll do it together.</p>'
       +'<ol class="steps"><li><b>Apply today.</b> No cost to apply, about 10 minutes, and I’m with you the whole way.</li><li><b>The carrier reviews it.</b> Usually 3–5 business days; it can take up to 14.</li><li><b>You’re approved.</b> We set your start date and your welcome packet comes.</li></ol>'
-      +'<p class="lead">Want to go over it with your family? You still can — applying now just gets the approval started while you do.</p>'
       +'<div class="contact">'+(photo?'<img class="photo sm" src="'+photo+'" alt="">':'')+'<div><b>'+showE(agent)+'</b>'+(agency?'<br>'+showE(agency):'')+(ph?'<br>'+showE(ph):'')+(em?'<br>'+showE(em):'')+'</div></div>'
       +(book?'<p><a class="btn" href="'+showE(/^https?:/i.test(book)?book:'https://'+book)+'" target="_blank" rel="noopener">Book a time with me</a></p>':''));
     var foot=(agent||ph)?'<div class="foot">'+(photo?'<img src="'+photo+'" alt="">':'')+'<span><b>'+showE(agent)+'</b>'+(agency?' · '+showE(agency):'')+'</span>'+(ph?'<span class="fr">'+showE(ph)+'</span>':'')+'</div>':'';
@@ -8959,10 +8977,13 @@ function showBarPaint(){ var bar=$('showBar'); if(!bar) return; var t=presentTie
     +'<button type="button" class="sh-open" data-sh="open">'+(live?'↻ Refresh it':'Open client screen')+'</button>'
     +'<label class="sh-fol"><input type="checkbox" data-sh="follow"'+(showFollowOn()?' checked':'')+'> Follow my script</label>'
     +'<span class="sh-st">'+(live?'Open — share <b>that</b> window, not this one.':'Opens a second window for you to share. Your script stays here.')+'</span></div>'
-    +(live?'<div class="sh-chips">'+plan.map(function(x){ return '<button type="button" data-shgo="'+x.id+'" class="'+(x.id===SHOW_AT?'on':'')+'">'+showE(x.s)+'</button>'; }).join('')+'</div>':'');
+    +showPickHTML(t)+(live?'<div class="sh-chips">'+plan.map(function(x){ return '<button type="button" data-shgo="'+x.id+'" class="'+(x.id===SHOW_AT?'on':'')+'">'+showE(x.s)+'</button>'; }).join('')+'</div>':'');
   bar.querySelector('[data-sh="open"]').onclick=function(){ if(showLive()) showWrite(); else showOpen(); };
   bar.querySelector('[data-sh="follow"]').onchange=function(){ try{ localStorage.setItem('mpp_show_follow',this.checked?'1':'0'); }catch(e){} if(this.checked){ var pg=presentPages()[+((S.present||{}).pg)||0]; if(pg) showFollow(pg.sc); } };
-  bar.querySelectorAll('[data-shgo]').forEach(function(b){ b.onclick=function(){ showGo(b.dataset.shgo); }; }); }
+  bar.querySelectorAll('[data-shgo]').forEach(function(b){ b.onclick=function(){ showGo(b.dataset.shgo); }; });
+  bar.querySelectorAll('[data-shpick]').forEach(function(b){ b.onchange=function(){ S.present=S.present||{}; var o=S.present.showOff=S.present.showOff||{}; if(b.checked) delete o[b.dataset.shpick]; else o[b.dataset.shpick]=true;
+    try{ autosave(); }catch(e){} if(showLive()) showWrite(); else showBarPaint(); }; });
+  var pk=bar.querySelector('.sh-pick'); if(pk) pk.ontoggle=function(){ SHOW_PICK_OPEN=pk.open; }; }
 /* Setup: the agent's photo and logo - shrunk in this browser, kept with the Setup (browser + Setup file), never in a client file */
 function agImgPaint(){ var box=$('agImgs'); if(!box) return; box.style.display=SHOW_ON?'':'none';
   [['photo','agentPhoto'],['logo','agentLogo']].forEach(function(x){ var pv=$('ag_'+x[0]+'_pv'), v=S[x[1]]||''; if(pv) pv.innerHTML=v?'<img src="'+v+'" alt="">':'<span>'+(x[0]==='photo'?'No photo yet':'No logo yet')+'</span>';
