@@ -1445,7 +1445,7 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
     <button type="button" class="rail-x" onclick="document.getElementById('printBtn').click()"><span class="ri">⎙</span><span class="rl">Print quote</span></button>
   </div>
   <!-- AI for the assist (Jesse via Health ZONE, 20 Nov): agent-only page at /tool/ai/; hidein-client so it never shows on a screenshare -->
-  <button type="button" id="railAI" class="rail-x hidein-client" onclick="location.href='ai/'" title="Turn a recorded discovery call into a client file with Claude"><span class="ri">🤖</span><span class="rl">AI for the assist</span></button>
+  <button type="button" id="railAI" class="rail-x hidein-client" onclick="location.href='ai/'" title="Turn a recorded discovery call into a client file with Claude"><span class="ri">✦</span><span class="rl">AI Assist</span></button>
   <button type="button" id="railSuggest" class="rail-x hidein-client" onclick="sgOpen()" title="See something? Say something. Send an idea, or a quick fix that’s needed"><span class="ri">💡</span><span class="rl">Suggestions</span></button>
   <button type="button" id="railCollapse" class="rail-x" onclick="railToggle()" title="Make the sidebar narrow (or wide again)"><span class="ri">←</span><span class="rl">Collapse navigation</span></button>
   </nav>
@@ -5617,7 +5617,7 @@ function histStrip(where){ var F=histFam(), me=histSelf(), bits=[];
 /* ONE place for the figure: 30%, confirmed by Jesse 2026-10-16, matching his DirectionRx pricing chart (member code
    4-MEM-26-6: "30% Off = 30% discount applied to Patient Price" on every row). */
 /* The agent's bio, read at 2.3 of the discovery call. Must match DEFAULT_BIO in the Script Navigator (why-check compares). */
-var DEFAULT_BIO="I'm a licensed health insurance agent, but I also help families with life insurance, retirement planning and a number of other financial solutions. What I'll do first is find out what's most important to you, and then we'll tailor a plan that actually accomplishes your goals. There are a lot of companies out there and a lot of products, but they don't all do the same thing, so what really matters is who you work with, and that they're looking out for your best interest based on your specific goals. I'm not beholden to any one company. Working with over 40 carriers, it's my job to compare those companies, starting with the A-rated ones, and find the best fit for you. We'll look at them together, and you'll be the one who picks. We'll get into that in a moment.";
+var DEFAULT_BIO="I'm a licensed health insurance agent, and I also help families with life insurance and retirement planning. I'm not tied to any one company. I work with over 40 carriers, so my job is to compare them, starting with the A-rated ones, and find the best fit for you. First I'll find out what matters most to you, then we'll look at the options together and you'll pick. We'll get into that in a moment.";
 var DRX_PCT='30%';
 function drxWho(){ var G=(S.intake&&S.intake.glp1)||{}, C=S.client||{}, out=[];
   /* the discount needs an active ManhattanLife product: a LifeX or Cigna plan gets nothing (Health ZONE, 16 Oct) */
