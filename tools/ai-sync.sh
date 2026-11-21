@@ -6,6 +6,12 @@ set -u
 KIT="$HOME/Documents/Claude/Projects/Agent Onboarding and Coaching/Claude outputs/optimum-planning-tools/poppro-json-kit"
 OUT="$(cd "$(dirname "$0")/.." && pwd)/tool/ai"
 [ -f "$KIT/PASTE-INTO-CLAUDE.txt" ] && [ -f "$KIT/reference/version.json" ] || { echo "AI SYNC FAIL - kit not found at $KIT"; exit 1; }
+# Both published files can agree with each other and still be stale against the tool: check regen saw THIS blankState()
+# (Health ZONE's fingerprint, kept in the unpublished schema-paths.json). ${1:-} lets a test point it at another index.html.
+SRC="${1:-$(dirname "$OUT")/index.html}"
+WANT=$(awk '/^function blankState\(\)\{/,/^}/' "$SRC" | shasum -a 256 | cut -c1-12)
+HAVE=$(/usr/bin/python3 -c "import json,sys;print(json.load(open(sys.argv[1])).get('blankStateSourceHash',''))" "$KIT/reference/schema-paths.json" 2>/dev/null)
+[ -n "$WANT" ] && [ "$WANT" = "$HAVE" ] || { echo "AI SYNC FAIL - STALE: blankState changed since regen ran (${HAVE:-none} -> $WANT). Run 'Refresh POP Pro template' (regen.mjs) first."; exit 1; }
 /usr/bin/python3 - "$KIT" "$OUT" <<'PY'
 import json,sys,re,shutil
 kit,out=sys.argv[1],sys.argv[2]
