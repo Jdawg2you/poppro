@@ -8738,9 +8738,10 @@ function peCue(box){ var c=$('peCue'); if(!c){ c=document.createElement('button'
   var seen=function(){ var r=box.getBoundingClientRect(); return r.top<window.innerHeight*0.45; };
   var tm=null, off=function(){ c.classList.remove('on'); window.removeEventListener('scroll',chk); clearInterval(tm); }, chk=function(){ if(box.style.display==='none'||S.step!=='present'){ off(); return; } c.classList.toggle('on',box.getBoundingClientRect().top>window.innerHeight*0.6); };   /* back up the page while editing: the cue comes back */
   c.classList.add('on'); window.addEventListener('scroll',chk,{passive:true}); clearInterval(c._tm); tm=c._tm=setInterval(chk,400); }
-function renderPresent(){ var host=$('presentHost'); if(!host) return; if(triadFlowOn(presentTier())){ host.innerHTML=triadPresentHTML(presentTier()); triadBind(host); return; }
-  if(blFlowOn(presentTier())){ host.innerHTML=blPresentHTML(presentTier()); triadBind(host); return; }
-  if(acaFlowOn(presentTier())){ host.innerHTML=acaPresentHTML(presentTier()); triadBind(host); return; } var t=presentTier(), T=presentTokens(t), pages=presentPages();
+function renderPresent(){ var host=$('presentHost'); if(!host) return; var shb=SHOW_ON?'<div class="sh-bar" id="showBar"></div>':'';   /* the client screen works for Cigna, Bright Life and ACA packages too (Jesse, 20 Nov) */
+  if(triadFlowOn(presentTier())){ host.innerHTML=shb+triadPresentHTML(presentTier()); triadBind(host); if(shb) showBarPaint(); return; }
+  if(blFlowOn(presentTier())){ host.innerHTML=shb+blPresentHTML(presentTier()); triadBind(host); if(shb) showBarPaint(); return; }
+  if(acaFlowOn(presentTier())){ host.innerHTML=shb+acaPresentHTML(presentTier()); triadBind(host); if(shb) showBarPaint(); return; } var t=presentTier(), T=presentTokens(t), pages=presentPages();
   S.present=S.present||{}; var pg=Math.max(0,Math.min(pages.length-1,+S.present.pg||0));
   var who=(T['client.first']||'the client')+(S.client&&S.client.sname?' & '+enSplit(S.client.sname)[0]:'');
   var h='<div class="pr-top"><div><h3>Presenting the <em class="pr-plan">'+esc(TIER_NAME[t])+'</em> plan to '+esc(who)+'</h3><small>Agent-only — never on Client View or the printout. Blue blanks fill from this quote; red ones are missing.</small></div>'
@@ -8785,8 +8786,6 @@ function renderPresent(){ var host=$('presentHost'); if(!host) return; if(triadF
    false on mypoppro.com. ===== */
 var SHOW_ON=/^(localhost|127\.0\.0\.1)$/.test(location.hostname)||location.port==='8767'||location.hostname==='sandbox.mypoppro.com';
 var SHOW_WIN=null, SHOW_AT='';
-var SHOW_FOLLOW={open:'hello',reason:'why',price:'why',networks:'doctors',questions:'plan',coverage:'plan',rx:'everyday',catastrophic:'protect',bonus:'everyday','bonus-rx':'everyday',close:'cost','lb-pivot':'lb','lb-price':'lb',boldstep:'cost',lifeapp:'next',wrapup:'next',posttext:'next'};
-var SHOW_GROUPS=[{id:'plan',t:'Your health plan',s:'Your plan',ks:['base','afc','sdr','mec']},{id:'protect',t:'If something big happens',s:'Big events',ks:['his','gap','acc','chas','hhc']},{id:'everyday',t:'Everyday care',s:'Everyday',ks:['amz','dvh']}];
 function showFollowOn(){ try{ return localStorage.getItem('mpp_show_follow')!=='0'; }catch(e){ return true; } }
 function showE(x){ return esc(x==null?'':x); }
 function showNames(){ var C=S.client||{}, n=[enSplit(C.pname)[0],enSplit(C.sname)[0]].concat(kidsList().map(function(k){ return String(k.n||'').trim().split(/\s+/)[0]; })).filter(Boolean);
@@ -8794,13 +8793,6 @@ function showNames(){ var C=S.client||{}, n=[enSplit(C.pname)[0],enSplit(C.sname
 function showProds(t){ return (((S.packages||{})[t]||{}).products||[]).filter(function(p){ return (+p.monthly||0)>0; }); }
 function showDocs(t){ var I=S.intake||{}, net=netOf(t), out=[]; if(!net) return out;
   [1,2,3].forEach(function(n){ var nm=String(I['docs'+n]||'').trim(); if(nm&&docNetRead(n)===true) out.push(nm); }); return out; }   /* only doctors checked IN the network */
-/* the sections this package gets, in order - synchronous, so the remote can list them */
-function showPlan(t){ var ks=showProds(t).map(function(p){ return isLBk(p.k)?'lb':p.k; }), L=[{id:'hello',s:'Hello'}];
-  if(presentWhy(S.intake||{})) L.push({id:'why',s:'What matters'});
-  if(showDocs(t).length) L.push({id:'doctors',s:'Your doctors'});
-  SHOW_GROUPS.forEach(function(g){ if(g.ks.some(function(k){ return ks.indexOf(k)>=0; })) L.push({id:g.id,s:g.s}); });
-  if(ks.indexOf('lb')>=0) L.push({id:'lb',s:'Living benefits'});
-  L.push({id:'cost',s:'What it costs'},{id:'next',s:'Next steps'}); return L; }
 function showName(p){ var sl=PB_SLOTS.filter(function(x){ return x.k===p.k; })[0]; return String((p.k==='base'&&tierNonMh(presentTier()))?tierNonMh(presentTier()).full:(sl?sl.name:p.name)||'').split(' — ')[0]; }
 function showCard(t,p){ var c=effCfg(t), f=benFileFor(p.k,c), st=(S.client.state||'').toUpperCase(), nm=showName(p);
   var card=function(m){ var rows=m?m.key.slice(0,5):[]; return '<div class="card"><h3>'+showE(nm)+'</h3>'+(rows.length?rows.map(function(r){ return '<div class="row"><span>'+showE(r.label)+'</span><b>'+showE(r.value)+'</b></div>'; }).join(''):'<p class="muted">Included in your plan.</p>')+'</div>'; };
@@ -8811,30 +8803,125 @@ function showLbCards(t,p){ var c=effCfg(t), f=benFileFor(p.k,c), st=(S.client.st
   return benLoad(f).then(function(d){ var m=null; try{ m=benModel(d,st,benCol(p.k,c),benCfg(p.k,c)); }catch(e){} if(!m) return '';
     return ['Chronic illness','Critical illness','Terminal illness','How much can be accelerated'].map(function(lb){ var r=m.key.filter(function(x){ return x.label===lb; })[0]; if(!r) return '';
       return '<div class="card"><h3>'+showE(lb==='How much can be accelerated'?'How much you can use':lb)+'</h3><p class="muted" style="margin:0">'+showE(String(r.value).replace(/^Included at no additional cost — /,'').replace(/^./,function(x){ return x.toUpperCase(); }))+'</p></div>'; }).join(''); }).catch(function(){ return ''; }); }
+/* Jesse's call, 20 Nov (the order a presentation actually runs): hello and how I work → what matters → where you are today
+   (the anchor: their current plan, or the marketplace as the reality check) → what I recommend (the carrier) → your coverage
+   (plain bullets, never per-day dollar figures) → your doctors → the two examples picked on the Quote, every layer → real
+   claims at THIS plan's amounts → living benefits → what it costs, with everything else they get → let's get you approved. */
+var SHOW_FOLLOW={open:'hello',reason:'why',price:'now',networks:'doctors',questions:'carrier',coverage:'plan',rx:'plan',catastrophic:'examples',bonus:'plan','bonus-rx':'plan',close:'cost','lb-pivot':'lb','lb-price':'lb',boldstep:'next',lifeapp:'next',wrapup:'next',posttext:'next'};
+/* one plain line per add-on product - what it is for, not its schedule (Jesse: the per-day figures mislead) */
+var SHOW_ADDON={sdr:'Specified Disease Rider — extra protection for the worst-case diagnoses',his:'Hospital Indemnity — pays you cash when you’re admitted to the hospital',gap:'Out-of-Pocket Protection — helps with the costs a hospital stay leaves behind',acc:'Accident coverage — pays toward accident care, follow-up visits included',chas:'Cancer, heart attack & stroke — a lump sum paid to you on diagnosis',hhc:'Home Health Care — help at home after an illness or injury',dvh:'Dental, vision & hearing',mec:'Preventive care — checkups and screenings',amz:'Amaze — virtual care from your phone'};
+function showLevel(c){ return String(c.afc||'').replace(/([a-z])([A-Z])/g,'$1 $2'); }
+function showAfcRows(t){ var c=effCfg(t), st=(S.client.state||'').toUpperCase(); if(!evHas(t,'afc')||!BEN_DATA.afc) return null; var m=null; try{ m=benModel(BEN_DATA.afc,st,c.afc,c); }catch(e){} return m?evFlatRows(m):null; }
+function showRow(rows,re){ var r=(rows||[]).filter(function(x){ return re.test(x.label); })[0]; return r?String(r.value):''; }
+/* the carrier we are recommending - the health plan's, else the first product's */
+function showCarrier(t){ var c=effCfg(t), nm=tierNonMh(t), net=netOf(t);
+  if(c.base==='aca'&&evHas(t,'base')) return {name:'Keep the marketplace plan',plan:'Marketplace plan + protection',facts:['We add the protection it leaves out.'],net:null};   /* an ACA package keeps their marketplace plan (Kyle, 4 Nov) */
+  if(nm) return {name:nm.name,plan:c.base==='triad'?'Cigna PPO '+(c.triadPlan||'7350'):c.base==='brightlife'?'Bright Life '+(c.blPlan||BL_DEFAULT):nm.full,facts:[],net:net};
+  if(evHas(t,'afc')) return {name:'ManhattanLife',plan:'Affordable Choice '+showLevel(c),facts:['Around since 1850 — one of the oldest insurers in the country.'],net:net};
+  var p=showProds(t)[0]; return p?{name:'',plan:showName(p),facts:[],net:net}:null; }
+/* "Your coverage": vague, high-level bullets (Jesse's quote email): the overview for every plan, then this plan's own */
+function showCoverage(t){ var c=effCfg(t), rows=showAfcRows(t), out={all:[],mine:[]}, has=function(k){ return evHas(t,k); };
+  if(rows){ var n=afcEventNums(rows), lim=showRow(rows,/^Lifetime Maximum/i), rx=evMoney(showRow(rows,/^Prescription Benefit/i));
+    out.all.push('No deductible','No coinsurance','Pays you a set amount for each covered service, whatever the bill');
+    if(lim) out.all.push(lim.replace(/\s.*$/,'')+' lifetime maximum');
+    if(n.visitN) out.mine.push(n.visitN+' doctor visits a year'+(showRow(rows,/^Rollover/i)?' — unused visits roll over':''));
+    if(n.urgentN&&n.erN&&n.urgentN===n.erN&&n.urgent===n.er&&/^Emergency Room or Urgent/i.test((rows.filter(function(x){ return /^Emergency Room/i.test(x.label); })[0]||{}).label||'')) out.mine.push('Emergency room or urgent care');
+    else { if(n.urgentN) out.mine.push(n.urgentN+' urgent care visit'+(n.urgentN>1?'s':'')+' a year'); if(n.erN) out.mine.push(n.erN+' emergency room visit'+(n.erN>1?'s':'')+' a year'); }
+    if(rx) out.mine.push('Prescriptions — $'+rx+' toward each day you fill one');
+    if(showRow(rows,/^Preventa?tive/i)) out.mine.push('Preventive screenings — colonoscopy, Pap and PSA');
+    out.mine.push('Hospital stays and surgery, inpatient or outpatient');
+    if(showRow(rows,/^(Laboratory|Radiology)/i)) out.mine.push('Labs, X-rays, MRI and CT scans');
+    if(showRow(rows,/^Cancer Benefit/i)) out.mine.push('Cancer treatment — radiation, chemo and immunotherapy');
+    if(showRow(rows,/^Therapy Services/i)) out.mine.push('Physical, occupational and speech therapy'); }
+  else if(tierNonMh(t)||(effCfg(t).base==='aca'&&evHas(t,'base'))){ var o=evTierPack(t).major||{}; if(o.aca) out.all.push('Your marketplace plan');
+    if(o.ded) out.all.push('$'+Math.round(o.ded).toLocaleString('en-US')+' deductible'); if(o.oop) out.all.push('$'+Math.round(o.oop).toLocaleString('en-US')+' out-of-pocket maximum');
+    if(o.visit) out.all.push('$'+o.visit+' copay for doctor visits'); if(o.urgent) out.all.push('$'+o.urgent+' copay for urgent care'); }
+  /* virtual care: Amaze clients hear only Amaze (Jesse, 5 Nov); every ManhattanLife client has EasyCare2go */
+  if(has('amz')) out.mine.push('Amaze virtual care, from your phone');
+  else if(rows) out.mine.push('Unlimited telehealth through EasyCare2go — sickness, dermatology and mental health');
+  showProds(t).forEach(function(p){ if(p.k!=='amz'&&SHOW_ADDON[p.k]) out.mine.push(p.k==='acc'?showName(p)+' — pays toward accident care, follow-up visits included':SHOW_ADDON[p.k]); });
+  return out; }
+/* the two examples picked on the Quote, exactly as the Quote computes them for this plan */
+function showExamples(t){ var out=[]; [0,1].forEach(function(i){ var sc=(S.ev||[])[i]; if(!sc) return; var bill=evScnBill(sc).total; if(!(bill>0)) return;
+    var r=evEvent(sc,Object.assign({},evTierPack(t),{negotPct:negApplies(i,bill)?S.negot.pct:0})); out.push({desc:sc.desc||'An example',bill:bill,r:r}); }); return out; }
+/* Real claims (Jesse, 20 Nov): the X-ray and doctor-visit claims re-priced at THIS plan's amounts, from the state's brochure;
+   the surgeries as they were paid on that client's plan. The foot surgery is the client from 20 Nov - picture still to come. */
+function showClaims(t){ var rows=showAfcRows(t); if(!rows) return [];
+  var xr=(evMoneyAll(showRow(rows,/^Radiology/i)).slice(-1)[0])||0, out=[];
+  if(xr){ var back=2*xr; out.push({t:'Two X-rays at a cash price',sum:'Paid $150 · your plan pays $'+back.toLocaleString('en-US')+(back>150?' · $'+(back-150).toLocaleString('en-US')+' ahead':''),how:'She paid the imaging center’s $75 cash price for each X-ray and uploaded the receipt. On your plan, each X-ray pays $'+xr+'.'}); }
+  /* simple and clean (Jesse, 20 Nov): four on the screen - the two re-priced at their plan, the two biggest checks. The doctor-visit
+     and $3,313 surgery claims stay in the agent's Real claims box. */
+  /* CT scan EOB (Jul 2026): $142 bill, network price $50.18 paid to the imaging center, the rest of the CT benefit to the client */
+  var ct=(evMoneyAll(showRow(rows,/^Radiology/i))[2])||0; if(ct>50.18) out.push({t:'A CT scan',sum:'Bill $142 · paid $0 · $'+(Math.round((ct-50.18)*100)/100).toLocaleString('en-US',{minimumFractionDigits:2})+' check to you',how:'The network discount took the bill to $50.18 and the imaging center was paid that. Your plan pays $'+ct+' for a CT scan, so the rest comes to you.'});
+  /* dermatology EOB (Mar 2026): skin surgery + pathology, $300 bill, $5,300 paid in all - schedule-based, so as paid */
+  out.push({t:'A skin surgery at the dermatologist',sum:'Bill $300 · paid $0 · $4,678.44 check to her',how:'A $300 bill for the surgery and the lab work. The plan paid the doctor, then sent her the rest of its $5,300 in benefits, even though it was in the pre-existing condition period. As paid on that client’s plan.'});
+  out.push({t:'Surgery on his foot',sum:'Bill $500 · paid $0 · $3,500 check to him',how:'The doctor was paid the $500 and the other $3,500 went to the client, even though it was in the pre-existing condition period. As paid on that client’s plan.'});
+  return out; }
+/* everything else they get, said beside the price (Jesse: "plus living benefits, plus no deductible, plus…") */
+function showPluses(t){ var c=effCfg(t), o=evTierPack(t), out=[], L=lbSummary(t)||[];
+  if(evHas(t,'afc')) out.push('No deductible to get through first');
+  if(o.major&&o.major.ded&&!o.major.aca&&evHas(t,'gap')) out.push('Out-of-Pocket Protection pays toward your $'+Math.round(o.major.ded).toLocaleString('en-US')+' deductible');
+  if(L.length) out.push('Living benefits — $'+L.reduce(function(a,x){ return a+(+x.face||0); },0).toLocaleString('en-US')+' you can draw on if a serious illness qualifies');
+  if(evHas(t,'amz')) out.push('Amaze virtual care'); else if(evHas(t,'afc')) out.push('Unlimited telehealth through EasyCare2go');
+  ['his','gap','acc','chas','hhc','dvh','sdr'].forEach(function(k){ if(evHas(t,k)&&!(k==='gap'&&o.major&&o.major.ded&&!o.major.aca)) out.push(SHOW_ADDON[k].split(' — ')[0]); });
+  if(showDocs(t).length) out.push('Your doctors, in network');
+  return out; }
+/* the sections this package gets, in order - synchronous, so the remote can list them */
+function showPlan(t){ var L=[{id:'hello',s:'Hello'}], ks=showProds(t).map(function(p){ return isLBk(p.k)?'lb':p.k; });
+  if(presentWhy(S.intake||{})) L.push({id:'why',s:'What matters'});
+  if(anchorBase()) L.push({id:'now',s:'Today'});
+  if(showCarrier(t)) L.push({id:'carrier',s:'My pick'});
+  L.push({id:'plan',s:'Coverage'});
+  if(showDocs(t).length) L.push({id:'doctors',s:'Doctors'});
+  if(showExamples(t).length) L.push({id:'examples',s:'Examples'});
+  if(showAfcRows(t)) L.push({id:'claims',s:'Real claims'});
+  if(ks.indexOf('lb')>=0) L.push({id:'lb',s:'Living benefits'});
+  L.push({id:'cost',s:'Cost'},{id:'next',s:'Apply'}); return L; }
 function showBuild(t){ var C=S.client||{}, I=S.intake||{}, plan=showPlan(t), has=function(id){ return plan.some(function(x){ return x.id===id; }); }, prods=showProds(t);
   var agent=String(C.agent||'').trim(), agency=String(S.agency||'').trim(), ph=String(S.agentPhone||'').trim(), em=String(S.agentEmail||'').trim(), npn=String(S.agentNPN||'').trim(), book=String(S.agentBooking||'').trim();
-  var photo=S.agentPhoto||'', logo=S.agentLogo||'', names=showNames(), net=netOf(t);
-  var jobs=SHOW_GROUPS.map(function(g){ var ps=prods.filter(function(p){ return g.ks.indexOf(p.k)>=0; }); return Promise.all(ps.map(function(p){ return showCard(t,p); })); });
+  var photo=S.agentPhoto||'', logo=S.agentLogo||'', names=showNames(), net=netOf(t), bio=String(S.agentBio||'').trim();
   var lbp=prods.filter(function(p){ return isLBk(p.k); })[0];
-  jobs.push(lbp?showLbCards(t,lbp):Promise.resolve(''));
-  return Promise.all(jobs).then(function(R){ var sec=function(id,eyebrow,title,body){ return has(id)?'<section id="s-'+id+'"><div class="in"><div class="eyebrow">'+showE(eyebrow)+'</div><h2>'+title+'</h2>'+body+'</div></section>':''; };
-    var h='';
+  return (lbp?showLbCards(t,lbp):Promise.resolve('')).then(function(lbCards){ var sec=function(id,eyebrow,title,body){ return has(id)?'<section id="s-'+id+'"><div class="in"><div class="eyebrow">'+showE(eyebrow)+'</div><h2>'+title+'</h2>'+body+'</div></section>':''; };
+    var li=function(a){ return '<ul class="ticks">'+a.map(function(x){ return '<li>'+showE(x)+'</li>'; }).join('')+'</ul>'; }, h='';
+    /* 1. hello - with "how I work" moved up here (Jesse: the last page is all about applying) */
     h+='<section id="s-hello" class="hello"><div class="in">'+(logo?'<img class="logo" src="'+logo+'" alt="">':'')
       +'<div class="hl">'+(photo?'<img class="photo" src="'+photo+'" alt="">':'')+'<div><div class="eyebrow">Your health coverage</div><h1>'+(names?'Prepared for '+showE(names):'Your plan, explained')+'</h1>'
-      +(agent?'<p class="lead">by <b>'+showE(agent)+'</b>'+(agency?', '+showE(agency):'')+'</p>':'')+(npn?'<p class="muted">Licensed insurance agent · National Producer Number '+showE(npn)+'</p>':'')+'</div></div></div></section>';
+      +(agent?'<p class="lead">by <b>'+showE(agent)+'</b>'+(agency?', '+showE(agency):'')+'</p>':'')+(npn?'<p class="muted">Licensed insurance agent · National Producer Number '+showE(npn)+'</p>':'')+'</div></div>'
+      +'<div class="how">'+(bio?'<p class="lead">'+showE(bio)+'</p>':'')+li(['There’s no fee for my help.','I compare the carriers for you, and you choose.','When you need to use your plan, call me first.','We’ll look at it together every year.'])+'</div></div></section>';
     var why=presentWhy(I); h+=sec('why','In your words','What matters to you','<p class="quote">“'+showE(why)+'”</p><p class="lead">Everything that follows is built around that.</p>');
+    /* 2. where you are today: what they are moving away from, or the marketplace as the reality check */
+    var B=anchorBase(), cur=B&&B.k==='cur', Cn=String(curIn().name||'').trim();
+    if(B) h+=sec('now','Where you are today',cur?'Your current plan':'What the marketplace would cost you',
+      (cur?'':'<p class="lead">We always check the marketplace first, so you have a real number to compare against.</p>')
+      +'<div class="now"><div><span class="muted">'+showE(cur?(Cn||'Your current plan'):'Marketplace bronze plan')+'</span><p class="big">'+fmt2(B.premOnly)+'<small> a month</small></p></div>'
+      +(B.ded>0?'<div><span class="muted">Deductible</span><p class="big">$'+Math.round(B.ded).toLocaleString('en-US')+'</p></div>':'')
+      +'<div><span class="muted">Over a year</span><p class="big">'+fmt2(B.premOnly*12)+'</p></div></div>'
+      +(B.ded>0?'<p class="lead">And '+(cur?'you pay':'you’d pay')+' the first $'+Math.round(B.ded).toLocaleString('en-US')+' of your care yourself before it does much.</p>':''));
+    /* 3. what I recommend - the carrier, as a cover page */
+    var K=showCarrier(t); if(K) h+=sec('carrier','What I recommend',showE(K.name||K.plan),(K.name?'<p class="lead big3">'+showE(K.plan)+'</p>':'')
+      +K.facts.map(function(f){ return '<p class="lead">'+showE(f)+'</p>'; }).join('')+(K.net?'<p class="lead">Doctors and hospitals through the <b>'+showE(K.net.name)+'</b> network.</p>':''));
+    /* 4. your coverage - bullets */
+    var V=showCoverage(t); h+=sec('plan','Your coverage',showE((K&&K.plan)||'Your plan'),(V.all.length?'<div class="pill">'+V.all.map(function(x){ return '<span>'+showE(x)+'</span>'; }).join('')+'</div>':'')+li(V.mine));
     h+=sec('doctors','Checked for you','Your doctors',showDocs(t).map(function(d){ return '<div class="doc"><span class="check">✓</span><div><b>'+showE(d)+'</b><br><span class="muted">In the '+showE(net.name)+' network</span></div></div>'; }).join(''));
-    SHOW_GROUPS.forEach(function(g,i){ var extra='';
-      if(g.id==='protect'&&(effCfg(t).base||'afc')==='afc'&&typeof PR_CLAIMS!=='undefined') extra='<h3 class="sub">Real claims on this kind of plan</h3><div class="cards">'+PR_CLAIMS.map(function(c){ return '<div class="card claim"><h3>'+showE(c.t)+'</h3><p class="big2">'+showE(c.sum)+'</p></div>'; }).join('')+'</div><p class="muted small">One client’s plan. What yours pays depends on your own benefits.</p>';
-      h+=sec(g.id,g.id==='plan'?'Your coverage':g.id==='protect'?'Hospital, surgery, accidents':'Day to day',g.t,'<div class="cards">'+R[i].join('')+'</div>'+extra); });
+    /* 5. the examples from the Quote, every layer */
+    h+=sec('examples','If something happens','What it would pay','<div class="cards">'+showExamples(t).map(function(x){ var r=x.r;
+      return '<div class="card"><h3>'+showE(x.desc)+'</h3><div class="row"><span>The bill</span><b>'+fmt2(x.bill)+'</b></div>'
+        +(r.negotiated!=null?'<div class="row"><span>After the network discount</span><b>'+fmt2(r.owe0)+'</b></div>':'')
+        +((r.oweParts||[]).length?'<div class="row"><span>Your share under the plan</span><b>'+fmt2(r.owe0)+'</b></div>':'')
+        +r.parts.map(function(q){ return '<div class="row pay"><span>'+showE(q.lab)+' pays</span><b>+'+fmt2(q.v)+'</b></div>'; }).join('')
+        +'<div class="row bottom"><span>'+(r.net<=0?'You come out ahead':'You pay')+'</span><b>'+fmt2(Math.abs(r.net))+'</b></div></div>'; }).join('')+'</div>');
+    var CL=showClaims(t); h+=sec('claims','Real claims','What real clients got back','<div class="cards">'+CL.map(function(c){ return '<div class="card claim"><h3>'+showE(c.t)+'</h3><p class="big2">'+showE(c.sum)+'</p><p class="muted small">'+showE(c.how)+'</p></div>'; }).join('')+'</div><p class="muted small">Real ManhattanLife claims, client details removed.</p>');
     if(has('lb')){ var L=lbSummary(t);
-      h+=sec('lb','Paid to you','Living benefits','<div class="cards">'+L.map(function(x){ return '<div class="card lbc"><div class="eyebrow">'+showE(x.who)+'</div><p class="big">$'+Math.round(x.face||0).toLocaleString('en-US')+'</p><p class="muted">'+showE(x.kind)+(x.carrier?' · '+showE(x.carrier):'')+'</p></div>'; }).join('')+'</div>'
-        +'<p class="lead">Health insurance pays the doctors and hospitals. Living benefits pay <b>you</b>, to use however you need, if a serious illness or injury qualifies. What you use comes off the amount your family would receive.</p>'+(R[R.length-1]?'<div class="cards">'+R[R.length-1]+'</div>':'')); }
-    var tt=tierTotals(t), lbm=((tt.pk.products||[]).filter(function(p){ return isLBk(p.k); }).reduce(function(a,p){ return a+(+p.monthly||0); },0))+(+tt.pk.lb||0), prem=tt.mo-lbm, B=anchorBase(), now=B?+B.premOnly||0:0, save=now-prem;
-    var cmp=(B&&now>0&&save>=1)?'<div class="cmp"><div><span class="muted">'+(B.k==='aca'?'The marketplace plan':'Your current plan')+'</span><p class="big strike">'+fmt2(now)+'</p></div><div class="arrow">→</div><div><span class="muted">This plan’s health coverage</span><p class="big">'+fmt2(prem)+'</p></div></div><p class="lead">That’s <b>'+fmt2(save)+'</b> less a month — <b>'+fmt2(save*12)+'</b> over a year.</p>':'';
-    h+=sec('cost','Your monthly total','What it costs',cmp+'<div class="total"><span>Your monthly total</span><b>'+fmt2(tt.mo)+'</b></div>'+(lbm>0?'<p class="muted">Includes '+fmt2(lbm)+' a month for living benefits.</p>':''));
-    h+=sec('next','Here for you','How I work for you',(String(S.agentBio||'').trim()?'<p class="lead">'+showE(String(S.agentBio).trim())+'</p>':'')
-      +'<ul class="ticks"><li>There’s no fee for my help.</li><li>When you need to use your plan, call me first.</li><li>We’ll look at it together every year.</li></ul>'
+      h+=sec('lb','Included in your plan','Living benefits','<div class="cards">'+L.map(function(x){ return '<div class="card lbc"><div class="eyebrow">'+showE(x.who)+'</div><p class="big">$'+Math.round(x.face||0).toLocaleString('en-US')+'</p><p class="muted">'+showE(x.kind)+(x.carrier?' · '+showE(x.carrier):'')+'</p></div>'; }).join('')+'</div>'
+        +'<p class="lead">Health insurance pays the doctors and hospitals. Living benefits pay <b>you</b>, to use however you need, if a serious illness or injury qualifies. What you use comes off the amount your family would receive.</p>'+(lbCards?'<div class="cards">'+lbCards+'</div>':'')); }
+    var tt=tierTotals(t), lbm=((tt.pk.products||[]).filter(function(p){ return isLBk(p.k); }).reduce(function(a,p){ return a+(+p.monthly||0); },0))+(+tt.pk.lb||0), prem=tt.mo-lbm, now=B?+B.premOnly||0:0, save=now-prem;
+    var cmp=(B&&now>0&&save>=1)?'<div class="cmp"><div><span class="muted">'+(cur?'Your current plan':'The marketplace plan')+'</span><p class="big strike">'+fmt2(now)+'</p></div><div class="arrow">→</div><div><span class="muted">This plan’s health coverage</span><p class="big">'+fmt2(prem)+'</p></div></div><p class="lead">That’s <b>'+fmt2(save)+'</b> less a month — <b>'+fmt2(save*12)+'</b> over a year.</p>':'';
+    var P=showPluses(t);
+    h+=sec('cost','Your monthly total','What it costs',cmp+'<div class="total"><span>Your monthly total</span><b>'+fmt2(tt.mo)+'</b></div>'+(lbm>0?'<p class="muted">Includes '+fmt2(lbm)+' a month for living benefits.</p>':'')+(P.length?'<h3 class="sub">Plus</h3>'+li(P):''));
+    /* 6. the close (Jesse: always assume it - keep them in qualifying mode) */
+    h+=sec('next','Next step','Let’s get you approved','<p class="lead">The one thing I can’t promise is that you’re accepted. Just like you’re choosing them, the carrier has to approve you — and the only way to know is to apply.</p>'
+      +'<ol class="steps"><li><b>Apply today.</b> No cost to apply, about 10 minutes, and I’m with you the whole way.</li><li><b>The carrier reviews it.</b> Usually 3–5 business days; it can take up to 14.</li><li><b>You’re approved.</b> We set your start date and your welcome packet comes.</li></ol>'
+      +'<p class="lead">Want to go over it with your family? You still can — applying now just gets the approval started while you do.</p>'
       +'<div class="contact">'+(photo?'<img class="photo sm" src="'+photo+'" alt="">':'')+'<div><b>'+showE(agent)+'</b>'+(agency?'<br>'+showE(agency):'')+(ph?'<br>'+showE(ph):'')+(em?'<br>'+showE(em):'')+'</div></div>'
       +(book?'<p><a class="btn" href="'+showE(/^https?:/i.test(book)?book:'https://'+book)+'" target="_blank" rel="noopener">Book a time with me</a></p>':''));
     var foot=(agent||ph)?'<div class="foot">'+(photo?'<img src="'+photo+'" alt="">':'')+'<span><b>'+showE(agent)+'</b>'+(agency?' · '+showE(agency):'')+'</span>'+(ph?'<span class="fr">'+showE(ph)+'</span>':'')+'</div>':'';
@@ -8853,6 +8940,9 @@ var SHOW_CSS='*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;
  +'.total{display:flex;justify-content:space-between;align-items:baseline;background:#14284b;color:#fff;border-radius:14px;padding:20px 26px;max-width:620px;margin-top:10px}.total span{font-size:19px}.total b{font:600 40px Georgia,serif}'
  +'.ticks{list-style:none;padding:0;font-size:21px}.ticks li{padding:6px 0 6px 34px;position:relative}.ticks li:before{content:"✓";position:absolute;left:0;color:#1f7a46;font-weight:700}'
  +'.contact{display:flex;gap:18px;align-items:center;font-size:19px;margin:18px 0}.btn{display:inline-block;background:#c79a2b;color:#14284b;font-weight:700;padding:14px 26px;border-radius:10px;text-decoration:none}'
+ +'.how{margin-top:34px;max-width:900px}.now{display:flex;gap:44px;flex-wrap:wrap;margin:8px 0 14px}.now small{font:500 18px -apple-system,sans-serif;color:#5b6475}.big3{font:600 clamp(24px,3vw,34px)/1.2 Georgia,serif;color:#a87f1f}'
+ +'.pill{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 18px}.pill span{background:#14284b;color:#fff;border-radius:99px;padding:8px 16px;font-weight:600;font-size:16px}'
+ +'.row.pay b{color:#1f7a46}.row.bottom{border-top:2px solid #14284b;font-size:18px}.row.bottom b{font-size:22px;color:#14284b}.steps{font-size:20px;line-height:1.5;padding-left:26px;max-width:52em}.steps li{margin:8px 0}'
  +'.foot{position:sticky;bottom:0;background:#14284b;color:#fff;display:flex;align-items:center;gap:12px;padding:10px 7vw;font-size:15px}.foot img{width:34px;height:34px;border-radius:50%;object-fit:cover}.foot .fr{margin-left:auto}';
 function showLive(){ return !!(SHOW_WIN&&!SHOW_WIN.closed); }
 function showOpen(){ var w=window.open('','mppClientScreen','width=1180,height=820');
