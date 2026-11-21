@@ -156,7 +156,7 @@ const TEST = `(async function(){
   var aside=function(){ var x=Array.prototype.filter.call(d.querySelectorAll('.say'),function(y){ return /to the side/.test(y.textContent); })[0]; return x&&x.textContent; };
   S.cur=JSON.parse(kc); S.cur.paying=true; presentWire(d,'best'); ok(/put those to the side/.test(aside()),'two plans: put those to the side');
   S.cur.paying=false; presentWire(d,'best'); ok(/put that one to the side/.test(aside()),'one plan: put that one to the side');
-  S.cur=JSON.parse(kc); S.cur.paying=false; presentWire(d,'best'); ok(shownSay()==='aca'&&fr.contentWindow.getComputedStyle(d.querySelector('tr[data-anchor="cur"]')).display==='none','premium on file but not paying now: marketplace version, no today anchor ('+shownSay()+')');
+  S.cur=JSON.parse(kc); S.cur.paying=false; presentWire(d,'best'); ok(shownSay()==='aca'&&(function(el){ for(;el&&el.nodeType===1;el=el.parentNode){ if(fr.contentWindow.getComputedStyle(el).display==='none') return true; } return false; })(d.querySelector('tr[data-anchor="cur"]')),'premium on file but not paying now: marketplace version, no today anchor on screen ('+shownSay()+')');   /* 21 Nov: the whole PICK THE ANCHOR box is hidden now - the row counts as hidden if any ancestor is */
   S.cur.paying=true; presentWire(d,'best'); ok(shownSay()==='cur','paying now: the today version');
   S.cur=JSON.parse(kc); presentWire(d,'best');
   ok(!!d.querySelector('.say b > i')&&/insert their situation/.test(d.querySelector('.say b > i').textContent),'(insert their situation) in bold italic');

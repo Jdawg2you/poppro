@@ -650,7 +650,7 @@
   .wl-you{margin:18px 20px 0;padding-top:14px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}.wl-you b{font-family:var(--serif);color:var(--navy);font-size:17px;margin-right:6px}.wl-you i{font-style:normal}.wl-you i.needfill-sum{color:#17824a;font-weight:700}
   /* Client screen (sandbox, 20 Nov): Setup photo/logo + the remote on Present */
   .agimgs{grid-column:1/-1}.agimg-row{display:flex;gap:18px;flex-wrap:wrap;margin:4px 0}.agimg{display:flex;align-items:center;gap:10px}.agimg-pv{width:120px;height:64px;border:1px dashed var(--line);border-radius:8px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#fff;font-size:11px;color:var(--muted)}.agimg-pv.round{width:64px;border-radius:50%}.agimg-pv img{max-width:100%;max-height:100%;object-fit:contain}.agimg-pv.round img{width:100%;height:100%;object-fit:cover}.agimg-btn{padding:6px 12px;font-size:13px;font-weight:600;color:var(--navy);background:#fff;border:1.5px solid var(--navy);border-radius:8px;cursor:pointer}.agimg-x{font-size:12px;border:0;background:none;color:var(--muted);text-decoration:underline;cursor:pointer}.agimg-err{color:#b71c1c;font-size:13px;font-weight:600;margin:4px 0}.agcrop{display:none;position:fixed;inset:0;background:rgba(10,20,40,.55);z-index:3000;align-items:center;justify-content:center}.agcrop.open{display:flex}.agcrop-card{background:#fff;border-radius:14px;padding:18px 22px;width:300px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center}.agcrop-card b{font-size:17px;color:var(--navy)}.agcrop-card small{color:var(--muted);font-size:12.5px}.agcrop-vp{position:relative;width:240px;height:240px;border-radius:50%;overflow:hidden;background:#eee;cursor:grab;touch-action:none;margin:6px 0;box-shadow:0 0 0 3px var(--navy)}.agcrop-vp:active{cursor:grabbing}.agcrop-vp img{position:absolute;max-width:none;user-select:none;pointer-events:none}.agcrop-z{display:flex;align-items:center;gap:8px;width:100%;font-weight:700;color:var(--navy)}.agcrop-z input{flex:1}.agcrop-btns{display:flex;gap:10px;margin-top:6px}.agcrop-btns button{font:inherit;font-weight:700;padding:8px 16px;border-radius:8px;border:1.5px solid var(--navy);background:#fff;color:var(--navy);cursor:pointer}.agcrop-btns button.go{background:var(--navy);color:#fff}.agimg-help{font-size:13px;margin-top:4px}.agimg-help summary{cursor:pointer;font-weight:600;color:var(--navy)}.agimg-help ol{margin:6px 0 0 18px;padding:0}.agimg-help li{margin:4px 0}
-  .sh-pick{margin-top:8px;font-size:13.5px}.sh-pick summary{cursor:pointer;font-weight:700;color:#1f6b3b}.sh-pick label{display:block;margin:4px 0 0 4px;cursor:pointer}
+  .sh-pick{margin-top:8px;font-size:13.5px}.sh-pick summary{cursor:pointer;font-weight:700;color:#1f6b3b}.sh-pick label{display:block;margin:4px 0 0 4px;cursor:pointer}.sh-pick .sh-grp{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;margin:8px 0 4px}.sh-pick .sh-grp>b{flex-basis:100%;font-size:12.5px;color:var(--navy)}.sh-pick .sh-grp>span{flex-basis:100%;font-size:11.5px;color:var(--muted);margin-top:-4px}.sh-pick .sh-ex{display:flex;align-items:center;gap:8px;flex-basis:100%}.sh-pick .sh-ex select{font:inherit;font-size:13px;border:1px solid var(--line);border-radius:8px;padding:4px 8px;max-width:330px}
   .sh-bar{border:2px solid #1f6b3b;background:#eefaf2;border-radius:12px;padding:10px 14px;margin:10px 0}.sh-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.sh-new{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;background:#1f6b3b;color:#fff;border-radius:5px;padding:2px 6px}.sh-open{font:inherit;font-weight:700;background:var(--navy);color:#fff;border:0;border-radius:8px;padding:7px 14px;cursor:pointer}.sh-fol{display:flex;gap:6px;align-items:center;font-weight:600;font-size:14px}.sh-st{font-size:13px;color:var(--muted)}.sh-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.sh-chips button{font:inherit;font-size:13px;font-weight:600;border:1px solid #1f6b3b;background:#fff;color:#1f6b3b;border-radius:999px;padding:4px 11px;cursor:pointer}.sh-chips button.on{background:#1f6b3b;color:#fff}
   /* Setup file (Jesse, 5 Nov): the agent's details in one small file of their own - client files no longer carry them */
   .wl-you{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 6px}.wl-you .sf-btns{margin-left:auto;display:flex;gap:8px;align-self:center}
@@ -3101,7 +3101,7 @@ function acaEstFlags(){ var A=acaIn(), C=curIn(), ov=A.ov, onAca=(A.status==='on
   f.any=f.prem||f.subsidy||f.ded||f.visit||f.med; return f; }
 /* The one baseline every savings figure uses - builder, client view, printout. */
 function anchorBase(force){ var k=force||(S.intake&&S.intake.anchor)||'aca';
-  if(!force&&k==='cur'&&curIn().paying===false&&!(S.intake&&S.intake.anchorSet)) k='aca';   /* the agent's own pick wins (21 Nov) */   /* not paying for it now: compare against the marketplace, as the script does */
+  if(!force&&k==='cur'&&curIn().paying===false) k='aca';   /* not paying for it now: compare against the marketplace, as the script does */   /* not paying for it now: compare against the marketplace, as the script does */
   var aca=function(){ if(!(+S.aca.prem>0)) return null;   // nothing priced yet (a full subsidy still has a gross premium)
       var t=acaTrueParts(), v=+((S.intake||{}).visits)||0, cp=+S.aca.copay||0, cm=v*cp/12;
       return {k:'aca',lab:'ACA bronze',short:'ACA',your:'your marketplace plan',prem:t.net+cm,premOnly:t.net,copayMo:cm,visits:v,copay:cp,mo:t.mo,yr:t.yr,ded:+S.aca.ded||0}; },
@@ -8295,7 +8295,7 @@ function enrollScript(){ var t=enrolledTier()||S.activeTab, fr=$('enFrame2'); if
       EN_TIP=EN_TIP.replace(/Type it in the box beside this question[\s\S]*$/,'Type it in the box beside this question — it saves with the quote, so it’s still there if the health application goes in on another day.');
       var sy=document.querySelector('#enPeople .en-say'); if(sy){ sy.textContent=''; if(EN_SAY) sy.appendChild(document.createTextNode('Say: “'+EN_SAY+'”')); if(EN_TIP){ var tp=document.createElement('div'); tp.className='en-tip'; tp.textContent=EN_TIP; sy.appendChild(tp); } }
       fr.style.height='60px'; fr.style.height=(doc.documentElement.scrollHeight+8)+'px'; }); };
-  if(fr.dataset.loaded) show(); else { fr.onload=function(){ fr.dataset.loaded='1'; scriptClean(fr.contentDocument); show(); }; fr.src='presentation.html'; } }
+  if(fr.dataset.loaded) show(); else { fr.onload=function(){ fr.dataset.loaded='1'; scriptClean(fr.contentDocument); show(); }; fr.src='presentation.html?v='+SCRIPT_V; } }
 /* 2. The application, one open block per person (Jesse, 2026-10-08). Every field is a box: filled from the profile
    when we have it (with a copy button), typed here when we don't - and whatever is typed writes back to the profile (S),
    so Save / Print carry it and the navigator gets it on the next file load. Medications and conditions are a row each.
@@ -8404,6 +8404,10 @@ function enPersonRows(who,i){ return enFieldsFor(who==='k'?'k'+i:who).map(functi
    anything printed shows only the last 4. SSN-shaped (3-2-4, with dashes, dots or spaces), a bare 9 digits after an SSN/social
    label, and the number after a DL / driver's licence label. The saved file keeps the full value. */
 function maskIds(t){ var last4=function(v){ var d=String(v).replace(/[^A-Za-z0-9]/g,''); return '•••'+d.slice(-4); };
+  /* Health ZONE, 21 Nov: an UNLABELLED nine-digit run sits in a real household's notes. On the printout (display only) mask
+     nine bare digits within ~45 characters of an identifier word - the rule that found all four households, no false positives */
+  var near=/(ssn|social|security|licen[cs]e|\bD\.?L\b|\bID\b)/i;
+  t=String(t||'').replace(/\b\d{9}\b/g,function(m,off,all){ return near.test(all.slice(Math.max(0,off-45),off+m.length+45))?'***-**-'+m.slice(-4):m; });
   return String(t||'')
     .replace(/\b(\d{3})[-. ](\d{2})[-. ](\d{4})\b/g,function(m,a,b,c){ return '***-**-'+c; })
     .replace(/((?:ssn|social(?:\s+security)?(?:\s+(?:no\.?|number|#))?)[^A-Za-z0-9\n]{0,6})(\d{9})\b/gi,function(m,lab,n){ return lab+'***-**-'+n.slice(-4); })
@@ -8840,7 +8844,7 @@ function renderPresent(){ var host=$('presentHost'); if(!host) return; var shb=S
   if(SHOW_ON) h+='<div class="sh-bar" id="showBar"></div>';   /* client screen remote - sandbox only */
   h+=anchorFlipHTML()+acaCheckHTML(t)+histStrip('present')+covClockBar();
   h+='<div class="pr-prog" id="prChips"></div><div class="pr-grid"><div>'
-    +'<iframe id="prFrame" src="presentation.html" title="Presentation script" style="width:100%;border:1px solid var(--line);border-radius:12px;background:#fff;min-height:200px"></iframe>'
+    +'<iframe id="prFrame" src="presentation.html?v='+SCRIPT_V+'" title="Presentation script" style="width:100%;border:1px solid var(--line);border-radius:12px;background:#fff;min-height:200px"></iframe>'
     +'<div class="pr-nav" id="prNav"></div></div>'
     +'<div class="pr-rail">'
     +'<div class="box"><b>Show them</b><button type="button" data-show="cmp">The plans side by side</button><button type="button" data-show="ev">The examples (what it pays)</button><button type="button" data-show="top">Their situation & options</button></div>'
@@ -8964,9 +8968,12 @@ function showExamples(t){ var out=[]; [0,1].forEach(function(i){ var sc=(S.ev||[
     var r=evEvent(sc,Object.assign({},evTierPack(t),{negotPct:negApplies(i,bill)?S.negot.pct:0})); out.push({desc:sc.desc||'An example',bill:bill,r:r}); }); return out; }
 var SHOW_DEFAULT_OFF={};   /* Jesse, 21 Nov (later): all four claims on; untick any in What to show */
 function showOff(k){ var o=((S.present||{}).showOff)||{}; return Object.prototype.hasOwnProperty.call(o,k)?!!o[k]:!!SHOW_DEFAULT_OFF[k]; }
-function showPickHTML(t){ var items=[]; [0,1].forEach(function(i){ var sc=(S.ev||[])[i]; if(sc&&evScnBill(sc).total>0) items.push(['ev'+i,'Example: '+(sc.desc||'Example '+(i+1))]); });
-  if(showAfcRows(t)) showClaims(t,true).forEach(function(c){ items.push(['claim:'+c.id,'Claim: '+c.t]); });
-  return items.length?'<details class="sh-pick"'+(SHOW_PICK_OPEN?' open':'')+'><summary>What to show</summary>'+items.map(function(x){ return '<label><input type="checkbox" data-shpick="'+esc(x[0])+'"'+(showOff(x[0])?'':' checked')+'> '+esc(x[1])+'</label>'; }).join('')+'</details>':''; }
+/* Jesse, 21 Nov: each example is a tick (show it on the client screen) plus the SAME picker as the Quote - change it here
+   and the Quote and the presentation change with it (evApplyPreset), change it on the Quote and it shows here */
+function showPickHTML(t){ var ex=[0,1].map(function(i){ var sc=(S.ev||[])[i]; if(!sc) return ''; var on=!showOff('ev'+i);
+      return '<div class="sh-ex"><label><input type="checkbox" data-shpick="ev'+i+'"'+(on?' checked':'')+'> Example '+(i+1)+'</label><select data-shev="'+i+'" aria-label="Example '+(i+1)+'">'+evPresetOpts(sc.preset||'')+'</select></div>'; }).join('');
+  var cl=showAfcRows(t)?showClaims(t,true).map(function(c){ return '<label><input type="checkbox" data-shpick="claim:'+esc(c.id)+'"'+(showOff('claim:'+c.id)?'':' checked')+'> '+esc(c.t)+'</label>'; }).join(''):'';
+  return (ex||cl)?'<details class="sh-pick"'+(SHOW_PICK_OPEN?' open':'')+'><summary>What to show</summary>'+(ex?'<div class="sh-grp"><b>Examples</b><span>Same picker as the Quote</span>'+ex+'</div>':'')+(cl?'<div class="sh-grp"><b>Real claims</b>'+cl+'</div>':'')+'</details>':''; }
 /* Real claims (Jesse, 20 Nov): the X-ray and CT claims re-priced at THIS plan's amounts, from the state's brochure; the
    surgeries as they were paid on that client's plan. Jesse, 21 Nov: the redacted bill itself shows beside the list. */
 function showClaims(t,all){ var rows=showAfcRows(t); if(!rows) return [];
@@ -9150,6 +9157,7 @@ function showBarPaint(){ var bar=$('showBar'); if(!bar) return; var t=presentTie
   bar.querySelector('[data-sh="open"]').onclick=function(){ if(showLive()) showWrite(); else showOpen(); };
   bar.querySelector('[data-sh="follow"]').onchange=function(){ try{ localStorage.setItem('mpp_show_follow',this.checked?'1':'0'); }catch(e){} if(this.checked){ var pg=presentPages()[+((S.present||{}).pg)||0]; if(pg) showFollow(pg.sc); } };
   bar.querySelectorAll('[data-shgo]').forEach(function(b){ b.onclick=function(){ showGo(b.dataset.shgo); }; });
+  bar.querySelectorAll('[data-shev]').forEach(function(sel){ sel.onchange=function(){ SHOW_PICK_OPEN=true; evApplyPreset(+sel.dataset.shev,sel.value); showBarPaint(); if(showLive()) showWrite(); }; });
   bar.querySelectorAll('[data-shpick]').forEach(function(b){ b.onchange=function(){ S.present=S.present||{}; var o=S.present.showOff=S.present.showOff||{}; o[b.dataset.shpick]=!b.checked;
     try{ autosave(); }catch(e){} if(showLive()) showWrite(); else showBarPaint(); }; });
   var pk=bar.querySelector('.sh-pick'); if(pk) pk.ontoggle=function(){ SHOW_PICK_OPEN=pk.open; }; }
@@ -9211,6 +9219,8 @@ function presentGo(pg){ var pages=presentPages(), nav=presentNav(), t=presentTie
     else presentGo(nav[pos+(+g)]); }; });
   window.scrollTo(0,0); }
 
+/* bump when tool/presentation.html is re-copied from the Health Insurance folder, so no browser keeps a stale script (21 Nov) */
+var SCRIPT_V='2026-11-21a';
 /* ===== Wiring Health ZONE's script (tool/presentation.html) =====
    Every <var data-k> is filled from presentScriptTokens(); a key with no value shows red ("missing: key") so a gap is
    seen before it is said. Unkeyed <var>s are fixed text and are never touched. Hooks: data-anchor rows pick the
@@ -9229,7 +9239,7 @@ function presentAfc(t){ var c=effCfg(t), lvl=c.afc, d=BEN_DATA.afc, b=d?benBroch
    Picking aca/cur also sets POP Pro's own anchor, so the quote and Client View compare against the same thing. */
 function presentHasCur(){ var C=curIn(); return +C.prem>0&&C.paying!==false; }
 function presentAnchor(){ S.present=S.present||{}; var k=S.present.anchor||(S.intake&&S.intake.anchor)||'aca';
-  if(k==='employer'||(k==='cur'&&!(+curIn().prem>0))) k='aca'; return k; }   /* an explicit 'current plan' pick stands whenever a premium is on file (21 Nov) */
+  if(k==='employer'||(k==='cur'&&!presentHasCur())) k='aca'; return k; }
 /* Section 3 reads this back as "the thing you highlighted as most important to you was ___" (Jesse, 9 Oct): it must be
    their short answer to "what's the one thing the plan has to do", never the prompted-it story. Older quotes have only
    the story box: a short one-liner there still reads naturally; a paragraph does not, so the blank stays red and the
@@ -9538,7 +9548,8 @@ function presentWire(doc,t){ scriptClean(doc); if(!doc||!doc.body) return 0;
      the author's cue for choosing, so it is hidden once the choice is made for the agent. */
   /* Jesse, 21 Nov: the line follows the agent's "Anchor / compare against" pick, not a guess from the data. Current plan
      whenever it is picked and a current premium is on file; the marketplace otherwise. */
-  var Cq=curIn(), useCur=presentAnchor()==='cur'&&+Cq.prem>0;
+  /* auto: the old rules (not paying, or an employer paying part -> marketplace); an explicit pick (anchorSet) overrides them */
+  var Cq=curIn(), useCur=presentAnchor()==='cur'&&presentHasCur()&&!(+Cq.emp>0);   /* an employer-subsidised premium is never the anchor line (the script's own rule) */   /* picking 'Their current plan' at the top ticks 'paying', so the paying box can stay the rule */
   /* Optional sub-lines inside an anchor line (for the Health Insurance folder's script): data-aca-seen="no" when no real
      marketplace price was typed, "more" / "less" when one was and it is above / below what they pay today, "yes" for any
      typed price. Lines without the hook are untouched. */
