@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>AI for the assist — MyPopPro</title>
+<link rel="icon" href="../../favicon.ico">
+<style>
+:root{--navy:#14284b;--gold:#c79a2b;--ink:#1d2433;--muted:#5b6475;--line:#e6dfcc;--bg:#faf6ec;--card:#fff;--green:#1f7a46;--red:#b42318}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:820px;margin:0 auto;padding:28px 16px 80px}
+.back{display:inline-block;color:var(--navy);font-weight:700;text-decoration:none;margin-bottom:18px}
+h1{font:600 clamp(30px,5vw,44px)/1.15 Georgia,serif;color:var(--navy);margin:0 0 10px}
+h2{font:600 24px/1.25 Georgia,serif;color:var(--navy);margin:0 0 10px}
+.lead{font-size:19px;color:var(--ink);margin:0 0 6px}.muted{color:var(--muted)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 22px;margin:16px 0}
+.step{display:flex;gap:16px}.num{flex:none;width:38px;height:38px;border-radius:50%;background:var(--navy);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;font-size:18px}
+.step>div:not(.num){flex:1;min-width:0}.step h2{margin-top:4px}
+.copy{font:inherit;font-weight:700;font-size:17px;background:var(--gold);color:var(--navy);border:0;border-radius:10px;padding:13px 22px;cursor:pointer}
+.copy.ok{background:var(--green);color:#fff}
+.ver{display:inline-block;font-size:14px;background:#eef3fb;color:var(--navy);border-radius:8px;padding:4px 10px;margin-left:8px}
+details{margin-top:10px}summary{cursor:pointer;font-weight:600;color:var(--navy)}
+pre{white-space:pre-wrap;word-break:break-word;background:#f6f4ee;border:1px solid var(--line);border-radius:10px;padding:14px;font:13px/1.5 ui-monospace,Menlo,monospace;max-height:420px;overflow:auto}
+code{background:#f1ede2;border-radius:5px;padding:1px 6px;font-size:.92em}
+.loud{border:2px solid var(--red);background:#fdf1f0}.loud h2{color:var(--red)}
+ul{padding-left:22px;margin:8px 0}li{margin:4px 0}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}@media(max-width:640px){.two{grid-template-columns:1fr}}
+.yes h3,.no h3{margin:0 0 6px;font-size:16px}.yes h3{color:var(--green)}.no h3{color:var(--red)}
+</style></head>
+<body><div class="wrap">
+<a class="back" href="../">← Back to MyPopPro</a>
+<h1>🤖 AI for the assist</h1>
+<p class="lead">Turn a recorded discovery call into a MyPopPro client file, with Claude.</p>
+<p class="muted">You record the call, paste one block of text into Claude once, then paste your transcript. Claude gives you back a file you load into MyPopPro. Your intake is filled in, and you check it before you quote.</p>
+
+<div class="card"><h2>Before you start: record the discovery call</h2>
+<p>Use whatever you already record calls with: your phone dialer, Zoom, your CRM. You need the <b>transcript</b> (the words), not the audio. MyPopPro doesn’t record calls and doesn’t need to.</p></div>
+
+<div class="card step"><div class="num">1</div><div><h2>Copy the prompt</h2>
+<p>This is the block of instructions that teaches Claude how a MyPopPro file is built.</p>
+<p><button type="button" class="copy" id="copyBtn">📋 Copy the prompt</button><span class="ver" id="ver">Version …</span></p>
+<details><summary>See what you’re copying</summary><pre id="promptText">Loading…</pre></details></div></div>
+
+<div class="card step"><div class="num">2</div><div><h2>Paste it into a new Claude conversation</h2>
+<p>Open <b>claude.ai</b> (or the Claude app on your phone), start a <b>new</b> conversation, paste, and send. Claude answers in two lines to say it’s ready.</p>
+<p class="muted">Doing this a lot? Make a Claude <b>Project</b> and paste the prompt into its instructions instead. Then every conversation in that Project already knows how.</p></div></div>
+
+<div class="card step"><div class="num">3</div><div><h2>Paste your transcript and say “build POP Pro”</h2>
+<p>Paste the whole call. Claude reads all of it, then builds the file and tells you in plain words what it left blank and why.</p></div></div>
+
+<div class="card step"><div class="num">4</div><div><h2>Download the file</h2>
+<p>Claude gives you a file named like <code>POP_Pro_First_Last_2026-11-20.json</code>. Download it.</p></div></div>
+
+<div class="card step"><div class="num">5</div><div><h2>Load it into MyPopPro</h2>
+<p>MyPopPro → <b>Load client</b> → pick the file. Your intake is filled in.</p></div></div>
+
+<div class="card"><h2>What it fills in, and what to check</h2>
+<div class="two"><div class="yes"><h3>✓ Fills in</h3><ul><li>Names, state, ZIP, dates of birth and ages</li><li>Who is on the quote, and the kids</li><li>Income, medications and conditions they told you</li><li>What they pay today, if they said</li><li>A brief at the top of the intake with every open item</li></ul></div>
+<div class="no"><h3>✗ Leaves blank on purpose</h3><ul><li>Anything nobody asked, like tobacco. Blank means “not asked”, never “no”</li><li>A medication it can’t spell. It flags it in the brief instead</li><li>Phone, email and street address. Calls rarely have them</li></ul></div></div>
+<p><b>Before you quote from it:</b> read the brief at the top of the intake, confirm every medication and condition with the client, and check the state. A number Claude worked out itself is marked <b>MODELLED</b>. Never read a modelled number to a client as a quote.</p></div>
+
+<div class="card loud"><h2>🔴 Your details never go in the file</h2>
+<p>A client file holds the <b>client</b>, never the agent: no agency, phone, email, NPN, bio, booking link or Direction Rx code. MyPopPro takes them out when it saves, and fills in <b>yours</b> when you open a file. So a file built by anyone opens as you.</p>
+<p>For that to work, save your own Setup once: <b>MyPopPro → Setup → Save my Setup</b>.</p></div>
+
+<div class="card"><h2>Keeping it current</h2>
+<p>When MyPopPro adds a field, the prompt is updated here. The version you have is stamped at the top of the prompt. The first time you build a file in a conversation, Claude checks this page’s version and tells you in one line if yours is older. Then come back and copy it again.</p>
+<p>An older prompt still works. It builds a file that loads fine, but it may miss the newest fields. There’s nothing to install or update: copying again <b>is</b> the update.</p>
+<p class="muted" id="verLine"></p></div>
+
+<div class="card"><h2>On a Mac with Claude Code</h2>
+<p>There’s also a version for Claude Code. It installs as a skill, so “build POP Pro” works in any session, and it comes with a checker that loads the file into MyPopPro before you do and fails it if anything is wrong. Ask Jesse for the <b>build-poppro</b> kit.</p></div>
+
+<div class="card"><h2>Privacy</h2>
+<ul><li>Transcripts carry dates of birth and health details, and sometimes Social Security or bank numbers.</li>
+<li><b>Never paste a Social Security number.</b> If one is in the transcript, Claude drops it and tells you. The file never contains one, or a bank, routing or driver’s licence number.</li>
+<li>Use your own Claude account, and delete the conversation when you’re done if you don’t need it again.</li></ul></div>
+</div>
+<script>
+(function(){ var txt='', btn=document.getElementById('copyBtn');
+  fetch('prompt.txt',{cache:'no-store'}).then(function(r){ if(!r.ok) throw 0; return r.text(); }).then(function(t){ txt=t; document.getElementById('promptText').textContent=t; })
+    .catch(function(){ document.getElementById('promptText').textContent='Couldn’t load the prompt. Refresh the page.'; });
+  fetch('version.json',{cache:'no-store'}).then(function(r){ return r.json(); }).then(function(v){
+    document.getElementById('ver').textContent='Version '+v.promptVersion;
+    document.getElementById('verLine').textContent='This page’s prompt: version '+v.promptVersion+', for the MyPopPro release of '+v.toolRelease+'.'; }).catch(function(){ document.getElementById('ver').textContent=''; });
+  btn.onclick=function(){ if(!txt) return; var done=function(){ btn.textContent='✓ Copied — now paste it into Claude'; btn.classList.add('ok'); setTimeout(function(){ btn.textContent='📋 Copy the prompt'; btn.classList.remove('ok'); },4000); };
+    if(navigator.clipboard&&window.isSecureContext) navigator.clipboard.writeText(txt).then(done,fallback); else fallback();
+    function fallback(){ var a=document.createElement('textarea'); a.value=txt; a.style.position='fixed'; a.style.opacity='0'; document.body.appendChild(a); a.select(); try{ document.execCommand('copy'); done(); }catch(e){ btn.textContent='Couldn’t copy — open “See what you’re copying” and copy it from there'; } a.remove(); } };
+})();
+</script>
+</body></html>

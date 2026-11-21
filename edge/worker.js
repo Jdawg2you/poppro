@@ -16,6 +16,7 @@ const PUBLIC = [
   /^\/$/, /^\/index\.html$/, /^\/favicon\.ico$/, /^\/assets\//, /^\/robots\.txt$/,
   /^\/signin\/?/, /^\/auth\//,
   /^\/tool\/card\//, /^\/tool\/card$/, /^\/tool\/careguide\.vcf$/,
+  /^\/tool\/ai\/version\.json$/,   /* AI for the assist: Claude checks this with no login - counts and dates only, never field names */
 ];
 
 export default {

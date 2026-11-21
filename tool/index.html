@@ -1313,7 +1313,7 @@ body.client #classicWrap>summary{display:none}
     body:not(.client) .rail-x em{font-style:normal;font-size:11px;font-weight:800;margin-left:auto;background:#22a05a;color:#fff;border-radius:999px;padding:1px 7px}body:not(.client) .rail-x em:empty{display:none}
     body:not(.client) #railSetup.need{border-color:#22a05a;animation:agglow 1.8s ease-in-out infinite}
     body:not(.client) #railCollapse{margin-top:auto;font-size:12.5px;color:#aeb8c8;flex:none}
-    body:not(.client) #railSuggest{margin-top:auto;flex:none}body:not(.client) #railSuggest+#railCollapse{margin-top:0}   /* Suggest sits at the foot of the rail, just above Collapse (Jesse, 11 Nov) */
+    body:not(.client) #railAI{margin-top:auto;flex:none}body:not(.client) #railAI+#railSuggest{margin-top:0;flex:none}body:not(.client) #railSuggest+#railCollapse{margin-top:0}   /* Suggest sits at the foot of the rail, just above Collapse (Jesse, 11 Nov) */
     body:not(.client) .rail-x:hover{background:#1c3657;color:#fff}
     body:not(.client) .rail-x.on{background:var(--gold);color:#10233e}body:not(.client) .rail-x.on .ri{color:#10233e}
     body.setup-open:not(.client) .stepper button.on{background:transparent;color:#d3dae6}body.setup-open:not(.client) .stepper button.on .n{color:#8d99ad}
@@ -1444,6 +1444,8 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
     <button type="button" class="rail-x" onclick="document.getElementById('saveBtn').click()"><span class="ri">💾</span><span class="rl">Save client</span></button>
     <button type="button" class="rail-x" onclick="document.getElementById('printBtn').click()"><span class="ri">⎙</span><span class="rl">Print quote</span></button>
   </div>
+  <!-- AI for the assist (Jesse via Health ZONE, 20 Nov): agent-only page at /tool/ai/; hidein-client so it never shows on a screenshare -->
+  <button type="button" id="railAI" class="rail-x hidein-client" onclick="location.href='ai/'" title="Turn a recorded discovery call into a client file with Claude"><span class="ri">🤖</span><span class="rl">AI for the assist</span></button>
   <button type="button" id="railSuggest" class="rail-x hidein-client" onclick="sgOpen()" title="See something? Say something. Send an idea, or a quick fix that’s needed"><span class="ri">💡</span><span class="rl">Suggestions</span></button>
   <button type="button" id="railCollapse" class="rail-x" onclick="railToggle()" title="Make the sidebar narrow (or wide again)"><span class="ri">←</span><span class="rl">Collapse navigation</span></button>
   </nav>
