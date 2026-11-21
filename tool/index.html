@@ -1290,6 +1290,19 @@ body.client #classicWrap>summary{display:none}
   .st-tabs button.need em{background:#22a05a;color:#fff;animation:agglow 1.8s ease-in-out infinite}
   .st-tabs button.done em{color:var(--green)}
   .wl-card.mode-setup .agentgrid .fld[data-stab]{display:none}
+  /* Setup refresh (Jesse, 21 Nov): titled cards per tab, readable labels, full-width boxes - same fields, ids and saving */
+  .wl-card.mode-setup .agentgrid{display:block}
+  .wl-card.mode-setup .sgrp{display:none;background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px 20px 20px;margin:0 0 16px;box-shadow:0 1px 3px rgba(16,35,62,.05)}
+  .wl-card.mode-setup #agentSetup[data-stab="identity"] .sgrp[data-sg="identity"],.wl-card.mode-setup #agentSetup[data-stab="links"] .sgrp[data-sg="links"],.wl-card.mode-setup #agentSetup[data-stab="intro"] .sgrp[data-sg="intro"]{display:block}
+  .sg-h{margin:0 0 14px}.sg-h b{display:block;font:700 17px -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:var(--navy)}.sg-h span{display:block;font-size:13px;color:var(--muted);margin-top:2px}
+  .wl-card.mode-setup .sg-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px 18px}@media(max-width:700px){.wl-card.mode-setup .sg-grid{grid-template-columns:1fr}}
+  .wl-card.mode-setup .sg-grid .agbio,.wl-card.mode-setup .sg-grid .agimgs,.wl-card.mode-setup .sg-grid .sgwide{grid-column:1/-1}
+  .wl-card.mode-setup .sgrp .fld label{text-transform:none;letter-spacing:0;font:600 14px -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);margin:0 0 6px;display:block}
+  .wl-card.mode-setup .sgrp .fld label small{display:block;font-weight:400;font-size:12.5px;color:var(--muted);margin-top:2px;text-transform:none;letter-spacing:0}
+  .wl-card.mode-setup .sgrp .fld input:not([type=file]),.wl-card.mode-setup .sgrp .fld textarea{width:100%;box-sizing:border-box;font-size:15px;padding:11px 13px;border:1px solid #d8dde6;border-radius:10px;background:#f8f9fb}
+  .wl-card.mode-setup .sgrp .fld input:not([type=file]):focus,.wl-card.mode-setup .sgrp .fld textarea:focus{background:#fff;border-color:var(--gold);outline:none;box-shadow:0 0 0 3px rgba(195,161,78,.25)}
+  .wl-card.mode-setup .sgrp .fhint{display:block;font-size:12.5px;color:var(--muted);margin-top:6px}
+  .wl-card.mode-setup .sgrp .goatgrab{margin:18px 0 0}
   .wl-card.mode-setup #agentSetup[data-stab="identity"] .fld[data-stab="identity"],.wl-card.mode-setup #agentSetup[data-stab="links"] .fld[data-stab="links"],.wl-card.mode-setup #agentSetup[data-stab="intro"] .fld[data-stab="intro"]{display:block}
   .wl-card.mode-setup #agentSetup:not([data-stab="links"]) .goatgrab{display:none}
   .wl-card.mode-setup #agentSetup[data-stab="intro"] .agentgrid{grid-template-columns:1fr}
@@ -2007,21 +2020,14 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
   <div class="setupfile" id="setupFile"><b>New computer, or cleared your browser?</b> Click <b>Load my Setup</b> and skip the typing. No file yet? Fill in below, then <b>Save my Setup</b> and keep the file.<input type="file" id="setupFileIn" accept="application/json,.json" style="display:none"></div>
   <div class="agentsetup" id="agentSetup">
     <div class="intakegrid agentgrid">
+      <div class="sgrp" data-sg="identity"><div class="sg-h"><b>About you</b><span>How clients and carriers know you.</span></div><div class="sg-grid">
       <div class="fld"><label>Your agency</label><input id="in_agency" placeholder="HealthFirst"></div>
       <div class="fld"><label>Agent</label><input id="in_agent" placeholder="Your name"></div>
       <div class="fld"><label>Agent phone</label><input id="in_aphone" placeholder="(000) 000-0000"></div>
       <div class="fld"><label>Agent email</label><input id="in_aemail" placeholder="you@agency.com"></div>
       <div class="fld"><label>NPN <small>in your signature</small></label><input id="in_anpn" inputmode="numeric" placeholder="National Producer Number"></div>
-      <div class="fld"><label>Your website <a href="#goatGrab" class="setlink" data-goat="1">(set up)</a></label><input id="in_aweb" placeholder="yourwebsite.com"></div>
-      <div class="fld"><label>Your digital business card <a href="#goatGrab" class="setlink" data-goat="1">(set up)</a></label><input id="in_acard" placeholder="yourcard.com/you"></div>
-      <div class="fld"><label>Your booking link <a href="#goatGrab" class="setlink" data-goat="1">(set up)</a></label><input id="in_abook" placeholder="calendly.com/you"></div>
-      <div class="fld"><label>Your virtual meeting link <small>Zoom, CrankWheel, Google Meet: the link a client taps to see your screen</small></label><input id="in_ameet" placeholder="zoom.us/j/… or meeting.is/you"></div>
-      <div class="fld agbio"><label>What you text with it <small>{first} = client’s first name · {agent} = your name · {link} = your meeting link · empty = the default</small></label><textarea id="in_ameettext" rows="3" placeholder="Leave empty to use the default"></textarea><button type="button" class="picbtn" id="meetDefault">Use the default</button></div>
-      <div class="fld"><label>Your benefits page <small>for the Benefits Review</small></label><input id="in_abenefits" placeholder="healthfirstquotes.netlify.app (used if blank)"><small class="fhint">Blank uses HealthFirst’s ManhattanLife page. Have your own custom page? Put it here and it’s used instead.</small></div>
-      <div class="fld"><label>Direction Rx link <small>GLP-1 discount, weight loss</small></label><input id="in_adrxlink" placeholder="https://bit.ly/4wf5B7V (used if blank)"><small class="fhint">Keep ManhattanLife’s tracking link — it’s how they count the engagement. A typed-in address isn’t counted.</small></div>
-      <div class="fld"><label>Direction Rx code <small>the client enters it for 30% off</small></label><input id="in_adrxcode" placeholder="4-MEM-26-6 (used if blank)"></div>
-      <div class="fld"><label>Amaze sign-up link <small>your own — where clients join Amaze</small></label><input id="in_aamazelink" placeholder="your Amaze member sign-up link"></div>
-      <div class="fld agbio"><label>Your bio <small>who you are · read at the start of every discovery call (2.3) · empty = the default</small></label><textarea id="in_abio" rows="4" placeholder="Leave empty to use the default"></textarea><button type="button" class="picbtn" id="bioDefault">Use the default</button></div>
+      </div></div>
+      <div class="sgrp" data-sg="identity"><div class="sg-h"><b>Photo &amp; logo</b><span>Optional. Shown on the client screen when you present.</span></div><div class="sg-grid">
       <div class="fld agimgs" id="agImgs" style="display:none"><label>Your photo and logo <small>shown on the client screen when you present · kept in this browser and your Setup file, never in a client file</small></label>
         <div class="agimg-row">
           <div class="agimg"><div class="agimg-pv round" id="ag_photo_pv"></div><label class="agimg-btn">Choose photo<input type="file" accept="image/*" id="in_aphoto" hidden></label><button type="button" class="agimg-x" data-agadj="1">Center it</button><button type="button" class="agimg-x" data-agx="photo">Remove</button></div>
@@ -2035,7 +2041,12 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
           <li><b>Your logo from your website:</b> right-click the logo, choose <b>Save Image As</b>, and upload the saved file.</li>
           <li>Still stuck? Any .jpg or .png file works.</li></ol></details>
       </div>
-    </div>
+      </div></div>
+      <div class="sgrp" data-sg="links"><div class="sg-h"><b>Agent links</b><span>Where clients find you and book a time.</span></div><div class="sg-grid">
+      <div class="fld"><label>Your website <a href="#goatGrab" class="setlink" data-goat="1">(set up)</a></label><input id="in_aweb" placeholder="yourwebsite.com"></div>
+      <div class="fld"><label>Your digital business card <a href="#goatGrab" class="setlink" data-goat="1">(set up)</a></label><input id="in_acard" placeholder="yourcard.com/you"></div>
+      <div class="fld"><label>Your booking link <a href="#goatGrab" class="setlink" data-goat="1">(set up)</a></label><input id="in_abook" placeholder="calendly.com/you"></div>
+      </div>
     <div class="goatgrab" id="goatGrab">
       <b>Don&rsquo;t have the last three yet? All three are free.</b> <span class="freetag">NO COST</span>
       <p>One GOAT account gives you an agent website, a digital business card, and a booking calendar clients can use to book themselves.</p>
@@ -2047,6 +2058,20 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
       </ol>
       <a class="goatbtn" href="https://goatleads.com/registration/new?affiliate_id=66c4aa379e0123651ad2f0e6" target="_blank" rel="noopener">Create my free GOAT account &rarr;</a>
       <button type="button" class="goatskip" id="goatSkip">I&rsquo;m not using GOAT &mdash; stop asking for these three links</button>
+    </div></div>
+      <div class="sgrp" data-sg="links"><div class="sg-h"><b>Virtual meetings</b><span>The link a client taps to see your screen, and what you text with it.</span></div><div class="sg-grid">
+      <div class="fld sgwide"><label>Your virtual meeting link <small>Zoom, CrankWheel, Google Meet: the link a client taps to see your screen</small></label><input id="in_ameet" placeholder="zoom.us/j/… or meeting.is/you"></div>
+      <div class="fld agbio"><label>What you text with it <small>{first} = client’s first name · {agent} = your name · {link} = your meeting link · empty = the default</small></label><textarea id="in_ameettext" rows="3" placeholder="Leave empty to use the default"></textarea><button type="button" class="picbtn" id="meetDefault">Use the default</button></div>
+      </div></div>
+      <div class="sgrp" data-sg="links"><div class="sg-h"><b>Client benefits &amp; extras</b><span>Blank uses HealthFirst’s defaults.</span></div><div class="sg-grid">
+      <div class="fld"><label>Your benefits page <small>for the Benefits Review</small></label><input id="in_abenefits" placeholder="healthfirstquotes.netlify.app (used if blank)"><small class="fhint">Blank uses HealthFirst’s ManhattanLife page. Have your own custom page? Put it here and it’s used instead.</small></div>
+      <div class="fld"><label>Amaze sign-up link <small>your own — where clients join Amaze</small></label><input id="in_aamazelink" placeholder="your Amaze member sign-up link"></div>
+      <div class="fld"><label>Direction Rx link <small>GLP-1 discount, weight loss</small></label><input id="in_adrxlink" placeholder="https://bit.ly/4wf5B7V (used if blank)"><small class="fhint">Keep ManhattanLife’s tracking link — it’s how they count the engagement. A typed-in address isn’t counted.</small></div>
+      <div class="fld"><label>Direction Rx code <small>the client enters it for 30% off</small></label><input id="in_adrxcode" placeholder="4-MEM-26-6 (used if blank)"></div>
+      </div></div>
+      <div class="sgrp" data-sg="intro"><div class="sg-h"><b>Your introduction</b><span>Read at the start of every discovery call.</span></div><div class="sg-grid">
+      <div class="fld agbio"><label>Your bio <small>who you are · read at the start of every discovery call (2.3) · empty = the default</small></label><textarea id="in_abio" rows="4" placeholder="Leave empty to use the default"></textarea><button type="button" class="picbtn" id="bioDefault">Use the default</button></div>
+      </div></div>
     </div>
   </div>
   </div>
