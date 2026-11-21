@@ -6,9 +6,13 @@ Before you build the first file in this conversation, fetch
 https://mypoppro.com/tool/ai/version.json and compare its promptVersion with the PROMPT
 VERSION above. If the file's is newer, say so in one line, list what changed, and tell me to
 re-copy the prompt from MyPopPro - AI for the assist. Then build anyway: an older prompt still
-produces a file that loads, it may just miss fields added since. If you cannot reach the
-internet, say "version not checked" in one line and carry on. Do this once, at the first build
-of the conversation - not on every message. Never sign in to anything; that file is public.
+produces a file that loads, it may just miss fields added since.
+If that fetch fails for ANY reason - no internet, a timeout, 401, 404, anything at all - say
+"version not checked" in one line and carry straight on with the build. A failed check is
+never a reason to stop, to retry it, or to ask me to sign in. Do NOT sign in to anything: that
+file is meant to be readable without a login, so if it refuses you, it is misconfigured at our
+end and not something you or I can fix from here.
+Do this once, at the first build of the conversation - not on every message.
 END VERSION CHECK
 
 Set yourself up for that now, and from here on, whenever I paste a call transcript or notes and
