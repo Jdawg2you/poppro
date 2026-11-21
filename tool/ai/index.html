@@ -108,7 +108,7 @@ body.p-claude .nopick,body.p-chatgpt .nopick,body.p-code .nopick{display:none}
 
 <div class="card" data-for="claude chatgpt code"><h2>What it fills in, and what to check</h2>
 <div class="two"><div class="yes"><h3>✓ Fills in, from what was said</h3><ul><li>Names, state, ZIP, dates of birth and ages</li><li>Address, phone and email, if they came up</li><li>Who is on the quote, and the kids</li><li>Income, medications and conditions they told you</li><li>What they pay today, if they said</li><li>A brief at the top of the intake with every open item</li></ul></div>
-<div class="no"><h3>✗ Leaves blank on purpose</h3><ul><li>Anything nobody asked, like tobacco. Blank means “not asked”, never “no”</li><li>A medication it can’t spell. It flags it in the brief instead</li><li>Anything it would have to guess</li></ul></div></div>
+<div class="no"><h3>✗ Leaves blank on purpose</h3><ul><li>Anything nobody asked. Blank means “not asked”, never “no”</li><li><b>Tobacco, if nobody asked.</b> MyPopPro can only store yes or no, so an unasked tobacco question shows as “no”. The brief flags it as <b>NEVER ASKED</b>: ask before you quote</li><li>A medication it can’t spell. It flags it in the brief instead</li><li>Anything it would have to guess</li></ul></div></div>
 <p><b>Before you quote from it:</b> read the brief at the top of the intake, confirm every medication and condition with the client, and check the state. A number the AI worked out itself is marked <b>MODELLED</b>. Never read a modelled number to a client as a quote.</p></div>
 
 <div class="card loud" data-for="claude chatgpt code"><h2>🔴 Your details never go in the file</h2>
