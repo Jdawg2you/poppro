@@ -8352,13 +8352,21 @@ function enrollPeople(){ var host=$('enPeople'); if(!host) return; var C=S.clien
   host.querySelector('[data-enprof="print"]').onclick=function(){ enPrintProfile(); }; }
 /* the old [label,value] rows for the printed profile */
 function enPersonRows(who,i){ return enFieldsFor(who==='k'?'k'+i:who).map(function(f){ return [f[0],f[3]==='sex'?({M:'Male',F:'Female'}[f[1]]||''):f[1]]; }); }
+/* Jesse, 21 Nov: an SSN or driver's licence from the call may sit in the notes - it stays on the agent's computer - but
+   anything printed shows only the last 4. SSN-shaped (3-2-4, with dashes, dots or spaces), a bare 9 digits after an SSN/social
+   label, and the number after a DL / driver's licence label. The saved file keeps the full value. */
+function maskIds(t){ var last4=function(v){ var d=String(v).replace(/[^A-Za-z0-9]/g,''); return '•••'+d.slice(-4); };
+  return String(t||'')
+    .replace(/\b(\d{3})[-. ](\d{2})[-. ](\d{4})\b/g,function(m,a,b,c){ return '***-**-'+c; })
+    .replace(/((?:ssn|social(?:\s+security)?(?:\s+(?:no\.?|number|#))?)[^A-Za-z0-9\n]{0,6})(\d{9})\b/gi,function(m,lab,n){ return lab+'***-**-'+n.slice(-4); })
+    .replace(/((?:\bDL\b|\bD\.L\.|driver[’']?s?\s+licen[cs]e(?:\s+(?:no\.?|number|#))?|\blicen[cs]e\s*(?:no\.?|number|#))[^A-Za-z0-9\n]{0,6})((?:[A-Za-z]{2}\s+)?[A-Za-z]{0,3}[-\d][A-Za-z\d-]{3,})/gi,function(m,lab,n){ return lab+last4(n); }); }
 /* A printable client profile from the same blocks - never includes the maiden name, SSN or bank details. */
 function enPrintProfile(){ var C=S.client||{}, I=S.intake||{}, w=I.who||{}, sec=function(t,rows){ return '<h2>'+esc(t)+'</h2><table>'+rows.map(function(r){ return '<tr><th>'+esc(r[0])+'</th><td>'+esc(r[1]==null?'':String(r[1]))+'</td></tr>'; }).join('')+'</table>'; };
   var h=sec((C.pname||'Applicant')+' — applicant',enPersonRows('p'));
   var bn=(I.benes||[]).filter(function(b){ return b&&b.name; }); if(bn.length) h+=sec('Beneficiaries',bn.map(function(b){ return [b.name,[b.pct?b.pct+'%':'',b.phone,b.dob].filter(Boolean).join(' · ')]; }));
   if(w.spouse||C.sname) h+=sec((C.sname||'Spouse')+' — spouse',enPersonRows('s'));
   (I.kids||[]).forEach(function(k,i){ if(k&&(k.n||k.dob||k.age)) h+=sec((k.n||'Child '+(i+1))+' — child',enPersonRows('k',i)); });
-  if(I.notes) h+='<h2>Notes</h2><p style="white-space:pre-wrap">'+esc(I.notes)+'</p>';
+  if(I.notes) h+='<h2>Notes</h2><p style="white-space:pre-wrap">'+esc(maskIds(I.notes))+'</p>';
   var wdw=window.open('','_blank'); if(!wdw) return;
   wdw.document.write('<!doctype html><meta charset="utf-8"><title>Client profile — '+esc(C.pname||'')+'</title><style>body{font:14px -apple-system,Helvetica,Arial,sans-serif;max-width:760px;margin:24px auto;padding:0 16px;color:#1a1a1a}h1{font-size:20px;border-bottom:3px solid #16203c;padding-bottom:6px}h2{font-size:15px;margin:20px 0 6px;color:#16203c}table{width:100%;border-collapse:collapse}th{text-align:left;width:34%;color:#555;font-weight:600}th,td{padding:4px 6px;border-bottom:1px solid #eee;vertical-align:top}</style><h1>Client profile — '+esc(C.pname||'')+'</h1>'+h+'<p style="color:#777;font-size:12px;margin-top:20px">SSN, bank details and the mother’s maiden name are never stored or printed here.</p><script>setTimeout(function(){print()},300)<\/script>');
   wdw.document.close(); }
