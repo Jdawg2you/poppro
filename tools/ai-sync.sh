@@ -3,7 +3,10 @@
 # Only version.json and prompt.txt are published - never schema.md, schema-paths.json, observed-keys.json (the data model).
 # Run Health ZONE's regen first ("Refresh POP Pro template.command"); this then checks and copies. Exit 1 = don't ship.
 set -u
-KIT="$HOME/Documents/Claude/Projects/Agent Onboarding and Coaching/Claude outputs/optimum-planning-tools/poppro-json-kit"
+# --check: change nothing, exit 1 if tool/ai/ is behind the kit (Health ZONE 21 Nov: a same-day prompt edit keeps the same
+# date stamp and byte count, so only a content compare can see it).
+CHECK=0; [ "${1:-}" = "--check" ] && { CHECK=1; shift; }
+KIT="${AI_KIT:-$HOME/Documents/Claude/Projects/Agent Onboarding and Coaching/Claude outputs/optimum-planning-tools/poppro-json-kit}"
 OUT="$(cd "$(dirname "$0")/.." && pwd)/tool/ai"
 [ -f "$KIT/PASTE-INTO-CLAUDE.txt" ] && [ -f "$KIT/reference/version.json" ] || { echo "AI SYNC FAIL - kit not found at $KIT"; exit 1; }
 # Both published files can agree with each other and still be stale against the tool: check regen saw THIS blankState()
@@ -12,9 +15,12 @@ SRC="${1:-$(dirname "$OUT")/index.html}"
 WANT=$(awk '/^function blankState\(\)\{/,/^}/' "$SRC" | shasum -a 256 | cut -c1-12)
 HAVE=$(/usr/bin/python3 -c "import json,sys;print(json.load(open(sys.argv[1])).get('blankStateSourceHash',''))" "$KIT/reference/schema-paths.json" 2>/dev/null)
 [ -n "$WANT" ] && [ "$WANT" = "$HAVE" ] || { echo "AI SYNC FAIL - STALE: blankState changed since regen ran (${HAVE:-none} -> $WANT). Run 'Refresh POP Pro template' (regen.mjs) first."; exit 1; }
-/usr/bin/python3 - "$KIT" "$OUT" <<'PY'
+# The prompt's wording, same recipe as regen (sha256 minus the stamp line): an edit made after regen ran has no new stamp yet.
+HAVE_P=$(/usr/bin/python3 -c "import json,sys;print(json.load(open(sys.argv[1])).get('promptHash',''))" "$KIT/reference/schema-paths.json" 2>/dev/null)
+/usr/bin/python3 - "$KIT" "$OUT" "$HAVE_P" "$CHECK" <<'PY'
 import json,sys,re,shutil
-kit,out=sys.argv[1],sys.argv[2]
+kit,out,want_p,check=sys.argv[1],sys.argv[2],sys.argv[3],sys.argv[4]=='1'
+import hashlib,os
 v=json.load(open(kit+'/reference/version.json'))
 allowed={'promptVersion','toolRelease','generated','schemaHash','topKeys','fields','addedCount','removedCount','promptUrl'}
 extra=set(v)-allowed
@@ -23,6 +29,14 @@ p=open(kit+'/PASTE-INTO-CLAUDE.txt',encoding='utf-8').read()
 m=re.search(r'PROMPT VERSION:\s*(\d{4}-\d\d-\d\d)',p)
 if not m or m.group(1)!=v['promptVersion']: sys.exit('AI SYNC FAIL - prompt stamp %s != version.json %s (run regen)'%(m and m.group(1),v['promptVersion']))
 if re.search(r'\b\d{3}-\d\d-\d{4}\b',p): sys.exit('AI SYNC FAIL - something shaped like an SSN in the prompt')
-shutil.copy(kit+'/PASTE-INTO-CLAUDE.txt',out+'/prompt.txt'); json.dump(v,open(out+'/version.json','w'),indent=1)
+got_p=hashlib.sha256(re.sub(r'^PROMPT VERSION: .*$','',p,count=1,flags=re.M).encode('utf-8')).hexdigest()[:12]
+if got_p!=want_p: sys.exit('AI SYNC FAIL - STALE: the prompt was edited after regen ran (%s -> %s). Run regen first so promptVersion moves.'%(want_p or 'none',got_p))
+vtxt=json.dumps(v,indent=1)+'\n'
+if check:
+    cur_p=open(out+'/prompt.txt',encoding='utf-8').read() if os.path.exists(out+'/prompt.txt') else ''
+    cur_v=open(out+'/version.json',encoding='utf-8').read() if os.path.exists(out+'/version.json') else ''
+    same=cur_p==p and json.loads(cur_v or 'null')==v
+    print('AI SYNC current - tool/ai matches the kit (%s)'%v['promptVersion'] if same else 'AI SYNC BEHIND - tool/ai differs from the kit; run zsh tools/ai-sync.sh'); sys.exit(0 if same else 1)
+shutil.copy(kit+'/PASTE-INTO-CLAUDE.txt',out+'/prompt.txt'); open(out+'/version.json','w').write(vtxt)
 print('AI SYNC ok - prompt version %s, %s fields'%(v['promptVersion'],v['fields']))
 PY

@@ -96,8 +96,7 @@ their medications and conditions, their children. Treat it that way. It belongs 
 computer and in MyPopPro. It does not get emailed around, posted, or handed to anyone else.
 MyPopPro has no field for a Social Security number, a driver's licence or bank details, so none
 of those go anywhere in the file, notes included - that is the no-made-up-fields rule above,
-not a separate one. They
-belong on the application, not on a quote.
+not a separate one. They belong on the application, not on a quote.
 
 BEFORE YOU HAND IT OVER, CHECK
   format is "optimum-client" and formatV is 1
