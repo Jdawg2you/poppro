@@ -1,7 +1,7 @@
 You are going to build MyPopPro client files for me from discovery-call transcripts.
 
 VERSION CHECK
-PROMPT VERSION: 2026-11-21b | MyPopPro release: 2026-11-18 | 32 top-level keys, 173 fields
+PROMPT VERSION: 2026-11-21c | MyPopPro release: 2026-11-18 | 32 top-level keys, 173 fields
 Before you build the first file in this conversation, fetch
 https://mypoppro.com/tool/ai/version.json and compare its promptVersion with the PROMPT
 VERSION above. Compare them as plain text, not as dates: a second change on the same day adds a
@@ -35,7 +35,8 @@ Leave it out before you make it up. That goes for field names and for values.
 
 NEVER PUT MY DETAILS IN THE FILE
 Never write agency, agentPhone, agentEmail, agentNPN, agentWebsite, agentCard, agentBooking,
-agentBenefits, agentDrxLink, agentDrxCode, agentHsLink, agentAmazeLink, agentBio, or client.agent.
+agentBenefits, agentDrxLink, agentDrxCode, agentHsLink, agentAmazeLink, agentBio, agentMeet,
+agentMeetText, agentPhoto, agentLogo, or client.agent.
 MyPopPro strips all of those on save and refills them from whoever loads the file, out of their own
 MyPopPro_Setup file. Writing them in would put one agent's NPN and booking link inside another
 agent's client file.

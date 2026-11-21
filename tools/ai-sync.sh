@@ -29,6 +29,13 @@ p=open(kit+'/PASTE-INTO-CLAUDE.txt',encoding='utf-8').read()
 m=re.search(r'PROMPT VERSION:\s*(\d{4}-\d\d-\d\d[a-z]*)',p)
 if not m or m.group(1)!=v['promptVersion']: sys.exit('AI SYNC FAIL - prompt stamp %s != version.json %s (run regen)'%(m and m.group(1),v['promptVersion']))
 if re.search(r'\b\d{3}-\d\d-\d{4}\b',p): sys.exit('AI SYNC FAIL - something shaped like an SSN in the prompt')
+# Every key this build strips from client files must be on the prompt's never-write list (word-bounded: agentMeet is a prefix of agentMeetText).
+src=open(os.path.join(os.path.dirname(out),'index.html'),encoding='utf-8').read()
+km=re.search(r"var AGENT_KEYS=\[([^\]]*)\]",src); keys=re.findall(r"'([A-Za-z]+)'",km.group(1)) if km else []
+nv=re.search(r'NEVER PUT MY DETAILS IN THE FILE(.*?)\n\n',p,re.S); block=nv.group(1) if nv else ''
+miss=[k for k in keys if not re.search(r'(?<![A-Za-z])'+k+r'(?![A-Za-z])',block)]
+if not keys: sys.exit('AI SYNC FAIL - could not read AGENT_KEYS from the tool')
+if miss: sys.exit('AI SYNC FAIL - the prompt does not forbid agent keys this build strips: %s (ask Health ZONE)'%', '.join(miss))
 got_p=hashlib.sha256(re.sub(r'^PROMPT VERSION: .*$','',p,count=1,flags=re.M).encode('utf-8')).hexdigest()[:12]
 if got_p!=want_p: sys.exit('AI SYNC FAIL - STALE: the prompt was edited after regen ran (%s -> %s). Run regen first so promptVersion moves.'%(want_p or 'none',got_p))
 vtxt=json.dumps(v,indent=1)+'\n'
