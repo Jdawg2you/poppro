@@ -26,7 +26,7 @@ allowed={'promptVersion','toolRelease','generated','schemaHash','topKeys','field
 extra=set(v)-allowed
 if extra: sys.exit('AI SYNC FAIL - version.json has keys that could leak the data model: %s'%sorted(extra))
 p=open(kit+'/PASTE-INTO-CLAUDE.txt',encoding='utf-8').read()
-m=re.search(r'PROMPT VERSION:\s*(\d{4}-\d\d-\d\d)',p)
+m=re.search(r'PROMPT VERSION:\s*(\d{4}-\d\d-\d\d[a-z]*)',p)
 if not m or m.group(1)!=v['promptVersion']: sys.exit('AI SYNC FAIL - prompt stamp %s != version.json %s (run regen)'%(m and m.group(1),v['promptVersion']))
 if re.search(r'\b\d{3}-\d\d-\d{4}\b',p): sys.exit('AI SYNC FAIL - something shaped like an SSN in the prompt')
 got_p=hashlib.sha256(re.sub(r'^PROMPT VERSION: .*$','',p,count=1,flags=re.M).encode('utf-8')).hexdigest()[:12]

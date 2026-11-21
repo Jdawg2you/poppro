@@ -982,6 +982,7 @@
   .lbnote{padding:0 15px 8px;font-size:12px;line-height:1.45}
   .acaest{margin:0 15px 8px;padding:7px 10px;border:1px solid #e6bd85;background:#fdf6ea;border-radius:8px;font-size:11.5px;line-height:1.45;color:#6b4a12}
   .acaest:empty{display:none}
+  .aca-chk{margin:0 0 12px;padding:12px 16px;border:2px solid #c98a12;background:#fff6dd;border-radius:12px;color:#5a3d00;font-size:14px;line-height:1.5}.aca-chk b{display:block;font-size:16px;margin-bottom:2px}.aca-chk.est{border-color:#b42318;background:#fdecea;color:#7a1712}.aca-chk a{font-weight:700;color:inherit}.aca-chk small{display:block;opacity:.75;margin-top:3px}
   .fitem{display:flex;gap:9px;align-items:flex-start;padding:8px 10px;margin:5px 0;border:1px solid var(--line);border-radius:9px;background:#fbfaf6;cursor:pointer;font-size:12.5px;line-height:1.45}
   .fitem:hover{background:#f3efe3}
   .fitem input{margin:1px 0 0;flex:0 0 auto;width:15px;height:15px}
@@ -8745,16 +8746,26 @@ function peCue(box){ var c=$('peCue'); if(!c){ c=document.createElement('button'
   var seen=function(){ var r=box.getBoundingClientRect(); return r.top<window.innerHeight*0.45; };
   var tm=null, off=function(){ c.classList.remove('on'); window.removeEventListener('scroll',chk); clearInterval(tm); }, chk=function(){ if(box.style.display==='none'||S.step!=='present'){ off(); return; } c.classList.toggle('on',box.getBoundingClientRect().top>window.innerHeight*0.6); };   /* back up the page while editing: the cue comes back */
   c.classList.add('on'); window.addEventListener('scroll',chk,{passive:true}); clearInterval(c._tm); tm=c._tm=setInterval(chk,400); }
+/* Agent-only reminder (Jesse, 21 Nov): whenever Present quotes the marketplace - an ACA package, or savings measured
+   against ACA bronze - say loudly to check the real price on HealthSherpa first. The estimate covers a miss; the look-up is the job. */
+function acaCheckHTML(t){ var B=anchorBase(); if(!(acaFlowOn(t)||(B&&B.k==='aca'))) return '';
+  var ef=acaEstFlags(), lab={prem:'premium',subsidy:'subsidy',ded:'deductible',visit:'copays',med:'drug costs'},
+    est=Object.keys(lab).filter(function(k){ return ef[k]; }).map(function(k){ return lab[k]; }),
+    hs='<a href="https://www.healthsherpa.com/sessions/new" target="_blank" rel="noopener">HealthSherpa ↗</a>';
+  return '<div class="aca-chk hidein-client noprint'+(est.length?' est':'')+'" role="note"><b>'+(est.length?'⚠ Marketplace numbers are still ESTIMATES':'⚠ Check the marketplace price before you say it')+'</b>'
+    +(est.length?'The '+est.join(', ')+' '+(est.length>1?'are':'is')+' from state averages. Look up their real plan on '+hs+' and type it on the Intake before you quote it.'
+      :'You’re quoting marketplace pricing. Confirm the premium and subsidy on '+hs+' right before you present: prices and subsidies change.')
+    +'<small>Only you see this, never the client screen.</small></div>'; }
 function renderPresent(){ var host=$('presentHost'); if(!host) return; var shb=SHOW_ON?'<div class="sh-bar" id="showBar"></div>':'';   /* the client screen works for Cigna, Bright Life and ACA packages too (Jesse, 20 Nov) */
-  if(triadFlowOn(presentTier())){ host.innerHTML=shb+triadPresentHTML(presentTier()); triadBind(host); if(shb) showBarPaint(); return; }
-  if(blFlowOn(presentTier())){ host.innerHTML=shb+blPresentHTML(presentTier()); triadBind(host); if(shb) showBarPaint(); return; }
-  if(acaFlowOn(presentTier())){ host.innerHTML=shb+acaPresentHTML(presentTier()); triadBind(host); if(shb) showBarPaint(); return; } var t=presentTier(), T=presentTokens(t), pages=presentPages();
+  if(triadFlowOn(presentTier())){ host.innerHTML=shb+acaCheckHTML(presentTier())+triadPresentHTML(presentTier()); triadBind(host); if(shb) showBarPaint(); return; }
+  if(blFlowOn(presentTier())){ host.innerHTML=shb+acaCheckHTML(presentTier())+blPresentHTML(presentTier()); triadBind(host); if(shb) showBarPaint(); return; }
+  if(acaFlowOn(presentTier())){ host.innerHTML=shb+acaCheckHTML(presentTier())+acaPresentHTML(presentTier()); triadBind(host); if(shb) showBarPaint(); return; } var t=presentTier(), T=presentTokens(t), pages=presentPages();
   S.present=S.present||{}; var pg=Math.max(0,Math.min(pages.length-1,+S.present.pg||0));
   var who=(T['client.first']||'the client')+(S.client&&S.client.sname?' & '+enSplit(S.client.sname)[0]:'');
   var h='<div class="pr-top"><div><h3>Presenting the <em class="pr-plan">'+esc(TIER_NAME[t])+'</em> plan to '+esc(who)+'</h3><small>Agent-only — never on Client View or the printout. Blue blanks fill from this quote; red ones are missing.</small></div>'
     +presentBubbles(t)+'<button type="button" data-pr="quote" style="font:inherit;font-weight:700;border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 13px;cursor:pointer">← Back to the Quote</button></div>';
   if(SHOW_ON) h+='<div class="sh-bar" id="showBar"></div>';   /* client screen remote - sandbox only */
-  h+=histStrip('present')+covClockBar();
+  h+=acaCheckHTML(t)+histStrip('present')+covClockBar();
   h+='<div class="pr-prog" id="prChips"></div><div class="pr-grid"><div>'
     +'<iframe id="prFrame" src="presentation.html" title="Presentation script" style="width:100%;border:1px solid var(--line);border-radius:12px;background:#fff;min-height:200px"></iframe>'
     +'<div class="pr-nav" id="prNav"></div></div>'
