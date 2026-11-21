@@ -982,7 +982,8 @@
   .lbnote{padding:0 15px 8px;font-size:12px;line-height:1.45}
   .acaest{margin:0 15px 8px;padding:7px 10px;border:1px solid #e6bd85;background:#fdf6ea;border-radius:8px;font-size:11.5px;line-height:1.45;color:#6b4a12}
   .acaest:empty{display:none}
-  .an-flip{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 10px;font-size:13.5px}.an-flip span{font-weight:700;color:var(--navy)}.an-flip button{font:inherit;font-weight:700;border:1.5px solid var(--line);background:#fff;color:var(--navy);border-radius:99px;padding:6px 14px;cursor:pointer}.an-flip button.on{background:var(--navy);color:#fff;border-color:var(--navy)}.an-flip button:disabled{opacity:.45;cursor:not-allowed}
+  .an-flip{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 12px;padding:12px 16px;border:2px solid var(--navy);border-radius:12px;background:#fff}.an-flip .an-t{flex:1 1 260px}.an-flip .an-t b{display:block;font-size:16px;color:var(--navy)}.an-flip .an-t span{font-size:13px;color:var(--muted)}.an-flip button{font:inherit;font-weight:800;font-size:15px;border:2px solid var(--navy);background:#fff;color:var(--navy);border-radius:99px;padding:9px 18px;cursor:pointer}.an-flip button.on{background:var(--navy);color:#fff}.an-flip button.off{opacity:.5;border-style:dashed}.an-flip .an-why{flex-basis:100%;font-style:normal;font-size:13px;font-weight:700;color:#b42318}
+  .an-flip.pick{border-color:#22a05a;animation:anpulse 1.4s ease-in-out infinite}.an-flip.pick .an-t b{color:#1a7f45}@keyframes anpulse{0%,100%{box-shadow:0 0 0 0 rgba(34,160,90,.55)}50%{box-shadow:0 0 0 8px rgba(34,160,90,0)}}
   .aca-chk{margin:0 0 12px;padding:12px 16px;border:2px solid #c98a12;background:#fff6dd;border-radius:12px;color:#5a3d00;font-size:14px;line-height:1.5}.aca-chk b{display:block;font-size:16px;margin-bottom:2px}.aca-chk.est{border-color:#b42318;background:#fdecea;color:#7a1712}.aca-chk a{font-weight:700;color:inherit}.aca-chk small{display:block;opacity:.75;margin-top:3px}
   .fitem{display:flex;gap:9px;align-items:flex-start;padding:8px 10px;margin:5px 0;border:1px solid var(--line);border-radius:9px;background:#fbfaf6;cursor:pointer;font-size:12.5px;line-height:1.45}
   .fitem:hover{background:#f3efe3}
@@ -5019,10 +5020,15 @@ function anchorAuto(){ var I=S.intake; if(!I||I.anchorSet) return; var k=present
   var el=$('in_anchor'); if(el&&el.value!==I.anchor){ el.value=I.anchor; if(typeof anchorNote==='function') anchorNote(); } }
 function anchorSetTo(k){ S.intake=S.intake||{}; S.intake.anchor=k; S.intake.anchorSet=true; S.present=S.present||{}; S.present.anchor=k; if($('in_anchor')){ $('in_anchor').value=k; anchorNote(); } }
 /* the flip on every Present header: agent-only */
-function anchorFlipHTML(){ var k=(S.intake&&S.intake.anchor)||'aca', hc=presentHasCur(), ha=+((S.aca||{}).prem)>0;
-  var b=function(v,lab,ok){ return '<button type="button" data-anflip="'+v+'" class="'+(k===v?'on':'')+'"'+(ok?'':' disabled title="Nothing entered for this yet on the Intake"')+'>'+lab+'</button>'; };
-  return '<div class="an-flip hidein-client noprint"><span>Compare against</span>'+b('cur','Their current plan',hc)+b('aca','The marketplace',ha)+'</div>'; }
-function anchorFlipBind(host){ host.querySelectorAll('[data-anflip]').forEach(function(x){ x.onclick=function(){ anchorSetTo(x.dataset.anflip); compute(); autosave(); renderPresent(); if(typeof showWrite==='function') showWrite(); }; }); }
+function anchorFlipHTML(){ var k=(S.intake&&S.intake.anchor)||'aca', C=curIn(), hc=+C.prem>0, ha=+((S.aca||{}).prem)>0, set=!!(S.intake&&S.intake.anchorSet);
+  /* Jesse, 21 Nov: say it plainly, glow green until the agent has picked, and let a current plan be picked whenever a premium is on file */
+  var b=function(v,lab,ok,why){ return '<button type="button" data-anflip="'+v+'" class="'+(k===v?'on':'')+(ok?'':' off')+'"'+(ok?'':' data-why="'+why+'"')+'>'+lab+'</button>'; };
+  return '<div class="an-flip hidein-client noprint'+(set?'':' pick')+'"><div class="an-t"><b>Anchor / compare against</b><span>'+(set?'Every number in the script and on the client screen uses this.':'Pick one: it sets every number in the script and on the client screen.')+'</span></div>'
+    +b('cur','Their current plan',hc,'Add their current monthly premium on the Intake (Current insurance) first.')+b('aca','The marketplace plan',ha,'Add the marketplace premium on the Intake (ACA / Marketplace) first.')+'<em class="an-why" hidden></em></div>'; }
+function anchorFlipBind(host){ host.querySelectorAll('[data-anflip]').forEach(function(x){ x.onclick=function(){ var w=host.querySelector('.an-why');
+    if(x.dataset.why){ if(w){ w.textContent=x.dataset.why; w.hidden=false; } return; }
+    if(x.dataset.anflip==='cur'){ var C=curIn(); if(C.paying===false){ C.paying=true; if($('in_cur_paying')){ $('in_cur_paying').checked=true; $('in_cur_paying').dataset.touched='1'; } } }   /* picking their current plan means they pay for it */
+    anchorSetTo(x.dataset.anflip); compute(); autosave(); renderPresent(); if(typeof showWrite==='function') showWrite(); }; }); }
 /* Jesse, 21 Nov: a bio saved with "Use the default" before the trim still held the old 141-word default - swap that exact
    text for today's default. A bio the agent wrote themselves is never touched. */
 var OLD_DEFAULT_BIOS=["I'm a licensed health insurance agent, but I also help families with life insurance, retirement planning and a number of other financial solutions. What I'll do first is find out what's most important to you, and then we'll tailor a plan that actually accomplishes your goals. There are a lot of companies out there and a lot of products, but they don't all do the same thing, so what really matters is who you work with, and that they're looking out for your best interest based on your specific goals. I'm not beholden to any one company. Working with over 40 carriers, it's my job to compare those companies, starting with the A-rated ones, and find the best fit for you. We'll look at them together, and you'll be the one who picks. We'll get into that in a moment."];
@@ -9475,7 +9481,9 @@ function presentLbCue(doc,T,t){
   var cue=doc.querySelector('.pp-lbcue'); if(!cue){ cue=doc.createElement('div'); cue.className='do pp-lbcue'; if(say.dataset.pg!=null) cue.dataset.pg=say.dataset.pg; say.parentNode.insertBefore(cue,say.nextSibling);
     cue.innerHTML='<span class="lab">NOT SPOKEN · HOW THIS LINE WORKS</span>Add their living benefits in the box just above first. Their monthly price, who it covers and the new total fill into this line, and the plan picks them up. Not taking them today? Leave the middle out: “You were at …, I’ve got you at …, and you’re still saving … a month.”'; }
   cue.classList.toggle('pp-off',!!String(T['lb.addback']||'').trim()); }
-function presentWire(doc,t){ scriptClean(doc); if(!doc||!doc.body) return 0; var T=presentScriptTokens(t), n=0; presentShared(doc); presentLbCue(doc,T,t);
+function presentWire(doc,t){ scriptClean(doc); if(!doc||!doc.body) return 0;
+  /* Jesse, 21 Nov: the anchor is picked once, at the top of Present - the script's own PICK THE ANCHOR table is hidden here (the script file is the Health Insurance folder's, untouched) */
+  (function(){ var tr=doc.querySelector('tr[data-anchor]'), box=tr&&tr.closest('table')&&tr.closest('table').closest('div'); if(box&&/PICK THE ANCHOR/i.test(box.textContent||'')) box.style.display='none'; })(); var T=presentScriptTokens(t), n=0; presentShared(doc); presentLbCue(doc,T,t);
   if(!doc.getElementById('ppcss')){ var st=doc.createElement('style'); st.id='ppcss'; st.textContent=PRESENT_CSS; doc.head.appendChild(st); }
   var copy=function(x){ try{ navigator.clipboard.writeText(x); }catch(e){} };
   /* blanks */
