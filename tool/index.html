@@ -5020,11 +5020,17 @@ function anchorAuto(){ var I=S.intake; if(!I||I.anchorSet) return; var k=present
   var el=$('in_anchor'); if(el&&el.value!==I.anchor){ el.value=I.anchor; if(typeof anchorNote==='function') anchorNote(); } }
 function anchorSetTo(k){ S.intake=S.intake||{}; S.intake.anchor=k; S.intake.anchorSet=true; S.present=S.present||{}; S.present.anchor=k; if($('in_anchor')){ $('in_anchor').value=k; anchorNote(); } }
 /* the flip on every Present header: agent-only */
-function anchorFlipHTML(){ var k=(S.intake&&S.intake.anchor)||'aca', C=curIn(), hc=+C.prem>0, ha=+((S.aca||{}).prem)>0, set=!!(S.intake&&S.intake.anchorSet);
+/* the anchor the script and client screen actually use - the button lights this one, and says why when it differs (21 Nov) */
+function anchorEff(){ var k=(S.intake&&S.intake.anchor)||'aca', C=curIn(); if(k!=='cur') return {k:k,why:''};
+  if(!(+C.prem>0)) return {k:'aca',why:'No current premium on the Intake yet, so the marketplace is used.'};
+  if(+C.emp>0) return {k:'aca',why:'Their employer pays part of their current premium, so the script compares with the marketplace: a subsidised price isn’t one they could buy.'};
+  if(C.paying===false) return {k:'aca',why:'They’re not marked as paying for their current plan. Click “Their current plan” again to mark them as paying.'};
+  return {k:'cur',why:''}; }
+function anchorFlipHTML(){ var E=anchorEff(), k=E.k, C=curIn(), hc=+C.prem>0, ha=+((S.aca||{}).prem)>0, set=!!(S.intake&&S.intake.anchorSet);
   /* Jesse, 21 Nov: say it plainly, glow green until the agent has picked, and let a current plan be picked whenever a premium is on file */
   var b=function(v,lab,ok,why){ return '<button type="button" data-anflip="'+v+'" class="'+(k===v?'on':'')+(ok?'':' off')+'"'+(ok?'':' data-why="'+why+'"')+'>'+lab+'</button>'; };
   return '<div class="an-flip hidein-client noprint'+(set?'':' pick')+'"><div class="an-t"><b>Anchor / compare against</b><span>'+(set?'Every number in the script and on the client screen uses this.':'Pick one: it sets every number in the script and on the client screen.')+'</span></div>'
-    +b('cur','Their current plan',hc,'Add their current monthly premium on the Intake (Current insurance) first.')+b('aca','The marketplace plan',ha,'Add the marketplace premium on the Intake (ACA / Marketplace) first.')+'<em class="an-why" hidden></em></div>'; }
+    +b('cur','Their current plan',hc,'Add their current monthly premium on the Intake (Current insurance) first.')+b('aca','The marketplace plan',ha,'Add the marketplace premium on the Intake (ACA / Marketplace) first.')+'<em class="an-why"'+(E.why?'':' hidden')+'>'+(E.why?esc(E.why):'')+'</em></div>'; }
 function anchorFlipBind(host){ host.querySelectorAll('[data-anflip]').forEach(function(x){ x.onclick=function(){ var w=host.querySelector('.an-why');
     if(x.dataset.why){ if(w){ w.textContent=x.dataset.why; w.hidden=false; } return; }
     if(x.dataset.anflip==='cur'){ var C=curIn(); if(C.paying===false){ C.paying=true; if($('in_cur_paying')){ $('in_cur_paying').checked=true; $('in_cur_paying').dataset.touched='1'; } } }   /* picking their current plan means they pay for it */
@@ -8978,7 +8984,7 @@ function showPickHTML(t){ var ex=[0,1].map(function(i){ var sc=(S.ev||[])[i]; if
    surgeries as they were paid on that client's plan. Jesse, 21 Nov: the redacted bill itself shows beside the list. */
 function showClaims(t,all){ var rows=showAfcRows(t); if(!rows) return [];
   var lvl='Affordable Choice '+showLevel(effCfg(t)), m2=function(v){ return '$'+(Math.round(v*100)/100).toLocaleString('en-US',{minimumFractionDigits:v%1?2:0,maximumFractionDigits:2}); };
-  var xr=(evMoneyAll(showRow(rows,/^Radiology/i)).slice(-1)[0])||0, ct=(evMoneyAll(showRow(rows,/^Radiology/i))[2])||0, sg=evMoney(showRow(rows,/^Surgery Benefit/i))||0, pa=(evMoneyAll(showRow(rows,/^Laboratory/i))[0])||0, out=[],
+  var xr=(evMoneyAll(showRow(rows,/^Radiology/i)).slice(-1)[0])||0, ct=(evMoneyAll(showRow(rows,/^Radiology/i))[2])||0, sgTxt=showRow(rows,/^Surgery Benefit/i), sg=/^\s*\$/.test(sgTxt)?(evMoney(sgTxt)||0):0, pa=(evMoneyAll(showRow(rows,/^Laboratory/i))[0])||0, out=[],
     img=function(f){ try{ return new URL('claims/'+f,location.href).href; }catch(e){ return 'claims/'+f; } };
   /* each claim: what happened, then the money on THIS plan (Jesse, 21 Nov: link it to the plan they picked) */
   if(xr){ var back=2*xr; out.push({id:'xray',t:'Two X-rays',sum:'Paid $150 · plan pays '+m2(back)+' · '+m2(back-150)+' ahead',ahead:back>150,img:img('01-green-imaging-two-xrays.jpg'),
@@ -8990,14 +8996,22 @@ function showClaims(t,all){ var rows=showAfcRows(t); if(!rows) return [];
     money:[['The bill',m2(142)],['After the network discount',m2(50.18)],['Your plan pays for a CT scan',m2(ct)],['Paid to the imaging center',m2(50.18)],['Check to you',m2(ct-50.18),'good']]});
   /* dermatology EOB (Mar 2026): surgery + pathology. $5,300 = Elite Plus's $5,000 surgery + $300 pathology, so it was paid
      at one surgery unit; $621.56 went to the doctors. Re-priced: this plan's surgery + pathology, the same to the doctors. */
+  /* Jesse, 21 Nov: in most states the surgery benefit is "2.5 X the scheduled amount", not dollars - nothing to re-price with,
+     so those states show the two surgeries exactly as they were paid, plan named, instead of dropping them */
   if(sg){ var sk=sg+pa; out.push({id:'skin',t:'Skin surgery',sum:'Bill $300 · paid $0 · '+m2(Math.max(0,sk-621.56))+' check to you',ahead:sk>621.56,img:img('04-skin-surgery-dermatology.jpg'),
     how:'A skin surgery with lab work. The plan paid the doctors, then sent her the rest, even though it was in the pre-existing condition period. The real claim was on Elite Plus: $5,300 paid, a $4,678.44 check to her.',
     money:[['Surgery benefit on your plan',m2(sg)],['Surgical pathology',m2(pa)],['Paid to the doctors',m2(621.56)],['Check to you',m2(Math.max(0,sk-621.56)),'good']]});
-  /* foot surgery EOB (20 Nov): $500 to the doctor, $3,500 to the client = $4,000, the Elite surgery benefit at one unit */
     out.push({id:'foot',t:'Foot surgery',sum:'Bill $500 · paid $0 · '+m2(Math.max(0,sg-500))+' check to you',ahead:sg>500,img:img('05-foot-surgery.jpg'),
     how:'The doctor was paid the $500 and the rest went to the client, even though it was in the pre-existing condition period. The real claim was on Elite: $4,000 paid, a $3,500 check to him.',
     money:[['The bill',m2(500)],['Surgery benefit on your plan',m2(sg)],['Paid to the doctor',m2(500)],['Check to you',m2(Math.max(0,sg-500)),'good']]}); }
-  out.forEach(function(c){ c.lvl=lvl; });
+  else { var sch=sgTxt?'On your plan the surgery benefit is '+sgTxt.replace(/\s+/g,' ').trim()+', so the amount depends on the procedure.':'';
+    out.push({id:'skin',t:'Skin surgery',sum:'Bill $300 · paid $0 · $4,678.44 check to her',ahead:true,img:img('04-skin-surgery-dermatology.jpg'),asPaid:'Affordable Choice Elite Plus',
+      how:'A skin surgery with lab work. The plan paid the doctors, then sent her the rest, even though it was in the pre-existing condition period. '+sch,
+      money:[['The bill',m2(300)],['The plan paid in all',m2(5300)],['Paid to the doctors',m2(621.56)],['Check to her',m2(4678.44),'good']]});
+    out.push({id:'foot',t:'Foot surgery',sum:'Bill $500 · paid $0 · $3,500 check to him',ahead:true,img:img('05-foot-surgery.jpg'),asPaid:'Affordable Choice Elite',
+      how:'The doctor was paid the $500 and the rest went to the client, even though it was in the pre-existing condition period. '+sch,
+      money:[['The bill',m2(500)],['The plan paid in all',m2(4000)],['Paid to the doctor',m2(500)],['Check to him',m2(3500),'good']]}); }
+  out.forEach(function(c){ c.lvl=c.asPaid?null:lvl; });
   return all?out:out.filter(function(c){ return !showOff('claim:'+c.id); }); }
 /* everything else they get, said beside the price (Jesse: "plus living benefits, plus no deductible, plus…") */
 function showPluses(t){ var c=effCfg(t), o=evTierPack(t), k=showKind(t), out=[], L=lbSummary(t)||[];
@@ -9078,7 +9092,7 @@ function showBuild(t){ var C=S.client||{}, I=S.intake||{}, plan=showPlan(t), has
     /* real claims (Jesse, 21 Nov): the list on the left, the actual bill on the right */
     var CL=showClaims(t); h+=sec('claims','Real claims','What real clients got back','<div class="cl">'
       +'<div class="cl-list">'+CL.map(function(c,i){ return '<button type="button" data-cl="'+i+'" class="'+(i?'':'on')+'"><b>'+showE(c.t)+'</b><span class="'+(c.ahead?'good':'')+'">'+showE(c.sum)+'</span></button>'; }).join('')+'</div>'
-      +'<div class="cl-view">'+CL.map(function(c,i){ return '<div class="cl-p" data-clp="'+i+'"'+(i?' hidden':'')+'><div class="cl-top"><div><p class="small">'+showE(c.how)+'</p><div class="cl-money"><div class="cl-mh">On your '+showE(c.lvl)+'</div>'+c.money.map(function(m){ return '<div class="row"><span>'+showE(m[0])+'</span><b'+(m[2]?' class="'+m[2]+'"':'')+'>'+showE(m[1])+'</b></div>'; }).join('')+'</div></div>'
+      +'<div class="cl-view">'+CL.map(function(c,i){ return '<div class="cl-p" data-clp="'+i+'"'+(i?' hidden':'')+'><div class="cl-top"><div><p class="small">'+showE(c.how)+'</p><div class="cl-money"><div class="cl-mh">'+(c.lvl?'On your '+showE(c.lvl):'As paid on '+showE(c.asPaid))+'</div>'+c.money.map(function(m){ return '<div class="row"><span>'+showE(m[0])+'</span><b'+(m[2]?' class="'+m[2]+'"':'')+'>'+showE(m[1])+'</b></div>'; }).join('')+'</div></div>'
         +'<div class="cl-img"><img src="'+showE(c.img)+'" alt="'+showE(c.t)+': the claim, client details removed" data-zoom="1"><button type="button" class="zoom" data-zoom="1">⤢ Enlarge the bill</button></div></div></div>'; }).join('')+'</div></div>'
       +'<p class="muted small">Real ManhattanLife claims, client details removed.</p>','tight');
     /* living benefits on one page (Jesse, 21 Nov): the amounts, then chronic, critical and terminal; "how much you can use"
@@ -9969,7 +9983,7 @@ function bindInputs(){
     /* Outside open enrollment the ACA can't be bought, so it can't be the anchor either. */
     if(this.value==='outside'&&$('in_anchor').value==='aca') $('in_anchor').value=(+curIn().prem>0)?'cur':'none';
     captureIntake(); anchorNote(); syncChips(); });
-  $('in_anchor').addEventListener('change',function(){ S.intake.anchorSet=true; captureIntake(); anchorNote(); });   /* the agent picked it: auto stops (Jesse, 21 Nov) */
+  $('in_anchor').addEventListener('change',function(){ S.intake.anchorSet=true; if(this.value==='cur'&&+curIn().prem>0&&curIn().paying===false&&$('in_cur_paying')){ $('in_cur_paying').checked=true; $('in_cur_paying').dataset.touched='1'; } captureIntake(); anchorNote(); });   /* the agent picked it: auto stops (Jesse, 21 Nov) */
   $('in_aca_show').addEventListener('change',function(){ captureIntake(); syncChips(); });
   document.querySelectorAll('a.hspop').forEach(function(a){ a.addEventListener('click',function(ev){ ev.preventDefault();
     var w=window.open(a.href,'healthsherpa','width=1200,height=900'); if(w) w.opener=null; else window.open(a.href,'_blank','noopener'); }); });
