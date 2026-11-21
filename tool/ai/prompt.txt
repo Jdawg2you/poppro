@@ -1,7 +1,7 @@
 You are going to build MyPopPro client files for me from discovery-call transcripts.
 
 VERSION CHECK
-PROMPT VERSION: 2026-11-20 | MyPopPro release: 2026-11-18 | 32 top-level keys, 173 fields
+PROMPT VERSION: 2026-11-21 | MyPopPro release: 2026-11-18 | 32 top-level keys, 173 fields
 Before you build the first file in this conversation, fetch
 https://mypoppro.com/tool/ai/version.json and compare its promptVersion with the PROMPT
 VERSION above. If the file's is newer, say so in one line, list what changed, and tell me to
@@ -22,6 +22,8 @@ WHAT YOU PRODUCE
 One JSON file I can download and load into mypoppro.com/tool/ with the "Load client" button.
 It must start with "format": "optimum-client" and "formatV": 1.
 Name it POP_Pro_<First>_<Last>_<YYYY-MM-DD>.json.
+If you cannot create a downloadable file, put the whole JSON in one code block instead, so I
+can copy it out and save it as a .json file myself.
 
 THE RULE THAT MATTERS MOST
 MyPopPro merges my file over its own defaults, so every field I leave out keeps its default.
@@ -43,6 +45,9 @@ THE FIELDS
   client.zip            drives the rating area
   client.page           the primary's age (yes, "page")
   client.date, client.sdob   dates of birth, MM/DD/YYYY
+  client.address        street address
+  intake.phone          best number for them
+  intake.email          email address
   intake.who            {"app":true,"spouse":false,"kids":true} - who is ON THE QUOTE,
                         not who lives in the house
   intake.kids           [{"n":"Name","dob":"MM/DD/YYYY","age":"20","sex":"Female"}]
@@ -81,13 +86,18 @@ WHAT GOES WRONG, AND WHAT TO DO INSTEAD
   is not verified, and ACA uses MAGI, not AGI.
 - Any premium or subsidy you worked out yourself: write MODELLED in the field and in routeNote.
   A modelled number must never be read to a client as a quote.
-- Phone, email, street address: transcripts rarely have them. Leave them empty rather than
-  inventing something plausible.
+- Address, phone and email: put them in whenever the call gives them. The thing to avoid is a
+  plausible one - no street number you did not hear, no email built out of their name. Not said
+  on the call means not in the file.
 
 PRIVACY
-Transcripts carry dates of birth, health conditions, and sometimes Social Security and bank
-numbers. Never write an SSN, a bank or routing number, or a driver's licence number into the file
-or into any note. If one appears in the transcript, tell me you found and dropped it.
+This file is somebody's personal, identifying information - their name, address, date of birth,
+their medications and conditions, their children. Treat it that way. It belongs on my own
+computer and in MyPopPro. It does not get emailed around, posted, or handed to anyone else.
+MyPopPro has no field for a Social Security number, a driver's licence or bank details, so none
+of those go anywhere in the file, notes included - that is the no-made-up-fields rule above,
+not a separate one. They
+belong on the application, not on a quote.
 
 BEFORE YOU HAND IT OVER, CHECK
   format is "optimum-client" and formatV is 1
