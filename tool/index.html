@@ -3101,7 +3101,7 @@ function acaEstFlags(){ var A=acaIn(), C=curIn(), ov=A.ov, onAca=(A.status==='on
   f.any=f.prem||f.subsidy||f.ded||f.visit||f.med; return f; }
 /* The one baseline every savings figure uses - builder, client view, printout. */
 function anchorBase(force){ var k=force||(S.intake&&S.intake.anchor)||'aca';
-  if(!force&&k==='cur'&&curIn().paying===false) k='aca';   /* not paying for it now: compare against the marketplace, as the script does */
+  if(!force&&k==='cur'&&curIn().paying===false&&!(S.intake&&S.intake.anchorSet)) k='aca';   /* the agent's own pick wins (21 Nov) */   /* not paying for it now: compare against the marketplace, as the script does */
   var aca=function(){ if(!(+S.aca.prem>0)) return null;   // nothing priced yet (a full subsidy still has a gross premium)
       var t=acaTrueParts(), v=+((S.intake||{}).visits)||0, cp=+S.aca.copay||0, cm=v*cp/12;
       return {k:'aca',lab:'ACA bronze',short:'ACA',your:'your marketplace plan',prem:t.net+cm,premOnly:t.net,copayMo:cm,visits:v,copay:cp,mo:t.mo,yr:t.yr,ded:+S.aca.ded||0}; },
@@ -9229,7 +9229,7 @@ function presentAfc(t){ var c=effCfg(t), lvl=c.afc, d=BEN_DATA.afc, b=d?benBroch
    Picking aca/cur also sets POP Pro's own anchor, so the quote and Client View compare against the same thing. */
 function presentHasCur(){ var C=curIn(); return +C.prem>0&&C.paying!==false; }
 function presentAnchor(){ S.present=S.present||{}; var k=S.present.anchor||(S.intake&&S.intake.anchor)||'aca';
-  if(k==='employer'||(k==='cur'&&!presentHasCur())) k='aca'; return k; }
+  if(k==='employer'||(k==='cur'&&!(+curIn().prem>0))) k='aca'; return k; }   /* an explicit 'current plan' pick stands whenever a premium is on file (21 Nov) */
 /* Section 3 reads this back as "the thing you highlighted as most important to you was ___" (Jesse, 9 Oct): it must be
    their short answer to "what's the one thing the plan has to do", never the prompted-it story. Older quotes have only
    the story box: a short one-liner there still reads naturally; a paragraph does not, so the blank stays red and the
@@ -9536,9 +9536,16 @@ function presentWire(doc,t){ scriptClean(doc); if(!doc||!doc.body) return 0;
      a current premium they pay themselves -> "what they pay today" (it also names the marketplace price);
      no current premium, or an employer paying part of it -> the marketplace version. The "If they…" lead-in is
      the author's cue for choosing, so it is hidden once the choice is made for the agent. */
-  var useCur=presentHasCur()&&!(+curIn().emp>0);
+  /* Jesse, 21 Nov: the line follows the agent's "Anchor / compare against" pick, not a guess from the data. Current plan
+     whenever it is picked and a current premium is on file; the marketplace otherwise. */
+  var Cq=curIn(), useCur=presentAnchor()==='cur'&&+Cq.prem>0;
+  /* Optional sub-lines inside an anchor line (for the Health Insurance folder's script): data-aca-seen="no" when no real
+     marketplace price was typed, "more" / "less" when one was and it is above / below what they pay today, "yes" for any
+     typed price. Lines without the hook are untouched. */
+  var acaTyped=+((S.aca||{}).prem)>0&&!acaEstFlags().prem, acaNow=acaNetPrem(), seen=!acaTyped?'no':(acaNow>(+Cq.prem||0)?'more':'less');
   Array.prototype.forEach.call(doc.querySelectorAll('[data-anchor-say]'),function(x){ x.classList.toggle('pp-off',(x.getAttribute('data-anchor-say')==='cur')!==useCur);
-    Array.prototype.forEach.call(x.querySelectorAll('[data-leadin]'),function(l){ l.classList.add('pp-off'); }); });
+    Array.prototype.forEach.call(x.querySelectorAll('[data-leadin]'),function(l){ l.classList.add('pp-off'); });
+    Array.prototype.forEach.call(x.querySelectorAll('[data-aca-seen]'),function(y){ var w=y.getAttribute('data-aca-seen'); y.classList.toggle('pp-off',!(w===seen||(w==='yes'&&seen!=='no'))); }); });
   Array.prototype.forEach.call(doc.querySelectorAll('[data-render="enroll"]'),function(x){ x.classList.add('pp-off'); });
   /* source tags stay in Health ZONE's file (its history); the agent's screen drops them and the legend line about them */
   /* "↳ …" lines explain how a blank fills - notes for the script's author, not words for the call (Jesse, 2026-10-08) */
