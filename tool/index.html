@@ -3296,7 +3296,7 @@ function afcPartnerLines(){ return AFC_PARTNERS.map(function(p){ return '• '+p
 var LB_BLURB='Besides protecting your family, living benefits can pay out to you while you’re living if you’re diagnosed with a chronic, critical or terminal illness, so the coverage supports you as well as the people you love.';
 function lbSummary(t){ if(!TIERCFG[t]&&t!=='actual') t=enrolledTier()||S.activeTab||'best';   /* brochList's 'all' is not a package (crashed Enroll with no plan marked) */
   var pk=(S.packages||{})[t]||{}, c=effCfg(t), out=[];
-  (pk.products||[]).forEach(function(p){ if(!(isLBk(p.k))||!((+p.monthly||0)>0)) return; var w=p.k.slice(2), nm=String(p.name||'');
+  (pk.products||[]).forEach(function(p){ if(!(isLBk(p.k))||!((+p.monthly||0)>0)||(pk.dropped||[]).indexOf(p.k)>=0) return; var w=p.k.slice(2), nm=String(p.name||'');   /* switched off = not summarised (21 Nov) */
     if(w==='x'){ lbxList(c).forEach(function(x){ var tt=lbType(x); out.push({who:x.who==='p'?(enSplit(S.client.pname)[0]||'you'):(lbWhoName(x.who)||'your family'),face:lbNum(x.face),term:'',carrier:x.carrier==='iule'?'Mutual of Omaha':lbCarName(x),kind:lbKindFor(x),extra:1}); }); return; }
     var lc=(c.lb||{})[w]||{};
     var car=lbManual(lc.carrier)?(lc.carrier==='other'?(String(lc.otherName||'').trim()||'another carrier'):lbCarName(lc)):/americo/i.test(nm)?'Americo':/mutual|omaha/i.test(nm)?'Mutual of Omaha':(lc.carrier==='americo'?'Americo':'Mutual of Omaha');
@@ -5002,7 +5002,9 @@ function anchorFlipBind(host){ host.querySelectorAll('[data-anflip]').forEach(fu
    text for today's default. A bio the agent wrote themselves is never touched. */
 var OLD_DEFAULT_BIOS=["I'm a licensed health insurance agent, but I also help families with life insurance, retirement planning and a number of other financial solutions. What I'll do first is find out what's most important to you, and then we'll tailor a plan that actually accomplishes your goals. There are a lot of companies out there and a lot of products, but they don't all do the same thing, so what really matters is who you work with, and that they're looking out for your best interest based on your specific goals. I'm not beholden to any one company. Working with over 40 carriers, it's my job to compare those companies, starting with the A-rated ones, and find the best fit for you. We'll look at them together, and you'll be the one who picks. We'll get into that in a moment."];
 function bioMigrate(){ var b=String(S.agentBio||'').trim(); if(b&&OLD_DEFAULT_BIOS.indexOf(b)>=0){ S.agentBio=DEFAULT_BIO; if($('in_abio')) $('in_abio').value=DEFAULT_BIO; } }
-function compute(){ anchorAuto(); bioMigrate();
+/* Jesse, 21 Nov: a change on the Quote (living benefits back on, cancer added) shows on an open client screen by itself */
+var SHOW_REFRESH_T=0; function showLiveRefresh(){ if(typeof showLive!=='function'||!showLive()) return; clearTimeout(SHOW_REFRESH_T); SHOW_REFRESH_T=setTimeout(function(){ if(showLive()) showWrite(); },700); }
+function compute(){ anchorAuto(); bioMigrate(); showLiveRefresh();
   read();
   refreshPickLabels();
   updateTfraVisibility();
@@ -8848,12 +8850,12 @@ function showFollowOn(){ try{ return localStorage.getItem('mpp_show_follow')!=='
 function showE(x){ return esc(x==null?'':x); }
 function showNames(){ var C=S.client||{}, n=[enSplit(C.pname)[0],enSplit(C.sname)[0]].concat(kidsList().map(function(k){ return String(k.n||'').trim().split(/\s+/)[0]; })).filter(Boolean);
   return n.length<2?(n[0]||''):n.slice(0,-1).join(', ')+' and '+n[n.length-1]; }
-function showProds(t){ return (((S.packages||{})[t]||{}).products||[]).filter(function(p){ return (+p.monthly||0)>0; }); }
+function showProds(t){ var pk=((S.packages||{})[t]||{}), dr=pk.dropped||[]; return (pk.products||[]).filter(function(p){ return (+p.monthly||0)>0&&dr.indexOf(p.k)<0; }); }   /* a product switched off on the Quote is off the client screen too (Jesse, 21 Nov) */
 function showDocs(t){ var I=S.intake||{}, net=netOf(t), out=[]; if(!net) return out;
   [1,2,3].forEach(function(n){ var nm=String(I['docs'+n]||'').trim(); if(nm&&docNetRead(n)===true) out.push(nm); }); return out; }   /* only doctors checked IN the network */
 function showName(p){ var sl=PB_SLOTS.filter(function(x){ return x.k===p.k; })[0]; return String((p.k==='base'&&tierNonMh(presentTier()))?tierNonMh(presentTier()).full:(sl?sl.name:p.name)||'').split(' — ')[0]; }
 function showCard(t,p){ var c=effCfg(t), f=benFileFor(p.k,c), st=(S.client.state||'').toUpperCase(), nm=showName(p);
-  var card=function(m){ var rows=m?m.key.slice(0,5):[]; return '<div class="card"><h3>'+showE(nm)+'</h3>'+(rows.length?rows.map(function(r){ return '<div class="row"><span>'+showE(r.label)+'</span><b>'+showE(r.value)+'</b></div>'; }).join(''):'<p class="muted">Included in your plan.</p>')+'</div>'; };
+  var card=function(m){ var rows=m?m.key.filter(function(r){ return !/^not included/i.test(String(r.value||'')); }).slice(0,5):[];   /* a client card lists what it gives, not what it doesn't */ return '<div class="card"><h3>'+showE(nm)+'</h3>'+(rows.length?rows.map(function(r){ return '<div class="row"><span>'+showE(r.label)+'</span><b>'+showE(r.value)+'</b></div>'; }).join(''):'<p class="muted">Included in your plan.</p>')+'</div>'; };
   if(!f) return Promise.resolve(card(null));
   return benLoad(f).then(function(d){ var m=null; try{ m=benModel(d,st,benCol(p.k,c),benCfg(p.k,c)); }catch(e){} return card(m); }).catch(function(){ return card(null); }); }
 /* living benefits: the triggers as their own cards, in the carrier's words from the benefits file (not the underwriting rows) */
@@ -8929,8 +8931,7 @@ function showCoverage(t){ var c=effCfg(t), rows=showAfcRows(t), k=showKind(t), o
 function showExamples(t){ var out=[]; [0,1].forEach(function(i){ var sc=(S.ev||[])[i]; if(!sc) return; var bill=evScnBill(sc).total; if(!(bill>0)) return;
     if(showOff('ev'+i)) return;
     var r=evEvent(sc,Object.assign({},evTierPack(t),{negotPct:negApplies(i,bill)?S.negot.pct:0})); out.push({desc:sc.desc||'An example',bill:bill,r:r}); }); return out; }
-/* Jesse, 21 Nov: the foot surgery and the two X-rays show by default; the skin surgery and the CT scan are there to pick */
-var SHOW_DEFAULT_OFF={'claim:skin':1,'claim:ct':1};
+var SHOW_DEFAULT_OFF={};   /* Jesse, 21 Nov (later): all four claims on; untick any in What to show */
 function showOff(k){ var o=((S.present||{}).showOff)||{}; return Object.prototype.hasOwnProperty.call(o,k)?!!o[k]:!!SHOW_DEFAULT_OFF[k]; }
 function showPickHTML(t){ var items=[]; [0,1].forEach(function(i){ var sc=(S.ev||[])[i]; if(sc&&evScnBill(sc).total>0) items.push(['ev'+i,'Example: '+(sc.desc||'Example '+(i+1))]); });
   if(showAfcRows(t)) showClaims(t,true).forEach(function(c){ items.push(['claim:'+c.id,'Claim: '+c.t]); });
@@ -8976,6 +8977,10 @@ function showPlanDed(t){ var c=effCfg(t), k=showKind(t), fam=showFam(); if(k==='
   var plan=c.base==='brightlife'?((typeof BLR!=='undefined'&&BLR&&BLR.plans[c.blPlan||BL_DEFAULT])||{}):(triadBook().plans['Triad Cigna '+(c.triadPlan||'7350')]||{});
   return (parseFloat(plan.deductible)||0)*(fam?2:1); }
 /* the sections this package gets, in order - synchronous, so the remote can list them */
+/* Jesse, 21 Nov: the extra layers - cancer, the specified disease rider, the MEC plan, home health care - get their own
+   page after living benefits, from their benefits files, so adding one on the Quote shows up in the presentation */
+var SHOW_EXTRA=['chas','sdr','mec','hhc'];
+function showExtras(t){ return showProds(t).filter(function(p){ return SHOW_EXTRA.indexOf(p.k)>=0; }); }
 function showPlan(t){ var L=[{id:'hello',s:'Hello'}], ks=showProds(t).map(function(p){ return isLBk(p.k)?'lb':p.k; });
   if(presentWhy(S.intake||{})) L.push({id:'why',s:'What matters'});
   if(anchorBase()) L.push({id:'now',s:'Today'});
@@ -8985,12 +8990,13 @@ function showPlan(t){ var L=[{id:'hello',s:'Hello'}], ks=showProds(t).map(functi
   if(showExamples(t).length) L.push({id:'examples',s:'Examples'});
   if(showAfcRows(t)&&showClaims(t).length) L.push({id:'claims',s:'Real claims'});
   if(ks.indexOf('lb')>=0) L.push({id:'lb',s:'Living benefits'});
+  if(showExtras(t).length) L.push({id:'more',s:'Extra protection'});
   L.push({id:'cost',s:'Cost'}); if(ks.indexOf('dvh')>=0) L.push({id:'dental',s:'Dental'}); L.push({id:'next',s:'Apply'}); return L; }
 function showBuild(t){ var C=S.client||{}, I=S.intake||{}, plan=showPlan(t), has=function(id){ return plan.some(function(x){ return x.id===id; }); }, prods=showProds(t), kind=showKind(t);
   var agent=String(C.agent||'').trim(), agency=String(S.agency||'').trim(), ph=String(S.agentPhone||'').trim(), em=String(S.agentEmail||'').trim(), npn=String(S.agentNPN||'').trim();
   var photo=S.agentPhoto||'', logo=S.agentLogo||'', names=showNames(), net=netOf(t), bio=String(S.agentBio||'').trim();
   var lbp=prods.filter(function(p){ return isLBk(p.k); })[0], dvp=prods.filter(function(p){ return p.k==='dvh'; })[0];
-  return Promise.all([lbp?showLbCards(t,lbp):Promise.resolve(''),dvp?showCard(t,dvp):Promise.resolve('')]).then(function(got){ var lbCards=got[0], dvCard=got[1];
+  return Promise.all([lbp?showLbCards(t,lbp):Promise.resolve(''),dvp?showCard(t,dvp):Promise.resolve(''),Promise.all(showExtras(t).map(function(p){ return showCard(t,p); }))]).then(function(got){ var lbCards=got[0], dvCard=got[1], exCards=got[2]||[];
     var sec=function(id,eyebrow,title,body,cls){ return has(id)?'<section id="s-'+id+'"'+(cls?' class="'+cls+'"':'')+'><div class="in"><div class="eyebrow">'+showE(eyebrow)+'</div><h2>'+title+'</h2>'+body+'</div></section>':''; };
     var li=function(a,cls){ return '<ul class="ticks'+(cls?' '+cls:'')+'">'+a.map(function(x){ return '<li>'+showE(x)+'</li>'; }).join('')+'</ul>'; }, h='';
     var good=function(v){ return '<b class="good">'+v+'</b>'; }, bad=function(v){ return '<b class="bad">'+v+'</b>'; };
@@ -9042,6 +9048,7 @@ function showBuild(t){ var C=S.client||{}, I=S.intake||{}, plan=showPlan(t), has
     if(has('lb')){ var L=lbSummary(t);
       h+=sec('lb','Included in your plan','Living benefits','<div class="lbtop">'+L.map(function(x){ return '<div class="card lbc"><div class="eyebrow">'+showE(x.who)+'</div><p class="big2n">'+showMoney(x.face)+'</p><p class="muted small">'+showE(x.kind)+(x.carrier?' · '+showE(x.carrier):'')+'</p></div>'; }).join('')+'</div>'
         +'<p class="lead">Health insurance pays the doctors and hospitals. Living benefits pay <b>you</b>, to use however you need, if a serious illness qualifies. What you use comes off what your family would receive.</p>'+(lbCards?'<div class="cards three">'+lbCards+'</div>':''),'tight'); }
+    if(exCards.length) h+=sec('more','Also in your plan','Extra protection','<p class="lead">More protection that’s part of your plan.</p><div class="cards">'+exCards.join('')+'</div>','tight');
     /* what it costs (Jesse, 21 Nov): today's premium against this plan's, the saving a month and a year, living benefits on
        top, the total, then what a bad year costs each way. Dental is its own page after this one. */
     var tt=tierTotals(t), sumK=function(f){ return (tt.pk.products||[]).filter(f).reduce(function(a,p){ return a+(+p.monthly||0); },0); };
