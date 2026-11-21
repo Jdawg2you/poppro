@@ -32,7 +32,10 @@ if re.search(r'\b\d{3}-\d\d-\d{4}\b',p): sys.exit('AI SYNC FAIL - something shap
 # Every key this build strips from client files must be on the prompt's never-write list (word-bounded: agentMeet is a prefix of agentMeetText).
 src=open(os.path.join(os.path.dirname(out),'index.html'),encoding='utf-8').read()
 km=re.search(r"var AGENT_KEYS=\[([^\]]*)\]",src); keys=re.findall(r"'([A-Za-z]+)'",km.group(1)) if km else []
-nv=re.search(r'NEVER PUT MY DETAILS IN THE FILE(.*?)\n\n',p,re.S); block=nv.group(1) if nv else ''
+# The block runs to the next ALL-CAPS section heading, not the first blank line: a blank line inside it must not shrink the scope.
+nv=re.search(r'^NEVER PUT MY DETAILS IN THE FILE[ \t]*$(.*?)(?=^[A-Z][A-Z ,\'’-]{3,}$)',p,re.S|re.M)
+if not nv: sys.exit('AI SYNC FAIL - the NEVER PUT MY DETAILS IN THE FILE block is not where this check expects it')
+block=nv.group(1)
 miss=[k for k in keys if not re.search(r'(?<![A-Za-z])'+k+r'(?![A-Za-z])',block)]
 if not keys: sys.exit('AI SYNC FAIL - could not read AGENT_KEYS from the tool')
 if miss: sys.exit('AI SYNC FAIL - the prompt does not forbid agent keys this build strips: %s (ask Health ZONE)'%', '.join(miss))
