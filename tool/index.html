@@ -1314,7 +1314,7 @@ body.client #classicWrap>summary{display:none}
     body:not(.client) .rail-x em{font-style:normal;font-size:11px;font-weight:800;margin-left:auto;background:#22a05a;color:#fff;border-radius:999px;padding:1px 7px}body:not(.client) .rail-x em:empty{display:none}
     body:not(.client) #railSetup.need{border-color:#22a05a;animation:agglow 1.8s ease-in-out infinite}
     body:not(.client) #railCollapse{margin-top:auto;font-size:12.5px;color:#aeb8c8;flex:none}
-    body:not(.client) #railAI{margin-top:auto;flex:none}body:not(.client) #railAI+#railSuggest{margin-top:0;flex:none}body:not(.client) #railSuggest+#railCollapse{margin-top:0}   /* Suggest sits at the foot of the rail, just above Collapse (Jesse, 11 Nov) */
+    body:not(.client) #railMeet{margin-top:auto;flex:none}body:not(.client) #railMeet+#railAI{margin-top:0;flex:none}body:not(.client) #railAI{margin-top:auto;flex:none}body:not(.client) #railAI+#railSuggest{margin-top:0;flex:none}body:not(.client) #railSuggest+#railCollapse{margin-top:0}   /* Suggest sits at the foot of the rail, just above Collapse (Jesse, 11 Nov) */
     body:not(.client) .rail-x:hover{background:#1c3657;color:#fff}
     body:not(.client) .rail-x.on{background:var(--gold);color:#10233e}body:not(.client) .rail-x.on .ri{color:#10233e}
     body.setup-open:not(.client) .stepper button.on{background:transparent;color:#d3dae6}body.setup-open:not(.client) .stepper button.on .n{color:#8d99ad}
@@ -1446,6 +1446,7 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
     <button type="button" class="rail-x" onclick="document.getElementById('printBtn').click()"><span class="ri">⎙</span><span class="rl">Print quote</span></button>
   </div>
   <!-- AI for the assist (Jesse via Health ZONE, 20 Nov): agent-only page at /tool/ai/; hidein-client so it never shows on a screenshare -->
+  <button type="button" id="railMeet" class="rail-x hidein-client" onclick="meetCopy(this)" title="Copy your meeting link and the text that goes with it, ready to paste into a text to the client"><span class="ri">📹</span><span class="rl">Copy meeting invite</span></button>
   <button type="button" id="railAI" class="rail-x hidein-client" onclick="location.href='ai/'" title="Turn a recorded discovery call into a client file with Claude"><span class="ri">✦</span><span class="rl">AI Assist</span></button>
   <button type="button" id="railSuggest" class="rail-x hidein-client" onclick="sgOpen()" title="See something? Say something. Send an idea, or a quick fix that’s needed"><span class="ri">💡</span><span class="rl">Suggestions</span></button>
   <button type="button" id="railCollapse" class="rail-x" onclick="railToggle()" title="Make the sidebar narrow (or wide again)"><span class="ri">←</span><span class="rl">Collapse navigation</span></button>
@@ -2013,6 +2014,8 @@ if(location.port==='8766'){ var vb=document.getElementById('verBanner'); vb.styl
       <div class="fld"><label>Your website <a href="#goatGrab" class="setlink" data-goat="1">(set up)</a></label><input id="in_aweb" placeholder="yourwebsite.com"></div>
       <div class="fld"><label>Your digital business card <a href="#goatGrab" class="setlink" data-goat="1">(set up)</a></label><input id="in_acard" placeholder="yourcard.com/you"></div>
       <div class="fld"><label>Your booking link <a href="#goatGrab" class="setlink" data-goat="1">(set up)</a></label><input id="in_abook" placeholder="calendly.com/you"></div>
+      <div class="fld"><label>Your virtual meeting link <small>Zoom, CrankWheel, Google Meet: the link a client taps to see your screen</small></label><input id="in_ameet" placeholder="zoom.us/j/… or meeting.is/you"></div>
+      <div class="fld agbio"><label>What you text with it <small>{first} = client’s first name · {agent} = your name · {link} = your meeting link · empty = the default</small></label><textarea id="in_ameettext" rows="3" placeholder="Leave empty to use the default"></textarea><button type="button" class="picbtn" id="meetDefault">Use the default</button></div>
       <div class="fld"><label>Your benefits page <small>for the Benefits Review</small></label><input id="in_abenefits" placeholder="healthfirstquotes.netlify.app (used if blank)"><small class="fhint">Blank uses HealthFirst’s ManhattanLife page. Have your own custom page? Put it here and it’s used instead.</small></div>
       <div class="fld"><label>Direction Rx link <small>GLP-1 discount, weight loss</small></label><input id="in_adrxlink" placeholder="https://bit.ly/4wf5B7V (used if blank)"><small class="fhint">Keep ManhattanLife’s tracking link — it’s how they count the engagement. A typed-in address isn’t counted.</small></div>
       <div class="fld"><label>Direction Rx code <small>the client enters it for 30% off</small></label><input id="in_adrxcode" placeholder="4-MEM-26-6 (used if blank)"></div>
@@ -5526,7 +5529,7 @@ function suiteFromNavProfile(P){
 }
 /* The agent's own details (agency, name, phone, email) belong to whoever is running the tool, not to a
    file. A loaded file keeps them unless it carries its own - loading a client never wipes the agent. */
-function agentOf(st){ return {agency:st.agency, agent:(st.client||{}).agent, phone:st.agentPhone, email:st.agentEmail, npn:st.agentNPN, web:st.agentWebsite, card:st.agentCard, book:st.agentBooking, ben:st.agentBenefits, drxl:st.agentDrxLink, drxc:st.agentDrxCode, hs:st.agentHsLink, amz:st.agentAmazeLink, bio:st.agentBio, photo:st.agentPhoto, logo:st.agentLogo}; }
+function agentOf(st){ return {agency:st.agency, agent:(st.client||{}).agent, phone:st.agentPhone, email:st.agentEmail, npn:st.agentNPN, web:st.agentWebsite, card:st.agentCard, book:st.agentBooking, ben:st.agentBenefits, drxl:st.agentDrxLink, drxc:st.agentDrxCode, hs:st.agentHsLink, amz:st.agentAmazeLink, bio:st.agentBio, meet:st.agentMeet, meetx:st.agentMeetText, photo:st.agentPhoto, logo:st.agentLogo}; }
 /* Agent setup folds closed once agency, name, phone and email are all in; it opens again if any of those four is
    missing. NPN, website and booking are optional and never hold it open. (Jesse, 2026-10-08) */
 /* Jesse, 2026-10-09: the fold now waits for ALL of them, not the four the tool cannot run without.
@@ -5553,9 +5556,9 @@ function agentGlow(){ var empty=[]; AGENT_BOXES.forEach(function(b){ var el=$(b[
 function agentSetupFold(){ var miss=agentSetupMissing(), b=$('setupBtn'), n=$('setupNeed'); if(b){ b.classList.toggle('need',!!miss.length); b.title=miss.length?'Still to fill in: '+miss.join(', '):'Your agency, name, phone, email, NPN and links'; } if(n) n.textContent=miss.length?String(miss.length):''; if(typeof setupTabsPaint==='function') setupTabsPaint(); var rs=$('railSetup'), rn=$('railSetupNeed'); if(rs){ rs.classList.toggle('need',!!miss.length); rs.title=b?b.title:''; } if(rn) rn.textContent=miss.length?String(miss.length):'';
   var ws=$('wlSetupState'); if(ws){ ws.textContent=miss.length?miss.length+' to fill in':'✓ Done'; ws.className=miss.length?'todo':''; }
   var d=$('agentSetup'); if(d) d.classList.toggle('goat-skipped',goatSkipped()); var sf=$('setupFile'); if(sf) sf.classList.toggle('empty',setupEmpty()); agentGlow(); }
-function fillAgent(){ $('in_agency').value=S.agency||'HealthFirst'; $('in_agent').value=(S.client||{}).agent||''; $('in_aphone').value=S.agentPhone||''; $('in_aemail').value=S.agentEmail||''; $('in_anpn').value=S.agentNPN||''; $('in_aweb').value=S.agentWebsite||''; $('in_acard').value=S.agentCard||''; $('in_abook').value=S.agentBooking||''; $('in_abenefits').value=S.agentBenefits||''; $('in_adrxlink').value=S.agentDrxLink||''; $('in_adrxcode').value=S.agentDrxCode||''; if($('in_ahslink')) $('in_ahslink').value=S.agentHsLink||''; if($('in_aamazelink')) $('in_aamazelink').value=S.agentAmazeLink||''; $('in_abio').value=S.agentBio||''; agentSetupFold();  agImgPaint(); }
+function fillAgent(){ $('in_agency').value=S.agency||'HealthFirst'; $('in_agent').value=(S.client||{}).agent||''; $('in_aphone').value=S.agentPhone||''; $('in_aemail').value=S.agentEmail||''; $('in_anpn').value=S.agentNPN||''; $('in_aweb').value=S.agentWebsite||''; $('in_acard').value=S.agentCard||''; $('in_abook').value=S.agentBooking||''; $('in_abenefits').value=S.agentBenefits||''; $('in_adrxlink').value=S.agentDrxLink||''; $('in_adrxcode').value=S.agentDrxCode||''; if($('in_ahslink')) $('in_ahslink').value=S.agentHsLink||''; if($('in_aamazelink')) $('in_aamazelink').value=S.agentAmazeLink||''; $('in_abio').value=S.agentBio||''; if($('in_ameet')) $('in_ameet').value=S.agentMeet||''; if($('in_ameettext')) $('in_ameettext').value=S.agentMeetText||''; agentSetupFold();  agImgPaint(); }
 /* Only the agent fields - captureIntake() would also read the client boxes, which are stale off the Intake step. */
-function readAgent(){ S.agency=($('in_agency').value||'').trim()||'HealthFirst'; S.client=S.client||{}; S.client.agent=$('in_agent').value; S.agentPhone=$('in_aphone').value; S.agentEmail=$('in_aemail').value; S.agentNPN=($('in_anpn').value||'').trim(); S.agentWebsite=($('in_aweb').value||'').trim(); S.agentCard=($('in_acard').value||'').trim(); S.agentBooking=($('in_abook').value||'').trim(); S.agentBenefits=($('in_abenefits').value||'').trim(); S.agentDrxLink=($('in_adrxlink').value||'').trim(); S.agentDrxCode=($('in_adrxcode').value||'').trim(); S.agentHsLink=(($('in_ahslink')||{}).value||'').trim(); S.agentAmazeLink=(($('in_aamazelink')||{}).value||'').trim(); S.agentBio=($('in_abio').value||'').trim(); agentSetupFold(); autosave(); }
+function readAgent(){ S.agency=($('in_agency').value||'').trim()||'HealthFirst'; S.client=S.client||{}; S.client.agent=$('in_agent').value; S.agentPhone=$('in_aphone').value; S.agentEmail=$('in_aemail').value; S.agentNPN=($('in_anpn').value||'').trim(); S.agentWebsite=($('in_aweb').value||'').trim(); S.agentCard=($('in_acard').value||'').trim(); S.agentBooking=($('in_abook').value||'').trim(); S.agentBenefits=($('in_abenefits').value||'').trim(); S.agentDrxLink=($('in_adrxlink').value||'').trim(); S.agentDrxCode=($('in_adrxcode').value||'').trim(); S.agentHsLink=(($('in_ahslink')||{}).value||'').trim(); S.agentAmazeLink=(($('in_aamazelink')||{}).value||'').trim(); S.agentBio=($('in_abio').value||'').trim(); S.agentMeet=(($('in_ameet')||{}).value||'').trim(); S.agentMeetText=(($('in_ameettext')||{}).value||'').trim(); agentSetupFold(); autosave(); }
 /* a saved navigator profile's life-insurance answers as one note line - the same as the navigator's lifeNowLine() */
 function navLifeNow(P){ if(P.life_has==="No") return "None"; if(P.life_has!=="Yes") return P.life_now||"";
   var bits=[P.life_src?(P.life_src==="Work"?"through work":P.life_src==="Private"?"private":"work and private"):"", (P.life_type&&P.life_type!=="Not sure")?String(P.life_type).toLowerCase():"",
@@ -7524,7 +7527,7 @@ function finishSetup(){ var keep=inProgress(); closeSetup(); if(!keep) goStep('c
    step zero is setting yourself up; its button goes straight into Setup. "Setup" is your details in three tabs, each tab
    showing how many are still missing. Same window, same fields, same saving underneath. ===== */
 var SETUP_TABS=[['identity','Identity',['in_agency','in_agent','in_aphone','in_aemail','in_anpn'],['agency','your name','phone','email','NPN']],
-  ['links','Links & resources',['in_aweb','in_acard','in_abook','in_abenefits','in_adrxlink','in_adrxcode','in_ahslink','in_aamazelink'],['website','digital business card','booking link']],
+  ['links','Links & resources',['in_aweb','in_acard','in_abook','in_ameet','in_ameettext','in_abenefits','in_adrxlink','in_adrxcode','in_ahslink','in_aamazelink'],['website','digital business card','booking link']],
   ['intro','Introduction',['in_abio'],[]]];
 var SETUP_HEADS={identity:['Set up your basics','Who you are and how clients reach you.'],links:['Your links and resources','Where clients book, read about their plan and sign up for their extras.'],intro:['Your introduction','Optional - read at the start of every discovery call. Leave it empty and MyPopPro uses its own.']};
 var setupTab='identity';
@@ -7561,7 +7564,7 @@ function keepAgent(ag){
   S.client=S.client||{}; if(ag.agent && !S.client.agent) S.client.agent=ag.agent;
   if(ag.phone && !S.agentPhone) S.agentPhone=ag.phone;
   if(ag.email && !S.agentEmail) S.agentEmail=ag.email;
-  if(ag.npn && !S.agentNPN) S.agentNPN=ag.npn; if(ag.web && !S.agentWebsite) S.agentWebsite=ag.web; if(ag.card && !S.agentCard) S.agentCard=ag.card; if(ag.book && !S.agentBooking) S.agentBooking=ag.book; if(ag.ben && !S.agentBenefits) S.agentBenefits=ag.ben; if(ag.drxl && !S.agentDrxLink) S.agentDrxLink=ag.drxl; if(ag.drxc && !S.agentDrxCode) S.agentDrxCode=ag.drxc; if(ag.hs && !S.agentHsLink) S.agentHsLink=ag.hs; if(ag.amz && !S.agentAmazeLink) S.agentAmazeLink=ag.amz; if(ag.bio && !S.agentBio) S.agentBio=ag.bio; if(ag.photo && !S.agentPhoto) S.agentPhoto=ag.photo; if(ag.logo && !S.agentLogo) S.agentLogo=ag.logo; }
+  if(ag.npn && !S.agentNPN) S.agentNPN=ag.npn; if(ag.web && !S.agentWebsite) S.agentWebsite=ag.web; if(ag.card && !S.agentCard) S.agentCard=ag.card; if(ag.book && !S.agentBooking) S.agentBooking=ag.book; if(ag.ben && !S.agentBenefits) S.agentBenefits=ag.ben; if(ag.drxl && !S.agentDrxLink) S.agentDrxLink=ag.drxl; if(ag.drxc && !S.agentDrxCode) S.agentDrxCode=ag.drxc; if(ag.hs && !S.agentHsLink) S.agentHsLink=ag.hs; if(ag.amz && !S.agentAmazeLink) S.agentAmazeLink=ag.amz; if(ag.bio && !S.agentBio) S.agentBio=ag.bio; if(ag.meet && !S.agentMeet) S.agentMeet=ag.meet; if(ag.meetx && !S.agentMeetText) S.agentMeetText=ag.meetx; if(ag.photo && !S.agentPhoto) S.agentPhoto=ag.photo; if(ag.logo && !S.agentLogo) S.agentLogo=ag.logo; }
 /* Portable client file (Jesse, 14 Oct): one file per client opens in POP Pro or the Script Navigator. A POP Pro save
    carries the whole navigator call (S.nav); a navigator save carries the POP Pro quote it came with (_pop). Opening a
    navigator file: its POP Pro quote is the base and the navigator's answers - the newer save - go on top. */
@@ -7570,12 +7573,12 @@ function navOnlyOf(p){ var o={}; Object.keys(p||{}).forEach(function(k){ if(k!==
    saved without the agent's details, and opening any client file - Kyle's, an assistant's, an old one that still carries
    someone's Setup - leaves this browser's Setup exactly as it was. The agent's details live in their own Setup file
    ("Save my Setup"), which puts them back after a cleared browser or on a new computer. */
-var AGENT_KEYS=['agency','agentPhone','agentEmail','agentNPN','agentWebsite','agentCard','agentBooking','agentBenefits','agentDrxLink','agentDrxCode','agentHsLink','agentAmazeLink','agentBio','agentPhoto','agentLogo'];
+var AGENT_KEYS=['agency','agentPhone','agentEmail','agentNPN','agentWebsite','agentCard','agentBooking','agentBenefits','agentDrxLink','agentDrxCode','agentHsLink','agentAmazeLink','agentBio','agentMeet','agentMeetText','agentPhoto','agentLogo'];
 function stripAgent(d){ AGENT_KEYS.forEach(function(k){ delete d[k]; }); if(d.client) delete d.client.agent; return d; }
 function setAgent(ag){ ag=ag||{}; var t=function(v){ return v==null?'':String(v); };
   S.agency=t(ag.agency).trim()||'HealthFirst'; S.client=S.client||{}; S.client.agent=t(ag.agent);
   S.agentPhone=t(ag.phone); S.agentEmail=t(ag.email); S.agentNPN=t(ag.npn); S.agentWebsite=t(ag.web); S.agentCard=t(ag.card); S.agentBooking=t(ag.book);
-  S.agentBenefits=t(ag.ben); S.agentDrxLink=t(ag.drxl); S.agentDrxCode=t(ag.drxc); S.agentHsLink=t(ag.hs); S.agentAmazeLink=t(ag.amz); S.agentBio=t(ag.bio); S.agentPhoto=t(ag.photo); S.agentLogo=t(ag.logo); }
+  S.agentBenefits=t(ag.ben); S.agentDrxLink=t(ag.drxl); S.agentDrxCode=t(ag.drxc); S.agentHsLink=t(ag.hs); S.agentAmazeLink=t(ag.amz); S.agentBio=t(ag.bio); S.agentMeet=t(ag.meet); S.agentMeetText=t(ag.meetx); S.agentPhoto=t(ag.photo); S.agentLogo=t(ag.logo); }
 function setupEmpty(){ return !String((S.client||{}).agent||'').trim() && !String(S.agentPhone||'').trim() && !String(S.agentEmail||'').trim(); }
 function isSetupFile(o){ return !!o && o.format==='mypoppro-setup' && !!o.agent && typeof o.agent==='object'; }
 function saveSetup(){ if($('in_agent')) readAgent(); var ag=agentOf(S);
@@ -7646,7 +7649,7 @@ function restore(){ try{ var s=localStorage.getItem('hf_pop_last'); if(s){ var r
 /* ========== INTAKE + RECOMMENDATION ENGINE ========== */
 function readIntake(){
   S.intake=S.intake||{};
-  S.agency=($('in_agency').value||'').trim()||'HealthFirst'; S.agentPhone=$('in_aphone').value; S.agentEmail=$('in_aemail').value; S.agentNPN=($('in_anpn').value||'').trim(); S.agentWebsite=($('in_aweb').value||'').trim(); S.agentCard=($('in_acard').value||'').trim(); S.agentBooking=($('in_abook').value||'').trim(); S.agentBenefits=($('in_abenefits').value||'').trim(); S.agentDrxLink=($('in_adrxlink').value||'').trim(); S.agentDrxCode=($('in_adrxcode').value||'').trim(); S.agentHsLink=(($('in_ahslink')||{}).value||'').trim(); S.agentAmazeLink=(($('in_aamazelink')||{}).value||'').trim(); S.agentBio=($('in_abio').value||'').trim(); agentSetupFold();
+  S.agency=($('in_agency').value||'').trim()||'HealthFirst'; S.agentPhone=$('in_aphone').value; S.agentEmail=$('in_aemail').value; S.agentNPN=($('in_anpn').value||'').trim(); S.agentWebsite=($('in_aweb').value||'').trim(); S.agentCard=($('in_acard').value||'').trim(); S.agentBooking=($('in_abook').value||'').trim(); S.agentBenefits=($('in_abenefits').value||'').trim(); S.agentDrxLink=($('in_adrxlink').value||'').trim(); S.agentDrxCode=($('in_adrxcode').value||'').trim(); S.agentHsLink=(($('in_ahslink')||{}).value||'').trim(); S.agentAmazeLink=(($('in_aamazelink')||{}).value||'').trim(); S.agentBio=($('in_abio').value||'').trim(); S.agentMeet=(($('in_ameet')||{}).value||'').trim(); S.agentMeetText=(($('in_ameettext')||{}).value||'').trim(); agentSetupFold();
   S.intake.who={app:$('in_who_app').checked,spouse:$('in_who_spouse').checked,kids:$('in_who_kids').checked};
   S.intake.phone=$('in_phone').value; S.intake.email=$('in_email').value;
   S.intake.tobaccoP=$('in_tobacco_p').checked; S.intake.tobaccoS=$('in_tobacco_s').checked;
@@ -7689,7 +7692,7 @@ function fillIntake(){
   if(typeof renderKids==='function') setTimeout(renderKids,0); setTimeout(uwWatch,50); setTimeout(pendFill,0); setTimeout(r12Fill,0);
   var I=S.intake||{}; var w=I.who||{app:true};
   $('in_who_app').checked=w.app!==false; $('in_who_spouse').checked=!!w.spouse; $('in_who_kids').checked=!!w.kids;
-  $('in_agency').value=S.agency||'HealthFirst'; $('in_aphone').value=S.agentPhone||''; $('in_aemail').value=S.agentEmail||''; $('in_anpn').value=S.agentNPN||''; $('in_aweb').value=S.agentWebsite||''; $('in_acard').value=S.agentCard||''; $('in_abook').value=S.agentBooking||''; $('in_abenefits').value=S.agentBenefits||''; $('in_adrxlink').value=S.agentDrxLink||''; $('in_adrxcode').value=S.agentDrxCode||''; if($('in_ahslink')) $('in_ahslink').value=S.agentHsLink||''; if($('in_aamazelink')) $('in_aamazelink').value=S.agentAmazeLink||''; $('in_abio').value=S.agentBio||''; agentSetupFold();
+  $('in_agency').value=S.agency||'HealthFirst'; $('in_aphone').value=S.agentPhone||''; $('in_aemail').value=S.agentEmail||''; $('in_anpn').value=S.agentNPN||''; $('in_aweb').value=S.agentWebsite||''; $('in_acard').value=S.agentCard||''; $('in_abook').value=S.agentBooking||''; $('in_abenefits').value=S.agentBenefits||''; $('in_adrxlink').value=S.agentDrxLink||''; $('in_adrxcode').value=S.agentDrxCode||''; if($('in_ahslink')) $('in_ahslink').value=S.agentHsLink||''; if($('in_aamazelink')) $('in_aamazelink').value=S.agentAmazeLink||''; $('in_abio').value=S.agentBio||''; if($('in_ameet')) $('in_ameet').value=S.agentMeet||''; if($('in_ameettext')) $('in_ameettext').value=S.agentMeetText||''; agentSetupFold();
   $('in_pname').value=S.client.pname||''; $('in_sname').value=S.client.sname||''; $('in_agent').value=S.client.agent||'';
   $('in_state').value=S.client.state||''; $('in_zip').value=S.client.zip||''; $('in_page').value=S.client.page||''; $('in_sage').value=S.client.sage||''; $('in_date').value=S.client.date||''; $('in_sdob').value=S.client.sdob||''; $('in_address').value=S.client.address||'';
   $('in_phone').value=I.phone||''; $('in_email').value=I.email||'';
@@ -8746,6 +8749,20 @@ function peCue(box){ var c=$('peCue'); if(!c){ c=document.createElement('button'
   var seen=function(){ var r=box.getBoundingClientRect(); return r.top<window.innerHeight*0.45; };
   var tm=null, off=function(){ c.classList.remove('on'); window.removeEventListener('scroll',chk); clearInterval(tm); }, chk=function(){ if(box.style.display==='none'||S.step!=='present'){ off(); return; } c.classList.toggle('on',box.getBoundingClientRect().top>window.innerHeight*0.6); };   /* back up the page while editing: the cue comes back */
   c.classList.add('on'); window.addEventListener('scroll',chk,{passive:true}); clearInterval(c._tm); tm=c._tm=setInterval(chk,400); }
+/* Virtual meeting invite (Jesse, 21 Nov): any link - Zoom, CrankWheel, Meet - plus the agent's own words, copied for a text.
+   Agent details: kept in Setup and the Setup file, stripped from every client file (AGENT_KEYS). */
+var DEFAULT_MEET_TEXT="Hi {first}, it's {agent}. Tap this link to join my meeting so I can show you, on my screen, what I put together for you: {link}";
+function meetInvite(){ var link=String(S.agentMeet||'').trim(); if(!link) return '';
+  var first=enSplit((S.client||{}).pname)[0]||'there', agent=String((S.client||{}).agent||'').trim().split(/\s+/)[0]||'your agent',
+    t=String(S.agentMeetText||'').trim()||DEFAULT_MEET_TEXT;
+  if(t.indexOf('{link}')<0) t+=' {link}';
+  return t.replace(/\{first\}/g,first).replace(/\{agent\}/g,agent).replace(/\{link\}/g,link); }
+function meetCopy(btn){ var txt=meetInvite(), lab=btn&&btn.querySelector('.rl');
+  if(!txt){ alert('Add your virtual meeting link in Setup first (Zoom, CrankWheel or Google Meet).'); openSetup('setup'); setTimeout(function(){ var i=$('in_ameet'); if(i){ i.scrollIntoView({block:'center'}); i.focus(); } },300); return; }
+  var done=function(m){ if(!lab) return; var o='Copy meeting invite'; lab.textContent=m; setTimeout(function(){ lab.textContent=o; },2200); };
+  var fb=function(){ var a=document.createElement('textarea'); a.value=txt; a.style.position='fixed'; a.style.opacity='0'; document.body.appendChild(a); a.select(); try{ document.execCommand('copy'); done('✓ Copied — paste it in a text'); }catch(e){ prompt('Copy this:',txt); } a.remove(); };
+  try{ if(navigator.clipboard&&window.isSecureContext) navigator.clipboard.writeText(txt).then(function(){ done('✓ Copied — paste it in a text'); },fb); else fb(); }catch(e){ fb(); } }
+
 /* Agent-only reminder (Jesse, 21 Nov): whenever Present quotes the marketplace - an ACA package, or savings measured
    against ACA bronze - say loudly to check the real price on HealthSherpa first. The estimate covers a miss; the look-up is the job. */
 function acaCheckHTML(t){ var B=anchorBase(); if(!(acaFlowOn(t)||(B&&B.k==='aca'))) return '';
@@ -9740,6 +9757,7 @@ function bindInputs(){
   if($('setupFileIn')) $('setupFileIn').onchange=function(e){ var f=e.target.files&&e.target.files[0]; if(f) loadSetupFile(f); };
   if($('goatSkip')) $('goatSkip').onclick=function(){ try{ localStorage.setItem('pp_goat_skip','1'); }catch(e){} agentSetupFold(); };
   $('bioDefault').onclick=function(){ $('in_abio').value=DEFAULT_BIO; readAgent(); };
+  if($('meetDefault')) $('meetDefault').onclick=function(){ $('in_ameettext').value=DEFAULT_MEET_TEXT; readAgent(); };
   /* (set up) beside the three link boxes: jump to the free GOAT how-to below, even if it was folded away */
   document.querySelectorAll('#agentSetup [data-goat]').forEach(function(a){ a.onclick=function(e){ e.preventDefault(); var d=$('agentSetup'); if(d) d.classList.remove('goat-skipped'); var g=$('goatGrab'); if(g){ g.scrollIntoView({behavior:'smooth',block:'center'}); g.classList.add('flash'); setTimeout(function(){ g.classList.remove('flash'); },1600); } }; });
   $('setupBtn').onclick=openSetup; $('closeSetup').onclick=closeSetup;
