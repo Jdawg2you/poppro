@@ -150,7 +150,7 @@ const TEST = `(async function(){
   presentGo(presentPageIx('Price the marketplace & pick the anchor')); await wait(20);
   var shownSay=function(){ return Array.prototype.filter.call(d.querySelectorAll('[data-anchor-say]'),function(x){ return fr.contentWindow.getComputedStyle(x).display!=='none'; }).map(function(x){ return x.getAttribute('data-anchor-say'); }).join(); };
   ok(shownSay()==='cur','paying for it themselves: only the today version ('+shownSay()+')');
-  ok(Array.prototype.every.call(d.querySelectorAll('[data-leadin]'),function(x){ return fr.contentWindow.getComputedStyle(x).display==='none'; })&&d.querySelectorAll('[data-leadin]').length===2,'the If-they lead-ins are hidden');
+  ok(Array.prototype.every.call(d.querySelectorAll('[data-leadin]'),function(x){ return fr.contentWindow.getComputedStyle(x).display==='none'; })&&d.querySelectorAll('[data-leadin]').length>=2,'the If-they lead-ins are hidden (all of them: two anchor cues + three current-plan variant cues since 21 Nov)');
   var kc=JSON.stringify(S.cur); S.cur.emp=400; presentWire(d,'best'); ok(shownSay()==='aca','employer pays part: the marketplace version ('+shownSay()+')');
   S.cur={}; presentWire(d,'best'); ok(shownSay()==='aca','no current plan: the marketplace version ('+shownSay()+')');
   var aside=function(){ var x=Array.prototype.filter.call(d.querySelectorAll('.say'),function(y){ return /to the side/.test(y.textContent); })[0]; return x&&x.textContent; };
