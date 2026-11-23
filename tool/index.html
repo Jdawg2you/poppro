@@ -9012,6 +9012,16 @@ function showClaims(t,all){ var rows=showAfcRows(t); if(!rows) return [];
     out.push({id:'foot',t:'Foot surgery',sum:'Bill $500 · paid $0 · $3,500 check to him',ahead:true,img:img('05-foot-surgery.jpg'),asPaid:'Affordable Choice Elite',
       how:'The doctor was paid the $500 and the rest went to the client, even though it was in the pre-existing condition period. '+sch,
       money:[['The bill',m2(500)],['The plan paid in all',m2(4000)],['Paid to the doctor',m2(500)],['Check to him',m2(3500),'good']]}); }
+  /* Jesse, 23 Nov: all six claims from the sidebar list, not four. 02 and 03 are the same client's EOBs as 01 (Elite:
+     $175 a visit, $250 an X-ray). The visits re-price on this plan; the outpatient surgery pays by schedule, so as paid. */
+  var ov=evMoney(showRow(rows,/^Doctor.s Office Visit/i))||0;
+  if(ov&&xr){ var vb=2*ov+2*xr; out.push({id:'visits',t:'Two doctor visits',sum:'Bill $1,360.50 · paid $0 · '+m2(Math.max(0,vb-200))+' check to you',ahead:vb>200,img:img('02-two-doctor-visits-with-xrays.jpg'),
+    how:'Two visits a month apart, each an office visit plus an X-ray. The network discount took the $1,360.50 bill to $200, and the plan paid the doctor that. The real claim was on Elite: $850 paid, a $650 check to her.',
+    money:[['The bill',m2(1360.5)],['After the network discount',m2(200)],['Your plan pays, 2 visits at '+m2(ov),m2(2*ov)],['Your plan pays, 2 X-rays at '+m2(xr),m2(2*xr)],['Paid to the doctor',m2(200)],['Check to you',m2(Math.max(0,vb-200)),'good']]}); }
+  out.push({id:'outsurg',t:'Outpatient surgery',sum:'Bill $3,313 · paid $0 · $803.02 check to her',ahead:true,img:img('03-outpatient-surgery.jpg'),asPaid:'Affordable Choice Elite',
+    how:'Two procedures on the same day. The network discount took the $3,313 bill to $233.75 (93% off), the plan paid that, and the rest came to her, even though it was in the pre-existing condition period.'+(sgTxt?' On your plan the surgery benefit is '+sgTxt.replace(/\s+/g,' ').trim()+', so the amount depends on the procedure.':''),
+    money:[['The bill',m2(3313)],['After the network discount',m2(233.75)],['The plan paid in all',m2(1036.77)],['Paid to the doctors',m2(233.75)],['Check to her',m2(803.02),'good']]});
+  var ORD=['xray','visits','outsurg','skin','foot','ct']; out.sort(function(x,y){ return ORD.indexOf(x.id)-ORD.indexOf(y.id); });
   out.forEach(function(c){ c.lvl=c.asPaid?null:lvl; });
   return all?out:out.filter(function(c){ return !showOff('claim:'+c.id); }); }
 /* everything else they get, said beside the price (Jesse: "plus living benefits, plus no deductible, plus…") */
