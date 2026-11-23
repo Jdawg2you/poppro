@@ -52,7 +52,7 @@ ok(typeof triadBook==='function'&&TRI&&TRI.plans_2026&&TRI.effective_from==='202
  var C=curIn(); C.prem=900; C.ded=0; C.dedSet=true; C.paying=true;
  ['good','better','best'].forEach(function(t){ S.include[t]=true; }); autoPriceTiers(); compute(); S.chosen={tier:'better'}; compute();
  ok(/up to 14 days/.test(enrollTextPlain('better')),'approval timing: “up to 14 days” in the enrollment text');
- ok(/myeasycare2go/.test(RXVALET_URL)&&!/myrxvalet/i.test(enrollEmail().body+enrollTextPlain('better')+textFromHTML(postTextHTML('better'))+afcPartnerLines())&&![].some.call(document.querySelectorAll('a'),function(x){ return /myrxvalet/.test(x.href); }),'Rx Valet through EasyCare2go: no myrxvalet in any link, email or text a client gets');
+ ok(/manhattanlife.easycare2go.com.login/.test(RXVALET_URL)&&!/myrxvalet/i.test(enrollEmail().body+enrollTextPlain('better')+textFromHTML(postTextHTML('better'))+afcPartnerLines())&&![].some.call(document.querySelectorAll('a'),function(x){ return /myrxvalet/.test(x.href); }),'Rx Valet through EasyCare2go: no myrxvalet in any link, email or text a client gets');
  /* Discovery is MyPopPro's own page */
  goStep('call'); await w(4500); var cf=document.getElementById('callFrame');
  ok(cf&&/\\/tool\\/discovery\\.html$/.test(cf.src.split('?')[0])&&new URL(cf.src).origin===location.origin,'Discovery frame is this site’s own tool/discovery.html ('+(cf&&cf.src.split('?')[0])+')');
@@ -85,7 +85,7 @@ ok(typeof triadBook==='function'&&TRI&&TRI.plans_2026&&TRI.effective_from==='202
  ok(reviewTicks().some(function(x){ return x.k==='drx'&&/hormone/.test(x.t); })&&reviewTicks().some(function(x){ return x.k==='rxv'; }),'checklist: Rx Valet and Direction Rx for every member');
  var rd=document.getElementById('rvFrame').contentDocument;
  ok(rd.querySelectorAll('[data-product]').length>=10&&rd.querySelector('[data-screen="labs"]')&&/getting used to/.test(rd.body.textContent)&&rd.body.textContent.indexOf('is a claim, not a greeting')<0,'Benefits Review script: product tags, labs screen, Dawn’s additions, old note gone');
- ok(approvedMsgs().body.indexOf('https://manhattanlife.myeasycare2go.com/login')>=0&&approvedMsgs().body.indexOf('https://easyupload.manhattanlife.com/')>=0&&approvedMsgs().body.indexOf('https://clients.manhattanlife.com')>=0,'approval email carries every registration link');
+ ok(approvedMsgs().body.indexOf('https://manhattanlife.easycare2go.com/login')>=0&&approvedMsgs().body.indexOf('https://easyupload.manhattanlife.com/')>=0&&approvedMsgs().body.indexOf('https://clients.manhattanlife.com')>=0,'approval email carries every registration link');
  ok(approvedMsgs().body.indexOf('How to use your new health plan: https://optimumprotects.com/manhattanlife')>=0,'approval email links “How to use your new health plan” to their resource page');
  reviewGo(3); await w(300); var cb=[].map.call(document.querySelectorAll('#rvChips button'),function(b){ return b.textContent.trim(); }); var p3=reviewPages(reviewT())[3];
  ok(cb[0]==='Before you dial'&&/^3\./.test(cb[3])&&(rd.querySelector('h2[data-screen="'+p3.sc+'"] .n')||{}).textContent==='3','step buttons and script headings agree: Before you dial unnumbered, Open is 1');
