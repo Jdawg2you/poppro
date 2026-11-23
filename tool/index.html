@@ -8840,15 +8840,16 @@ function acaCheckHTML(t){ var B=anchorBase(); if(!(acaFlowOn(t)||(B&&B.k==='aca'
       :'You’re quoting marketplace pricing. Confirm the premium and subsidy on '+hs+' right before you present: prices and subsidies change.')
     +'<small>Only you see this, never the client screen.</small></div>'; }
 function renderPresent(){ var host=$('presentHost'); if(!host) return; var shb=SHOW_ON?'<div class="sh-bar" id="showBar"></div>':'';   /* the client screen works for Cigna, Bright Life and ACA packages too (Jesse, 20 Nov) */
-  if(triadFlowOn(presentTier())){ host.innerHTML=shb+anchorFlipHTML()+acaCheckHTML(presentTier())+triadPresentHTML(presentTier()); triadBind(host); anchorFlipBind(host); if(shb) showBarPaint(); return; }
-  if(blFlowOn(presentTier())){ host.innerHTML=shb+anchorFlipHTML()+acaCheckHTML(presentTier())+blPresentHTML(presentTier()); triadBind(host); anchorFlipBind(host); if(shb) showBarPaint(); return; }
-  if(acaFlowOn(presentTier())){ host.innerHTML=shb+anchorFlipHTML()+acaCheckHTML(presentTier())+acaPresentHTML(presentTier()); triadBind(host); anchorFlipBind(host); if(shb) showBarPaint(); return; } var t=presentTier(), T=presentTokens(t), pages=presentPages();
+  if(triadFlowOn(presentTier())){ host.innerHTML=anchorFlipHTML()+acaCheckHTML(presentTier())+shb+triadPresentHTML(presentTier()); triadBind(host); anchorFlipBind(host); if(shb) showBarPaint(); return; }
+  if(blFlowOn(presentTier())){ host.innerHTML=anchorFlipHTML()+acaCheckHTML(presentTier())+shb+blPresentHTML(presentTier()); triadBind(host); anchorFlipBind(host); if(shb) showBarPaint(); return; }
+  if(acaFlowOn(presentTier())){ host.innerHTML=anchorFlipHTML()+acaCheckHTML(presentTier())+shb+acaPresentHTML(presentTier()); triadBind(host); anchorFlipBind(host); if(shb) showBarPaint(); return; } var t=presentTier(), T=presentTokens(t), pages=presentPages();
   S.present=S.present||{}; var pg=Math.max(0,Math.min(pages.length-1,+S.present.pg||0));
   var who=(T['client.first']||'the client')+(S.client&&S.client.sname?' & '+enSplit(S.client.sname)[0]:'');
   var h='<div class="pr-top"><div><h3>Presenting the <em class="pr-plan">'+esc(TIER_NAME[t])+'</em> plan to '+esc(who)+'</h3><small>Agent-only — never on Client View or the printout. Blue blanks fill from this quote; red ones are missing.</small></div>'
     +presentBubbles(t)+'<button type="button" data-pr="quote" style="font:inherit;font-weight:700;border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 13px;cursor:pointer">← Back to the Quote</button></div>';
+  h+=anchorFlipHTML()+acaCheckHTML(t);   /* Jesse, 23 Nov: the anchor sits above the client screen bar */
   if(SHOW_ON) h+='<div class="sh-bar" id="showBar"></div>';   /* client screen remote - sandbox only */
-  h+=anchorFlipHTML()+acaCheckHTML(t)+histStrip('present')+covClockBar();
+  h+=histStrip('present')+covClockBar();
   h+='<div class="pr-prog" id="prChips"></div><div class="pr-grid"><div>'
     +'<iframe id="prFrame" src="presentation.html?v='+SCRIPT_V+'" title="Presentation script" style="width:100%;border:1px solid var(--line);border-radius:12px;background:#fff;min-height:200px"></iframe>'
     +'<div class="pr-nav" id="prNav"></div></div>'
