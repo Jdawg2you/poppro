@@ -151,7 +151,12 @@ const TEST = `(async function(){
   var shownSay=function(){ return Array.prototype.filter.call(d.querySelectorAll('[data-anchor-say]'),function(x){ return fr.contentWindow.getComputedStyle(x).display!=='none'; }).map(function(x){ return x.getAttribute('data-anchor-say'); }).join(); };
   ok(shownSay()==='cur','paying for it themselves: only the today version ('+shownSay()+')');
   ok(Array.prototype.every.call(d.querySelectorAll('[data-leadin]'),function(x){ return fr.contentWindow.getComputedStyle(x).display==='none'; })&&d.querySelectorAll('[data-leadin]').length>=2,'the If-they lead-ins are hidden (all of them: two anchor cues + three current-plan variant cues since 21 Nov)');
-  var kc=JSON.stringify(S.cur); S.cur.emp=400; presentWire(d,'best'); ok(shownSay()==='aca','employer pays part: the marketplace version ('+shownSay()+')');
+  /* Jesse, 24 Nov: an employer plan anchors on their share while they keep it, and on COBRA (both shares + 2%) when it is ending */
+  var kc=JSON.stringify(S.cur), kt=S.intake.whyTags, kl=S.intake.lastDay; S.cur.emp=400; presentWire(d,'best'); var curTxt=function(){ return d.querySelector('[data-anchor-say="cur"]').innerText; };
+  ok(shownSay()==='cur'&&!/COBRA/.test(curTxt()),'employer pays part, keeping it: their share ('+shownSay()+')');
+  S.intake.whyTags=['Losing coverage']; presentWire(d,'best'); var cob=Math.round(((+S.cur.prem||0)+400)*1.02);
+  ok(shownSay()==='cur'&&/COBRA/.test(curTxt())&&curTxt().indexOf('$'+cob.toLocaleString('en-US'))>=0&&!/You told me you.re paying/.test(curTxt()),'employer plan ending: the COBRA figure ($'+cob+'): '+curTxt().slice(0,120));
+  S.intake.whyTags=kt; S.intake.lastDay=kl; presentWire(d,'best'); ok(!/COBRA/.test(curTxt())&&/You told me/.test(curTxt()),'back to their share: the original line returns');
   S.cur={}; presentWire(d,'best'); ok(shownSay()==='aca','no current plan: the marketplace version ('+shownSay()+')');
   var aside=function(){ var x=Array.prototype.filter.call(d.querySelectorAll('.say'),function(y){ return /to the side/.test(y.textContent); })[0]; return x&&x.textContent; };
   S.cur=JSON.parse(kc); S.cur.paying=true; presentWire(d,'best'); ok(/put those to the side/.test(aside()),'two plans: put those to the side');

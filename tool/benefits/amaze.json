@@ -20,7 +20,7 @@
         "Amaze is a membership for everyday care, not insurance. It does not pay hospital, ER, surgery or specialist bills — that is what the Cigna plan is for.",
         "Amaze is $99 a month for the household (Jesse, 19 Nov). Amaze's own site prints no price; click the price on the row to change it if the client's figure differs.",
         "Do not sell it as a copay saver: $99 a month is $1,188 a year, and five primary-care visits on Cigna 7350 cost $250 in copays. It buys any-time access and breadth. On the HSA plans, where every visit is deductible + 20%, it does replace real money.",
-        "Amaze publishes no drug list for the membership. Look up a client's drug on Rx Valet's own search (myrxvalet.com/medications) or in the Rx Valet app; do not quote a savings percentage or a pharmacy count. The 1,100-generic $0 list and the 37-drug ACUTE program found online belong to other plans built on Amaze (Strategic Health Share, Capstone Plus) — do not promise either.",
+        "Amaze publishes no drug list for the membership, and none of its sheets mention Rx Valet, so neither does the agent (Jesse, 24 Nov). Amaze's doctors prescribe and refill at no visit cost; the medicine is still bought at the pharmacy. The 1,100-generic $0 list and the 37-drug ACUTE program found online belong to other plans built on Amaze — do not promise them.",
         "Second opinions are not a stated feature anywhere in Amaze's material — do not promise one.",
         "Do not repeat Amaze's own usage or ER-reduction percentages; they are company claims.",
         "If the membership is cancelled the free features stay (search, video library, symptom checker); the medical care is what the subscription buys.",
@@ -170,19 +170,11 @@
           "title": "Prescriptions",
           "rows": [
             {
-              "label": "Rx Valet prescription discounts",
-              "values": {
-                "*": "Comes with the Amaze membership"
-              },
-              "note": "From the October training (Amaze Concierge TeleHealth with RxValet); not printed on Amaze's sheet. No savings figure is ever quoted",
-              "key": true
-            },
-            {
               "label": "Drug list",
               "values": {
-                "*": "Amaze publishes none for the membership. Look up a drug's price at myrxvalet.com/medications or in the Rx Valet app"
+                "*": "Amaze publishes none for the membership. Its doctors prescribe and refill at no visit cost; the medicine is still bought at the pharmacy"
               },
-              "note": "Do not promise a drug is free"
+              "note": "Do not promise a drug is free, and do not mention Rx Valet: no Amaze document lists it (Jesse, 24 Nov)"
             }
           ]
         },

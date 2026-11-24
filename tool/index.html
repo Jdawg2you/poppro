@@ -3108,7 +3108,8 @@ function anchorBase(force){ var k=force||(S.intake&&S.intake.anchor)||'aca';
       return {k:'aca',lab:'ACA bronze',short:'ACA',your:'your marketplace plan',prem:t.net+cm,premOnly:t.net,copayMo:cm,visits:v,copay:cp,mo:t.mo,yr:t.yr,ded:+S.aca.ded||0}; },
     cur=function(){ var C=curIn(); if(!(+C.prem>0)) return null; var c=curTrue();
       var v2=+((S.intake||{}).visits)||0, cp2=+C.copay||0, cm2=v2*cp2/12;
-      return {k:'cur',lab:'Current plan',short:'current plan',your:'your current plan',prem:(+C.prem)+cm2,premOnly:+C.prem,copayMo:cm2,visits:v2,copay:cp2,mo:c.mo,yr:c.yr,ded:+C.ded||0}; };
+      var F=curAnchorFig(), yr2=c.yr+(F.mo-(+C.prem||0))*12;   /* COBRA: the full premium, not their share (24 Nov) */
+      return {k:'cur',lab:F.kind==='cobra'?'Current plan (COBRA)':'Current plan',short:'current plan',your:'your current plan',prem:F.mo+cm2,premOnly:F.mo,copayMo:cm2,visits:v2,copay:cp2,mo:yr2/12,yr:yr2,ded:+C.ded||0,cobra:F.kind==='cobra'}; };
   /* Whatever the agent anchors against drives the whole Quote. If that side has no numbers, fall back to the other one
      rather than comparing nothing, and say so on the anchor strip (Jesse, 3 Nov). */
   if(force) return k==='aca'?aca():cur();
@@ -5017,16 +5018,20 @@ function renderAfcPartnersHTML(forPrint){
 
 /* Jesse, 21 Nov: compare with their current plan when they're paying for one, else the marketplace - until the agent picks
    one on the Intake or flips it on Present, then their pick stands (anchorSet). */
-function anchorAuto(){ var I=S.intake; if(!I||I.anchorSet) return; var k=presentHasCur()?'cur':'aca'; if(I.anchor!==k){ I.anchor=k; S.present=S.present||{}; S.present.anchor=k; }
+function anchorAuto(){ var I=S.intake; if(!I||I.anchorSet) return; var k=presentHasCur()&&curAnchorFig().kind!=='cobra'?'cur':'aca';   /* an employer plan that is ending defaults to the marketplace */ if(I.anchor!==k){ I.anchor=k; S.present=S.present||{}; S.present.anchor=k; }
   var el=$('in_anchor'); if(el&&el.value!==I.anchor){ el.value=I.anchor; if(typeof anchorNote==='function') anchorNote(); } }
 function anchorSetTo(k){ S.intake=S.intake||{}; S.intake.anchor=k; S.intake.anchorSet=true; S.present=S.present||{}; S.present.anchor=k; if($('in_anchor')){ $('in_anchor').value=k; anchorNote(); } }
 /* the flip on every Present header: agent-only */
 /* the anchor the script and client screen actually use - the button lights this one, and says why when it differs (21 Nov) */
 function anchorEff(){ var k=(S.intake&&S.intake.anchor)||'aca', C=curIn(); if(k!=='cur') return {k:k,why:''};
   if(!(+C.prem>0)) return {k:'aca',why:'No current premium on the Intake yet, so the marketplace is used.'};
-  if(+C.emp>0) return {k:'aca',why:'Their employer pays part of their current premium, so the script compares with the marketplace: a subsidised price isn’t one they could buy.'};
   if(C.paying===false) return {k:'aca',why:'They’re not marked as paying for their current plan. Click “Their current plan” again to mark them as paying.'};
+  if(+C.emp>0){ var F=curAnchorFig(); return {k:'cur',why:F.kind==='cobra'?'Their plan through work is ending, so “their current plan” means COBRA: about '+prMo(F.mo)+'/mo (their '+prMo(F.share)+' + the employer’s '+prMo(F.emp)+', plus 2%). The marketplace is usually the fairer comparison.':'Their share only: '+prMo(F.mo)+'/mo. The employer’s '+prMo(F.emp)+' isn’t counted, because they never see it.'}; }
   return {k:'cur',why:''}; }
+/* Jesse, 24 Nov: anchor on what the client actually pays. Keeping an employer plan: their share. Losing it: COBRA, the
+   full premium (both shares) plus 2% - the plan they can still buy (DOL: up to 102% of the plan's cost). */
+function curLosing(){ var I=S.intake||{}; return whyTagList(I.whyTags).indexOf('Losing coverage')>=0||!!String(I.lastDay||'').trim(); }
+function curAnchorFig(){ var C=curIn(), p=+C.prem||0, e=+C.emp||0; return e>0&&curLosing()?{kind:'cobra',mo:Math.round((p+e)*102)/100,share:p,emp:e}:{kind:'share',mo:p,share:p,emp:e}; }
 function anchorFlipHTML(){ var E=anchorEff(), k=E.k, C=curIn(), hc=+C.prem>0, ha=+((S.aca||{}).prem)>0, set=!!(S.intake&&S.intake.anchorSet);
   /* Jesse, 21 Nov: say it plainly, glow green until the agent has picked, and let a current plan be picked whenever a premium is on file */
   var b=function(v,lab,ok,why){ return '<button type="button" data-anflip="'+v+'" class="'+(k===v?'on':'')+(ok?'':' off')+'"'+(ok?'':' data-why="'+why+'"')+'>'+lab+'</button>'; };
@@ -6621,11 +6626,12 @@ function triadRateNote(){ var t=chosenTier(), q=triadPremium(t), r=triadRange(),
    "with those other plans it's just like, here's the plan." Cigna, Bright Life, Virtual Basic and ACA + protection now
    open the way Health ZONE's ManhattanLife script does - open, where we are, their reason, what we compared it with -
    then the plan, in the ManhattanLife order, and the price against THEIR anchor. Living benefits appear only if sold. */
-function prAnchorCur(){ var C=curIn(); return presentAnchor()==='cur'&&presentHasCur()&&!(+C.emp>0); }
+function prAnchorCur(){ return presentAnchor()==='cur'&&presentHasCur(); }
 function prLbMo(t){ var pk=S.packages[t]||{}; return ((pk.products||[]).filter(function(p){ return isLBk(p.k)&&+p.monthly>0; }).reduce(function(a,p){ return a+(+p.monthly||0); },0))+(+pk.lb||0); }
 /* the anchor the client hears: their own plan, or the marketplace - null when there is no real figure to say */
 function prAnchor(){ var C=curIn(), a=S.aca||{}, m0=function(n){ return '$'+Math.round(+n||0).toLocaleString('en-US'); };
-  if(prAnchorCur()) return {k:'cur',mo:+C.prem,ded:+C.ded||0,name:'your current plan',say:'You told me you’re paying <b>'+m0(C.prem)+' a month</b> right now'+(+C.ded>0?' with a <b>'+m0(C.ded)+'</b> deductible':'')};
+  if(prAnchorCur()){ var F=curAnchorFig(); return F.kind==='cobra'?{k:'cur',mo:F.mo,ded:+C.ded||0,name:'COBRA',say:'Your plan through work is ending. To keep that same plan on COBRA, you’d pay the full price — about <b>'+m0(F.mo)+' a month</b>'+(+C.ded>0?', with the same <b>'+m0(C.ded)+'</b> deductible':'')}
+    :{k:'cur',mo:F.mo,ded:+C.ded||0,name:'your current plan',say:'You told me you’re paying <b>'+m0(C.prem)+' a month</b> right now'+(+C.ded>0?' with a <b>'+m0(C.ded)+'</b> deductible':'')}; }
   var typed=+a.prem>0&&!acaEstFlags().prem; if(!typed) return null;
   var net=acaNetPrem(); return {k:'aca',mo:net,ded:+a.ded||0,name:'the marketplace plan',say:(+a.subsidy>0?'The first thing I looked at was healthcare.gov. With your subsidy, the plan that came back for you is <b>'+m0(net)+' a month</b>':'The first thing I looked at was healthcare.gov — great if you qualify for discounts, but with your income it looks like you’d pay full price. The cheapest plan that came back for you was <b>'+m0(a.prem)+' a month</b>')+(+a.ded>0?' with a <b>'+m0(a.ded)+'</b> deductible':'')}; }
 /* o: {stage: the "to review" line, reveal: the hand-off into the plan, anchor: show the anchor page (false where the ACA plan IS the plan)} */
@@ -6639,12 +6645,12 @@ function prWarm(t,o){ var I=S.intake||{}, C=S.client||{}, first=triadFirst(), ag
   pages.push({t:'Their reason',h:(rs?say(rs):todo('<b>No reason on the Intake yet.</b> Ask: “What made you start looking?” and play their own words back to them. Type it into <b>What matters most</b> on the Intake the way they said it.'))
     +todo('<b>NOT SPOKEN — stop here.</b> You are waiting to hear “yes, that’s what matters to me.” Don’t move until you get it.')
     +say('“I think you’ll be pleasantly surprised by what I found for '+hh+'. Let’s walk through it together.”')});
-  if(o.anchor){ var A=prAnchor(), E=anchorEff(), a=S.aca||{}, typed=+a.prem>0&&!acaEstFlags().prem, cur=A&&A.k==='cur', h='';
-    if(cur){ h=say('“'+A.say+'.'+(typed?(acaNetPrem()>A.mo?' I also checked healthcare.gov. The plan that came back for you was <b>'+m0(acaNetPrem())+' a month</b>'+(+a.ded>0?' with a <b>'+m0(a.ded)+'</b> deductible':'')+' — more than you’re paying now. So neither of those is where I’d leave you.':' I also checked healthcare.gov. The plan that came back was <b>'+m0(acaNetPrem())+' a month</b> — less than you pay now — but the deductible on it is <b>'+m0(a.ded)+'</b>. In a year you actually use it, that’s the number that decides what you pay. So neither of those is where I’d leave you.'):' I did look at healthcare.gov, but for your situation it isn’t a great way to go — so let’s start from what you have today.')+'”')
-        +todo('<b>NOT SPOKEN.</b> Put their current plan’s numbers on the client screen. Let the number sit for a second before you say anything else.'); }
+  if(o.anchor){ var A=prAnchor(), E=anchorEff(), a=S.aca||{}, typed=+a.prem>0&&!acaEstFlags().prem, cur=A&&A.k==='cur', cob=cur&&curAnchorFig().kind==='cobra', h='';
+    if(cur){ h=say('“'+A.say+'.'+(typed?(acaNetPrem()>A.mo?' I also checked healthcare.gov. The plan that came back for you was <b>'+m0(acaNetPrem())+' a month</b>'+(+a.ded>0?' with a <b>'+m0(a.ded)+'</b> deductible':'')+(cob?' — more than COBRA would cost you. ':' — more than you’re paying now. ')+'So neither of those is where I’d leave you.':' I also checked healthcare.gov. The plan that came back was <b>'+m0(acaNetPrem())+' a month</b> — '+(cob?'less than COBRA':'less than you pay now')+' — but the deductible on it is <b>'+m0(a.ded)+'</b>. In a year you actually use it, that’s the number that decides what you pay. So neither of those is where I’d leave you.'):' I did look at healthcare.gov, but for your situation it isn’t a great way to go — so let’s start from what you have today.')+'”')
+        +todo('<b>NOT SPOKEN.</b> Put '+(cob?'the COBRA figure':'their current plan’s numbers')+' on the client screen. Let the number sit for a second before you say anything else.'); }
     else if(A){ h=say('“'+A.say+'.”')+todo('<b>NOT SPOKEN.</b> Share the marketplace screenshot. Let the number sit for a second before you say anything else.'); }
     else h=todo('<b>No real anchor yet.</b> Type the marketplace price from healthcare.gov on the Intake (ACA / Marketplace), or their current premium if they pay for a plan now — never read an estimate out as a quote.')+say('“I did look at healthcare.gov, but for your situation it isn’t the way I’d go.”');
-    pages.push({t:cur?'Anchor: what they pay today':'Anchor: the marketplace',long:cur?'What they pay today — the anchor':'Price the marketplace — the anchor',h:(E.why?todo(esc(E.why)):'')+h
+    pages.push({t:cob?'Anchor: COBRA':cur?'Anchor: what they pay today':'Anchor: the marketplace',long:cob?'Keeping their plan on COBRA — the anchor':cur?'What they pay today — the anchor':'Price the marketplace — the anchor',h:(E.why?todo(esc(E.why)):'')+h
       +(o.note?todo(o.note):'')+todo('The anchor switch at the top of this page sets which one you say. Every “you were at” on the price page uses it.')
       +say('“So let’s put '+(cur&&typed?'those':'that one')+' to the side. '+o.reveal+'”')}); }
   return pages; }
@@ -6696,7 +6702,7 @@ function triadPresentHTML(t){ var first=triadFirst(), plan=triadPlanOf(t), ded=t
       return triadSay('“One thing this plan doesn’t include is a doctor on your phone. So I’ve added <b>Amaze</b>'+benI(t,'amz','Amaze')+'. It’s a membership, not insurance: for <b>'+fmt2(AMAZE_MO)+' a month</b>'+(fam?' — one price for you, your spouse and your kids up to 26 —':'')+' you can reach a doctor any time, day or night, by phone, video or message. No appointment, and no fee per visit.”')
        +triadSay('“They can diagnose and treat you, prescribe, and order tests and referrals, and their patient advocates help with medical bills and insurance questions. So at 2 a.m., before you drive to urgent care or the ER, you call Amaze first.”')
        +triadDo('<b>Show them:</b> <a href="'+amazeDoc('overview')+'" target="_blank" rel="noopener">What Amaze includes — one page ↗</a>. Share your screen, or text them the link.')
-       +triadDo('Rx Valet prescription discounts come with Amaze — a price to check a drug against before filling it. Quote no savings figure.')
+       +triadDo('<b>Prescriptions:</b> Amaze’s doctors can prescribe and refill at no visit cost — the medicine itself is still bought through the Cigna plan’s TrueScripts copays. Don’t mention Rx Valet: no Amaze or Cigna document lists it.')
        +triadDo('<b>Don’t sell it as a copay saver.</b> '+fmt2(AMAZE_MO)+' a month is '+fmt2(AMAZE_MO*12)+' a year; it buys a doctor any time, not cheaper routine visits.'+(triadIsHsa(t)?' On this HSA plan every visit is deductible + 20%, so here it does replace real money.':'')+' Never call it insurance, and don’t repeat Amaze’s own usage or ER percentages.'); })()}:null),
    {t:'Covering the deductible',long:'Covering the deductible — hospital indemnity & deductible busters',h:(bus.length?triadSay('“The one thing this plan doesn’t do is the deductible — that’s on you. So we put cash plans next to it that pay <i>you</i> when the big thing happens:”')
       +'<ul class="trd-bus">'+bus.map(function(x){ return '<li><b>'+esc(x.name)+'</b>'+benI(t,x.k,x.name)+' <small>'+x.m+'</small><br>'+x.b+'</li>'; }).join('')+'</ul>'
@@ -6750,8 +6756,8 @@ function blPresentHTML(t){ var first=triadFirst(), c=effCfg(t), prem=triadPremiu
   var scr=typeof blScreen==='function'?blScreen():[], bad=scr.filter(function(z){ return z.l==='bad'; }), warn=scr.filter(function(z){ return z.l!=='bad'; });
   var br=brochFor('brightlife',c), say=triadSay, todo=triadDo, qa=function(q,a){ return todo('<b>“'+q+'”</b><br>'+a); };
   var pages=[
-   {t:'What it is',h:say('“'+esc(first)+', we represent a company called <b>Bright Life Health &amp; Wellness</b>. It works differently from insurance you buy on your own: you’re hired as a <b>part-time Wellness Associate</b> — a W-2 job doing short health and wellness activities each month — and the job comes with a health plan. The plan is the <b>Health Shield Copay PPO</b> on the <b>Cigna network</b>.”')
-      +say('“Because it’s a job, they look at your health <i>before</i> they hire you, not after you file a claim. If they say yes, you know where you stand from day one.”')
+   {t:'What it is',h:say('“'+esc(first)+', we represent a company called <b>Bright Life Health &amp; Wellness</b>. It works differently from insurance you buy on your own: they bring you on as a <b>part-time Wellness Associate</b> — a part-time W-2 role doing short health and wellness activities each month — and the role comes with a health plan. The plan is the <b>Health Shield Copay PPO</b> on the <b>Cigna network</b>.”')
+      +say('“Because it’s a role with them, they look at your health <i>before</i> they bring you on, not after you file a claim. If they say yes, you know where you stand from day one.”')
       +todo('<b>Say it right:</b> “we <b>represent</b> Bright Life” — never “I sell Bright Life”. Never call it guaranteed issue: it isn’t, it’s a part-time job with a health plan. It’s a self-funded employer plan, not an insurance policy.')
       +todo('<b>Don’t call it Minimum Essential Coverage.</b> No Bright Life document says it is. If they need MEC for an HRA, a visa or a court order, that’s a question for Bright Life first.')
       +todo('<b>Activity pay:</b> the recruiter FAQ says $40 an hour; the 22 Oct webinar described about $10 for a monthly ~10-minute survey. Don’t quote a figure until Bright Life confirms which.')},
@@ -6773,8 +6779,7 @@ function blPresentHTML(t){ var first=triadFirst(), c=effCfg(t), prem=triadPremiu
       +todo('These are ManhattanLife plans: they pay the client directly, on top of Bright Life, with their own application and underwriting.')
       :say('“The one thing to plan for is a hospital stay: the deductible plus a $2,500 copay.”')+todo('<b>No deductible buster in this package.</b> Hospital Indemnity Select at $2,000 a stay + $1,500 outpatient is the usual pairing — add it on the Quote.'))
       +(x.names.length?todo('Humana '+esc(x.names.join(' + '))+' is in this package. It’s only sold to Bright Life members.'):todo('Humana dental and vision can be added on the Quote. They’re only sold to Bright Life members.'))},
-   {t:'The health questions',h:say('“Before they hire you there’s a health form, and they mean it — a computer reviews your history first and a person looks at anything it flags. Nothing is guaranteed until they say yes, and I’ll know before you pay a cent.”')
-      +say('“One more thing you should know up front: if your medical bills ever pass <b>$35,000</b>, Bright Life’s CARES team will offer to move you to a marketplace plan and help with its costs. It’s your choice, and you can come back when the bills come down.”')
+   {t:'What happens when you apply',h:say('“Before they bring you on there’s a short health review. A computer looks at your history first, and a person reviews anything it flags. Nothing is final until they say yes, and I’ll know before you pay a cent.”')
       +todo('<b>Ongoing care counts with no time limit</b> — a yearly visit to a cardiologist or oncologist about something years old can still be a Yes. A clean-looking file is not a prediction.')
       +(bad.length?todo('<b style="color:#b42318">The Intake already checks Yes on the form:</b><ul style="margin:6px 0 0 18px">'+bad.map(function(z){ return '<li>'+esc(z.t)+(z.who?' — '+esc(z.who):'')+(z.why?': '+esc(z.why):'')+'</li>'; }).join('')+'</ul>'):'')
       +(warn.length?todo('<b>Ask before they apply:</b><ul style="margin:6px 0 0 18px">'+warn.map(function(z){ return '<li>'+esc(z.t)+(z.who?' — '+esc(z.who):'')+(z.why?': '+esc(z.why):'')+'</li>'; }).join('')+'</ul>'):'')
@@ -6787,10 +6792,9 @@ function blPresentHTML(t){ var first=triadFirst(), c=effCfg(t), prem=triadPremiu
       +qa('Is the deductible per person or for all of us?','$1,250 a person, $2,500 for the family, in network. Out of network has its own: $2,500 / $5,000.')
       +qa('Can I see a doctor out of network?','Yes — the same copay plus 40%, with a separate deductible and out-of-pocket max.')
       +qa('Can I pick my payment date?','No — it’s the 15th of each month, and the first one comes after you’re accepted.')
-      +qa('What happens if I have a really big claim?','Past $35,000 in bills, Bright Life’s CARES team will offer to move you to a marketplace plan and help with its deductibles and premiums. It’s your choice.')
       +qa('Can I add my family later?','With a qualifying life event, using the form in the employee portal. Otherwise add them now.')
       +qa('What about my son or daughter turning 26?','They come off your plan, and Bright Life can offer them their own Wellness Associate job.')
-      +qa('Can I get just the dental?','No — dental and vision are only for Bright Life members, so they have to be hired and answer the health form.')
+      +qa('Can I get just the dental?','No — dental and vision are only for Bright Life members, so they have to be brought on and answer the health form.')
       +qa('Who do I call for a doctor tonight?','Our Live Doc, free: <b>940-LIVEDOC (940-548-3362)</b>. Behavioral health: <b>866-890-3741</b>.')
       +qa('Who do I ask about my plan?','help@brightlifehw.com. Benefits, claims and providers are on provider.brightlifehw.com.')
       +(br?todo('<a href="'+esc(br.url)+'" target="_blank" rel="noopener">📄 The Health Shield PPO 1250 brochure ↗</a> — the plan’s benefits and prices on these pages are from it.'):'')},
@@ -6802,7 +6806,7 @@ function blPresentHTML(t){ var first=triadFirst(), c=effCfg(t), prem=triadPremiu
   pages=prFlow(t,pages,{anchor:true,looked:'I looked at the marketplace, at what you have today, and at the private plans I work with in '+esc(S.client.state||'your state'),
     stage:'“To review, I specialize in helping small business owners, 1099 employees — (their situation) — find affordable private health coverage. Marketplace plans are good for families who qualify for big subsidies, but they have to include ten government-mandated benefits, even ones you may never use. A private plan lets you pay for what you need and skip what you don’t. Make sense?”',
     reveal:'Here’s what I found for you instead — a health plan on the Cigna network that comes a different way: through a part-time job.',base:'The <b>Bright Life plan</b> covers your doctor visits on a flat copay and picks up the big things, up to its yearly out-of-pocket cap.',
-    order:['What it is','Your doctors','How it works','Prescriptions','Covering the deductible','_together','The price, honestly','_lb','The health questions','Quick answers','Next steps'],price:'The price, honestly'});
+    order:['What it is','Your doctors','How it works','Prescriptions','Covering the deductible','_together','The price, honestly','_lb','What happens when you apply','Quick answers','Next steps'],price:'The price, honestly'});
   return '<div class="pr-top"><div><h3>Presenting the <em class="pr-plan">Bright Life Health Shield PPO 1250</em> to '+esc(first)+'</h3><small>Agent-only. Figures come from the Health Shield PPO 1250 brochure (V1.110226).</small></div>'
     +presentBubbles(t)+'<button type="button" data-pr="quote" style="font:inherit;font-weight:700;border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 13px;cursor:pointer">← Back to the Quote</button></div>'
     +'<div class="trd">'+triadSteps(pages,'blprpg',1)+'</div>'; }
@@ -6844,7 +6848,7 @@ function acaPresentHTML(t){ var PK=(S.lineup==='custom'&&effCfg(t).pick&&/^(aca|
      triadSay('“If you ever pull into an emergency room parking lot, the app may send you a notification — so you can check whether a virtual visit would do before you sit in the ER.”'),
      triadDo('<b>Show them:</b> <a href="'+amazeDoc('overview')+'" target="_blank" rel="noopener">What Amaze includes — one page ↗</a>. Share your screen, or text them the link.'),
      triadDo('<b>Never call Amaze coverage or insurance</b> — it’s care access. It doesn’t pay a hospital bill. Don’t quote Amaze’s own utilisation or ER-reduction percentages; they’re company claims.'),
-     triadDo('Amaze is their virtual care. Don’t mention EasyCare2go to an Amaze client at all — two telehealth services is confusing. Amaze’s RxValet: a client with a ManhattanLife plan already has RxValet free through EasyCare2go — don’t sell it to them as part of Amaze.')].join('');
+     triadDo('Amaze is their virtual care. Don’t mention EasyCare2go to an Amaze client at all — two telehealth services is confusing. <b>Don’t mention Rx Valet with Amaze</b>: Amaze’s own sheets don’t list it. Amaze’s doctors prescribe and refill at no visit cost; the medicine is still bought at the pharmacy.')].join('');
   var pages=[];
   if(!vb){
     pages.push({t:'The ACA plan',h:acaSay+acaDo});
@@ -8686,7 +8690,7 @@ var PRESENT_PAGES=[
  {t:'Before you dial'},
  {t:'The opening & setting the stage',sc:'open',next:'The opening — your first words on the call'},
  {t:'Their reason',sc:'reason'},
- {get t(){ return prAnchorCur()?'What they pay today — the anchor':'Price the marketplace & pick the anchor'; },sc:'price'},   /* Jesse, 24 Nov: step 4 follows the anchor */
+ {get t(){ return prAnchorCur()?(curAnchorFig().kind==='cobra'?'COBRA — the anchor':'What they pay today — the anchor'):'Price the marketplace & pick the anchor'; },sc:'price'},   /* Jesse, 24 Nov: step 4 follows the anchor */
  {t:'Networks & providers',sc:'networks'},
  {t:'The two questions everyone asks',sc:'questions'},
  {t:'How coverage works — day to day & preventive',sc:'coverage'},
@@ -9406,8 +9410,8 @@ function presentScriptTokens(t){ var T=presentTokens(t), C=S.client||{}, I=S.int
   /* per-person deductible for the worked example: the ACA anchor's embedded figure, or the current plan's own deductible */
   var EA=evAnchor(), exDed=EA&&EA.ded?EA.ded:(EA&&EA.lab==='Your current plan'&&+curIn().ded>0?+curIn().ded:0);
   if(exDed){ T['anchor.deductible']=m0(exDed); T['_exDedWords']=m0(exDed); }
-  T['anchor.aside_obj']=(presentHasCur()&&!(+curIn().emp>0))?'those':'that one';
-  var planMo=tierTotals(t).mo-lbMo,   /* premium only: the anchor side has no drug costs either */ ak=presentAnchor(), anc=ak==='aca'?(+S.aca.prem>0?acaNetPrem():null):ak==='cur'||ak==='employer'?(+Cu.prem>0?+Cu.prem:null):null;
+  T['anchor.aside_obj']=presentHasCur()?'those':'that one';
+  var planMo=tierTotals(t).mo-lbMo,   /* premium only: the anchor side has no drug costs either */ ak=presentAnchor(), anc=ak==='aca'?(+S.aca.prem>0?acaNetPrem():null):ak==='cur'||ak==='employer'?(+Cu.prem>0?curAnchorFig().mo:null):null;   /* COBRA when an employer plan is ending (24 Nov) */
   T['plan.monthly']=fmt2(planMo); T['lb.addback']=lbMo>0?fmt2(lbMo):''; T['new.total']=lbMo>0?fmt2(planMo+lbMo):'';   /* no living benefits yet: the line prompts rather than repeating the plan price (Jesse, 23 Oct) */
   T['anchor.deductible']=ak==='aca'?T['aca.deductible']:(ak==='cur'||ak==='employer')?T['cur.deductible']:'';
   if(anc!=null){ T['anchor.today']=fmt2(anc); var sv=anc-planMo; T['savings.monthly']=fmt2(sv); T['saving']=fmt2(anc-planMo-lbMo);
@@ -9648,18 +9652,28 @@ function presentWire(doc,t){ scriptClean(doc); if(!doc||!doc.body) return 0;
   /* Jesse, 21 Nov: the line follows the agent's "Anchor / compare against" pick, not a guess from the data. Current plan
      whenever it is picked and a current premium is on file; the marketplace otherwise. */
   /* auto: the old rules (not paying, or an employer paying part -> marketplace); an explicit pick (anchorSet) overrides them */
-  var Cq=curIn(), useCur=presentAnchor()==='cur'&&presentHasCur()&&!(+Cq.emp>0);   /* an employer-subsidised premium is never the anchor line (the script's own rule) */   /* picking 'Their current plan' at the top ticks 'paying', so the paying box can stay the rule */
+  var Cq=curIn(), useCur=presentAnchor()==='cur'&&presentHasCur();   /* 24 Nov: an employer plan anchors on their share, or COBRA when it is ending */   /* an employer-subsidised premium is never the anchor line (the script's own rule) */   /* picking 'Their current plan' at the top ticks 'paying', so the paying box can stay the rule */
   /* Optional sub-lines inside an anchor line (for the Health Insurance folder's script): data-aca-seen="no" when no real
      marketplace price was typed, "more" / "less" when one was and it is above / below what they pay today, "yes" for any
      typed price. Lines without the hook are untouched. */
-  var acaTyped=+((S.aca||{}).prem)>0&&!acaEstFlags().prem, acaNow=acaNetPrem(), seen=!acaTyped?'no':(acaNow>(+Cq.prem||0)?'more':'less');
+  var acaTyped=+((S.aca||{}).prem)>0&&!acaEstFlags().prem, acaNow=acaNetPrem(), seen=!acaTyped?'no':(acaNow>(useCur?curAnchorFig().mo:(+Cq.prem||0))?'more':'less');   /* against COBRA when that is the anchor (24 Nov) */
   (function(){ var h=doc.querySelector('h2[data-screen="price"]'); if(!h) return; var tn=[].filter.call(h.childNodes,function(n){ return n.nodeType===3&&n.textContent.trim(); })[0]; if(!tn) return;
-    if(!h.dataset.orig) h.dataset.orig=tn.textContent; tn.textContent=useCur?'What they pay today, then set it aside':h.dataset.orig;   /* Jesse, 24 Nov: step 4 kept saying marketplace with their own plan as the anchor */
+    if(!h.dataset.orig) h.dataset.orig=tn.textContent; tn.textContent=useCur?(curAnchorFig().kind==='cobra'?'Keeping their plan on COBRA, then set it aside':'What they pay today, then set it aside'):h.dataset.orig;   /* Jesse, 24 Nov: step 4 kept saying marketplace with their own plan as the anchor */
     for(var x=h.nextElementSibling;x&&!(x.matches&&x.matches('h2[data-screen]'));x=x.nextElementSibling){ if(!x.classList||!x.classList.contains('do')) continue;
       [].forEach.call(x.childNodes,function(n){ if(n.nodeType!==3||!/marketplace screenshot/i.test(n.textContent)&&!n._orig) return; if(!n._orig) n._orig=n.textContent; n.textContent=useCur?'Put their current plan’s numbers on the client screen. Let the number sit for a second before you say anything else.':n._orig; }); } })();
   Array.prototype.forEach.call(doc.querySelectorAll('[data-anchor-say]'),function(x){ x.classList.toggle('pp-off',(x.getAttribute('data-anchor-say')==='cur')!==useCur);
     Array.prototype.forEach.call(x.querySelectorAll('[data-leadin]'),function(l){ l.classList.add('pp-off'); });
     Array.prototype.forEach.call(x.querySelectorAll('[data-aca-seen]'),function(y){ var w=y.getAttribute('data-aca-seen'); y.classList.toggle('pp-off',!(w===seen||(w==='yes'&&seen!=='no'))); }); });
+  /* COBRA (24 Nov): Health ZONE's line says "you're paying $X right now" - true of their share, not of COBRA. Swap that one
+     sentence on screen; the healthcare.gov half after it is untouched. */
+  (function(){ var F=curAnchorFig(), x=doc.querySelector('[data-anchor-say="cur"]'); if(!x) return; var cob=useCur&&F.kind==='cobra', orig=x.querySelector('[data-pp-orig]'), old=x.querySelector('[data-pp-cobra]');
+    if(old) old.parentNode.removeChild(old);
+    if(!orig){ var stop0=x.querySelector('[data-aca-seen]'), n=x.firstChild, mv=[]; while(n&&n!==stop0){ if(!(n.nodeType===1&&(n.hasAttribute('data-leadin')||n.classList.contains('who')))) mv.push(n); n=n.nextSibling; }
+      orig=doc.createElement('span'); orig.setAttribute('data-pp-orig',''); x.insertBefore(orig,stop0||x.querySelector('.who')); mv.forEach(function(k){ orig.appendChild(k); }); }
+    orig.classList.toggle('pp-off',cob); if(!cob) return;
+    var sp=doc.createElement('span'), m0=function(v){ return '$'+Math.round(+v||0).toLocaleString('en-US'); }; sp.setAttribute('data-pp-cobra','');
+    sp.innerHTML='Your plan through work is ending. To keep that same plan on COBRA, you’d pay the full price — about <var class="pp-fill">'+m0(F.mo)+'</var> a month'+(+Cq.ded>0?', with the same <var class="pp-fill">'+m0(Cq.ded)+'</var> deductible':'')+'. ';
+    orig.parentNode.insertBefore(sp,orig.nextSibling); })();
   Array.prototype.forEach.call(doc.querySelectorAll('[data-render="enroll"]'),function(x){ x.classList.add('pp-off'); });
   /* source tags stay in Health ZONE's file (its history); the agent's screen drops them and the legend line about them */
   /* "↳ …" lines explain how a blank fills - notes for the script's author, not words for the call (Jesse, 2026-10-08) */
