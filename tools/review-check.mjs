@@ -342,10 +342,13 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
    fill(); recommendBundles(); autoPriceTiers(); var c=effCfg('best'); c.base='triad'; c.triadPlan='2500'; c.his={ben:3000,amb:1,outp:1000}; autoPriceTiers(); chooseTier('best'); await benLoadSafe('triad'); await w(50); ok(!document.getElementById('nmhModal').classList.contains('open'),'choosing the Cigna package doesn’t pop the old “present it in your own words” note');
    ok(triadFlowOn('best')&&popIsMajor('best'),'a Cigna base on the sandbox turns the Triad flow on');
    presentOpen(); await w(200); var ph=document.getElementById('presentHost').textContent;
-   ok(/Cigna PPO 2500/.test(ph)&&/Cigna is the network/.test(ph)&&!document.getElementById('prFrame'),'Present shows the Triad presentation, not the ManhattanLife script');
+   /* 24 Nov: the warm-up (open, where we are, their reason, the anchor) now comes first - read the whole script */
+   var allPr=ph; for(var k=0;k<25;k++){ var nx0=document.querySelector('#presentHost .trd-nav .next'); if(!nx0) break; nx0.click(); await w(40); allPr+=document.getElementById('presentHost').textContent; } S.triad.prpg=0; renderPresent(); await w(40);
+   ok(/^1\. Open/.test((document.querySelector('#presentHost .trd-chips button')||{}).textContent||'')&&/Their reason/.test(allPr),'Cigna opens with the warm-up: Open, then their reason');
+   ok(/Cigna PPO 2500/.test(ph)&&/Cigna is the network/.test(allPr)&&!document.getElementById('prFrame'),'Present shows the Triad presentation, not the ManhattanLife script');
    ok(triadDedNum('best')===2500&&String(triadVal('best',/^Calendar-year deductible/)).indexOf('$2,500/individual')===0,'…with the 2500 plan’s own deductible from the SBC');
    /* 19 Nov: Amaze rides with every Cigna package and has its own page before the busters - walk to the busters page by name */
-   var sawAmaze=false; for(var i=0;i<8;i++){ var cur=document.getElementById('presentHost').textContent; if(/Everyday care — Amaze/.test(cur)&&/doctor on your phone/.test(cur)) sawAmaze=true; if(/The one thing this plan doesn’t do is the deductible/.test(cur)) break; var nx=document.querySelector('#presentHost .trd-nav .next'); if(nx) nx.click(); await w(60); }
+   var sawAmaze=false; for(var i=0;i<20;i++){ var cur=document.getElementById('presentHost').textContent; if(/Everyday care — Amaze/.test(cur)&&/doctor on your phone/.test(cur)) sawAmaze=true; if(/The one thing this plan doesn’t do is the deductible/.test(cur)) break; var nx=document.querySelector('#presentHost .trd-nav .next'); if(nx) nx.click(); await w(60); }
    ok(sawAmaze,'a Cigna package presents Amaze on its own Everyday care page');
    ph=document.getElementById('presentHost').textContent; ok(/HI Select|Hospital Indemnity/.test(ph)&&/enough to cover the whole/.test(ph),'the deductible-buster page explains HI Select against the deductible: '+ph.slice(ph.indexOf('busters'),ph.indexOf('busters')+90));
    goStep('enroll'); await w(200); var eb=document.getElementById('enTriad');
@@ -356,7 +359,9 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
    goStep('review'); await w(200); var rv=document.getElementById('reviewHost').textContent;
    ok(/Your card/.test(rv)&&/Precertification/.test(rv)&&!/This Benefits Review is the ManhattanLife call/.test(rv),'Benefits Review runs the Triad review');
    S.triad.rate=''; ok(triadWideRange('best')&&/further on the 2500 plan/.test(triadRateNote()),'the 2500 plan’s rate range says it can move further');
-   S.triad.prpg=0; renderPresent(); ok(/Minimum Essential Coverage/.test(document.getElementById('presentHost').textContent),'Present says it is Minimum Essential Coverage');
+   ok(/Minimum Essential Coverage/.test(allPr),'Present says it is Minimum Essential Coverage');
+   var chipsT=[].map.call(document.querySelectorAll('#presentHost .trd-chips button'),function(b){ return b.textContent; }).join('|'); ok(prLbMo('best')>0||!/Living benefits/.test(chipsT),'no living benefits page when the package has none (Jesse, 24 Nov)');
+   anchorSetTo('aca'); renderPresent(); var c1=document.querySelector('#presentHost .trd-chips').textContent; ok(/Anchor: (the marketplace|what they pay today)/.test(c1),'the Cigna script has an anchor step: '+c1.slice(0,120));
    var em=triadEmail('best'); ok(/Triad Cigna PPO 2500/.test(em.body)&&em.body.indexOf('186pV59ok')<0&&em.body.indexOf('1HT8SuqRo1UFiaMYcZRMpD')>=0&&/precertified/.test(em.body)&&/844-257-1955/.test(em.body)&&/1-888-932-4365/.test(em.body)&&em.to==='tara@example.com','the email carries the 2500 plan summary link, the formulary and precertification');
    }catch(e){ fails.push('Triad block threw: '+e.message); }
    window.removeEventListener('error',onErr); ok(!errs.length,'no errors walking the Triad flow: '+errs.join(' | '));

@@ -586,6 +586,7 @@
   .pr-line .do{font-style:italic;color:#4b5563;font-size:14px}
   .pr-val{font-weight:700;color:var(--navy);background:#fff7e0;border-radius:4px;padding:0 3px}
   .pr-miss{font-weight:700;color:#b42318;background:#fde8e8;border-radius:4px;padding:0 4px}
+  .trd b.good{color:#1b7a3d}
   .pr-nav{display:flex;justify-content:space-between;gap:8px;margin-top:14px;flex-wrap:wrap}
   .pr-nav button,.pr-rail button,.pr-apply button{font:inherit;font-size:13px;font-weight:700;border-radius:9px;padding:8px 13px;cursor:pointer;border:1px solid var(--line);background:#fff;color:var(--navy)}
   .pr-nav button.go{background:var(--navy);color:#fff;border-color:var(--navy)}
@@ -6616,8 +6617,69 @@ function triadRateNote(){ var t=chosenTier(), q=triadPremium(t), r=triadRange(),
   var d=a-q; return (Math.abs(d)<=r?'✓ Within the range we told them':'⚠ Outside the ±'+fmt(r)+' range we told them — call them before they sign')+' ('+(d>=0?'+':'−')+fmt2(Math.abs(d))+' against the quote).'; }
 
 /* ---------- PRESENT ---------- */
+/* ---------- THE WARM-UP, every plan that isn't ManhattanLife (Jesse, 24 Nov) ----------
+   "with those other plans it's just like, here's the plan." Cigna, Bright Life, Virtual Basic and ACA + protection now
+   open the way Health ZONE's ManhattanLife script does - open, where we are, their reason, what we compared it with -
+   then the plan, in the ManhattanLife order, and the price against THEIR anchor. Living benefits appear only if sold. */
+function prAnchorCur(){ var C=curIn(); return presentAnchor()==='cur'&&presentHasCur()&&!(+C.emp>0); }
+function prLbMo(t){ var pk=S.packages[t]||{}; return ((pk.products||[]).filter(function(p){ return isLBk(p.k)&&+p.monthly>0; }).reduce(function(a,p){ return a+(+p.monthly||0); },0))+(+pk.lb||0); }
+/* the anchor the client hears: their own plan, or the marketplace - null when there is no real figure to say */
+function prAnchor(){ var C=curIn(), a=S.aca||{}, m0=function(n){ return '$'+Math.round(+n||0).toLocaleString('en-US'); };
+  if(prAnchorCur()) return {k:'cur',mo:+C.prem,ded:+C.ded||0,name:'your current plan',say:'You told me you’re paying <b>'+m0(C.prem)+' a month</b> right now'+(+C.ded>0?' with a <b>'+m0(C.ded)+'</b> deductible':'')};
+  var typed=+a.prem>0&&!acaEstFlags().prem; if(!typed) return null;
+  var net=acaNetPrem(); return {k:'aca',mo:net,ded:+a.ded||0,name:'the marketplace plan',say:(+a.subsidy>0?'The first thing I looked at was healthcare.gov. With your subsidy, the plan that came back for you is <b>'+m0(net)+' a month</b>':'The first thing I looked at was healthcare.gov — great if you qualify for discounts, but with your income it looks like you’d pay full price. The cheapest plan that came back for you was <b>'+m0(a.prem)+' a month</b>')+(+a.ded>0?' with a <b>'+m0(a.ded)+'</b> deductible':'')}; }
+/* o: {stage: the "to review" line, reveal: the hand-off into the plan, anchor: show the anchor page (false where the ACA plan IS the plan)} */
+function prWarm(t,o){ var I=S.intake||{}, C=S.client||{}, first=triadFirst(), ag=((C.agent||'').trim().split(/\s+/)[0]), hh=whyHouse(), say=triadSay, todo=triadDo;
+  var q=whyQuote(I), f=whyFactsBare(I), m0=function(n){ return '$'+Math.round(+n||0).toLocaleString('en-US'); }, pages=[];
+  pages.push({t:'Open',h:say('“Hi '+esc(first)+', this is '+(ag?esc(ag):'<span class="pr-miss">‹your first name›</span>')+' calling about your '+(o.aca?'':'private ')+'health insurance options. I’m glad we could make this time work. Before we jump in — are you next to your computer, or would you rather I send information to your phone as we talk through your plan?”')
+    +todo('Their answer decides how you show things from here — the client screen, quick texts, or CrankWheel or Zoom. Most people say their phone.')});
+  pages.push({t:'Where we are',h:say('“Quick recap of where we are. Last time we went through your situation — your doctors, your medications, and what matters most to '+hh+'. Since then I’ve done the shopping: '+o.looked+'. So today I’ll show you what I found, how it works and what it costs, and you tell me if it fits. Sound good?”')
+    +(o.stage?say(o.stage):'')+todo('Say it in your own words. “(their situation)” is your prompt to use their trade or their reason, not a blank the tool fills.')});
+  var rs=(f||q)?'“Last time we talked, '+(f?'you told me '+esc(f)+(q?' — and you said, “<b>'+esc(q)+'</b>.”':'.'):'you said, “<b>'+esc(q)+'</b>.”')+' That’s what I went looking for.”':'';
+  pages.push({t:'Their reason',h:(rs?say(rs):todo('<b>No reason on the Intake yet.</b> Ask: “What made you start looking?” and play their own words back to them. Type it into <b>What matters most</b> on the Intake the way they said it.'))
+    +todo('<b>NOT SPOKEN — stop here.</b> You are waiting to hear “yes, that’s what matters to me.” Don’t move until you get it.')
+    +say('“I think you’ll be pleasantly surprised by what I found for '+hh+'. Let’s walk through it together.”')});
+  if(o.anchor){ var A=prAnchor(), E=anchorEff(), a=S.aca||{}, typed=+a.prem>0&&!acaEstFlags().prem, cur=A&&A.k==='cur', h='';
+    if(cur){ h=say('“'+A.say+'.'+(typed?(acaNetPrem()>A.mo?' I also checked healthcare.gov. The plan that came back for you was <b>'+m0(acaNetPrem())+' a month</b>'+(+a.ded>0?' with a <b>'+m0(a.ded)+'</b> deductible':'')+' — more than you’re paying now. So neither of those is where I’d leave you.':' I also checked healthcare.gov. The plan that came back was <b>'+m0(acaNetPrem())+' a month</b> — less than you pay now — but the deductible on it is <b>'+m0(a.ded)+'</b>. In a year you actually use it, that’s the number that decides what you pay. So neither of those is where I’d leave you.'):' I did look at healthcare.gov, but for your situation it isn’t a great way to go — so let’s start from what you have today.')+'”')
+        +todo('<b>NOT SPOKEN.</b> Put their current plan’s numbers on the client screen. Let the number sit for a second before you say anything else.'); }
+    else if(A){ h=say('“'+A.say+'.”')+todo('<b>NOT SPOKEN.</b> Share the marketplace screenshot. Let the number sit for a second before you say anything else.'); }
+    else h=todo('<b>No real anchor yet.</b> Type the marketplace price from healthcare.gov on the Intake (ACA / Marketplace), or their current premium if they pay for a plan now — never read an estimate out as a quote.')+say('“I did look at healthcare.gov, but for your situation it isn’t the way I’d go.”');
+    pages.push({t:cur?'Anchor: what they pay today':'Anchor: the marketplace',long:cur?'What they pay today — the anchor':'Price the marketplace — the anchor',h:(E.why?todo(esc(E.why)):'')+h
+      +(o.note?todo(o.note):'')+todo('The anchor switch at the top of this page sets which one you say. Every “you were at” on the price page uses it.')
+      +say('“So let’s put '+(cur&&typed?'those':'that one')+' to the side. '+o.reveal+'”')}); }
+  return pages; }
+/* "how it all works together" - one line per piece actually in the package, in the order a claim would reach them */
+function prTogether(t,baseLine){ var P=((S.packages[t]||{}).products||[]).filter(function(p){ return +p.monthly>0; }), has=function(k){ return P.some(function(p){ return p.k===k; }); }, L=[];
+  if(baseLine) L.push(baseLine);
+  if(has('amz')||(effCfg(t).base==='amaze'&&has('base'))) L.push('<b>Amaze</b> is your front door for everyday care — a doctor any time, on your phone, with no visit fee.');
+  var dd=effCfg(t).base!=='amaze';   /* Virtual Basic has no major medical, so no deductible to talk about */
+  if(has('his')) L.push('If you’re <b>admitted to the hospital</b>, the hospital plan pays <i>you</i> cash '+(dd?'toward that deductible':'toward the bill')+'.');
+  if(has('gap')) L.push('The <b>out-of-pocket plan</b> pays you on an admission or an outpatient surgery, so '+(dd?'the deductible isn’t':'a big bill isn’t')+' coming out of your savings.');
+  if(has('acc')) L.push('If you <b>get hurt</b>, the accident plan pays you cash.');
+  if(has('chas')||has('sdr')) L.push('If it’s <b>cancer, a heart attack or a stroke</b>, you get a lump sum to use however you need.');
+  if(has('dvh')) L.push('<b>Dental and vision</b> sit on their own plan.');
+  if(prLbMo(t)>0) L.push('And the <b>living benefits</b> protect your income if something serious happens.');
+  return L.length>1?{t:'How it all fits together',h:triadSay('“So here’s how your package works together:”')+'<ul class="trd-bus">'+L.map(function(x){ return '<li>'+x+'</li>'; }).join('')+'</ul>'+triadDo('One breath per line. The point is that each piece has a job, and together there’s no big bill left with nobody paying it.')}:null; }
+/* the price against THEIR anchor, before living benefits (the ManhattanLife close does the same arithmetic) */
+function prMo(n){ n=+n||0; return Math.round(n)===n?'$'+n.toLocaleString('en-US'):fmt2(n); }   /* $1,400, not $1,400.00 - the way they said it */
+/* soft: a package that isn't major medical (Virtual Basic) - say the two prices side by side, never "back in your pocket" */
+function prVsAnchor(t,inclLb,soft){ var A=prAnchor(), tot=pkMonthly(S.packages[t]||{})-(inclLb?0:prLbMo(t)); if(!A) return triadDo('<b>No anchor figure</b>, so there’s no saving to say. Set the anchor at the top of this page.');
+  var d=A.mo-tot; if(soft) return triadSay('“All together that’s <b>'+fmt2(tot)+' a month</b>'+(d>0?' — against <b>'+prMo(A.mo)+'</b> a month for '+A.name+' alone':'')+'.”')+(d>0?'':triadDo('<b>This is '+fmt2(-d)+' a month more than '+A.name+'.</b> Don’t compare prices out loud — lead with what each piece pays.'));
+  return d>0?triadSay('“You were at <b>'+prMo(A.mo)+'</b> a month on '+A.name+'. I’ve got you at <b>'+fmt2(tot)+'</b>. That’s <b class="good">'+fmt2(d)+' a month</b> back in your pocket — '+fmt2(d*12)+' a year.”')
+    :triadDo('<b>This package is '+fmt2(-d)+' a month more than '+A.name+' ('+fmt2(A.mo)+').</b> Don’t lead with a saving. Lead with what the deductible'+(A.ded?' of '+fmt(A.ded):'')+' costs them in a bad year, and what this package pays instead.'); }
+/* living benefits, only when sold: the ManhattanLife add-back - "you were at X, I've got you at Y, we add Z back" */
+function prLbPage(t,noAdd){ var lb=prLbMo(t), body=lbPresentBlock(t); if(!(lb>0)||!body) return null; if(noAdd) return {t:'Living benefits',h:lbMatchNote()+body}; var A=prAnchor(), tot=pkMonthly(S.packages[t]||{}), base=tot-lb;
+  return {t:'Living benefits',h:lbMatchNote()+body+(A?triadSay('“You were at <b>'+prMo(A.mo)+'</b>. I’ve got you at <b>'+fmt2(base)+'</b>. We add <b>'+fmt2(lb)+'</b> back for the living benefits, so you’re at <b>'+fmt2(tot)+'</b>'+(A.mo>tot?', and you’re still saving <b class="good">'+fmt2(A.mo-tot)+'</b> a month.”':'.”')):'')}; }
+/* the plan's own pages, put in the ManhattanLife order behind the warm-up. A page not named in o.order keeps a place at
+   the end, so nothing written for a plan can silently drop out. */
+function prFlow(t,pages,o){ var by={}, out=prWarm(t,o); pages.forEach(function(p){ if(p) by[p.t]=p; });
+  o.order.forEach(function(n){ if(n==='_together'){ var g=prTogether(t,o.base); if(g) out.push(g); return; }
+    if(n==='_lb'){ var l=prLbPage(t,o.lbFirst); if(l) out.push(l); return; }
+    var p=by[n]; if(!p) return; delete by[n]; out.push(n===o.price?{t:p.t,long:p.long,h:prVsAnchor(t,o.lbFirst,o.soft)+p.h}:p); });
+  Object.keys(by).forEach(function(k){ out.push(by[k]); });
+  return out; }
 function triadPresentHTML(t){ var first=triadFirst(), plan=triadPlanOf(t), ded=triadVal(t,/^Calendar-year deductible/), oop=triadVal(t,/^Out-of-pocket maximum/), pc=triadVal(t,/^Primary care/), sp=triadVal(t,/^Specialist/), uc=triadVal(t,/^Urgent care/),
-  er=triadVal(t,/^Emergency room/), hosp=triadVal(t,/^Hospital facility/), rx=triadVal(t,/^Generic \/ preferred/,true).split(';')[0], prem=triadPremium(t), r=triadRange(), bus=triadBusters(t).filter(function(x){ return !isLBk(x.k)&&x.k!=='amz'; }), tot=pkMonthly(S.packages[t]||{});
+  er=triadVal(t,/^Emergency room/), hosp=triadVal(t,/^Hospital facility/), rx=triadVal(t,/^Generic \/ preferred/,true).split(';')[0], prem=triadPremium(t), r=triadRange(), bus=triadBusters(t).filter(function(x){ return !isLBk(x.k)&&x.k!=='amz'; }), tot=pkMonthly(S.packages[t]||{})-prLbMo(t);
   var docs=[S.intake.docs1,S.intake.docs2,S.intake.docs3].filter(Boolean), meds=(S.intake.medList||[]).map(function(m){ return m.name; }).filter(Boolean);
   var pages=[
    {t:'Why this plan',h:triadSay('“'+esc(first)+', this is real major medical. It’s a PPO on the <b>Cigna network</b> — doctors, specialists and hospitals across the country — with an <b>unlimited lifetime benefit</b> and a hard ceiling on what you can spend in a year: <b>'+esc(oop)+'</b>. Once you hit that, covered in-network care is paid in full for the rest of the year.”')
@@ -6636,11 +6698,10 @@ function triadPresentHTML(t){ var first=triadFirst(), plan=triadPlanOf(t), ded=t
        +triadDo('<b>Show them:</b> <a href="'+amazeDoc('overview')+'" target="_blank" rel="noopener">What Amaze includes — one page ↗</a>. Share your screen, or text them the link.')
        +triadDo('Rx Valet prescription discounts come with Amaze — a price to check a drug against before filling it. Quote no savings figure.')
        +triadDo('<b>Don’t sell it as a copay saver.</b> '+fmt2(AMAZE_MO)+' a month is '+fmt2(AMAZE_MO*12)+' a year; it buys a doctor any time, not cheaper routine visits.'+(triadIsHsa(t)?' On this HSA plan every visit is deductible + 20%, so here it does replace real money.':'')+' Never call it insurance, and don’t repeat Amaze’s own usage or ER percentages.'); })()}:null),
-   {t:'HI / busters / living benefits',long:'Hospital indemnity / deductible busters / living benefits',h:lbMatchNote()+(bus.length?triadSay('“The one thing this plan doesn’t do is the deductible — that’s on you. So we put cash plans next to it that pay <i>you</i> when the big thing happens:”')
+   {t:'Covering the deductible',long:'Covering the deductible — hospital indemnity & deductible busters',h:(bus.length?triadSay('“The one thing this plan doesn’t do is the deductible — that’s on you. So we put cash plans next to it that pay <i>you</i> when the big thing happens:”')
       +'<ul class="trd-bus">'+bus.map(function(x){ return '<li><b>'+esc(x.name)+'</b>'+benI(t,x.k,x.name)+' <small>'+x.m+'</small><br>'+x.b+'</li>'; }).join('')+'</ul>'
       +triadDo('These are ManhattanLife plans — they pay the client directly, on top of the Cigna plan, and they’re a separate application with their own underwriting.'):triadSay('“The one thing this plan doesn’t do is the deductible — that’s on you.”')
-      +triadDo('<b>No deductible buster in this package.</b> HI Select sized to the '+esc(ded)+' deductible is the usual pairing — add it on the Quote.'))
-      +(lbPresentBlock(t)||lbNoneNote())},
+      +triadDo('<b>No deductible buster in this package.</b> HI Select sized to the '+esc(ded)+' deductible is the usual pairing — add it on the Quote.'))},
    {t:'The price, honestly',h:triadSay('“The plan is <b>'+fmt2(prem)+' a month</b>'+(tot>prem?' — <b>'+fmt2(tot)+'</b> with everything in your package':'')+'. That’s the pre-underwriting rate: after they look at your health it can come back '+(triadWideRange(t)?'<b>at least '+fmt(r)+' a month either way — on this plan it can be more</b>':'up to <b>'+fmt(r)+' a month either way</b>')+'. I’ll tell you the real number before you sign anything. Once you’re approved, that rate is locked for 12 months from your start date.”')
       +triadDo('<b>Quote the range, never the point.</b> '+(triadWideRange(t)?'<b>On this '+esc(triadPlanOf(t))+' plan, say “at least”</b> — the rate sheet says the ranges hold best for the $3,500–$7,350 deductibles, so the low-deductible plans can move further.':'The ranges hold best on the $3,500–$7,350 deductibles, like this one.')+' There’s a one-time <b>$35</b> underwriting fee at checkout.')},
    {t:'Quick answers',h:(function(){ var dF=triadVal(t,/^Calendar-year deductible/,true).split(';'), dIn=dF[0].replace(/\s*in network$/,'').trim(), dOut=(dF[1]||'').replace(/\s*out of network$/,'').trim(),
@@ -6657,6 +6718,10 @@ function triadPresentHTML(t){ var first=triadFirst(), plan=triadPlanOf(t), ded=t
    {t:'Next steps',h:(function(){ var d=triadDates(); return triadSay('“Here’s how it goes: we apply by <b>'+d.submit+'</b>, they review your health, and if you’re approved you’ll get a final offer that has to be signed by <b>'+d.sign+'</b> — miss that and there’s no coverage. Your start date is usually the 1st of the next month — <b>'+d.start+'</b> — and the offer confirms it.”')
       +triadDo('Before you apply: <b>they must be self-employed with their own EIN</b> — no EIN, no Cigna plan. If they don’t have one, it’s free and instant on the <a href="'+TRIAD_EIN_URL+'" target="_blank" rel="noopener">IRS site ↗</a>.')
       +'<button type="button" class="btn-gold" onclick="enrollAsPresented()">Go to Enroll →</button>'; })()}].filter(Boolean);
+  pages=prFlow(t,pages,{anchor:true,looked:'I looked at the marketplace, at what you have today, and at the private plans I work with in '+esc(S.client.state||'your state'),
+    stage:'“To review, I specialize in helping small business owners, 1099 employees — (their situation) — find affordable private health coverage. Marketplace plans are good for families who qualify for big subsidies, but they have to include ten government-mandated benefits, even ones you may never use. A private plan lets you pay for what you need and skip what you don’t. Make sense?”',
+    reveal:'Here’s what I found for you instead — real major medical, on the Cigna network.',base:'The <b>Cigna plan</b> is your real major medical — it picks up the big things, and it caps what you can spend in a year at <b>'+esc(oop)+'</b>.',
+    order:['Why this plan','Your doctors','How it works','Prescriptions','Everyday care — Amaze','Covering the deductible','_together','The price, honestly','_lb','Quick answers','Next steps'],price:'The price, honestly'});
   return '<div class="pr-top"><div><h3>Presenting the <em class="pr-plan">Cigna PPO '+esc(plan)+'</em> to '+esc(first)+'</h3><small>Agent-only. Figures come from the 2027 rate and benefit guide for the '+esc(plan)+' plan.</small></div>'
     +presentBubbles(t)+'<button type="button" data-pr="quote" style="font:inherit;font-weight:700;border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 13px;cursor:pointer">← Back to the Quote</button></div>'
     +'<div class="trd">'+triadSteps(pages,'prpg',1)+'</div>'; }
@@ -6680,7 +6745,7 @@ function blBusters(t){ var c=effCfg(t), out=[];
     else return;
     out.push({k:p.k,name:p.name,m:m,b:b}); });
   return out; }
-function blPresentHTML(t){ var first=triadFirst(), c=effCfg(t), prem=triadPremium(t), tot=pkMonthly(S.packages[t]||{}), bus=blBusters(t).filter(function(z){ return !isLBk(z.k); }), x=blExtras(c), d=blDates();
+function blPresentHTML(t){ var first=triadFirst(), c=effCfg(t), prem=triadPremium(t), tot=pkMonthly(S.packages[t]||{})-prLbMo(t), bus=blBusters(t).filter(function(z){ return !isLBk(z.k); }), x=blExtras(c), d=blDates();
   var docs=[S.intake.docs1,S.intake.docs2,S.intake.docs3].filter(Boolean), meds=(S.intake.medList||[]).map(function(m){ return m.name; }).filter(Boolean);
   var scr=typeof blScreen==='function'?blScreen():[], bad=scr.filter(function(z){ return z.l==='bad'; }), warn=scr.filter(function(z){ return z.l!=='bad'; });
   var br=brochFor('brightlife',c), say=triadSay, todo=triadDo, qa=function(q,a){ return todo('<b>“'+q+'”</b><br>'+a); };
@@ -6703,12 +6768,11 @@ function blPresentHTML(t){ var first=triadFirst(), c=effCfg(t), prem=triadPremiu
       +say('“Brand-name and specialty drugs aren’t covered by the plan. For those there’s a <b>patient assistance program</b> that helps you get them from the drug maker.”')
       +(meds.length?todo('Check each one now: '+meds.map(esc).join(', ')+'. Any brand-only or specialty drug goes through the patient assistance program, not the plan — say so before they sign. <b>GLP-1s aren’t covered.</b>'):todo('No medications on the Intake. Ask once more: brand-name and specialty drugs aren’t covered, and GLP-1s aren’t covered.'))
       +todo('Verus: 1-800-838-0007 · verus-rx.com')},
-   {t:'HI / busters / living benefits',long:'Hospital indemnity / deductible busters / living benefits',h:lbMatchNote()+(bus.length?say('“The one thing to plan for is a hospital stay: the deductible plus a $2,500 copay. So we put cash plans next to it that pay <i>you</i> when that happens:”')
+   {t:'Covering the deductible',long:'Covering the deductible — hospital indemnity & dental',h:(bus.length?say('“The one thing to plan for is a hospital stay: the deductible plus a $2,500 copay. So we put cash plans next to it that pay <i>you</i> when that happens:”')
       +'<ul class="trd-bus">'+bus.map(function(z){ return '<li><b>'+esc(z.name)+'</b>'+benI(t,z.k,z.name)+' <small>'+z.m+'</small><br>'+z.b+'</li>'; }).join('')+'</ul>'
       +todo('These are ManhattanLife plans: they pay the client directly, on top of Bright Life, with their own application and underwriting.')
       :say('“The one thing to plan for is a hospital stay: the deductible plus a $2,500 copay.”')+todo('<b>No deductible buster in this package.</b> Hospital Indemnity Select at $2,000 a stay + $1,500 outpatient is the usual pairing — add it on the Quote.'))
-      +(x.names.length?todo('Humana '+esc(x.names.join(' + '))+' is in this package. It’s only sold to Bright Life members.'):todo('Humana dental and vision can be added on the Quote. They’re only sold to Bright Life members.'))
-      +(lbPresentBlock(t)||lbNoneNote())},
+      +(x.names.length?todo('Humana '+esc(x.names.join(' + '))+' is in this package. It’s only sold to Bright Life members.'):todo('Humana dental and vision can be added on the Quote. They’re only sold to Bright Life members.'))},
    {t:'The health questions',h:say('“Before they hire you there’s a health form, and they mean it — a computer reviews your history first and a person looks at anything it flags. Nothing is guaranteed until they say yes, and I’ll know before you pay a cent.”')
       +say('“One more thing you should know up front: if your medical bills ever pass <b>$35,000</b>, Bright Life’s CARES team will offer to move you to a marketplace plan and help with its costs. It’s your choice, and you can come back when the bills come down.”')
       +todo('<b>Ongoing care counts with no time limit</b> — a yearly visit to a cardiologist or oncologist about something years old can still be a Yes. A clean-looking file is not a prediction.')
@@ -6735,6 +6799,10 @@ function blPresentHTML(t){ var first=triadFirst(), c=effCfg(t), prem=triadPremiu
       +todo('Use <b>Chrome</b> — the Bright Life links don’t work in Safari. The <b>I-9</b> has to be done within 3 days of the hire date or they’re non-compliant.')
       +todo('Back office: <b>Profiles → Member Pre-Qualification → Add a Member</b> to apply with them, or <b>Sites → Member Enroll</b> to send a self-enroll link.')
       +'<button type="button" class="btn-gold" onclick="enrollAsPresented()">Go to Enroll →</button>'}];
+  pages=prFlow(t,pages,{anchor:true,looked:'I looked at the marketplace, at what you have today, and at the private plans I work with in '+esc(S.client.state||'your state'),
+    stage:'“To review, I specialize in helping small business owners, 1099 employees — (their situation) — find affordable private health coverage. Marketplace plans are good for families who qualify for big subsidies, but they have to include ten government-mandated benefits, even ones you may never use. A private plan lets you pay for what you need and skip what you don’t. Make sense?”',
+    reveal:'Here’s what I found for you instead — a health plan on the Cigna network that comes a different way: through a part-time job.',base:'The <b>Bright Life plan</b> covers your doctor visits on a flat copay and picks up the big things, up to its yearly out-of-pocket cap.',
+    order:['What it is','Your doctors','How it works','Prescriptions','Covering the deductible','_together','The price, honestly','_lb','The health questions','Quick answers','Next steps'],price:'The price, honestly'});
   return '<div class="pr-top"><div><h3>Presenting the <em class="pr-plan">Bright Life Health Shield PPO 1250</em> to '+esc(first)+'</h3><small>Agent-only. Figures come from the Health Shield PPO 1250 brochure (V1.110226).</small></div>'
     +presentBubbles(t)+'<button type="button" data-pr="quote" style="font:inherit;font-weight:700;border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 13px;cursor:pointer">← Back to the Quote</button></div>'
     +'<div class="trd">'+triadSteps(pages,'blprpg',1)+'</div>'; }
@@ -6796,20 +6864,26 @@ function acaPresentHTML(t){ var PK=(S.lineup==='custom'&&effCfg(t).pick&&/^(aca|
     pages.push({t:'The ACA plan',h:acaSay+acaDo+triadDo('This column is the <b>anchor</b>: the marketplace plan on its own, so they see what it really costs them. Virtual Basic A and B are what it’s compared with.')});
     pages.push({t:'The close',h:triadSay('“If the marketplace plan is the one for you, I’ll send you the application so you can apply.”')+triadDo('Send them the marketplace application (HealthSherpa).')});
   } else {
-    pages.push({t:'Why not the ACA',h:(ded?triadSay('“We looked at the marketplace first. '+(A.plan?esc(A.plan)+' would':'It would')+' cost you <b>'+fmt2(net)+'</b> a month, and before it paid for anything big you’d owe <b>'+m(ded)+'</b>'+(oop?', up to '+m(oop)+' in a year':'')+'. With money tight, that’s a lot to pay for a plan you can’t afford to use.”'):triadDo('<b>No ACA plan on the Intake yet.</b> Put it in the Intake’s ACA section — this page compares against it.'))
+    if(!(prAnchor()&&prAnchor().k==='aca')) pages.push({t:'Why not the ACA',h:(ded?triadSay('“We looked at the marketplace first. '+(A.plan?esc(A.plan)+' would':'It would')+' cost you <b>'+fmt2(net)+'</b> a month, and before it paid for anything big you’d owe <b>'+m(ded)+'</b>'+(oop?', up to '+m(oop)+' in a year':'')+'. With money tight, that’s a lot to pay for a plan you can’t afford to use.”'):triadDo('<b>No ACA plan on the Intake yet.</b> Put it in the Intake’s ACA section — this page compares against it.'))
         +triadDo(tp==='better'?'Virtual Basic A is for someone <b>healthy, but funds are tight</b>.':'Virtual Basic B is for someone <b>unhealthy, and funds are very tight</b>: the accident plan is the one they can get whatever their health.')});
     pages.push({t:'Amaze for everyday care',h:amaze});
     var prot=P.filter(function(p){ return p.k!=='base'; });
     pages.push({t:tp==='better'?'Protection for the big things':'The accident plan',h:(tp==='better'?triadSay('“Amaze is for everyday care. For the big things — a hospital stay, an accident — we add three Manhattan plans that pay <i>you</i> cash:”'):triadSay('“Amaze is for everyday care. For an accident we add '+accPhrase()+' plan that pays <i>you</i> cash — and you can get it no matter what your health is.”'))
         +li(prot)+triadDo('These pay the client directly. They’re not health insurance: they don’t pay the hospital, they pay the client.')});
-    pages.push({t:'The price',h:triadSay('“All together that’s <b>'+fmt2(pkMonthly(S.packages[t]||{}))+' a month</b>'+(ded&&net>pkMonthly(S.packages[t]||{})?' — against <b>'+fmt2(net)+'</b> for the marketplace plan alone':'')+'.”')
+    pages.push({t:'The price',h:(prAnchor()?'':triadSay('“All together that’s <b>'+fmt2(pkMonthly(S.packages[t]||{}))+' a month</b>.”'))
         +acaReceipt(t)
         +triadDo('Be clear what this is: everyday care plus cash for the big things — <b>not</b> major medical. A big bill still lands on them; these plans put money in their hands toward it.')});
     pages.push({t:'The close',h:triadSay('“So here’s what we’ll do: I’ll get you signed up with Amaze, and I’ll take care of your Manhattan application'+(tp==='better'?'s':'')+'.”')
         +triadDo('Amaze: use your Amaze member sign-up link'+(amazeLink()?', and send the <a href="'+amazeDoc('setup')+'" target="_blank" rel="noopener">setup steps ↗</a> with it':' (add it in Setup first — the setup steps start with “use the link your agent sent”)')+'. The ManhattanLife application is on Enroll.')
         +'<button type="button" class="btn-gold" onclick="enrollAsPresented()">Go to Enroll →</button>'});
   }
-  var lbH=lbPresentBlock(t); if(lbH){ var ci=-1; pages.forEach(function(pg,i){ if(ci<0&&(pg.t==='The price'||pg.t==='The close')) ci=i; });   /* before the price, so the total they hear already includes it */ pages.splice(ci<0?pages.length:ci,0,{t:'Living benefits',h:lbMatchNote()+lbH}); }
+  /* living benefits before the price, so the total they hear already includes it (the receipt lists them); only if sold */
+  pages=prFlow(t,pages,vb&&tp!=='good'?{anchor:true,aca:true,lbFirst:true,looked:'I looked at the marketplace, at what you have today, and at what would actually fit your budget',
+      stage:'“Not everybody needs a big plan they can’t afford to use. What most people need is a doctor when they need one, and cash in hand if something big happens. Make sense?”',
+      reveal:'With money tight, that’s a lot to pay for a plan you can’t afford to use. So here’s what I put together for you instead.',note:tp==='better'?'Virtual Basic A is for someone <b>healthy, but funds are tight</b>.':'Virtual Basic B is for someone <b>unhealthy, and funds are very tight</b>: the accident plan is the one they can get whatever their health.',order:['Why not the ACA','Amaze for everyday care','Protection for the big things','The accident plan','_together','_lb','The price','The close'],price:'The price',soft:true}
+    :{anchor:prAnchorCur(),aca:true,lbFirst:true,looked:'I looked at the marketplace for you, and at what it would take to protect you from its deductible',
+      reveal:'Here’s what I found for you — and it starts with the marketplace.',base:'The <b>marketplace plan</b> is your major medical — it pays the big bills once the deductible is met.',
+      order:['The ACA plan','The accident plan','The deductible buster','_together','_lb','The close']});
   return '<div class="pr-top"><div><h3>Presenting <em class="pr-plan">'+esc(LN[0])+'</em> to '+esc(first)+'</h3><small>Agent-only — '+(vb?'Virtual Basic':'ACA + protection')+'. The ACA figures come from the Intake.</small></div>'
     +presentBubbles(t)+'<button type="button" data-pr="quote" style="font:inherit;font-weight:700;border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 13px;cursor:pointer">← Back to the Quote</button></div>'
     +'<div class="trd">'+triadSteps(pages,'acapg_'+S.lineup+'_'+t,1)+'</div>'; }
@@ -8612,7 +8686,7 @@ var PRESENT_PAGES=[
  {t:'Before you dial'},
  {t:'The opening & setting the stage',sc:'open',next:'The opening — your first words on the call'},
  {t:'Their reason',sc:'reason'},
- {t:'Price the marketplace & pick the anchor',sc:'price'},
+ {get t(){ return prAnchorCur()?'What they pay today — the anchor':'Price the marketplace & pick the anchor'; },sc:'price'},   /* Jesse, 24 Nov: step 4 follows the anchor */
  {t:'Networks & providers',sc:'networks'},
  {t:'The two questions everyone asks',sc:'questions'},
  {t:'How coverage works — day to day & preventive',sc:'coverage'},
@@ -8651,7 +8725,7 @@ function presentShowPage(doc,pg){ var set=[].concat(pg); if(!doc||!doc.body) ret
     if(on&&first&&!el.classList.contains('pp-off')){ el.style.marginTop='0'; first=false; } else if(on) el.style.marginTop=''; }); }
 /* the screens Present walks through; the application screens are shown on Enroll instead */
 function presentNav(){ var out=[]; presentPages().forEach(function(p,i){ if(!p.en) out.push(i); }); return out; }
-function presentPageIx(title){ return presentPages().map(function(p){ return p.t; }).indexOf(title); }
+function presentPageIx(title){ var P=presentPages(), i=P.map(function(p){ return p.t; }).indexOf(title); if(i<0&&/anchor/i.test(title)) i=P.map(function(p){ return p.sc; }).indexOf('price'); return i; }   /* step 4's name follows the anchor (24 Nov) */
 /* the rail's objections and stories come from the script itself, so there is one source */
 /* Jesse's objection rewordings (10 Oct) - applied before the rail reads the answers, and again on every wire */
 function presentObjEdits(doc){ Array.prototype.forEach.call(doc.querySelectorAll('p.q'),function(q){ var a=q.nextElementSibling; if(!a||!a.classList.contains('fff')||a.dataset.ppObj) return;
@@ -9245,7 +9319,7 @@ function presentGo(pg){ var pages=presentPages(), nav=presentNav(), t=presentTie
   window.scrollTo(0,0); }
 
 /* bump when tool/presentation.html is re-copied from the Health Insurance folder, so no browser keeps a stale script (21 Nov) */
-var SCRIPT_V='2026-11-21a';
+var SCRIPT_V='2026-11-24a';
 /* ===== Wiring Health ZONE's script (tool/presentation.html) =====
    Every <var data-k> is filled from presentScriptTokens(); a key with no value shows red ("missing: key") so a gap is
    seen before it is said. Unkeyed <var>s are fixed text and are never touched. Hooks: data-anchor rows pick the
@@ -9579,6 +9653,10 @@ function presentWire(doc,t){ scriptClean(doc); if(!doc||!doc.body) return 0;
      marketplace price was typed, "more" / "less" when one was and it is above / below what they pay today, "yes" for any
      typed price. Lines without the hook are untouched. */
   var acaTyped=+((S.aca||{}).prem)>0&&!acaEstFlags().prem, acaNow=acaNetPrem(), seen=!acaTyped?'no':(acaNow>(+Cq.prem||0)?'more':'less');
+  (function(){ var h=doc.querySelector('h2[data-screen="price"]'); if(!h) return; var tn=[].filter.call(h.childNodes,function(n){ return n.nodeType===3&&n.textContent.trim(); })[0]; if(!tn) return;
+    if(!h.dataset.orig) h.dataset.orig=tn.textContent; tn.textContent=useCur?'What they pay today, then set it aside':h.dataset.orig;   /* Jesse, 24 Nov: step 4 kept saying marketplace with their own plan as the anchor */
+    for(var x=h.nextElementSibling;x&&!(x.matches&&x.matches('h2[data-screen]'));x=x.nextElementSibling){ if(!x.classList||!x.classList.contains('do')) continue;
+      [].forEach.call(x.childNodes,function(n){ if(n.nodeType!==3||!/marketplace screenshot/i.test(n.textContent)&&!n._orig) return; if(!n._orig) n._orig=n.textContent; n.textContent=useCur?'Put their current plan’s numbers on the client screen. Let the number sit for a second before you say anything else.':n._orig; }); } })();
   Array.prototype.forEach.call(doc.querySelectorAll('[data-anchor-say]'),function(x){ x.classList.toggle('pp-off',(x.getAttribute('data-anchor-say')==='cur')!==useCur);
     Array.prototype.forEach.call(x.querySelectorAll('[data-leadin]'),function(l){ l.classList.add('pp-off'); });
     Array.prototype.forEach.call(x.querySelectorAll('[data-aca-seen]'),function(y){ var w=y.getAttribute('data-aca-seen'); y.classList.toggle('pp-off',!(w===seen||(w==='yes'&&seen!=='no'))); }); });
