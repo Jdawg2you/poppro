@@ -24,13 +24,13 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  var generic=function(m){ return /Healthcare Package of Protection|the (Essential|Complete|Comprehensive) plan|plan we shared/.test(m.subject+m.body); };
  /* Manhattan */
  var m=await mk('mh','better');
- ok(/ManhattanLife Complete/.test(m.subject)&&!generic(m),'Manhattan: names the presented package: '+m.subject);
- ok(/Affordable Choice \\(/.test(m.body)&&/Hospital Indemnity Select \\(/.test(m.body)&&/All together: \\$/.test(m.body),'Manhattan: lists each piece and the total');
+ ok(/ManhattanLife Complete package/.test(m.subject)&&/what we covered in your ManhattanLife Complete package/.test(m.body)&&!/As promised/.test(m.body)&&!generic(m),'Manhattan: names the presented package: '+m.subject);
+ ok(/What’s in your Package of Protection/.test(m.body)&&/Affordable Choice \\w+ — covers your basic medical and wellness/.test(m.body)&&/Hospital Indemnity Select — /.test(m.body)&&/All together, your Package of Protection is \\$/.test(m.body)&&!/without the living benefits/.test(m.body),'Manhattan: lists each piece and the total');
  ok(/First Health network/.test(m.body),'Manhattan: First Health network link');
  var lbOn=pkMonthly(S.packages.better)>0&&prLbMo('better')>0; ok(lbOn?/Living benefits — /.test(m.body):!/Living benefits/.test(m.body),'Manhattan: living benefits only when they are in it');
  /* Cigna, with a current plan anchor: the saving equals the script's price page */
  m=await mk('lx-mh-cg','best'); var C=curIn(); C.prem=1200; C.ded=6000; anchorSetTo('cur'); m=buildEmail();
- ok(/Cigna PPO plan/.test(m.subject)&&!generic(m)&&/Cigna PPO health plan/.test(m.body)&&/Amaze —/.test(m.body),'Cigna: named, with its pieces: '+m.subject);
+ ok(/Triad Cigna package/.test(m.subject)&&!generic(m)&&/Triad Cigna PPO \\d+ — /.test(m.body)&&/Amaze —/.test(m.body),'Cigna: named, with its pieces: '+m.subject);
  ok(!/Rx Valet/.test(m.body),'Cigna: no Rx Valet');
  ok(!/Living benefits/.test(m.body),'Cigna: no living benefits when none were sold');
  var sc=txt(prVsAnchor('best',false,false)).match(/\\$([\\d,.]+) a month back/), em=m.body.match(/about \\$([\\d,]+) a month less/);
@@ -39,9 +39,9 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  /* Cigna more than the anchor: no saving claimed, as the script */
  C.prem=300; m=buildEmail(); ok(!/less|save/.test(m.body.split('WHAT’S IN IT')[1]),'Cigna above the anchor: no saving claimed');
  /* Bright Life */
- m=await mk('lx-mh-cg','good'); ok(/Bright Life plan/.test(m.subject)&&!generic(m)&&/Bright Life health plan/.test(m.body),'Bright Life: named: '+m.subject);
+ m=await mk('lx-mh-cg','good'); ok(/Your Bright Life package/.test(m.subject)&&!generic(m)&&/Bright Life PPO \\d+ — /.test(m.body),'Bright Life: named: '+m.subject);
  /* ACA + protection: they KEEP the marketplace plan - never "you wouldn't carry its deductible"; no First Health link */
- m=await mk('aca','better'); ok(/marketplace plan plus protection/.test(m.subject)&&!generic(m),'ACA: named: '+m.subject);
+ m=await mk('aca','better'); ok(/ACA \\+ deductible buster package/.test(m.subject)&&!generic(m),'ACA: named: '+m.subject);
  ok(!/wouldn’t (have|be carrying)/.test(m.body)&&!/First Health/.test(m.body),'ACA: no "skip the deductible" claim and no First Health link');
  ok(/apply for it yourself/.test(m.body),'ACA: says they apply for the marketplace plan themselves');
  /* Virtual Basic: side by side, never a saving; Amaze brochure named; no network link */
@@ -49,6 +49,11 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  ok(/Virtual Basic A/.test(m.subject)&&!generic(m),'Virtual Basic: named: '+m.subject);
  ok(!/less|save you/.test(m.body)&&!/First Health/.test(m.body)&&!/• Health plan:/.test(m.body)&&/• Amaze — everyday care:/.test(m.body),'Virtual Basic: no saving claim, no network link, Amaze brochure named');
  ok(!/Rx Valet/.test(m.body),'Virtual Basic: no Rx Valet');
+ /* living benefits: term says through what age, IUL says permanent; one total, with them in it */
+ m=await mk('mh','better'); var lp=S.packages.better.products.filter(function(x){ return x.k==='lbp'; })[0];
+ if(lp){ S.cfg.better.lb.p.carrier='moo'; lp.monthly=20; var e=buildEmail().body; ok(e.indexOf('of protection (through age '+(+S.client.page+20)+')')>0,'term: through age (their age + 20): '+(e.match(/Living benefits — .*/)||[''])[0]);
+   ok(e.indexOf('All together, your Package of Protection is '+fmt2(pkMonthly(S.packages.better))+' a month')>0,'the total includes the living benefits');
+   S.cfg.better.lb.p.carrier='iule'; e=buildEmail().body; ok(/of permanent protection/.test(e)&&!/through age/.test(e),'IUL: permanent protection'); } else ok(false,'Manhattan Complete carries living benefits to test');
  return {n:n, fails:fails}; })()`;
 try {
   let l; for (let i = 0; i < 60 && !l; i++) { await sleep(150); l = await fetch(`http://127.0.0.1:${DBG}/json/list`).then(r => r.json()).catch(() => null); }
