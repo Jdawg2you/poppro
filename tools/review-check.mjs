@@ -348,8 +348,12 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
    ok(/Cigna PPO 2500/.test(ph)&&/Cigna is the network/.test(allPr)&&!document.getElementById('prFrame'),'Present shows the Triad presentation, not the ManhattanLife script');
    ok(triadDedNum('best')===2500&&String(triadVal('best',/^Calendar-year deductible/)).indexOf('$2,500/individual')===0,'…with the 2500 plan’s own deductible from the SBC');
    /* 19 Nov: Amaze rides with every Cigna package and has its own page before the busters - walk to the busters page by name */
-   var sawAmaze=false; for(var i=0;i<20;i++){ var cur=document.getElementById('presentHost').textContent; if(/Everyday care — Amaze/.test(cur)&&/doctor on your phone/.test(cur)) sawAmaze=true; if(/The one thing this plan doesn’t do is the deductible/.test(cur)) break; var nx=document.querySelector('#presentHost .trd-nav .next'); if(nx) nx.click(); await w(60); }
+   var sawAmaze=false; for(var i=0;i<20;i++){ var cur=document.getElementById('presentHost').textContent; if(/Everyday care — Amaze/.test(cur)&&/we include Amaze/.test(cur)&&/1,100 medications/.test(cur)) sawAmaze=true; if(/what we call a deductible buster/.test(cur)) break; var nx=document.querySelector('#presentHost .trd-nav .next'); if(nx) nx.click(); await w(60); }
    ok(sawAmaze,'a Cigna package presents Amaze on its own Everyday care page');
+   /* 24 Nov (Jesse): page names, the price overview, the deductible buster */
+   var chips=Array.prototype.map.call(document.querySelectorAll('#presentHost .trd-chips button'),function(b){ return b.textContent.replace(/^\\d+\\.\\s*/,''); });
+   ok(chips.indexOf('Your deductible buster')>0&&chips.indexOf('Price overview')>chips.indexOf('Your deductible buster')&&chips.indexOf('The price, honestly')<0,'Cigna: deductible buster, then Price overview (not "The price, honestly"): '+chips.join(' | '));
+   ok(/From day one you have/.test(allPr)&&!/copayment\\/visit/.test(allPr),'Cigna: "From day one you have", copays read cleanly');
    ph=document.getElementById('presentHost').textContent; ok(/HI Select|Hospital Indemnity/.test(ph)&&/enough to cover the whole/.test(ph),'the deductible-buster page explains HI Select against the deductible: '+ph.slice(ph.indexOf('busters'),ph.indexOf('busters')+90));
    goStep('enroll'); await w(200); var eb=document.getElementById('enTriad');
    ok(eb&&eb.style.display!=='none'&&/EIN/.test(eb.textContent)&&/by [A-Z][a-z]+ 15/.test(eb.textContent)&&/signed by [A-Z][a-z]+ 25/.test(eb.textContent)&&document.getElementById('enScriptEnd').style.display==='none','Enroll shows the Triad steps (EIN, by the 15th, by the 25th) and hides the ManhattanLife wrap-up');

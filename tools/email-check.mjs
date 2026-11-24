@@ -54,6 +54,16 @@ const TEST = `(async function(){ var w=ms=>new Promise(r=>setTimeout(r,ms)); awa
  if(lp){ S.cfg.better.lb.p.carrier='moo'; lp.monthly=20; var e=buildEmail().body; ok(e.indexOf('of protection (through age '+(+S.client.page+20)+')')>0,'term: through age (their age + 20): '+(e.match(/Living benefits — .*/)||[''])[0]);
    ok(e.indexOf('All together, your Package of Protection is '+fmt2(pkMonthly(S.packages.better))+' a month')>0,'the total includes the living benefits');
    S.cfg.better.lb.p.carrier='iule'; e=buildEmail().body; ok(/of permanent protection/.test(e)&&!/through age/.test(e),'IUL: permanent protection'); } else ok(false,'Manhattan Complete carries living benefits to test');
+ /* 24 Nov: names, and the Bright Life presentation */
+ m=await mk('lx-mh-cg','good'); ok(/Bright Life/.test(presentBtnLabel())&&!/Essential|Complete|Comprehensive/.test(presentBtnLabel()),'Bright Life: Present button has no tier word: '+presentBtnLabel());
+ S.intake.docs1='Dr. Smith (primary)'; S.intake.docs1net=true; S.intake.medList=[{name:'Metformin',forP:true}];
+ var bl=blPresentHTML('good'), bp=[]; var d0=document.createElement('div'); d0.innerHTML=bl; var allBl=''; S.triad=S.triad||{};
+ for(var k=0;k<20;k++){ S.triad.blprpg=k; d0.innerHTML=blPresentHTML('good'); allBl+=d0.textContent; }
+ ok(/Dr Smith/.test(allBl)&&/your medications \\(Metformin\\)/.test(allBl),'recap names their doctors and medications');
+ ok(/group of one/.test(allBl)&&!/before they bring you on/.test(allBl),'What it is: the group language, and no "before they bring you on" line');
+ ok(/Price overview/.test(allBl)&&!/The price, honestly/.test(allBl)&&/What happens next/.test(allBl)&&/what we call a/.test(allBl),'Bright Life: deductible buster, Price overview, What happens next');
+ ok(/And I already found Dr Smith/.test(allBl),'Your doctors: the ManhattanLife "already found" line for an in-network doctor');
+ m=await mk('mh','better'); ok(/Present <i>ManhattanLife Complete<\\/i>/.test(presentBtnLabel()),'Manhattan: Present ManhattanLife Complete');
  return {n:n, fails:fails}; })()`;
 try {
   let l; for (let i = 0; i < 60 && !l; i++) { await sleep(150); l = await fetch(`http://127.0.0.1:${DBG}/json/list`).then(r => r.json()).catch(() => null); }
