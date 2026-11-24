@@ -3241,7 +3241,7 @@ function brochFor(f,c){ var st=(S.client.state||'').toUpperCase(); if(f==='sdr')
 /* Jesse, 9 Oct: a marked plan -> that plan's brochures; nothing marked -> every plan shown (t is then 'all') */
 function brochList(t){ t=t||enrolledTier()||'all'; var tiers=t==='all'?['good','better','best'].filter(function(x){ return (S.include||{})[x]!==false&&((S.packages||{})[x]||{}).products; }):[t], seen={}, out=[], none=[];
   tiers.forEach(function(tt){ var pk=(S.packages||{})[tt]||{}, c=effCfg(tt);
-  (pk.products||[]).forEach(function(p){ if(!((+p.monthly||0)>0)) return; var f=benFileFor(p.k,c), b=f&&brochFor(f,c), nm=(p.k==='base'&&tierNonMh(tt))?tierNonMh(tt).full:((PB_SLOTS.filter(function(x){ return x.k===p.k; })[0]||{}).name||p.name||'');
+  (pk.products||[]).forEach(function(p){ if(!((+p.monthly||0)>0)) return; var f=benFileFor(p.k,c), b=f&&brochFor(f,c), nm=(p.k==='base'&&c.base==='amaze')?'Amaze — everyday care':(p.k==='base'&&tierNonMh(tt))?tierNonMh(tt).full:((PB_SLOTS.filter(function(x){ return x.k===p.k; })[0]||{}).name||p.name||'');
     if(b){ if(!seen[b.url]){ seen[b.url]=1; out.push({name:f==='brightlife'?b.name:(nm||b.name),form:b.form,url:b.url}); } } else if(nm&&p.k!=='mec'&&none.indexOf(nm)<0) none.push(nm); }); });
   return {t:t,st:(S.client.state||'').toUpperCase(),list:out,none:none}; }
 function brochLines(L){ return L.list.map(function(b){ return '• '+b.name+': '+b.url; }).join('\n'); }
@@ -9909,38 +9909,72 @@ function sqPhrase(Q){ Q=Q||{}; var W=sqClientWhen(Q); if(!W) return ''; Q={date:
   var when=days===0?(tm?'later today':'today'):days===1?'tomorrow, '+wd+(tm?',':''):(days>1&&days<7)?wd:wd+', '+md+(tm?',':'');
   if(days<0) when=wd+', '+md+(tm?',':'');
   return when+(tm?' at '+tm+' your time':''); }
+/* Jesse, 24 Nov: the email talks about the plan that was PRESENTED - its name, each piece and what it does, its price and
+   the same comparison that plan's script speaks - never "your Healthcare Package of Protection" or "the Complete plan".
+   Living benefits only when they're in it; a network link only where there is one to check (not ACA, not Amaze). */
+function quoteEmailPlan(t){ var c=effCfg(t)||{}, b=c.base||'afc', pk=(S.packages||{})[t]||{}, drop=pk.dropped||[];
+  var P=(pk.products||[]).filter(function(p){ return (+p.monthly||0)>0&&drop.indexOf(p.k)<0; });
+  var sum=function(p){ try{ return String(pbSummary(p.k,c,p)||''); }catch(e){ return ''; } }, base=P.filter(function(p){ return p.k==='base'; })[0];
+  var vb=(LINEUP_NAMES.vb||{})[t], vbName=(S.lineup==='vb'&&vb)?vb[0]:'Virtual Basic';
+  var title=b==='triad'?'Cigna PPO plan and its protection':b==='brightlife'?'Bright Life plan and its protection':b==='lifex'?'LifeX plan and its protection'
+    :b==='aca'?'marketplace plan plus protection':b==='amaze'?vbName+' package':'ManhattanLife '+(TIER_NAME[t]||'')+' package';
+  var dd=/^(triad|brightlife|lifex|aca)$/.test(b);   /* a real deductible to talk about; Affordable Choice and Amaze have none */
+  var mo=function(n){ return fmt2(+n||0)+' a month'; }, L=[];
+  P.forEach(function(p){ var k=p.k, s=sum(p), nm=((PB_SLOTS.filter(function(x){ return x.k===k; })[0])||{}).name||String(p.name||'').split(' — ')[0], line='';
+    if(isLBk(k)) return;
+    if(k==='base'){
+      if(b==='triad') line='Cigna PPO health plan'+(s?' ('+s+')':'')+' — your major medical on the Cigna network: doctors, hospital and prescriptions';
+      else if(b==='brightlife') line='Bright Life health plan'+(s?' ('+s+')':'')+' — your major medical';
+      else if(b==='lifex') line='LifeX health plan'+(s?' ('+s+')':'')+' — your major medical';
+      else if(b==='aca') line='Your marketplace plan'+((acaIn()||{}).plan?' ('+acaIn().plan+')':'')+' — you apply for it yourself through healthcare.gov'+(+(S.aca||{}).ded>0?'; it carries a $'+Math.round(+S.aca.ded).toLocaleString('en-US')+' deductible':'');
+      else if(b==='amaze') line='Amaze — a doctor any time by phone, video or message, with no fee per visit (a membership, not insurance)';
+      else line=nm+(s?' ('+s+')':'');
+    }
+    else if(k==='amz') line='Amaze — a doctor any time by phone, video or message, with no fee per visit (a membership, not insurance)';
+    else if(k==='afc') line='Affordable Choice'+(s?' ('+s+')':'')+' — your core health plan';
+    else if(k==='his') line='Hospital Indemnity Select'+(s?' ('+s+')':'')+' — pays you cash if you’re admitted to the hospital'+(dd?', toward that deductible':'');
+    else if(k==='gap') line='Out-of-Pocket Protection'+(s?' ('+s+')':'')+' — pays you on an admission or an outpatient surgery, so '+(dd?'the deductible isn’t':'a big bill isn’t')+' coming out of your savings';
+    else if(k==='acc') line=nm+(s?' ('+s+')':'')+' — pays you cash if you get hurt';
+    else if(k==='chas') line='Cancer / Heart Attack & Stroke'+(s?' ('+s+')':'')+' — a lump sum to use however you need';
+    else if(k==='sdr') line='Specified Disease Rider'+(s?' ('+s+')':'')+' — extra coverage for a serious illness such as cancer';
+    else if(k==='dvh') line='Dental, vision and hearing'+(s?' ('+s+')':'');
+    else line=nm+(s?' ('+s+')':'');
+    L.push('• '+line+': '+mo(p.monthly)); });
+  var LB=lbSummary(t); LB.forEach(function(x){ L.push('• Living benefits — '+(x.face?'$'+x.face.toLocaleString('en-US')+' of ':'')+(x.term?x.term+' ':'')+(x.kind||'life insurance').replace(/^Term Life Protection$/,'term life')+' for '+x.who+' with '+x.carrier); });
+  var lbm=prLbMo(t), tot=pkMonthly(pk), noLb=tot-lbm;
+  return {t:t,b:b,title:title,lines:L,lb:LB,lbm:lbm,tot:tot,noLb:noLb,dd:dd}; }
 function buildEmail(){
   read();
   var to=(S.intake&&S.intake.email)||'', Q=S.sendq||{};
   var first=((S.client.pname||'').trim().split(/\s+/)[0])||'there';
   var agent=(S.client.agent||'').trim(), agency=(S.agency||'').trim(), book=String(S.agentBooking||'').trim(), site=String(S.agentWebsite||'').trim();
   var m0=function(n){ return '$'+Math.round(+n||0).toLocaleString('en-US'); };
-  var subj='Your Healthcare Package of Protection'+(first!=='there'?', '+first:'');
-  /* what we compare against (Jesse's anchor) */
-  var B=anchorBase(), ap=B?(B.k==='aca'?'the marketplace plan':'your current plan'):'';
-  /* Jesse, 11 Nov: we present ONE package now, so the email never says it was compared with three or that we
-     "landed on" one. It names what we shared and keeps the anchor savings (premiums, year, deductible). */
+  /* the one plan they saw: what they're enrolling in, else chosen, else presented, else on screen */
   var shown=['good','better','best'].filter(function(x){ return (S.include||{})[x]!==false&&((S.packages||{})[x]||{}).products; });
-  var R0=S.rec&&S.rec.lineup===(S.lineup||'mh')&&shown.indexOf(S.rec.tier)>=0?S.rec.tier:null, pt=presentTier();
-  var ch=chosenTier()||R0||(shown.indexOf(pt)>=0?pt:shown[0])||null, save='';   /* the one plan they saw: chosen, presented, or on screen */
-  if(ch){ var vs=B?'Compared with '+ap+', ':'';
-    var tt=tierTotals(ch), lbm=((tt.pk.products||[]).filter(function(p){ return isLBk(p.k); }).reduce(function(a,p){ return a+(+p.monthly||0); },0))+(+tt.pk.lb||0), prem=tt.mo-lbm,   /* same figure the script speaks */ mo=B?(+B.premOnly||0)-prem:0;
-    /* premiums alone, then the deductible they would not carry: one person's, as the examples count it (Jesse, 9 Oct) */
-    var EA=B?evAnchor():null, ded=EA&&EA.ded?+EA.ded:(B&&B.k==='cur'?+curIn().ded||0:0);
-    if(mo>=1){ save=vs+'its premiums alone will save you about '+m0(mo)+' a month — '+m0(mo*12)+' over a year.';
-      if(ded>0) save+=' Not to mention you wouldn’t have '+(B.k==='aca'?'the marketplace plan’s':'your current plan’s')+' '+m0(ded)+' deductible, so for the year you have the potential of saving about '+m0(mo*12+ded)+' on your basic coverage alone if anything out of the ordinary happens.'; }
-    else save=(ded>0&&B?'And you wouldn’t be carrying '+(B.k==='aca'?'the marketplace plan’s':'your current plan’s')+' '+m0(ded)+' deductible.':''); }
-  var L=brochList(enrolledTier()||ch||undefined);   /* the brochures for that one plan, not all three */
+  var R0=S.rec&&(S.rec.lineup||'mh')===(S.lineup||'mh')&&shown.indexOf(S.rec.tier)>=0?S.rec.tier:null, pt=presentTier();
+  var ch=chosenTier()||R0||(shown.indexOf(pt)>=0?pt:shown[0])||null, et=enrolledTier(), t=(et&&(S.packages||{})[et])?et:ch;
+  if(!t) return {to:to,subject:'Your health plan options'+(first!=='there'?', '+first:''),body:'Hi '+first+',\n\nThanks for your time today.\n\n'+(agent||agency)};
+  var E=quoteEmailPlan(t), save='';
+  if(E.b==='afc'){   /* ManhattanLife: the arithmetic its script speaks - premiums alone against the anchor, then the deductible they would not carry */
+    var B=anchorBase(), ap=B?(B.k==='aca'?'the marketplace plan':(curAnchorFig().kind==='cobra'?'COBRA':'your current plan')):'';
+    var mo=B?(+B.premOnly||0)-E.noLb:0, EA=B?evAnchor():null, ded=EA&&EA.ded?+EA.ded:(B&&B.k==='cur'?+curIn().ded||0:0), apd=B&&B.k==='aca'?'the marketplace plan’s':ap==='COBRA'?'COBRA’s':'your current plan’s';
+    if(mo>=1){ save='Compared with '+ap+', its premiums alone will save you about '+m0(mo)+' a month — '+m0(mo*12)+' over a year.';
+      if(ded>0) save+=' Not to mention you wouldn’t have '+apd+' '+m0(ded)+' deductible, so for the year you have the potential of saving about '+m0(mo*12+ded)+' on your basic coverage alone if anything out of the ordinary happens.'; }
+    else if(ded>0&&B) save='And you wouldn’t be carrying '+apd+' '+m0(ded)+' deductible.'; }
+  else if(E.b!=='aca'||prAnchorCur()){   /* the other plans: the anchor their own script speaks (prAnchor), before living benefits */
+    var A=prAnchor(), d=A?A.mo-E.noLb:0;
+    if(A&&d>=1) save=E.b==='amaze'?'All together that’s '+fmt2(E.noLb)+' a month — against '+prMo(A.mo)+' a month for '+A.name+' alone.'
+      :'You were at '+prMo(A.mo)+' a month on '+A.name+'. This comes to '+fmt2(E.noLb)+' a month — about '+m0(d)+' a month less, '+m0(d*12)+' over a year.'; }
+  var L=brochList(t), nl=(E.b==='aca'||E.b==='amaze')?[]:netLines(t,'Is your doctor in the '+(netOf(t)||{}).name+' network? Check here');
+  var subj='Your '+E.title+(first!=='there'?', '+first:'');
   var body='Hi '+first+',\n\n'
-    +'Thanks for your time today. As promised, here’s everything to look over.\n\n'
-    +(Q.pdf?'Attached is your Healthcare Package of Protection, ':'Your Healthcare Package of Protection is ')
-    +'the plan we shared with you today. It shows what it costs you each month and what happens in a real hospital stay.'
-    +(save?' '+save:'')+'\n\n'
-    +(L.list.length?(L.t==='all'?'The brochures for each part of these plans, if you’d like the full details:\n':'The brochures for the '+(TIER_NAME[L.t]||'')+' plan, if you’d like the full details:\n')+brochLines(L)+'\n\n':'')
-    +(function(){ var nl=netLines(ch,'Is your doctor in the '+(netOf(ch)||{}).name+' network? Check here'); return nl.length?nl.join('\n')+'\n\n':''; })()
-    +(function(){ var ts=L.t==='all'?['good','better','best'].filter(function(x){ return (S.include||{})[x]!==false&&((S.packages||{})[x]||{}).products; }):[L.t];
-      var any=ts.some(function(x){ return lbSummary(x).length; }); if(!any) return ''; var lk=ts.some(function(x){ return lbSummary(x).some(function(y){ return /Indexed|Whole/.test(y.kind||''); }); })?'life insurance':'term life insurance';
-      return (L.t==='all'?'These plans as shown can include living benefits — '+lk+' that does more than a death benefit. ':'The '+TIER_NAME[L.t]+' plan as shown includes living benefits — '+lk+' that does more than a death benefit. ')+LB_BLURB+'\n\n'; })()
+    +'Thanks for your time today. As promised, here’s the '+E.title+' we went over'+(Q.pdf?' — the PDF is attached too, with what it costs and what happens in a real hospital stay':'')+'.\n\n'
+    +'WHAT’S IN IT\n'+E.lines.join('\n')+'\n'
+    +'All together: '+fmt2(E.tot)+' a month'+(E.lbm>0?' ('+fmt2(E.noLb)+' without the living benefits)':'')+'.\n\n'
+    +(save?save+'\n\n':'')
+    +(E.lb.length?'Living benefits are life insurance that does more than a death benefit. '+LB_BLURB+'\n\n':'')
+    +(L.list.length?'The brochures, if you’d like the full details:\n'+brochLines(L)+'\n\n':'')
+    +(nl.length?nl.join('\n')+'\n\n':'')
     +(sqPhrase(Q)
       ?'Let’s talk '+sqPhrase(Q)+'. I’ll answer any questions and we can get your application in then.'+(book?' If that time no longer works, grab another one here: '+book:'')
       :'I’ll follow up with you in the next day or two to answer any questions and get your application in.'+(book?' If you’d rather pick a time that suits you, grab one here: '+book:''))+'\n\n'
