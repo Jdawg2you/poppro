@@ -9007,7 +9007,7 @@ function renderPresent(){ var host=$('presentHost'); if(!host) return; var shb=S
    remote jumps it anywhere. Never shows medications (Jesse: they stay in the script). Benefit rows come from the same
    benefits files as the ⓘ slide-outs - nothing typed here. SANDBOX ONLY until Jesse names the release: SHOW_ON is
    false on mypoppro.com. ===== */
-var SHOW_ON=/^(localhost|127\.0\.0\.1)$/.test(location.hostname)||location.port==='8767'||location.hostname==='sandbox.mypoppro.com';
+var SHOW_ON=true;   /* live with the 24 Nov launch (Jesse: "yes"); was sandbox-only since 20 Nov */
 var SHOW_WIN=null, SHOW_AT='', SHOW_PICK_OPEN=false;
 function showFollowOn(){ try{ return localStorage.getItem('mpp_show_follow')!=='0'; }catch(e){ return true; } }
 function showE(x){ return esc(x==null?'':x); }
