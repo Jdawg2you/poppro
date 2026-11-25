@@ -295,6 +295,73 @@
     "Optional rider on Affordable Choice. Four deductible options ($25,000, $50,000, $75,000, $100,000) and two calendar year maximum options ($250,000, $500,000).",
     "FL lists 13 covered conditions: Ruptured Aneurysm is NOT on the FL list."
    ]
+  },
+  {
+   "code": "SD-TXBR_0626",
+   "file": "SD-TXBR 0626 (TX Specified Disease brochure, policy form AS7006POL-TX)",
+   "states": [
+    "TX"
+   ],
+   "page": "2-3",
+   "sections": [
+    {
+     "title": "How the rider pays",
+     "rows": [
+      {
+       "label": "Calendar Year Maximum",
+       "values": {
+        "*": "{sdr.max} per calendar year"
+       },
+       "key": true,
+       "note": "Options: $250,000 or $500,000"
+      },
+      {
+       "label": "Deductible",
+       "values": {
+        "*": "{sdr.ded}"
+       },
+       "key": true,
+       "note": "Options: $25,000, $50,000, $75,000 or $100,000"
+      },
+      {
+       "label": "How benefits are paid",
+       "values": {
+        "*": "Pays benefits that are a direct result of a Specified Disease, after the deductible, up to {sdr.max} per calendar year"
+       },
+       "key": true,
+       "note": "In Texas this is its own policy (form AS7006POL-TX), sold only with Affordable Choice"
+      },
+      {
+       "label": "Lifetime maximum",
+       "values": {
+        "*": "$2,000,000"
+       },
+       "key": true
+      },
+      {
+       "label": "What it covers",
+       "values": {
+        "*": "Benefits that are a direct result of a Specified Disease"
+       }
+      }
+     ]
+    },
+    {
+     "title": "Covered conditions",
+     "rows": [
+      {
+       "label": "Covered conditions (14)",
+       "values": {
+        "*": "Amputation; Amyotrophic Lateral Sclerosis (ALS); Angioplasty; Cancer (Internal Cancer); Coronary Artery Bypass Surgery; End Stage Renal Failure; Heart Attack; Heart Valve Surgery; Implantable Cardiac Defibrillator; Joint Replacement; Major Organ Failure/Major Organ Transplant; Pacemaker Implant; Ruptured Aneurysm; Stroke (Ischemic or Hemorrhagic)"
+       },
+       "key": true
+      }
+     ]
+    }
+   ],
+   "notes": [
+    "Texas sells Specified Disease as a stand-alone policy, not a rider; it is sold only with Affordable Choice. Same options as the rider: deductible $25,000, $50,000, $75,000 or $100,000; calendar year maximum $250,000 or $500,000; $2,000,000 lifetime."
+   ]
   }
  ],
  "notOffered": {
@@ -306,7 +373,6 @@
    "ND",
    "NM",
    "PA",
-   "TX",
    "UT",
    "VA"
   ],

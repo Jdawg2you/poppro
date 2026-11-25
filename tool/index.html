@@ -2190,7 +2190,7 @@ function afcRateSt(st){ return AFC_GENERIC_RATES[st]||st; }
    another state's table: the price stays blank and the note says whether the product is sold there. */
 var ML_OFFERED={
  sdr:'AL AR AZ DE FL GA HI IA IL KY LA ME MI MN MO MS MT NC NE NV OH OK OR RI SC SD TN TX WI WV WY',   /* OR: AFC map 111626. TX: launched 19 Oct 2026 as its own policy, sold only with Affordable Choice; priced from SD-TXBR 0626 */
- gap:'AK AL AR AZ CA FL GA HI IA IL IN KY LA MD ME MI MN MO MS MT NC ND NE NM NV OH OK PA SC SD TN TX WA WI WV WY',
+ gap:'AK AL AR AZ CA FL GA HI IA IL IN KY LA MD ME MI MN MO MS MT NC ND NE NM NV OH OK PA SC SD TN TX UT WA WI WV WY',   /* UT: on the Product Approval Charts 082126 and 111626; priced from GAP-MEUT_RATES_0523 */
  chas:'AK AL AR AZ CA CO CT DC FL GA HI IA ID IL IN KS KY LA MD ME MI MN MO MS MT NC ND NE NH NV OH OK OR PA RI SC SD TN TX UT VT WA WI WV',
  afc:'AK AL AR AZ CA DE FL GA HI IA IL IN KY LA MD ME MI MN MO MS MT NC ND NE NM NV OH OK OR PA RI SC SD TN TX UT VA WI WV WY',
  /* Home Health Care Enhanced: states with a brochure in the carrier library or rates in the portal pull (2026-09-29). */
@@ -2466,7 +2466,7 @@ var GAP_GUIDE=[{"src":"GAP-CA_RATES_0320","st":["CA"],"b":[[18,34],[35,44],[45,5
 function gapKids(){ var k=(kidsList()||[]).length; return k>0?k:1; }
 function pGAP(R,st,age,hh,cfg){
   var g=null; for(var i=0;i<GAP_GUIDE.length;i++){ if(GAP_GUIDE[i].st.indexOf(st)>=0){ g=GAP_GUIDE[i]; break; } }
-  if(!g||(ML_OFFERED.gap||'').split(' ').indexOf(st)<0) return {price:null,note:'Out-of-Pocket Protection is not sold in '+st};   // UT has a rate sheet but isn't on the availability list
+  if(!g||(ML_OFFERED.gap||'').split(' ').indexOf(st)<0) return {price:null,note:'Out-of-Pocket Protection is not sold in '+st};
   var lo=(st==='KY'||st==='PA')?17:18; if(age<lo||age>64) return {price:null,note:'Out-of-Pocket Protection is issued ages '+lo+'–64'};
   var bi=-1; for(var j=0;j<g.b.length;j++){ if(age>=g.b[j][0]&&age<=g.b[j][1]){ bi=j; break; } } if(bi<0) return {price:null,note:'Out-of-Pocket rate n/a at age '+age};
   var kids=(hh==='c'||hh==='f')?gapKids():0;
@@ -2587,6 +2587,9 @@ function pCHAS(st,age,hh,cfg){
   return {price:Math.round(sum*100)/100,note:''};
 }
 function pHHC(R,st,age,col){
+  /* KS and KY sell only ManhattanLife's original Home Health Care plan (Product Approval Chart 111626); no brochure or rates
+     for it in the library, so it is named, not priced, and never auto-added. */
+  if(st==='KS'||st==='KY') return {price:null,note:'In '+st+' ManhattanLife sells its original Home Health Care plan (not Enhanced or Select). Its rates are not loaded — quote it in the ManhattanLife portal'};
   if(st&&(ML_OFFERED.hhc||'').split(' ').indexOf(st)<0) return {price:null,note:notLoaded('hhc','Home Health Care',st)};
   if(!col) return {price:null,note:''};
   /* Enhanced where it is sold; the older Home Health Care Select where it is not (ID IN MD VA - portal 304/305). */
