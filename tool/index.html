@@ -2587,9 +2587,6 @@ function pCHAS(st,age,hh,cfg){
   return {price:Math.round(sum*100)/100,note:''};
 }
 function pHHC(R,st,age,col){
-  /* KS and KY sell only ManhattanLife's original Home Health Care plan (Product Approval Chart 111626); no brochure or rates
-     for it in the library, so it is named, not priced, and never auto-added. */
-  if(st==='KS'||st==='KY') return {price:null,note:'In '+st+' ManhattanLife sells its original Home Health Care plan (not Enhanced or Select). Its rates are not loaded — quote it in the ManhattanLife portal'};
   if(st&&(ML_OFFERED.hhc||'').split(' ').indexOf(st)<0) return {price:null,note:notLoaded('hhc','Home Health Care',st)};
   if(!col) return {price:null,note:''};
   /* Enhanced where it is sold; the older Home Health Care Select where it is not (ID IN MD VA - portal 304/305). */
